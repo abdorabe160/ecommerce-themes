@@ -8,14 +8,57 @@ ATTAR · baby-supplies · Bulk · coffee (DECAFE) · ecommerce · electronics ·
 
 Each theme ships with 20–40 merchant-configurable widgets (sections).
 
-## Live stores & screenshots
+## Live demos
 
-### Mish-Mavin — [mish-mavin.qumra.store](https://mish-mavin.qumra.store/)
+Themes published on the Qumra theme store, each with a live demo store:
+
+| Theme | Niche | Live demo |
+|---|---|---|
+| LAMSA | Skincare & beauty | [lamsa-care.qumra.store](https://lamsa-care.qumra.store) |
+| HADIYA | Gifts & occasions | [hadiya-gifts.qumra.store](https://hadiya-gifts.qumra.store) |
+| ATTAR | Herbs, spices & natural oils | [dar-alattar.qumra.store](https://dar-alattar.qumra.store) |
+| MORVA | Fashion & streetwear | [morva-street.qumra.store](https://morva-street.qumra.store) |
+| MUHARRIK | Auto parts & accessories | [muharrik-auto.qumra.store](https://muharrik-auto.qumra.store) |
+| baby-supplies | Baby & kids products | [noaama-baby.qumra.store](https://noaama-baby.qumra.store) |
+| coffee (DECAFE) | Specialty coffee | [421kj0ey.qumra.store](https://421kj0ey.qumra.store) |
+| Mish-Mavin | Sportswear & fashion | [mish-mavin.qumra.store](https://mish-mavin.qumra.store) |
+
+### Previews
+
+**LAMSA**
+
+![LAMSA](screenshots/lamsa.webp)
+
+**HADIYA**
+
+![HADIYA](screenshots/hadiya.webp)
+
+**ATTAR**
+
+![ATTAR](screenshots/attar.webp)
+
+**MORVA**
+
+![MORVA](screenshots/morva.webp)
+
+**MUHARRIK**
+
+![MUHARRIK](screenshots/muharrik.webp)
+
+**baby-supplies**
+
+![baby-supplies](screenshots/baby.webp)
+
+**coffee (DECAFE)**
+
+![coffee (DECAFE)](screenshots/decafe.webp)
+
+**Mish-Mavin**
 
 ![Mish-Mavin hero](screenshots/mish-mavin-hero.webp)
 ![Mish-Mavin categories](screenshots/mish-mavin-categories.webp)
 
-### Bulk — sportswear store (Arabic RTL, dark theme)
+**Bulk** — sportswear store (Arabic RTL, dark theme)
 
 ![Bulk hero](screenshots/bulk-hero.webp)
 ![Bulk collections](screenshots/bulk-collections.webp)
