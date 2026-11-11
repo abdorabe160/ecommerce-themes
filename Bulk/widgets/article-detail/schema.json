@@ -1,0 +1,17 @@
+{
+  "name": "تفاصيل المقال",
+  "description": "صفحة مقال مع صورة الغلاف ووقت القراية وأزرار المشاركة",
+  "settings": {
+    "show_share": {
+      "type": "boolean",
+      "label": "إظهار أزرار المشاركة",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "name": "تفاصيل المقال (Dark Blood)",
+      "category": "المدونة"
+    }
+  ]
+}

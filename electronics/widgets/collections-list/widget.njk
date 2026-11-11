@@ -1,0 +1,130 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# بيانات الصفحة تصل للويدجت داخل context (context.collections + context.pagination) — نقرأ الاسمين #}
+{% set ctx = context or {} %}
+{% set source = collections or ctx.collections or [] %}
+{% if source.data %}{% set source = source.data %}{% endif %}
+{% set pg = ctx.pagination or (collections and collections.pagination) or {} %}
+{% set items = [] %}
+{% for c in source %}
+  {# قسم من غير عنوان أو رابط، وقسم النظام home-page (بتبعته المنصة باسم "Home Page"): مايتعرضوش #}
+  {% if c and c.title and (c.handle or c.slug) and (c.handle or c.slug) != 'home-page' and c.status != 'inactive' and c.status != 'draft' and c.active != false and c.isActive != false and c.deleted != true and not (c.salesChannels and c.salesChannels.onlineStore == false) and c.published != false %}{% if items.push(c) %}{% endif %}{% endif %}
+{% endfor %}
+{# الإعدادات قد تصل فارغة ({}) — الافتراضي "مفعّل" كما في schema.json #}
+{% set showProducts = wd.show_products != false %}
+{# كل تصنيف ومنتجاته تحته (lgCollectionsPage في main.js): الكروت أعلى الصفحة تنقل لقسم التصنيف #}
+{% set cols = [] %}
+{% for c in items %}
+  {% if cols.push({ _id: c._id, title: c.title, handle: c.handle or c.slug, image: (c.image.fileUrl if (c.image and c.image.fileUrl and not c.image.notFound) else ''), count: c.productCount if (c.productCount is defined) else none }) %}{% endif %}
+{% endfor %}
+{% set cfg = {
+  collections: cols,
+  more: (pg.hasNextPage == true),
+  totalCollections: pg.totalItems or 0,
+  products: showProducts,
+  per: wd.products_per_collection | default(8),
+  others: wd.show_uncategorized != false,
+  othersTitle: t('collection.uncategorized')
+} %}
+<section class="lg-section !pt-6" x-data="lgCollectionsPage({{ cfg | dump | escape }})">
+  <div class="lg-container">
+    <h1 class="lg-title !text-2xl md:!text-3xl mb-5">{{ (wd['title' + L] or wd.title) | default(t('collection.all_collections')) }}</h1>
+
+    {# ===== كروت التصنيفات: أول صفحة من السيرفر + الباقي (بعد 10) + التوضيحية في المعاينة (نفس بيانات كل المتجر) بالـ JS ===== #}
+    <ul class="lg-col-cards grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5" x-show="{{ 'true' if (items | length) else 'false' }} || cards.length">
+      {% for c in items %}
+        <li>
+          <a href="{{ ('#col-' + c._id) if showProducts else ('/collections/' + (c.handle or c.slug)) }}" class="glass glass-hover flex flex-col h-full overflow-hidden">
+            <span class="relative aspect-[4/3] grid place-items-center p-5">
+              {% if c.image and c.image.fileUrl and not c.image.notFound %}
+                <img src="{{ c.image.fileUrl }}" alt="" loading="lazy" width="240" height="180" class="absolute inset-0 w-full h-full p-5 object-contain drop-shadow-xl">
+              {% else %}
+                <span class="text-primary">{% ui "icon.njk", name="grid", cls="w-10 h-10" %}</span>
+              {% endif %}
+            </span>
+            <span class="flex items-center justify-between gap-2 px-4 py-3 border-t border-[color:var(--color-hairline)]">
+              <span class="min-w-0">
+                <span class="block font-semibold text-sm md:text-base line-clamp-2">{{ c.title }}</span>
+              </span>
+              {% ui "icon.njk", name="arrow", cls="w-4 h-4 shrink-0 text-primary lg-flip-rtl" %}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+      <template x-for="c in cards" :key="c._id">
+        <li>
+          <a :href="{{ 'true' if showProducts else 'false' }} ? '#col-' + c._id : collectionUrl(c)" class="glass glass-hover flex flex-col h-full overflow-hidden">
+            <span class="relative aspect-[4/3] grid place-items-center p-5">
+              <template x-if="c.image">
+                <img :src="c.image" alt="" loading="lazy" width="240" height="180" class="absolute inset-0 w-full h-full p-5 object-contain drop-shadow-xl">
+              </template>
+              <template x-if="!c.image">
+                <span class="text-primary">{% ui "icon.njk", name="grid", cls="w-10 h-10" %}</span>
+              </template>
+            </span>
+            <span class="flex items-center justify-between gap-2 px-4 py-3 border-t border-[color:var(--color-hairline)]">
+              <span class="min-w-0">
+                <span class="block font-semibold text-sm md:text-base line-clamp-2" x-text="c.title"></span>
+              </span>
+              {% ui "icon.njk", name="arrow", cls="w-4 h-4 shrink-0 text-primary lg-flip-rtl" %}
+            </span>
+          </a>
+        </li>
+      </template>
+    </ul>
+
+    {# بدون تصنيفات (المتجر الحي): رسالة فارغة — المعاينة تعرض التوضيحية #}
+    {% if not (items | length) %}
+      <div x-show="!cards.length" x-cloak>
+        {% ui "empty.njk", icon="grid", title=t('collection.no_collections'), url="/", button=t('not_found.back_home') %}
+      </div>
+    {% endif %}
+
+    {# ===== كل تصنيف ومنتجاته تحته ===== #}
+    {% if showProducts %}
+      <div class="lg-col-sections">
+        <template x-for="s in allSections" :key="s.c._id">
+          <section class="lg-col-section" :id="'col-' + s.c._id" :data-col-section="s.c._id" :aria-labelledby="'col-h-' + s.c._id">
+            <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+              <div class="min-w-0">
+                <h2 class="lg-title" :id="'col-h-' + s.c._id" x-text="s.c.title"></h2>
+                <p class="text-sm text-muted mt-1" x-show="s.total !== null" x-text="countText(s.total)"></p>
+              </div>
+              <a x-show="!s.c.__others && s.total !== 0" :href="collectionUrl(s.c)" class="btn btn-glass shrink-0">
+                {{ t('common.view_all') }} {% ui "icon.njk", name="arrow", cls="w-4 h-4 lg-flip-rtl" %}
+              </a>
+            </div>
+
+            {# تحميل #}
+            <div class="lg-grid" data-cols="4" x-show="!s.items.length && (s.loading || !s.loaded)" aria-hidden="true">
+              <template x-for="i in 4" :key="i"><div class="lg-skeleton h-[340px]"></div></template>
+            </div>
+
+            {# المنتجات — نفس بطاقة المنتج ونفس منطق التوفر في كل الصفحات (REG-13) #}
+            <div class="lg-grid" data-cols="4" x-show="s.items.length">
+              <template x-for="p in visible(s)" :key="p._id">{% ui "card-js.njk" %}</template>
+            </div>
+
+            {# تصنيف فارغ / خطأ تحميل #}
+            <p class="lg-search-hint glass !rounded-2xl" x-show="s.loaded && !s.loading && !s.error && !s.items.length">
+              <span class="lg-search-hint__icon">{% ui "icon.njk", name="grid", cls="w-4 h-4" %}</span>{{ t('collection.empty') }}
+            </p>
+            <div class="glass !rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3" x-show="s.error && !s.loading">
+              <span class="text-sm text-muted">{{ t('toast.error') }}</span>
+              <button type="button" class="btn btn-soft" @click="load(s, s.shown)">{{ t('collection.retry') }}</button>
+            </div>
+
+            <div class="text-center mt-5" x-show="s.items.length && remaining(s) > 0">
+              <button type="button" class="btn btn-glass" @click="more(s)" :disabled="s.loading">
+                <span x-show="!s.loading">{{ t('common.load_more') }} <span class="text-muted" x-text="'(' + remaining(s) + ')'"></span></span>
+                <span x-show="s.loading" x-cloak class="lg-spinner" role="status"></span>
+              </button>
+            </div>
+          </section>
+        </template>
+      </div>
+    {% endif %}
+  </div>
+</section>

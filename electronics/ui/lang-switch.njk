@@ -1,0 +1,12 @@
+{# مبدّل اللغة — الثيم يدعم العربية والإنجليزية فقط. الاستخدام: {% ui "lang-switch.njk", cls="…" %}
+   زر وليس رابطاً: يبدّل لغة الصفحة واتجاهها بدون تغيير الرابط. قمرة تحدد اللغة من كوكي "lang" (ويغلب بادئة /en في الرابط)،
+   فـ main.js (switchLanguage) يكتب الكوكي ويعيد تحميل نفس الصفحة، والسيرفر يرسمها باللغة الجديدة واتجاهها.
+   النص = اسم اللغة الأخرى بلغتها: "English" على الصفحة العربية و"العربية" على الإنجليزية. #}
+{% set names = { ar: 'العربية', en: 'English' } %}
+{% set current = localization.language | default('ar') %}
+{% set target = 'ar' if current == 'en' else 'en' %}
+{% if target in (localization.availableLanguages | default(['ar', 'en'])) %}
+  <button type="button" data-lang-switch="{{ target }}" class="{{ data.cls }}">
+    {% ui "icon.njk", name="globe", cls="w-4 h-4 shrink-0" %}<span class="sr-only">{{ t('header.language') }}: </span><span lang="{{ target }}">{{ names[target] }}</span>
+  </button>
+{% endif %}

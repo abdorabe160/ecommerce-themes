@@ -1,0 +1,46 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "صفحة غير موجودة",
+        "title": "",
+        "message": "",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/"
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "كل المنتجات",
+          "settings": {
+            "label": "كل المنتجات",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "التصنيفات",
+          "settings": {
+            "label": "التصنيفات",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "link",
+          "name": "المدونة",
+          "settings": {
+            "label": "المدونة",
+            "url": "/blogs"
+          }
+        }
+      ]
+    }
+  ]
+}

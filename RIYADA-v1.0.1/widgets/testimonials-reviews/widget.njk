@@ -1,0 +1,466 @@
+{# ============================================================================
+   RIYADA TESTIMONIALS — reviews with a rating summary
+   ----------------------------------------------------------------------------
+   Left: the aggregate — big average, stars, and the 5→1 star distribution.
+   Right: the individual reviews, as a slider or a grid.
+
+   Every review can name the product it is about, which turns a testimonial
+   into a link back into the catalogue instead of a dead quote. In this
+   category the useful review is "المقاس ضبط" or "صمد بعد ٦ شهور", so the
+   `duration` chip carries real weight and stays prominent.
+
+   The distribution rows reuse the shared .riyada-progress primitive rather
+   than a bespoke bar — same flame fill as the free-shipping meter.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set reviews = widget.blocks | default([]) %}
+{% set count = reviews | length %}
+{# for-loop scopes don't leak `set`, so count real (non-sample) reviews via a captured string #}
+{% set realMarks %}{% for r in reviews %}{% if not r.data.sample %}1{% endif %}{% endfor %}{% endset %}
+{% set realCount = realMarks | trim | length %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.reviews'), true) %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('slider', true) %}
+{% set isSlider = layout == 'slider' %}
+
+{% set bg = d.background | default('canvas', true) %}
+{% set isLight = bg == 'light' %}
+{% if bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'well' %}{% set bgVal = 'var(--color-bg-tertiary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'void' %}{% set bgVal = 'var(--color-media)' %}
+{% elif isLight %}{% set bgVal = 'var(--color-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+{% set cols = d.columns | default('3', true) %}
+{% set colsInt = cols | int %}
+{% set colsMid = 2 if colsInt > 2 else colsInt %}
+
+{% set showSummary = d.show_summary | default(true) %}
+{% set summaryRating = d.summary_rating | default('') %}
+{% set summaryCount = d.summary_count | default('') %}
+{% set showDist = d.show_distribution | default(true) %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set autoplay = d.autoplay | default(false) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+
+{# The summary column only earns its width when it actually has content. #}
+{% set hasSummary = showSummary and summaryRating %}
+
+
+{# ---------------- star row ---------------- #}
+{% macro stars(n, size) %}
+  <span class="riyada-stars {{ 'riyada-stars--lg' if size == 'lg' }}">
+    {% for i in [1, 2, 3, 4, 5] %}
+      {% if i <= n %}
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+      {% else %}
+        <svg class="riyada-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+      {% endif %}
+    {% endfor %}
+  </span>
+{% endmacro %}
+
+
+{# ---------------- one review card ---------------- #}
+{% macro card(r, wid, lblVerified, lblAbout) %}
+  {% set p = r.product[0] if r.product and (r.product | length) > 0 else null %}
+  <article class="riyada-tr-{{ wid }}-card">
+
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      {% set _sn = r.rating | default(5) %}<span class="riyada-stars ">
+    {% for i in [1, 2, 3, 4, 5] %}
+      {% if i <= _sn %}
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+      {% else %}
+        <svg class="riyada-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+      {% endif %}
+    {% endfor %}
+  </span>
+      {% if r.verified %}
+        <span class="riyada-badge riyada-badge--success">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+          </svg>
+          {{ lblVerified }}
+        </span>
+      {% endif %}
+    </div>
+
+    {% if r.headline %}
+      <p class="riyada-tr-{{ wid }}-headline">{{ r.headline }}</p>
+    {% endif %}
+
+    {% if r.review_text %}
+      <p class="riyada-tr-{{ wid }}-text">{{ r.review_text | safe }}</p>
+    {% endif %}
+
+    {% if r.duration %}
+      <span class="riyada-tag riyada-tag--flame">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             style="margin-inline-end: 5px;">
+          <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 7.2V12l3.4 2"/>
+        </svg>
+        {{ r.duration }}
+      </span>
+    {% endif %}
+
+    {# ---- the product being reviewed — a link back into the catalogue ---- #}
+    {% if p %}
+      {% set purl = '/product/' ~ (p.slug | default(p.handle) | default('')) %}
+      {% set pimg = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+      <a href="{{ purl }}" class="riyada-tr-{{ wid }}-product">
+        <span class="riyada-tr-{{ wid }}-pimg">
+          {% if pimg %}<img src="{{ pimg }}" alt="{{ p.title }}" loading="lazy"/>{% endif %}
+        </span>
+        <span class="min-w-0 flex flex-col">
+          <span class="riyada-micro">{{ lblAbout }}</span>
+          <span class="riyada-tr-{{ wid }}-pname riyada-clamp-1">{{ p.title }}</span>
+        </span>
+      </a>
+    {% endif %}
+
+    {# ---- author ---- #}
+    {% if r.reviewer_name %}
+      <div class="riyada-tr-{{ wid }}-author">
+        <span class="riyada-tr-{{ wid }}-avatar">
+          {% if r.avatar and r.avatar.fileUrl %}
+            <img src="{{ r.avatar.fileUrl }}" alt="{{ r.reviewer_name }}" loading="lazy"/>
+          {% else %}
+            {{ (r.reviewer_name | trim | first) }}
+          {% endif %}
+        </span>
+        <span class="min-w-0 flex flex-col">
+          <span class="riyada-tr-{{ wid }}-name">{{ r.reviewer_name }}</span>
+          {% if r.reviewer_role %}
+            <span class="riyada-caption">{{ r.reviewer_role }}</span>
+          {% endif %}
+        </span>
+      </div>
+    {% endif %}
+
+  </article>
+{% endmacro %}
+
+
+{% if count > 0 %}
+
+<style>
+  #riyada-tr-{{ id }} { background: {{ bgVal }}; }
+
+  /* ================= layout ================= */
+  .riyada-tr-{{ id }}-row {
+    display: grid;
+    gap: 24px;
+    align-items: start;
+    {% if hasSummary %}grid-template-columns: 290px minmax(0, 1fr);{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+  }
+  @media (max-width: 1023px) {
+    .riyada-tr-{{ id }}-row { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ================= summary ================= */
+  .riyada-tr-{{ id }}-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  /* The one big number in the section — the scoreboard face, like the hero. */
+  .riyada-tr-{{ id }}-avg {
+    font-family: var(--font-stat);
+    font-size: 3.5rem;
+    font-weight: 400;
+    line-height: 0.9;
+    color: var(--color-flame);
+  }
+  .riyada-tr-{{ id }}-of {
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-tertiary);
+  }
+  .riyada-tr-{{ id }}-distrow {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+  }
+  .riyada-tr-{{ id }}-distrow .riyada-progress { height: 4px; }
+
+  /* ================= card ================= */
+  .riyada-tr-{{ id }}-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    height: 100%;
+    padding: 22px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .riyada-tr-{{ id }}-headline {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .riyada-tr-{{ id }}-headline { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  .riyada-tr-{{ id }}-text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+  }
+
+  /* ---- reviewed product ---- */
+  .riyada-tr-{{ id }}-product {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    background: var(--color-bg-tertiary);
+    transition: border-color var(--t-fast) var(--ease-out);
+  }
+  .riyada-tr-{{ id }}-product:hover { border-color: var(--color-flame); }
+  .riyada-tr-{{ id }}-pimg {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    overflow: hidden;
+    border-radius: var(--radius-xs);
+    background: var(--color-media);
+  }
+  .riyada-tr-{{ id }}-pimg img { width: 100%; height: 100%; object-fit: cover; }
+  .riyada-tr-{{ id }}-pname {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  /* ---- author ---- */
+  .riyada-tr-{{ id }}-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding-top: 13px;
+    border-top: 1px solid var(--color-border);
+  }
+  .riyada-tr-{{ id }}-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-flame-wash);
+    border: 1px solid var(--color-flame-line);
+    color: var(--color-flame);
+    font-family: var(--font-display-ar);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .riyada-tr-{{ id }}-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .riyada-tr-{{ id }}-name {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  /* ================= grid ================= */
+  .riyada-tr-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    .riyada-tr-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .riyada-tr-{{ id }}-grid { grid-template-columns: repeat({{ colsInt if not hasSummary else (colsInt - 1 if colsInt > 2 else colsInt) }}, minmax(0, 1fr)); }
+  }
+
+  /* ================= slider ================= */
+  /* Swiper must clip horizontally — see the note in collection-products. */
+  .riyada-tr-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .riyada-tr-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .riyada-tr-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .riyada-tr-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .riyada-tr-{{ id }}-sw .swiper-slide > * { width: 100%; }
+</style>
+
+
+<section id="riyada-tr-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}"{% if realCount == 0 %} data-editor-only{% endif %}>
+  <div class="riyada-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      <div class="riyada-head riyada-head--split">
+        <div class="riyada-head-inner">
+          {% if eyebrow %}<span class="riyada-eyebrow">{{ eyebrow }}</span>{% endif %}
+          {% if title %}<div class="riyada-h2">{{ title | safe }}</div>{% endif %}
+          {% if desc %}<p class="riyada-lead">{{ desc | safe }}</p>{% endif %}
+        </div>
+
+        {% if isSlider and showArrows and count > 1 %}
+          <div class="riyada-navs shrink-0">
+            <button type="button" id="trPrev-{{ id }}"
+                    class="riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+                    aria-label="{{ t('common.prev') }}">
+              <svg class="riyada-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </button>
+            <button type="button" id="trNext-{{ id }}"
+                    class="riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+                    aria-label="{{ t('common.next') }}">
+              <svg class="riyada-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="riyada-tr-{{ id }}-row">
+
+      {# ═══════════════ summary ═══════════════ #}
+      {% if hasSummary %}
+        <aside class="riyada-tr-{{ id }}-summary">
+          <div class="flex items-end gap-2">
+            <span class="riyada-tr-{{ id }}-avg">{{ summaryRating }}</span>
+            <span class="riyada-tr-{{ id }}-of">/ 5</span>
+          </div>
+
+          {{ stars(5, 'lg') }}
+
+          {% if summaryCount %}
+            <p class="riyada-caption m-0">{{ summaryCount }}</p>
+          {% endif %}
+
+          {% if showDist %}
+            <div class="flex flex-col gap-1.5 pt-1" style="border-top: 1px solid var(--color-border);">
+              {% for s in [5, 4, 3, 2, 1] %}
+                {% if s == 5 %}{% set pct = d.dist_5 | default(0, true) %}
+                {% elif s == 4 %}{% set pct = d.dist_4 | default(0, true) %}
+                {% elif s == 3 %}{% set pct = d.dist_3 | default(0, true) %}
+                {% elif s == 2 %}{% set pct = d.dist_2 | default(0, true) %}
+                {% else %}{% set pct = d.dist_1 | default(0, true) %}{% endif %}
+                <div class="riyada-tr-{{ id }}-distrow" style="{{ 'margin-top: 8px;' if s == 5 }}">
+                  <span>{{ s }}★</span>
+                  <span class="riyada-progress"><span class="riyada-progress-fill" style="width: {{ pct }}%;"></span></span>
+                  <span>{{ pct }}%</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </aside>
+      {% endif %}
+
+      {# ═══════════════ reviews ═══════════════ #}
+      <div class="min-w-0">
+        {% if isSlider %}
+          <div class="swiper riyada-tr-{{ id }}-sw" id="trSwiper-{{ id }}">
+            <div class="swiper-wrapper">
+              {% for block in reviews %}
+                <div class="swiper-slide"{% if block.data.sample %} data-editor-only{% endif %}>{{ card(block.data, id, t('testimonials.verified'), t('testimonials.about_product')) }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% else %}
+          <div class="riyada-tr-{{ id }}-grid">
+            {% for block in reviews %}
+              {% if block.data.sample %}<div data-editor-only style="display:contents">{{ card(block.data, id, t('testimonials.verified'), t('testimonials.about_product')) }}</div>{% else %}{{ card(block.data, id, t('testimonials.verified'), t('testimonials.about_product')) }}{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% if isSlider %}
+<script>
+  (function () {
+    var el = document.getElementById('trSwiper-{{ id }}');
+    /* Sample reviews are editor-only: drop them before Swiper counts slides
+       (the layout's own sweep runs later, on DOMContentLoaded). */
+    if (el && !document.documentElement.classList.contains('riyada-preview')) {
+      el.querySelectorAll('[data-editor-only]').forEach(function (n) { n.remove(); });
+    }
+    if (!el || el.querySelectorAll('.swiper-slide').length < 2) return;
+    if (!el || typeof Swiper === 'undefined') return;
+
+    new Swiper(el, {
+      slidesPerView: 1.1,
+      spaceBetween: 16,
+      speed: 420,
+      watchOverflow: true,
+      breakpoints: {
+        641:  { slidesPerView: {{ colsMid | default(2, true) }}, spaceBetween: 16 },
+        1024: { slidesPerView: {{ (colsInt if not hasSummary else (colsInt - 1 if colsInt > 2 else colsInt)) | default(3, true) }}, spaceBetween: 16 }
+      },
+      {% if autoplay and settings.enableAnimations != false %}
+      autoplay: { delay: {{ (speed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#trPrev-{{ id }}', nextEl: '#trNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+  })();
+</script>
+{% endif %}
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section id="riyada-tr-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}" style="background: {{ bgVal }};" data-editor-only>
+    <div class="riyada-container">
+      <div class="riyada-empty">
+        <span class="riyada-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+          </svg>
+        </span>
+        <span class="riyada-empty-title">{{ t('testimonials.no_reviews') }}</span>
+        <p class="riyada-text-sm m-0">{{ t('testimonials.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-tr-' ~ id, c=d %}

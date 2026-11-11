@@ -1,0 +1,24 @@
+{# صفحة 404 بتصميم الثيم (GEN-13 / EDGE-10): عنوان + رجوع للرئيسية + بحث + منتجات مقترحة (أحدث المنتجات من المتجر) #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+<section class="mw-page mw-notfound">
+  <div class="container">
+    <p class="mw-notfound__code" aria-hidden="true">404</p>
+    <h1 class="mw-collection-hero__title">{{ wd.title or t('notfound.title') }}</h1>
+    <p class="mw-notfound__text">{{ wd.text or t('notfound.text') }}</p>
+    <form class="mw-searchpage__form mw-notfound__search" action="/search" method="get" role="search">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7" stroke="currentColor" stroke-width="1.65"/><path d="m15.8 15.8 5.2 5.2" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/></svg>
+      <input type="search" name="q" maxlength="120" placeholder="{{ t('header.search_placeholder') }}" aria-label="{{ t('header.search') }}"/>
+      <button type="submit" class="mw-btn mw-btn--filled">{{ t('header.search') }}</button>
+    </form>
+    <div class="mw-notfound__actions">
+      <a href="/" class="mw-btn mw-btn--filled">{{ t('notfound.home') }}</a>
+      <a href="/shop" class="mw-btn mw-btn--outlined">{{ t('notfound.shop') }}</a>
+    </div>
+    {% if wd.show_products != false %}
+    <div class="mw-pdp__look" x-data="mwRelated({ limit: 4 })" x-show="html" x-cloak>
+      <h2 class="mw-pdp__look-title">{{ t('notfound.suggested') }}</h2>
+      <div class="mw-pdp__look-grid" x-html="html"></div>
+    </div>
+    {% endif %}
+  </div>
+</section>

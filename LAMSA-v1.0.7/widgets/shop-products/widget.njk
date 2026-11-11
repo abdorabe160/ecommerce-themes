@@ -1,0 +1,124 @@
+{# ============================================================================
+   LAMSA SHOP PRODUCTS — the grid injected into shop-page
+   ----------------------------------------------------------------------------
+   ⚠️  Qumra mounts this widget into
+       #products-grid-wrapper[data-qumra-section="shop-products"] and re-renders
+       it on every filter/sort/page change. It runs INSIDE the collectionFilter()
+       Alpine scope, so goToPage() is available here.
+
+   ⚠️  Two contracts, both load-bearing:
+     · the outer .shop-products-content wrapper — style.css hides this markup
+       unless it is inside [data-qumra-section], so a stray SSR copy of the grid
+       never shows up twice on the page.
+     · #products-count-data — main.js copies its innerHTML into #products-count
+       in the sidebar after each run. Keep the id and keep it hidden.
+   ========================================================================= #}
+<div class="shop-products-content">
+
+{% set d = widget.data %}
+{% set products = context.shop.products | default([], true) %}
+{% set pagination = context.shop.pagination %}
+{% set totalItems = pagination.totalItems if pagination else (products | length) %}
+
+{% set colsD = d.columns_desktop | default('3') %}
+{% set colsM = d.columns_mobile | default('2') %}
+{% set ratio = d.card_image_ratio | default('1/1') %}
+
+{% if colsD == '2' %}{% set gridD = 'md:grid-cols-2' %}
+{% elif colsD == '4' %}{% set gridD = 'md:grid-cols-3 lg:grid-cols-4' %}
+{% else %}{% set gridD = 'md:grid-cols-2 lg:grid-cols-3' %}{% endif %}
+{# no card alone on the last desktop row: step to a column count that leaves none #}
+{% set shopN = products | length %}
+{% if colsD == '3' and shopN % 3 == 1 and shopN % 4 != 1 %}{% set gridD = 'md:grid-cols-2 lg:grid-cols-4' %}
+{% elif colsD == '4' and shopN > 4 and shopN % 4 == 1 and shopN % 3 != 1 %}{% set gridD = 'md:grid-cols-2 lg:grid-cols-3' %}{% endif %}
+
+{% if colsM == '1' %}{% set gridM = 'grid-cols-1' %}{% else %}{% set gridM = 'grid-cols-2' %}{% endif %}
+
+
+{# ---- count source: main.js mirrors this into the sidebar ---- #}
+<div id="products-count-data" style="display: none;">
+  {% ui "count.njk", n=(totalItems or 0), kind='product' %}
+</div>
+
+
+{% if (products | length) > 0 %}
+
+  <div class="grid {{ gridM }} {{ gridD }} gap-x-4 gap-y-9 md:gap-x-6 md:gap-y-12">
+    {% for product in products %}
+      {% ui "product-card.njk", product=product, image_ratio=ratio %}
+    {% endfor %}
+  </div>
+
+  {# ---- pagination — goToPage() comes from the collectionFilter scope ---- #}
+  {% if pagination and pagination.totalPages > 1 %}
+    <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+
+      {% if pagination.currentPage > 1 %}
+        <button type="button" @click.prevent="goToPage({{ pagination.currentPage - 1 }})"
+                class="lamsa-btn-icon lamsa-btn-icon--outline" aria-label="{{ t('common.prev') }}">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="lamsa-btn-icon lamsa-btn-icon--outline" style="opacity: .35;" aria-hidden="true">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+          </svg>
+        </span>
+      {% endif %}
+
+      {% for n in range(1, pagination.totalPages + 1) %}
+        {% if n == pagination.currentPage %}
+          <span class="lamsa-btn-icon font-num" aria-current="page"
+                style="background: var(--color-accent); color: #fff;">{{ n }}</span>
+        {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+          <button type="button" @click.prevent="goToPage({{ n }})"
+                  class="lamsa-btn-icon lamsa-btn-icon--outline font-num">{{ n }}</button>
+        {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+          <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if pagination.hasNextPage %}
+        <button type="button" @click.prevent="goToPage({{ pagination.currentPage + 1 }})"
+                class="lamsa-btn-icon lamsa-btn-icon--outline" aria-label="{{ t('common.next') }}">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="lamsa-btn-icon lamsa-btn-icon--outline" style="opacity: .35;" aria-hidden="true">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </span>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+
+  {# ---- nothing matched ---- #}
+  <div class="lamsa-empty">
+    <span class="lamsa-empty-icon">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7.25"/><path d="m20.5 20.5-4.2-4.2"/>
+      </svg>
+    </span>
+    {% set isSearch = context.shop and (context.shop.query or context.shop.mode == 'search') %}
+    <h3 class="m-0">{{ t('pages.search.no_results') if isSearch else t('collection.no_products') }}</h3>
+    {% if isSearch %}<p class="lamsa-text-sm m-0 max-w-md mx-auto">{{ t('pages.search.try_different') }}</p>{% endif %}
+    <button type="button" @click="clearFilters()" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm mt-1"
+            x-show="activeCount > 0" x-cloak>
+      {{ t('pages.collection.clear_filters') }}
+    </button>
+    <a href="/shop" class="lamsa-btn lamsa-btn--outline lamsa-btn--sm mt-1" x-show="activeCount === 0">
+      {{ t('pages.shop.all_products') }}
+    </a>
+  </div>
+
+{% endif %}
+
+</div>{# /.shop-products-content #}

@@ -1,0 +1,80 @@
+{
+  "name": "آراء العملاء",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "review": {
+      "name": "تقييم",
+      "settings": {
+        "avatar": {
+          "type": "media",
+          "label": {
+            "ar": "صورة العميل (كبيرة)",
+            "en": "Client Photo (Large)"
+          }
+        },
+        "review_title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان التقييم",
+            "en": "Review Title"
+          }
+        },
+        "review_text": {
+          "type": "textarea",
+          "label": {
+            "ar": "نص التقييم",
+            "en": "Review Text"
+          }
+        },
+        "rating": {
+          "type": "number",
+          "label": {
+            "ar": "التقييم (1-5)",
+            "en": "Rating (1-5)"
+          },
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        },
+        "reviewer_name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Reviewer Name"
+          }
+        },
+        "reviewer_role": {
+          "type": "string",
+          "label": {
+            "ar": "المسمى الوظيفي",
+            "en": "Role / Title"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "آراء العملاء"
+    }
+  ]
+}

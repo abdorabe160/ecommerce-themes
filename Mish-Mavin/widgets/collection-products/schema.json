@@ -1,0 +1,38 @@
+{
+  "name": "collection-products",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان احتياطي (لو الصفحة بدون تصنيف)",
+        "en": "Fallback title"
+      },
+      "default": ""
+    },
+    "products_per_page": {
+      "type": "number",
+      "label": {
+        "ar": "منتجات في الصفحة",
+        "en": "Products per page"
+      },
+      "default": 24,
+      "min": 4,
+      "max": 48,
+      "step": 4
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الترتيب",
+        "en": "Show sorting"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "collection",
+      "name": "collection-products"
+    }
+  ]
+}

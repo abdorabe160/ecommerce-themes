@@ -1,0 +1,73 @@
+{
+  "name": "best-products",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "New Arrivals"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": { "ar": "محاذاة العنوان", "en": "Heading alignment" },
+      "default": "center",
+      "options": [
+        { "value": "center", "label": "وسط / Center" },
+        { "value": "start", "label": "بداية السطر / Start" },
+        { "value": "left", "label": "يسار / Left" }
+      ]
+    },
+    "products": {
+      "type": "products",
+      "label": { "ar": "المنتجات", "en": "Products" }
+    },
+    "layout": {
+      "type": "select",
+      "label": { "ar": "التخطيط", "en": "Layout" },
+      "default": "slider",
+      "options": [
+        { "value": "slider", "label": "سلايدر (2×2 على الموبايل) / Slider" },
+        { "value": "grid", "label": "شبكة / Grid" }
+      ]
+    },
+    "limit": {
+      "type": "number",
+      "label": { "ar": "أقصى عدد منتجات", "en": "Max products" },
+      "default": 10,
+      "min": 2,
+      "max": 24,
+      "step": 1
+    },
+    "show_rank": {
+      "type": "boolean",
+      "label": { "ar": "ترقيم المنتجات (#1، #2 …)", "en": "Show rank badges (#1, #2 …)" },
+      "default": false
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": { "ar": "إظهار رابط عرض الكل", "en": "Show view all" },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص رابط عرض الكل", "en": "View all text" },
+      "default": "View all"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط عرض الكل", "en": "View all URL" },
+      "default": "/collections"
+    },
+    "demo_set": {
+      "type": "select",
+      "label": { "ar": "منتجات المعاينة (عند عدم اختيار منتجات)", "en": "Preview demo set" },
+      "default": "new",
+      "options": [
+        { "value": "new", "label": "New Arrivals" },
+        { "value": "best", "label": "Best Sellers" }
+      ]
+    }
+  },
+  "presets": [
+    { "category": "home", "name": "best-products" }
+  ]
+}

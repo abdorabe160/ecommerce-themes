@@ -1,0 +1,43 @@
+{
+  "name": "زر العودة للأعلى",
+  "settings": {
+    "enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الزر",
+        "en": "Show the button"
+      },
+      "default": true
+    },
+    "position": {
+      "type": "select",
+      "label": {
+        "ar": "المكان",
+        "en": "Position"
+      },
+      "default": "end",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية الصفحة",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية الصفحة",
+            "en": "End"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "زر العودة للأعلى"
+    }
+  ]
+}

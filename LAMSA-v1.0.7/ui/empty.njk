@@ -1,0 +1,21 @@
+<div class="flex justify-center items-center">
+    <div class="p-6 text-center max-w-md md:mx-4 font-body-ar" style="background: var(--color-bg-primary);">
+        <div class="mx-auto h-20 w-20 flex items-center justify-center" style="background: var(--color-bg-secondary);">
+            <svg class="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--color-text-tertiary); opacity: 0.5;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 7l2 12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l2-12M8 7V5a4 4 0 0 1 8 0v2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4"/>
+            </svg>
+        </div>
+        <h1 class="mt-8 text-2xl md:text-3xl font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">{{ data.title | default("سلة مشترياتك فارغة") }}</h1>
+        <p class="mt-4 text-[15px] md:text-base leading-relaxed" style="color: var(--color-text-secondary);">{{ data.title | default("تبدو سلتك فارغة. ابدأ بإضافة بعض المنتجات الرائعة!") }}</p>
+        <div class="mt-10 flex flex-col items-center gap-4">
+            <a href="{{ data.BtnUrl }}" class="anaqa-btn font-body-ar">
+                {{ data.BtnText }}
+            </a>
+            <a href="/latest" class="editorial-link inline-flex items-center gap-2 text-[14px] font-body-ar" style="color: var(--color-text-secondary);">
+                {{ data.title2 | default("متابعة التسوق") }}
+                <svg class="h-4 w-4 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
+</div>

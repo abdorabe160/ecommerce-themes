@@ -1,0 +1,26 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set suggestions = wd.products | default([]) %}
+<section class="lg-section !pt-10">
+  <div class="lg-container">
+    <div class="glass max-w-xl mx-auto text-center px-6 py-12 space-y-4">
+      <p class="text-7xl font-bold lg-gradient-text" aria-hidden="true">404</p>
+      <h1 class="text-2xl font-bold">{{t('not_found.title')}}</h1>
+      <p class="text-muted">{{t('not_found.text')}}</p>
+      <form action="/search" method="GET" class="flex gap-2 pt-2" role="search">
+        <label for="lg-404-search" class="sr-only">{{t('header.search')}}</label>
+        <input id="lg-404-search" type="search" name="q" class="lg-input" placeholder="{{t('header.search_placeholder')}}">
+        <button type="submit" class="btn btn-primary btn-icon !w-12 shrink-0" aria-label="{{t('header.search')}}">{% ui "icon.njk", name="search" %}</button>
+      </form>
+      <a href="/" class="btn btn-glass">{{t('not_found.back_home')}}</a>
+    </div>
+    {% if suggestions | length %}
+      <div class="mt-10">
+        <h2 class="lg-title mb-4">{{t('search.trending')}}</h2>
+        <div class="lg-grid" data-cols="4">
+          {% for item in suggestions %}{% ui "product-card.njk", product=item %}{% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>

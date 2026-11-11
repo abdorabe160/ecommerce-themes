@@ -1,0 +1,15 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "أحدث المنتجات",
+      "widget": "collection-products",
+      "settings": {
+        "title": "",
+        "products_per_page": 24,
+        "show_sort": true
+      }
+    }
+  ],
+  "name": "latest"
+}

@@ -1,0 +1,37 @@
+{# بطاقة منتج مدمجة تُرسم بالـ JS — نفس تصميم ومنطق product-mini.njk. تُستخدم داخل x-for بمتغير p.
+   بدون زر مفضلة (الثيم بلا مفضلة ولا تسجيل دخول). #}
+<article class="lg-mini glass glass-hover relative">
+  <a :href="productUrl(p)" class="lg-mini__media" tabindex="-1" aria-hidden="true">
+    <template x-if="productImage(p)">
+      <img :src="productImage(p)" alt="" loading="lazy" decoding="async" width="76" height="76">
+    </template>
+    <template x-if="!productImage(p)">
+      <span class="text-muted">{% ui "icon.njk", name="device", cls="w-8 h-8 opacity-40" %}</span>
+    </template>
+  </a>
+  <div class="flex-1 min-w-0">
+    <h3 class="text-[.82rem] font-semibold leading-snug line-clamp-2">
+      <a :href="productUrl(p)" class="hover:text-primary after:absolute after:inset-0" x-text="p.title"></a>
+    </h3>
+    <div class="flex flex-wrap items-baseline gap-x-1.5 mt-1">
+      <span class="text-sm font-bold" x-text="productPrice(p) === 0 ? i18n.free : formatMoney(productPrice(p))"></span>
+      <span class="lg-price--old" x-show="productCompare(p) > productPrice(p)" x-text="formatMoney(productCompare(p))"></span>
+    </div>
+    <template x-if="productOut(p)">
+      <p class="lg-stock lg-stock--out !text-xs mt-1" x-text="i18n.out"></p>
+    </template>
+    <template x-if="productLowQty(p)">
+      <p class="lg-stock lg-stock--low !text-xs mt-1" role="status" x-text="lowLeft(productLowQty(p))"></p>
+    </template>
+    <template x-if="!productOut(p) && !productLowQty(p) && p.reviewsCount > 0">
+      <div class="flex items-center gap-1 text-[11px] text-muted mt-1">
+        <span class="lg-stars">
+          <template x-for="i in 5" :key="i"><span class="inline-flex" :class="i > cardRating(p) && 'is-empty'">{% ui "icon.njk", name="star", cls="w-3 h-3 fill-current" %}</span></template>
+        </span>
+        <span x-text="'(' + p.reviewsCount + ')'"></span>
+      </div>
+    </template>
+  </div>
+  {# نفس أزرار product-mini.njk #}
+  {% ui "card-actions-js.njk", cls="lg-mini__actions" %}
+</article>

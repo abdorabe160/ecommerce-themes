@@ -1,0 +1,23 @@
+{
+  "name": "صفحة عامة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_title": true,
+        "eyebrow": "",
+        "title_override": "",
+        "width": "narrow",
+        "background": "white",
+        "fallback_text": "",
+        "show_updated": false
+      }
+    }
+  ]
+}

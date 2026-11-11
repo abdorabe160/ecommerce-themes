@@ -1,0 +1,571 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "overlap_header": true,
+        "height": 750,
+        "height_mobile": 560,
+        "sheet_radius": 0,
+        "parallax": true,
+        "parallax_strength": 18,
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_arrows": true,
+        "show_counter": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "الشريحة الأولى",
+          "settings": {
+            "bg_color": "#8C9A70",
+            "image": "",
+            "image_fit": "cover",
+            "image_mobile": "",
+            "image_focus": "center",
+            "scrim": "soft",
+            "text_tone": "light",
+            "eyebrow": "حملة جديدة",
+            "title": "نعومة تحتضن بيبي",
+            "description": "",
+            "cta_text": "تسوّقي المجموعة",
+            "cta_url": "/shop",
+            "cta_style": "light"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "الشريحة الثانية",
+          "settings": {
+            "bg_color": "#BB8F79",
+            "image": "",
+            "image_fit": "cover",
+            "image_mobile": "",
+            "image_focus": "center",
+            "scrim": "soft",
+            "text_tone": "light",
+            "eyebrow": "لحظات صغيرة",
+            "title": "دفء يلفّ الصغار",
+            "description": "",
+            "cta_text": "اكتشفي الجديد",
+            "cta_url": "/shop",
+            "cta_style": "light"
+          }
+        }
+      ]
+    },
+    {
+      "name": "عرض ترويجي متحرك",
+      "widget": "scrolling-text",
+      "settings": {
+        "background_color": "#FFFFFF",
+        "text_color": "#2A2AA0",
+        "font": "body",
+        "size": "xlarge",
+        "uppercase": false,
+        "speed": "normal",
+        "separator": "dot",
+        "gap": 40,
+        "image_height": 56,
+        "pause_on_hover": true
+      },
+      "blocks": [
+        {
+          "block": "message",
+          "name": "أطقم حديثي الولادة",
+          "settings": {
+            "text": "أطقم حديثي الولادة",
+            "image": "https://images.unsplash.com/photo-1635874714425-c342060a4c58?w=600&h=800&fit=crop&crop=entropy&q=80&auto=format",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "message",
+          "name": "قطن عضوي ١٠٠٪",
+          "settings": {
+            "text": "ملابس خروج",
+            "image": "https://images.unsplash.com/photo-1616666428759-679a7d578307?w=600&h=800&fit=crop&crop=entropy&q=80&auto=format",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "message",
+          "name": "بيجامات وأطقم نوم",
+          "settings": {
+            "text": "بيجامات وأطقم نوم",
+            "image": "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600&h=800&fit=crop&crop=entropy&q=80&auto=format",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "قائمة المجموعات: شريط متحرك",
+      "widget": "collections-section",
+      "settings": {
+        "eyebrow": "أناقة وراحة",
+        "title": "ملابس ناعمة [smile] لأيام صغيرة مليانة حركة [heart]",
+        "show_count": true,
+        "show_name": false,
+        "card_width": 366,
+        "speed": 36,
+        "bg_color": "#EBE4FC",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "علامات تبويب المنتج: شريط دوّار",
+      "widget": "collection-products",
+      "settings": {
+        "title": "الأكثر رواجاً هذا الأسبوع",
+        "subtitle": "",
+        "view_all_text": "كل المنتجات",
+        "view_all_url": "/shop",
+        "tab1_label": "الأكثر مبيعاً",
+        "tab1_products": [],
+        "tab2_label": "وصل حديثاً",
+        "tab2_products": [],
+        "tab3_label": "",
+        "tab3_products": [],
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "3x4",
+        "background": "white",
+        "show_arrows": true,
+        "show_progress": true,
+        "promo_enabled": false,
+        "promo_image": "https://images.unsplash.com/photo-1766918780914-e19d9de76d85?w=900&h=1300&fit=crop&crop=entropy&q=80&auto=format",
+        "promo_eyebrow": "عرض خاص",
+        "promo_title": "أطقم قطن لحديثي الولادة",
+        "promo_cta_text": "تسوّقي الآن",
+        "promo_url": "/shop",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "تسوّقي حسب العمر",
+      "widget": "editorial-products",
+      "settings": {
+        "title": "تسوّقي حسب العمر",
+        "cards_per_view": 5,
+        "card_ratio": "3x4",
+        "show_count": true,
+        "show_progress": true,
+        "show_arrows": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "block": "tab",
+          "name": "٠–١٢ شهر",
+          "settings": {
+            "tab_title": "٠–١٢ شهر",
+            "collections": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "١–٣ سنوات",
+          "settings": {
+            "tab_title": "١–٣ سنوات",
+            "collections": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "٣–٦ سنوات",
+          "settings": {
+            "tab_title": "٣–٦ سنوات",
+            "collections": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "بطاقات قابلة للتمرير",
+      "widget": "split-slider",
+      "settings": {
+        "eyebrow": "وصل حديثاً",
+        "body": "قطع خفيفة ومريحة، مصمّمة للّعب اليومي.",
+        "cta_text": "تسوّقي الآن",
+        "cta_url": "/shop",
+        "advance_on": "scroll",
+        "scroll_per_beat": 70,
+        "autoplay_speed": 4,
+        "card_ratio": "3x4",
+        "column_offset": 125,
+        "show_price": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "ليلك",
+          "settings": {
+            "line_1": "ناعمة ومرحة،",
+            "line_2": "بلون الليلك",
+            "highlight": "الليلك",
+            "highlight_color": "#D3C9FD",
+            "product_start": "",
+            "product_end": ""
+          }
+        },
+        {
+          "block": "slide",
+          "name": "وردي",
+          "settings": {
+            "line_1": "دافية ومبهجة،",
+            "line_2": "بلون الوردي",
+            "highlight": "الوردي",
+            "highlight_color": "#F6C9D4",
+            "product_start": "",
+            "product_end": ""
+          }
+        },
+        {
+          "block": "slide",
+          "name": "أزرق",
+          "settings": {
+            "line_1": "خفيفة ومنعشة،",
+            "line_2": "بالأزرق الفاتح",
+            "highlight": "الأزرق الفاتح",
+            "highlight_color": "#B2DFE6",
+            "product_start": "",
+            "product_end": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "حزمة منتجات",
+      "widget": "products-bundle",
+      "settings": {
+        "eyebrow": "طقم متكامل",
+        "title": "نسّقي الطقم كامل",
+        "pins": "50,28 · 46,62",
+        "cta_text": "أضيفي الكل للسلة",
+        "media_position": "start",
+        "media_width": 52,
+        "media_height": 105,
+        "column_gap": 6,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      }
+    },
+    {
+      "name": "روابط المجموعة",
+      "widget": "image-text",
+      "settings": {
+        "eyebrow": "إطلالة لـ",
+        "media_position": "start",
+        "panel_color": "#EDEEB4",
+        "media_bg": "#F1EFEA",
+        "image_fit": "cover",
+        "image_focus": "center",
+        "min_height": 640,
+        "cta_text": "تسوّقي الآن",
+        "show_wave": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "الحركة",
+          "settings": {
+            "label": "الحركة",
+            "icon": "",
+            "icon_bg": "#F7D9D9",
+            "image": "",
+            "image_eyebrow": "مجموعة الحركة",
+            "title": "مصمّمة للحركة، مريحة طول اليوم",
+            "description": "قطع تتحمّل الجري واللعب، وتفضل ناعمة على البشرة.",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "اللعب",
+          "settings": {
+            "label": "اللعب",
+            "icon": "",
+            "icon_bg": "#DCEBD3",
+            "image": "",
+            "image_eyebrow": "مجموعة اللعب",
+            "title": "ألوان تفرح، وخامات تدوم",
+            "description": "ألوان زاهية وخامات قوية، لأيام اللعب الطويلة.",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "المدرسة",
+          "settings": {
+            "label": "المدرسة",
+            "icon": "",
+            "icon_bg": "#D6E4F5",
+            "image": "",
+            "image_eyebrow": "مجموعة المدرسة",
+            "title": "أناقة بسيطة ليوم مركّز",
+            "description": "قطع مرتّبة وسهلة اللبس، تصلح لكل يوم دراسي.",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "النزهة",
+          "settings": {
+            "label": "النزهة",
+            "icon": "",
+            "icon_bg": "#F6E3C5",
+            "image": "",
+            "image_eyebrow": "مجموعة النزهة",
+            "title": "خفيفة للخروج والرحلات",
+            "description": "خفيفة وتتنفّس، جاهزة لأي خروجة في آخر الأسبوع.",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "أبرز المنتجات",
+      "widget": "cta-banner",
+      "settings": {
+        "eyebrow": "الأكثر رواجاً",
+        "title": "تسوّقي طقم الشتاء",
+        "body": "أقمشة دافئة ولطيفة على البشرة، مصمّمة لتُلبَس طوال اليوم وتُغسَل كل يوم.",
+        "cta_text": "تسوّقي الآن",
+        "cta_url": "/shop",
+        "show_shot": true,
+        "media_position": "end",
+        "media_width": 52,
+        "media_height": 105,
+        "column_gap": 6,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      }
+    },
+    {
+      "name": "اقتراح منتج: خطوات",
+      "widget": "offer-cards",
+      "settings": {
+        "eyebrow": "كيف تنسّقينها",
+        "title": "أطقم كاملة في ٣ خطوات",
+        "step1_title": "اختاري القطعة العلوية",
+        "step1_chips": "لطيف على البشرة",
+        "step2_title": "نسّقيها مع القطعة السفلية",
+        "step2_chips": "خامة مرنة، سهلة الغسيل",
+        "step3_title": "أضيفي لمسة مرحة",
+        "step3_chips": "ألوان مبهجة، مقاسات مريحة",
+        "columns": 4,
+        "image_ratio": "3x4",
+        "panel_color": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      }
+    },
+    {
+      "name": "بطاقات قابلة للتمرير: متراكبة",
+      "widget": "stacked-cards",
+      "settings": {
+        "card_width": 396,
+        "card_ratio": "4x5",
+        "stack_step": 18,
+        "shrink": 13.5,
+        "top_offset": 20,
+        "hold": 45,
+        "gap": 0,
+        "radius": 20,
+        "eyebrow": "",
+        "title": "",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "name": "أطفال رائعون",
+          "block": "card",
+          "settings": {
+            "image": "https://images.unsplash.com/photo-1560506840-ec148e82a604?w=800&h=1000&fit=crop&crop=entropy&q=80&auto=format",
+            "image_focus": "center",
+            "bg_color": "#C9D6BE",
+            "badge": "مختارات رائجة",
+            "eyebrow": "أسلوب مرح ومريح",
+            "title": "أطفال رائعون",
+            "cta_text": "تسوّقي الآن",
+            "url": "/shop"
+          }
+        },
+        {
+          "name": "ألوان تفرح",
+          "block": "card",
+          "settings": {
+            "image": "https://images.unsplash.com/photo-1569974641446-22542de88536?w=800&h=1000&fit=crop&crop=entropy&q=80&auto=format",
+            "image_focus": "center",
+            "bg_color": "#B7A7DC",
+            "badge": "وصل حديثاً",
+            "eyebrow": "لكل يوم",
+            "title": "ألوان تفرح",
+            "cta_text": "تسوّقي الآن",
+            "url": "/shop"
+          }
+        },
+        {
+          "name": "موسم الشتاء",
+          "block": "card",
+          "settings": {
+            "image": "https://images.unsplash.com/photo-1684244160171-97f5dac39204?w=800&h=1000&fit=crop&crop=entropy&q=80&auto=format",
+            "image_focus": "center",
+            "bg_color": "#A98374",
+            "badge": "طقم أنيق",
+            "eyebrow": "جديدنا",
+            "title": "موسم الشتاء",
+            "cta_text": "تسوّقي الآن",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "استكشفي التصنيفات",
+      "widget": "editorial-products",
+      "settings": {
+        "title": "استكشفي التصنيفات",
+        "cards_per_view": 5,
+        "card_ratio": "3x4",
+        "show_count": true,
+        "show_progress": true,
+        "show_arrows": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "block": "tab",
+          "name": "أولاد",
+          "settings": {
+            "tab_title": "أولاد",
+            "collections": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "بنات",
+          "settings": {
+            "tab_title": "بنات",
+            "collections": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "قسم مخصص: قصّة",
+      "widget": "spaces-gallery",
+      "settings": {
+        "eyebrow": "قصّتنا",
+        "title": "كشكشة رقيقة ولمسات ناعمة.",
+        "body": "مصمّمة للحركة: خامات تتنفّس وقصّات مريحة. تفاصيل صغيرة تضيف شخصية من غير ما تفقد النعومة على البشرة.",
+        "cta_text": "اعرفي أكثر",
+        "cta_url": "/",
+        "media_position": "end",
+        "circle_size": 422,
+        "media_width": 48,
+        "column_gap": 6,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": [
+        {
+          "name": "ملصق: رائع",
+          "block": "tag",
+          "settings": {
+            "label": "رائع",
+            "shape": "pill",
+            "x": 8,
+            "y": 17,
+            "rotate": -11,
+            "color": "#CFE6EF"
+          }
+        },
+        {
+          "name": "ملصق: مرِح",
+          "block": "tag",
+          "settings": {
+            "label": "مرِح",
+            "shape": "round",
+            "x": 92,
+            "y": 74,
+            "rotate": -18,
+            "color": "#F7D3DD"
+          }
+        }
+      ]
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "ما يقوله عملاؤنا",
+        "title": "آراء عملائنا",
+        "subtitle": "",
+        "autoplay": 6,
+        "star_color": "#E8A33D",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى المقال",
+      "widget": "article-main",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_hero": true,
+        "hero_height": 420,
+        "sidebar": "start",
+        "show_meta": true,
+        "show_tags": true,
+        "show_share": true,
+        "show_related": true,
+        "related_title": "",
+        "padding_top": 16,
+        "padding_bottom": 48
+      },
+      "blocks": []
+    }
+  ]
+}

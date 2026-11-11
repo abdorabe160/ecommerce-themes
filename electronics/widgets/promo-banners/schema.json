@@ -1,0 +1,251 @@
+{
+  "name": "بانرات العروض",
+  "settings": {
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد البانرات في الصف (الشاشات الكبيرة)",
+        "en": "Banners per row (desktop)"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد البانرات في الصف (الموبايل)",
+        "en": "Banners per row (mobile)"
+      },
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "banner": {
+      "name": "بانر",
+      "settings": {
+        "collection": {
+          "type": "collections",
+          "label": {
+            "ar": "التصنيف — الضغط على البانر يفتح صفحة هذا التصنيف (ويأخذ اسمه وصورته إن تركتهما فارغين)",
+            "en": "Category — clicking the banner opens this category (uses its name and image when left empty)"
+          }
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المنتج (PNG مفرّغ)",
+            "en": "Product image (transparent PNG)"
+          }
+        },
+        "image_mode": {
+          "type": "select",
+          "label": {
+            "ar": "طريقة عرض الصورة",
+            "en": "Image mode"
+          },
+          "default": "product",
+          "options": [
+            {
+              "value": "product",
+              "label": "منتج مفرّغ / Product cut-out"
+            },
+            {
+              "value": "cover",
+              "label": "صورة خلفية كاملة / Full background photo"
+            }
+          ]
+        },
+        "demo_image": {
+          "type": "select",
+          "label": {
+            "ar": "صورة تجريبية (تظهر عند عدم رفع صورة)",
+            "en": "Demo image (used when no image is uploaded)"
+          },
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "بدون / None"
+            },
+            {
+              "value": "cutout_phone",
+              "label": "صورة مفرّغة: موبايل / Cut-out: phone"
+            },
+            {
+              "value": "cutout_laptop",
+              "label": "صورة مفرّغة: لابتوب / Cut-out: laptop"
+            },
+            {
+              "value": "cutout_headphones",
+              "label": "صورة مفرّغة: سماعة رأس / Cut-out: headphones"
+            },
+            {
+              "value": "cutout_watch",
+              "label": "صورة مفرّغة: ساعة ذكية / Cut-out: watch"
+            },
+            {
+              "value": "cutout_watch2",
+              "label": "صورة مفرّغة: ساعة بيضاء / Cut-out: watch2"
+            },
+            {
+              "value": "cutout_earbuds",
+              "label": "صورة مفرّغة: سماعات لاسلكية / Cut-out: earbuds"
+            },
+            {
+              "value": "cutout_gamepad",
+              "label": "صورة مفرّغة: دراع ألعاب / Cut-out: gamepad"
+            },
+            {
+              "value": "cutout_keyboard",
+              "label": "صورة مفرّغة: كيبورد / Cut-out: keyboard"
+            },
+            {
+              "value": "cutout_mouse",
+              "label": "صورة مفرّغة: ماوس / Cut-out: mouse"
+            },
+            {
+              "value": "cutout_speaker",
+              "label": "صورة مفرّغة: سماعة ذكية / Cut-out: speaker"
+            }
+          ]
+        },
+        "color_from": {
+          "type": "color",
+          "label": {
+            "ar": "لون التدرج (البداية)",
+            "en": "Gradient start"
+          },
+          "default": ""
+        },
+        "color_to": {
+          "type": "color",
+          "label": {
+            "ar": "لون التدرج (النهاية)",
+            "en": "Gradient end"
+          },
+          "default": ""
+        },
+        "text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون النص (اختياري — اتركه فارغاً للون التلقائي)",
+            "en": "Text color (optional — leave empty for automatic)"
+          }
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "سطر علوي",
+            "en": "Eyebrow"
+          },
+          "default": "جديد"
+        },
+        "eyebrow_en": {
+          "type": "string",
+          "label": {
+            "ar": "سطر علوي (إنجليزي)",
+            "en": "Eyebrow (English)"
+          },
+          "default": "New"
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "عالم الألعاب"
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": "Gaming world"
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Text"
+          },
+          "default": "معدات الألعاب كلها في مكان واحد."
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (إنجليزي)",
+            "en": "Text (English)"
+          },
+          "default": "All your gaming gear in one place."
+        },
+        "button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر",
+            "en": "Button text"
+          },
+          "default": "تسوّق الآن"
+        },
+        "button_text_en": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر (إنجليزي)",
+            "en": "Button text (English)"
+          },
+          "default": "Shop now"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط (يُستخدم إذا لم تختر تصنيفاً)",
+            "en": "Link (used when no category is chosen)"
+          },
+          "default": "/collections"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "بانرات العروض"
+    }
+  ]
+}

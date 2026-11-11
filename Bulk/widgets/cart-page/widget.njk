@@ -1,0 +1,155 @@
+{# =========================================================
+   Dark Blood - صفحة السلة
+   التعديل والحذف بيتم بـ CartManager من pages.js، والأرقام بتتحدّث من رد السيرفر
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# حد الشحن المجاني: إعداد الويدجت ← إعداد الثيم العام. 0 = مفيش رسالة شحن مجاني خالص (REG-19) #}
+{% set freeShipping = (s.free_shipping_threshold or settings.freeShippingThreshold or 0) | int %}
+{% set cartHasItems = (cart.items | length) > 0 %}
+
+<section class="blk-section blk-cart" id="blkCart-{{ widget.id }}" data-blk-cart-page data-free-shipping="{{ freeShipping }}">
+  <div class="blk-container">
+
+    <div class="blk-cart-layout" data-cart-filled {% if not (cart.items | length > 0) %}hidden{% endif %}>
+
+      <!-- ===== Items ===== -->
+      <div class="blk-cart-items">
+        <div class="blk-cart-head">
+          {# H1 واحد في الصفحة: العنوان في الجزء الظاهر بس، و pages.js بينقله لما السلة تفضى أو تتملي #}
+          {% if cartHasItems %}<h1 class="blk-section-title blk-cart-title">{% ui "blk-t.njk", text=s.title, key="defaults.cart_title" %}</h1>{% endif %}
+          <span class="blk-cart-head-count">{{t('cart.items')}} <span data-cart-count>{{ cart.totalQuantity | default(0) }}</span></span>
+        </div>
+
+        {% if freeShipping > 0 %}
+          <div class="blk-ship-progress" data-ship-progress>
+            <p class="blk-ship-text" data-ship-text>
+              {% if (cart.totalPrice or 0) >= freeShipping %}
+                {{t('cart.free_shipping_reached')}}
+              {% else %}
+                {{t('cart.free_left_prefix')}} <strong>{% set shipLeft = freeShipping - (cart.totalPrice or 0) %}{% ui "blk-price.njk", amount=shipLeft %}</strong> {{t('cart.free_left_suffix')}}
+              {% endif %}
+            </p>
+            <div class="blk-stock-bar">
+              {% set shipPct = (cart.totalPrice | default(0)) / freeShipping * 100 %}
+              <div class="blk-stock-progress" data-ship-bar style="width: {{ 100 if shipPct > 100 else (shipPct | round) }}%;"></div>
+            </div>
+          </div>
+        {% endif %}
+
+        <ul class="blk-cart-list">
+          {% for item in cart.items %}
+            {# صفحة المنتج من لينك الشوب #}
+            {% set itemSlug = item.productData.slug or item.productData.handle %}
+            {% set itemUrl = ('/products/' + (itemSlug | urlencode)) if itemSlug else ('/shop?product-id=' + item.productId) %}
+            <li class="blk-cart-item blk-anim-fade-up" style="--anim-delay: {{ (loop.index0 % 6) * 0.08 }}s;" data-cart-item="{{ item._id }}" data-product-id="{{ item.productId }}" data-product-handle="{{ itemSlug }}" data-variant-id="{{ item.variantId or '' }}">
+              <a href="{{ itemUrl }}" class="blk-cart-thumb">
+                {% if item.productData.image and item.productData.image.fileUrl %}
+                  <img src="{{ item.productData.image.fileUrl }}" alt="{{ item.productData.title }}" loading="lazy">
+                {% else %}
+                  <div class="blk-cat-strip-placeholder"></div>
+                {% endif %}
+              </a>
+
+              <div class="blk-cart-item-info">
+                <a href="{{ itemUrl }}" class="blk-cart-item-title">{{ item.productData.title }}</a>
+                {# النسخة (المقاس/اللون): نفس المنتج بنسختين بيبان سطرين مختلفين (CART-05) #}
+                {% set vopts = item.options or (item.variantData.options if item.variantData else null) or (item.variant.options if item.variant else null) or [] %}
+                {% set vlabels = [] %}
+                {% for o in vopts %}{% set lbl = o.label or o.value or o.name or (o if (o and not o._id and o.length) else '') %}{% if lbl %}{% if vlabels.push(lbl) %}{% endif %}{% endif %}{% endfor %}
+                {% set vtitle = (vlabels | join(' · ')) or item.variantTitle or (item.variantData.title if item.variantData else '') %}
+                {% if vtitle %}<p class="blk-cart-item-variant">{{ vtitle }}</p>{% endif %}
+                <div class="blk-cart-item-unit">
+                  <span>{% set itemPrice = item.price or 0 %}{% ui "blk-price.njk", amount=itemPrice, free="1" %}</span>
+                  {% if item.compareAtPrice > item.price %}
+                    <span class="blk-price-old">{% set itemOld = item.compareAtPrice or 0 %}{% ui "blk-price.njk", amount=itemOld %}</span>
+                  {% endif %}
+                </div>
+
+                {# الـ JS بيجيب مخزون المنتج: الكمية مابتعدّيش المتاح، ولو نفد بتظهر رسالة هنا #}
+                <p class="blk-cart-item-stock" data-cart-stock-msg role="status" hidden></p>
+
+                <div class="blk-cart-item-actions">
+                  <div class="blk-qty blk-qty-sm">
+                    <button type="button" class="blk-qty-btn" data-cart-step="1" aria-label="{{t('product.qty_increase')}}">+</button>
+                    <input type="number" class="blk-qty-input" value="{{ item.quantity }}" min="1" aria-label="{{t('product.quantity')}}" data-cart-qty>
+                    <button type="button" class="blk-qty-btn" data-cart-step="-1" aria-label="{{t('product.qty_decrease')}}">−</button>
+                  </div>
+                  <button type="button" class="blk-cart-remove" data-cart-remove aria-label="{{t('cart.remove_item')}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                    <span>{{t('cart.remove')}}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="blk-cart-item-total" data-cart-line-total>{% set itemTotal = item.totalPrice or 0 %}{% ui "blk-price.njk", amount=itemTotal, free="1" %}</div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {# المنتجات الافتراضية (التجريبية): مش موجودة في المتجر فبتتحفظ في المتصفح، والـ JS بيرسمها هنا بعلامة "تجريبي".
+           بتظهر في السلة بس ومش بتدخل في الطلب (pages.js: initCartPage) #}
+        <div class="blk-demo-cart" data-demo-cart hidden>
+          <p class="blk-demo-cart-note" data-demo-cart-note></p>
+          <ul class="blk-cart-list" data-demo-cart-list></ul>
+        </div>
+
+        <a href="/collections" class="blk-section-link blk-cart-continue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          {{t('cart.continue')}}
+        </a>
+      </div>
+
+      <!-- ===== Summary ===== -->
+      <aside class="blk-cart-summary blk-anim-fade-up" style="--anim-delay: 0.15s;">
+        <h3 class="blk-cart-summary-title">{{t('cart.summary')}}</h3>
+
+        <dl class="blk-cart-rows">
+          <div class="blk-cart-row">
+            <dt>{{t('cart.subtotal')}}</dt>
+            <dd data-cart-subtotal>{% set cartSubtotal = (cart.totalCompareAtPrice if cart.totalCompareAtPrice > cart.totalPrice else cart.totalPrice) or 0 %}{% ui "blk-price.njk", amount=cartSubtotal %}</dd>
+          </div>
+          <div class="blk-cart-row is-saving" data-cart-savings-row {% if not (cart.totalSavings > 0) %}hidden{% endif %}>
+            <dt>{{t('cart.savings')}}</dt>
+            <dd data-cart-savings>- {% set cartSavings = cart.totalSavings or 0 %}{% ui "blk-price.njk", amount=cartSavings %}</dd>
+          </div>
+          {% if cart.couponApplied %}
+            <div class="blk-cart-row is-saving">
+              <dt>{{t('cart.coupon')}}</dt>
+              <dd>- {% set couponOff = cart.couponDiscount or 0 %}{% ui "blk-price.njk", amount=couponOff %}</dd>
+            </div>
+          {% endif %}
+          <div class="blk-cart-row">
+            <dt>{{t('cart.shipping')}}</dt>
+            <dd class="blk-cart-muted">{{t('cart.shipping_next')}}</dd>
+          </div>
+          {# مجموع المنتجات الافتراضية لوحده: مش داخل في إجمالي الطلب #}
+          <div class="blk-cart-row blk-cart-muted" data-demo-cart-row hidden>
+            <dt data-demo-cart-label></dt>
+            <dd data-demo-cart-total></dd>
+          </div>
+        </dl>
+
+        <div class="blk-cart-grand">
+          <span>{{t('cart.total')}}</span>
+          <strong data-cart-total>{% set cartTotal = cart.totalPrice or 0 %}{% ui "blk-price.njk", amount=cartTotal %}</strong>
+        </div>
+
+        <a href="{{ s.checkout_url | default('/checkout') }}" class="blk-btn blk-btn-primary blk-btn-shine blk-cart-checkout" data-cart-checkout{% if (s.checkout_url | default('/checkout')) == '/checkout' %} data-blk-checkout{% endif %}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>{{t('cart.checkout')}}</span>
+        </a>
+
+        {% if s.note %}
+          <p class="blk-cart-note">{% ui "blk-t.njk", text=s.note %}</p>
+        {% endif %}
+      </aside>
+    </div>
+
+    <div data-cart-empty {% if cart.items | length > 0 %}hidden{% endif %}>
+      {# الصفحة لازم يبقى فيها H1 واحد حتى والسلة فاضية (QLT-08) #}
+      {% if not cartHasItems %}<h1 class="blk-section-title blk-cart-title blk-cart-empty-title">{% ui "blk-t.njk", text=s.title, key="defaults.cart_title" %}</h1>{% endif %}
+      {% set emptyTitle = t('cart.empty_title') %}{% set emptyText = t('cart.empty_text') %}{% set emptyBtn = t('cart.start_shopping') %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/collections", icon="cart" %}
+    </div>
+  </div>
+</section>

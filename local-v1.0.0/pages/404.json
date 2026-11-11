@@ -1,0 +1,66 @@
+{
+  "name": "الصفحة غير موجودة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "صفحة غير موجودة",
+        "title": "",
+        "message": "",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/"
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "كل المنتجات",
+          "settings": {
+            "label": "كل المنتجات",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "التصنيفات",
+          "settings": {
+            "label": "التصنيفات",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "link",
+          "name": "المدونة",
+          "settings": {
+            "label": "المدونة",
+            "url": "/blogs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "title": "",
+        "layout": "inline",
+        "dividers": true,
+        "background": "none",
+        "icon_size": 30,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

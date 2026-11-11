@@ -1,0 +1,346 @@
+{# ============================================================================
+   LAMSA IMAGE WITH TEXT — the brand story block
+   Layouts:
+     split    image beside text
+     overlap  main image + a smaller second image overlapping it (editorial)
+     wide     image bleeds to the viewport edge, text stays on the grid
+   The proof points are `point` blocks, rendered either as a row of numbers
+   or as a sage checklist.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set points = widget.blocks | default([]) %}
+{% set pointCount = points | length %}
+
+{% set layout = d.layout | default('overlap') %}
+{% set isOverlap = layout == 'overlap' %}
+{% set isWide = layout == 'wide' %}
+
+{% set imgPos = d.image_position | default('start') %}
+{% set imageFirst = imgPos == 'start' %}
+
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{% set img2 = d.image_2.fileUrl if d.image_2 and d.image_2.fileUrl else '' %}
+{% set ratio = d.image_ratio | default('4/5') %}
+{% set shape = d.image_shape | default('soft') %}
+{% if shape == 'circle' %}{% set ratio = '1/1' %}{% endif %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set text = d.text | default('') %}
+{% set signature = d.signature | default('') %}
+
+{% set btnText = d.button_text | default('') %}
+{% set btnUrl = d.button_url | default('#') %}
+{% set btn2Text = d.button2_text | default('') %}
+{% set btn2Url = d.button2_url | default('#') %}
+
+{% set blocksStyle = d.blocks_style | default('stats') %}
+{% set isStats = blocksStyle == 'stats' %}
+{% set isChecklist = blocksStyle == 'checklist' %}
+{% set showPoints = pointCount > 0 and blocksStyle != 'none' %}
+
+{% set bg = d.background | default('white') %}
+{% if bg == 'blush' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% elif bg == 'ink' %}{% set bgVal = 'var(--color-text-primary)' %}
+{% else %}{% set bgVal = 'var(--color-surface)' %}{% endif %}
+{% set onDark = bg == 'ink' %}
+
+
+<style>
+  #lamsa-iwt-{{ id }} {
+    background: {{ bgVal }};
+    {% if isWide %}overflow: hidden;{% endif %}
+  }
+
+  /* ================= grid ================= */
+  .lamsa-iwt-{{ id }}-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 40px;
+  }
+  @media (min-width: 1024px) {
+    .lamsa-iwt-{{ id }}-row {
+      grid-template-columns: {{ '1fr 1fr' if isWide else '0.95fr 1.05fr' }};
+      gap: {{ '0' if isWide else '72px' }};
+    }
+    {% if not imageFirst %}
+    .lamsa-iwt-{{ id }}-media { order: 2; }
+    .lamsa-iwt-{{ id }}-text  { order: 1; }
+    {% endif %}
+  }
+  /* mobile: image always on top */
+  @media (max-width: 1023px) {
+    .lamsa-iwt-{{ id }}-media { order: -1; width: 100%; max-width: 480px; margin-inline: auto; }
+    .lamsa-iwt-{{ id }}-text  { order: 0; }
+  }
+
+  {% if isWide %}
+  /* the text column keeps its inner edge aligned with the site container */
+  @media (min-width: 1024px) {
+    .lamsa-iwt-{{ id }}-text {
+      padding-block: 72px;
+      padding-inline-{{ 'end' if imageFirst else 'start' }}: max(24px, calc((100vw - var(--container-max)) / 2 + 24px));
+      padding-inline-{{ 'start' if imageFirst else 'end' }}: 64px;
+    }
+  }
+  @media (max-width: 1023px) {
+    .lamsa-iwt-{{ id }}-text { padding: 0 var(--container-px-sm) 48px; }
+  }
+  {% endif %}
+
+  /* ================= media ================= */
+  .lamsa-iwt-{{ id }}-frame {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-bg-tertiary) 100%);
+    {% if isWide %}
+    height: 100%;
+    min-height: 480px;
+    border-radius: 0;
+    {% else %}
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    box-shadow: var(--shadow-md);
+    {% if shape == 'arch' %}
+    border-radius: 999px 999px var(--radius-xl) var(--radius-xl);
+    {% elif shape == 'circle' %}
+    border-radius: 50%;
+    {% else %}
+    border-radius: var(--radius-2xl);
+    {% endif %}
+    {% endif %}
+  }
+  .lamsa-iwt-{{ id }}-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .lamsa-iwt-{{ id }}-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-soft);
+  }
+  @media (max-width: 1023px) {
+    {% if isWide %}.lamsa-iwt-{{ id }}-frame { min-height: 340px; }{% endif %}
+  }
+
+  {% if isOverlap %}
+  /* the small overlapping photo, ringed in the section's own background */
+  .lamsa-iwt-{{ id }}-media { position: relative; padding-bottom: 56px; padding-inline-end: 46px; }
+  .lamsa-iwt-{{ id }}-inset {
+    position: absolute;
+    z-index: 2;
+    bottom: 0;
+    inset-inline-end: 0;
+    width: 46%;
+    max-width: 230px;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 8px solid {{ bgVal }};
+    box-shadow: var(--shadow-lg);
+    background: var(--color-bg-tertiary);
+  }
+  .lamsa-iwt-{{ id }}-inset img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 640px) {
+    .lamsa-iwt-{{ id }}-media { padding-bottom: 40px; padding-inline-end: 28px; }
+    .lamsa-iwt-{{ id }}-inset { width: 48%; border-width: 6px; border-radius: var(--radius-lg); }
+  }
+  {% endif %}
+
+  /* ================= text ================= */
+  .lamsa-iwt-{{ id }}-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+    min-width: 0;
+  }
+
+  .lamsa-iwt-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.75rem, 3.6vw, 2.625rem);
+    font-weight: 700;
+    line-height: 1.22;
+    letter-spacing: -0.008em;
+    color: {{ 'var(--color-footer-heading)' if onDark else 'var(--color-text-primary)' }};
+  }
+  html[dir="ltr"] .lamsa-iwt-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-iwt-{{ id }}-title { line-height: 1.34; letter-spacing: 0; }
+  .lamsa-iwt-{{ id }}-title em {
+    font-style: normal;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+  }
+  .lamsa-iwt-{{ id }}-title p { margin: 0; }
+
+  .lamsa-iwt-{{ id }}-body {
+    margin: 0;
+    max-width: 52ch;
+    font-size: 1rem;
+    line-height: 1.9;
+    color: {{ 'var(--color-footer-text)' if onDark else 'var(--color-text-secondary)' }};
+  }
+  .lamsa-iwt-{{ id }}-body p { margin: 0 0 1em; }
+  .lamsa-iwt-{{ id }}-body p:last-child { margin-bottom: 0; }
+  @media (max-width: 767px) { .lamsa-iwt-{{ id }}-body { font-size: 0.9375rem; } }
+
+  .lamsa-iwt-{{ id }}-sign {
+    font-family: var(--font-display-ar);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+  }
+  html[dir="ltr"] .lamsa-iwt-{{ id }}-sign { font-family: var(--font-display-en); }
+
+  /* ================= points ================= */
+  .lamsa-iwt-{{ id }}-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 36px;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid {{ 'rgba(255,255,255,0.16)' if onDark else 'var(--color-border)' }};
+  }
+  .lamsa-iwt-{{ id }}-stat { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lamsa-iwt-{{ id }}-num {
+    font-family: var(--font-display-en);
+    font-size: 1.625rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+  }
+  .lamsa-iwt-{{ id }}-numlabel {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: {{ 'var(--color-footer-text)' if onDark else 'var(--color-text-tertiary)' }};
+  }
+  @media (max-width: 640px) {
+    .lamsa-iwt-{{ id }}-stats { gap: 16px 24px; }
+    .lamsa-iwt-{{ id }}-num { font-size: 1.375rem; }
+  }
+
+  .lamsa-iwt-{{ id }}-list { display: flex; flex-direction: column; gap: 11px; width: 100%; }
+  .lamsa-iwt-{{ id }}-li {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: {{ 'var(--color-footer-text)' if onDark else 'var(--color-text-secondary)' }};
+  }
+  .lamsa-iwt-{{ id }}-tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 21px;
+    height: 21px;
+    margin-top: 2px;
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.16)' if onDark else 'var(--color-sage-light)' }};
+    color: {{ '#FFF' if onDark else 'var(--color-sage-hover)' }};
+  }
+</style>
+
+
+<section id="lamsa-iwt-{{ id }}" class="lamsa-section{{ ' lamsa-section--flush-top lamsa-section--flush-bottom' if isWide }}">
+  <div class="{{ 'w-full' if isWide else 'lamsa-container' }}">
+    <div class="lamsa-iwt-{{ id }}-row reveal">
+
+      {# ═════════════ media ═════════════ #}
+      <div class="lamsa-iwt-{{ id }}-media">
+        <div class="lamsa-iwt-{{ id }}-frame">
+          {% if img %}
+            <img src="{{ img }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+          {% else %}
+            <img src="{{ 'lamsa-ph-hero-3.jpg' | assets }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+          {% endif %}
+        </div>
+
+        {% if isOverlap %}
+          <div class="lamsa-iwt-{{ id }}-inset">
+            <img src="{{ img2 if img2 else ('lamsa-ph-bottle.jpg' | assets) }}" alt="" loading="lazy" aria-hidden="true"/>
+          </div>
+        {% endif %}
+      </div>
+
+      {# ═════════════ text ═════════════ #}
+      <div class="lamsa-iwt-{{ id }}-text">
+        {% if eyebrow %}
+          <span class="lamsa-eyebrow {{ 'lamsa-eyebrow--light' if onDark }}">
+            <span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}
+          </span>
+        {% endif %}
+
+        {% if title %}<div class="lamsa-iwt-{{ id }}-title">{{ title | safe }}</div>{% endif %}
+
+        {% if text %}<div class="lamsa-iwt-{{ id }}-body">{{ text | safe }}</div>{% endif %}
+
+        {% if signature %}<span class="lamsa-iwt-{{ id }}-sign">{{ signature }}</span>{% endif %}
+
+        {# ---- points ---- #}
+        {% if showPoints %}
+          {% if isChecklist %}
+            <div class="lamsa-iwt-{{ id }}-list">
+              {% for block in points %}{% if block.data.label %}
+                <span class="lamsa-iwt-{{ id }}-li">
+                  <span class="lamsa-iwt-{{ id }}-tick">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                    </svg>
+                  </span>
+                  <span>{{ block.data.label }}</span>
+                </span>
+              {% endif %}{% endfor %}
+            </div>
+          {% elif isStats %}
+            <div class="lamsa-iwt-{{ id }}-stats">
+              {% for block in points %}
+                <span class="lamsa-iwt-{{ id }}-stat">
+                  {% if block.data.number %}
+                    <span class="lamsa-iwt-{{ id }}-num">{{ block.data.number }}</span>
+                  {% endif %}
+                  {% if block.data.label %}
+                    <span class="lamsa-iwt-{{ id }}-numlabel">{{ block.data.label }}</span>
+                  {% endif %}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {# ---- buttons ---- #}
+        {% if btnText or btn2Text %}
+          <div class="flex items-center gap-3 flex-wrap pt-1">
+            {% if btnText %}
+              <a href="{{ btnUrl }}" class="lamsa-btn {{ 'lamsa-btn--light' if onDark else 'lamsa-btn--primary' }}">
+                {{ btnText }}
+                <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+            {% if btn2Text %}
+              <a href="{{ btn2Url }}" class="lamsa-btn {{ 'lamsa-btn--outline-light' if onDark else 'lamsa-btn--outline' }}">
+                {{ btn2Text }}
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>

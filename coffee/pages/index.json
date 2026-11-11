@@ -1,0 +1,48 @@
+{
+  "layout": "layout",
+  "title": "الصفحة الرئيسية",
+  "widgets": [
+    {
+      "name": "الواجهة الرئيسية",
+      "widget": "hero"
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "benefits-strip"
+    },
+    {
+      "name": "اكتشف مجموعاتنا",
+      "widget": "category-cards"
+    },
+    {
+      "name": "الأكثر مبيعًا",
+      "widget": "product-showcase"
+    },
+    {
+      "name": "رحلة القهوة",
+      "widget": "coffee-journey"
+    },
+    {
+      "name": "وصل حديثًا",
+      "widget": "product-showcase",
+      "settings": {
+        "title": "وصل حديثًا",
+        "title_en": "New arrivals",
+        "subtitle": "أحدث اختياراتنا من المحمصة",
+        "subtitle_en": "Our latest selections from the roastery",
+        "source": "newest",
+        "demo_kind": "new",
+        "view_all_url": "/latest"
+      }
+    },
+    {
+      "name": "مقالات ونصائح التحضير",
+      "widget": "journal"
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter"
+    }
+  ],
+  "name": "الصفحة الرئيسية"
+}

@@ -1,0 +1,80 @@
+{#
+  ============================================================================
+  MORVA · CART PAGE — /cart
+  ----------------------------------------------------------------------------
+  Section head → lines (ui/cart.njk, variant 'list') beside a sticky summary
+  panel. Runs its own cartInteraction scope with eager stock lookups and a
+  confirm-before-remove step, so the page can stop a checkout that would be
+  refused for a sold-out line.
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set itemCount = cart.items | length %}
+{% set confirmRemove = d.confirm_remove | default(true) %}
+
+<section id="mv-cart-{{ id }}" class="mv-section"
+         x-data="cartInteraction({
+           items: [{% for item in cart.items %}{ id: '{{ item._id }}', qty: {{ item.quantity | default(1, true) }}, slug: '{{ item.productData.slug | default(item.productData.handle) | default('') }}', variantId: {{ ("'" ~ item.variantId ~ "'") if item.variantId else 'null' }} }{% if not loop.last %},{% endif %}{% endfor %}],
+           eagerStock: true,
+           cartTotal: {{ cart.totalPrice | default(0, true) }},
+           strings: window.__hyCartStrings || {},
+           confirmRemove: {{ 'true' if confirmRemove else 'false' }}
+         })">
+
+  <div class="mv-head">
+    <div>
+      <div class="mv-kicker">— {{ d.kicker | default(t('morva.bag'), true) }}</div>
+      <h1 class="mv-h">{{ d.title | default(t('morva.bag_title'), true) }}</h1>
+    </div>
+    <div class="mv-sub" x-show="activeItems.length > 0" {% if itemCount == 0 %}x-cloak{% endif %}>
+      {{ t('morva.items_label') }}: <span data-cart-count>{{ cart.totalQuantity | default(0, true) }}</span>
+    </div>
+  </div>
+
+  <div class="mv-cartpage" x-show="activeItems.length > 0" {% if itemCount == 0 %}x-cloak{% endif %}>
+    <div>
+      {% ui "cart.njk", variant='list' %}
+      <div style="display: flex; justify-content: space-between; gap: 12px; margin-top: 16px;">
+        <a href="{{ d.continue_url | default('/shop') }}" class="mv-continue"><span class="mv-arrow" aria-hidden="true">←</span> {{ t('morva.continue_shopping') }}</a>
+        <button type="button" class="mv-continue" @click="Qumra.cart.clear()">{{ t('pages.cart.clear') }}</button>
+      </div>
+    </div>
+
+    <aside class="mv-summary">
+      <div class="mv-summary-title">{{ t('pages.cart.order_summary') }}</div>
+      <div class="mv-sum">
+        <div class="mv-sum-row" data-cart-savings-row {% if not cart.totalSavings or cart.totalSavings <= 0 %}style="display: none;"{% endif %}>
+          <span>{{ t('pages.cart.savings') }}</span>
+          <span class="mv-neg" data-cart-savings>-{{ cart.totalSavings | default(0) | money }}</span>
+        </div>
+        {% if cart.couponApplied %}
+          <div class="mv-sum-row">
+            <span>{{ t('pages.cart.discount') }}</span>
+            <span class="mv-neg">-{{ cart.couponDiscount | default(0) | money }}</span>
+          </div>
+        {% endif %}
+        <div class="mv-sum-row">
+          <span>{{ t('pages.cart.shipping') }}</span>
+          <span>{{ t('pages.cart.calculated_at_checkout') }}</span>
+        </div>
+      </div>
+      <div class="mv-subtotal" style="padding-top: 14px; border-top: 1px solid var(--border);">
+        <span>{{ t('pages.cart.total') }}</span>
+        <span class="mv-subtotal-val" data-cart-total>{{ cart.totalPrice | default(0) | money }}</span>
+      </div>
+      <a href="{{ d.checkout_url | default('/checkout') }}" class="mv-btn mv-btn--block mv-checkout"
+         :class="hasSoldOut() && 'is-blocked'"
+         :aria-disabled="hasSoldOut() ? 'true' : 'false'"
+         @click="if (hasSoldOut()) $event.preventDefault()">{{ t('morva.checkout') }}</a>
+      <p class="mv-blocked" x-show="hasSoldOut()" x-cloak role="alert">{{ t('pages.cart.blocked_sold_out') }}</p>
+      {% if d.note_text %}<p class="mv-shipnote">{{ d.note_text }}</p>{% endif %}
+    </aside>
+  </div>
+
+  <div class="mv-empty-box" x-show="activeItems.length === 0" {% if itemCount > 0 %}x-cloak{% endif %}>
+    <p class="mv-empty-title">{{ t('morva.bag_empty') }}</p>
+    <p class="mv-empty-text">{{ t('morva.bag_empty_hint') }}</p>
+    <a href="{{ d.continue_url | default('/shop') }}" class="mv-btn">{{ t('morva.continue_shopping') }}</a>
+  </div>
+</section>

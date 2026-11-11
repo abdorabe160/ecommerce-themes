@@ -1,0 +1,510 @@
+{# ============================================================================
+   LAMSA HEADER — Beauty & skincare
+   Rows: announcement strip → main bar → mega panels
+   Nav order: mega blocks first, then the simple `header_menu` links.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set megas = widget.blocks | default([]) %}
+
+{% set isSticky = d.sticky | default(true) %}
+{% set overlayHero = d.overlay_hero | default(false) %}
+{% set navLayout = d.nav_layout | default('logo-start') %}
+{% set logoH = d.logo_height | default(34) %}
+{% set storeName = store.name | default('LAMSA') %}
+
+{% set showAnnounce = d.show_announcement | default(true) %}
+{% set announceText = d.announcement_text | default('') %}
+{% set announceLinkText = d.announcement_link_text | default('') %}
+{% set announceLinkUrl = d.announcement_link_url | default('') %}
+{% set announceTone = d.announcement_tone | default('rose') %}
+
+{% set showSearch = d.show_search | default(true) %}
+{% set showCart = d.show_cart | default(true) %}
+{% set showLang = d.show_language_switcher | default(true) %}
+
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+
+{# Logo resolution: the widget's own upload wins, otherwise fall back to the
+   logo the merchant already set on the store itself, and only then to the
+   wordmark inside brand(). The light variant has no store-level twin, so it
+   stays opt-in — without it the dark logo shows over the hero as before. #}
+{% set logo = d.header_logo if d.header_logo and d.header_logo.fileUrl else store.logo %}
+{% set logoLight = d.header_logo_light %}
+
+
+{# ============================ MACROS ============================ #}
+
+{# Normalise a menu picker value (either {items:[…]} or […]) into links #}
+{% macro navLinks(menu) %}
+  {% if menu %}
+    {% for item in (menu.items if menu.items else menu) %}
+      <a href="{{ item.url | default('#') }}" class="lamsa-mega-link font-body">
+        <span class="lamsa-mega-dot">
+          <svg class="rtl-flip" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </span>
+        <span class="truncate">{{ item.title }}</span>
+      </a>
+    {% endfor %}
+  {% endif %}
+{% endmacro %}
+
+{# Brand: uploaded logo (with optional light variant) or a wordmark fallback #}
+{% macro brand(wid, logo, logoLight, h, maxW, name) %}
+  {% if logo and logo.fileUrl %}
+    <img src="{{ logo.fileUrl }}" alt="{{ name }}"
+         class="lamsa-logo-dark w-auto object-contain"
+         style="height: {{ h }}px; max-width: {{ maxW }}px;"/>
+    {% if logoLight and logoLight.fileUrl %}
+      <img src="{{ logoLight.fileUrl }}" alt="{{ name }}"
+           class="lamsa-logo-light w-auto object-contain"
+           style="height: {{ h }}px; max-width: {{ maxW }}px;"/>
+    {% endif %}
+  {% else %}
+    {# Long names push the icons off a phone screen — first three words only;
+       alt / aria-label keep the full name. #}
+    <span class="lamsa-wordmark-{{ wid }}"{% if ((name | string) | upper) == ((name | string) | lower) %} lang="ar"{% endif %} style="max-width: {{ maxW }}px;">{{ (name | trim).split(' ').slice(0, 3) | join(' ') }}</span>
+  {% endif %}
+{% endmacro %}
+
+{# Desktop nav: mega triggers first, then the plain links #}
+{% macro desktopNav(megas, simpleMenu, ariaLabel) %}
+  <nav class="hidden lg:flex items-center gap-0.5 min-w-0" aria-label="{{ ariaLabel }}">
+    {% for block in megas %}
+      {% if block.data.nav_label %}
+      <div class="lamsa-nav-item"
+           @mouseenter="show('m{{ loop.index }}')"
+           @mouseleave="hide()">
+        <a href="{{ block.data.nav_url | default('#') }}"
+           class="lamsa-nav-link px-3.5"
+           :class="mega === 'm{{ loop.index }}' && 'is-active'"
+           @focus="show('m{{ loop.index }}')"
+           aria-haspopup="true"
+           :aria-expanded="mega === 'm{{ loop.index }}'">
+          <span>{{ block.data.nav_label }}</span>
+          <svg class="lamsa-nav-link-caret" width="13" height="13" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.25"
+               :class="mega === 'm{{ loop.index }}' && 'rotate-180'">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+          </svg>
+        </a>
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {% if simpleMenu %}
+      {% for item in (simpleMenu.items if simpleMenu.items else simpleMenu) %}
+        <a href="{{ item.url | default('#') }}" class="lamsa-nav-link px-3.5">{{ item.title }}</a>
+      {% endfor %}
+    {% endif %}
+  </nav>
+{% endmacro %}
+
+
+<style>
+  /* ---- shell ---- */
+  #lamsa-header-{{ id }} .lamsa-header-bar {
+    position: relative;                       /* anchor for the mega panels */
+    border-bottom: 1px solid var(--color-header-border);
+  }
+  #lamsa-header-{{ id }}.is-scrolled .lamsa-header-bar { border-bottom-color: transparent; }
+  #lamsa-header-{{ id }}.is-overlay:not(.is-scrolled) .lamsa-header-bar { border-bottom-color: rgba(255, 255, 255, 0.24); }
+
+  /* ---- logo swap: light variant only while overlaying the hero ---- */
+  .lamsa-logo-light { display: none; }
+  #lamsa-header-{{ id }}.is-overlay:not(.is-scrolled) .lamsa-logo-dark { display: none; }
+  #lamsa-header-{{ id }}.is-overlay:not(.is-scrolled) .lamsa-logo-light { display: block; }
+
+  /* ---- wordmark fallback ---- */
+  .lamsa-wordmark-{{ id }} {
+    font-family: var(--font-display-en);
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    padding-inline-start: 0.16em;
+    white-space: nowrap;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* `:lang(ar)` too: an Arabic store name on the English storefront was set in
+     uppercase tracking, which pulls Arabic letters apart. */
+  html[dir="rtl"] .lamsa-wordmark-{{ id }}, .lamsa-wordmark-{{ id }}:lang(ar) {
+    font-family: var(--font-display-ar);
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    padding-inline-start: 0;
+  }
+  #lamsa-header-{{ id }}.is-overlay:not(.is-scrolled) .lamsa-wordmark-{{ id }} { color: #FFF; }
+
+  /* ---- nav row ---- */
+  .lamsa-navrow-{{ id }} {
+    display: grid;
+    align-items: center;
+    gap: 16px;
+    min-height: 74px;
+    grid-template-columns: {{ '1fr auto 1fr' if navLayout == 'logo-center' else 'auto 1fr auto' }};
+  }
+  @media (max-width: 1023px) {
+    .lamsa-navrow-{{ id }} { grid-template-columns: 1fr auto 1fr; min-height: 62px; }
+  }
+
+  /* ---- mega panel grid ---- */
+  #lamsa-header-{{ id }} .lamsa-mega-inner { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+  #lamsa-header-{{ id }} .lamsa-mega-inner.has-promo { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)) 290px; }
+  @media (max-width: 1120px) {
+    #lamsa-header-{{ id }} .lamsa-mega-inner.has-promo { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+    #lamsa-header-{{ id }} .lamsa-mega-promo { display: none; }
+  }
+
+  .lamsa-megapromo-{{ id }} img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .lamsa-megapromo-{{ id }}:hover img { transform: scale(1.06); }
+
+  /* ---- announcement tones ---- */
+  .lamsa-announce--rose { background: var(--color-accent); color: #FFF; }
+  .lamsa-announce--sage { background: var(--color-sage); color: #FFF; }
+  .lamsa-announce--soft { background: var(--color-accent-light); color: var(--color-accent-dark); }
+  .lamsa-announce--ink  { background: var(--color-text-primary); color: #FFF; }
+
+  .lamsa-announce-link {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+  }
+  .lamsa-announce-link:hover { opacity: 0.75; }
+
+  /* ---- language switcher ---- */
+  .lamsa-lang-{{ id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-lang-{{ id }}:hover { opacity: 0.72; }
+
+  .lamsa-langdrop-{{ id }} {
+    min-width: 152px;
+    padding: 6px;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+  .lamsa-langdrop-{{ id }} button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-langdrop-{{ id }} button:hover:not(:disabled) { background: var(--color-accent-light); }
+  .lamsa-langdrop-{{ id }} button:disabled { color: var(--color-accent); cursor: default; }
+
+  @media (max-width: 767px) {
+    .lamsa-wordmark-{{ id }} { font-size: 1.2rem; }
+    html[dir="rtl"] .lamsa-wordmark-{{ id }} { font-size: 1.28rem; }
+  }
+</style>
+
+<header
+  id="lamsa-header-{{ id }}"
+  class="lamsa-header {{ 'is-sticky' if isSticky }}"
+  x-data="{
+    mega: null,
+    _t: null,
+    show(k) { clearTimeout(this._t); this.mega = k },
+    hide()  { clearTimeout(this._t); this._t = setTimeout(() => { this.mega = null }, 160) },
+    close() { clearTimeout(this._t); this.mega = null }
+  }"
+  @keydown.escape="close()"
+>
+
+  {# ==================== Announcement strip ==================== #}
+  {% if showAnnounce and (announceText or showLang) %}
+  <div class="lamsa-announce lamsa-announce--{{ announceTone }}">
+    <div class="lamsa-container flex items-center justify-between gap-4">
+
+      {# start · language #}
+      <div class="flex items-center shrink-0 min-w-[58px]">
+        {% if showLang %}
+        <div x-data="{ open: false }" class="relative">
+          <button type="button"
+                  @click="open = !open"
+                  @click.outside="open = false"
+                  class="lamsa-lang-{{ id }}"
+                  aria-label="{{ t('common.language') }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="12" cy="12" r="9"/>
+              <path stroke-linecap="round" d="M3.6 9h16.8M3.6 15h16.8"/>
+              <path stroke-linecap="round" d="M12 3a14 14 0 0 0 0 18a14 14 0 0 0 0-18"/>
+            </svg>
+            <span>{{ 'EN' if currentLang == 'en' else 'ع' }}</span>
+          </button>
+
+          <div x-show="open" x-cloak
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="opacity-0 -translate-y-1"
+               x-transition:enter-end="opacity-100 translate-y-0"
+               x-transition:leave="transition ease-in duration-150"
+               x-transition:leave-start="opacity-100"
+               x-transition:leave-end="opacity-0"
+               class="absolute top-full mt-2 start-0 lamsa-langdrop-{{ id }} z-[9999]">
+            {% form 'lang' %}
+              <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>
+                <span class="font-body">العربية</span>
+                {% if currentLang == 'ar' %}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                {% endif %}
+              </button>
+              <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>
+                <span class="font-body-en">English</span>
+                {% if currentLang == 'en' %}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                {% endif %}
+              </button>
+            {% endform %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      {# center · message #}
+      <p class="flex-1 text-center m-0 flex items-center justify-center gap-2.5 min-w-0">
+        {% if announceText %}<span class="truncate">{{ announceText }}</span>{% endif %}
+        {% if announceLinkText and announceLinkUrl %}
+          <a href="{{ announceLinkUrl }}" class="lamsa-announce-link max-sm:hidden">{{ announceLinkText }}</a>
+        {% endif %}
+      </p>
+
+      {# end · optical spacer #}
+      <div class="shrink-0 min-w-[58px]" aria-hidden="true"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ========================= Main bar ========================= #}
+  <div class="lamsa-header-bar">
+    <div class="lamsa-container">
+      <div class="lamsa-navrow-{{ id }}">
+
+        {# ---------- START ---------- #}
+        <div class="flex items-center gap-7 min-w-0 justify-start">
+          <button type="button"
+                  onclick="toggleModal('sidebar')"
+                  class="lamsa-btn-icon lg:hidden -ms-2.5"
+                  aria-label="{{ t('common.menu') }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" d="M3.5 7h17M3.5 12h17M3.5 17h11"/>
+            </svg>
+          </button>
+
+          {% if navLayout == 'logo-start' %}
+            <a href="/" class="max-lg:hidden flex items-center shrink-0 min-w-0" aria-label="{{ storeName }}">
+              {{ brand(id, logo, logoLight, logoH, 190, storeName) }}
+            </a>
+          {% else %}
+            {{ desktopNav(megas, d.header_menu, t('common.menu')) }}
+          {% endif %}
+        </div>
+
+        {# ---------- CENTER ---------- #}
+        <div class="flex items-center justify-center min-w-0">
+          {% if navLayout == 'logo-start' %}
+            {{ desktopNav(megas, d.header_menu, t('common.menu')) }}
+            {# mobile logo #}
+            <a href="/" class="lg:hidden flex items-center shrink-0 min-w-0" aria-label="{{ storeName }}">
+              {{ brand(id, logo, logoLight, logoH - 4, 140, storeName) }}
+            </a>
+          {% else %}
+            <a href="/" class="flex items-center shrink-0 min-w-0" aria-label="{{ storeName }}">
+              {{ brand(id, logo, logoLight, logoH, 190, storeName) }}
+            </a>
+          {% endif %}
+        </div>
+
+        {# ---------- END ---------- #}
+        <div class="flex items-center justify-end gap-1 shrink-0">
+
+          {% if showSearch %}
+            <button type="button" onclick="toggleModal('search')" class="lamsa-btn-icon" aria-label="{{ t('header.search') }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+                <circle cx="11" cy="11" r="7.25"/>
+                <path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/>
+              </svg>
+            </button>
+          {% endif %}
+
+          {% if showCart %}
+            <button type="button" onclick="toggleModal('cart')" class="lamsa-btn-icon" aria-label="{{ t('header.cart') }}" x-data>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+                <path stroke-linecap="round" d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+              </svg>
+              <span x-show="$store.cart.totalQuantity > 0"
+                    x-text="$store.cart.totalQuantity"
+                    x-cloak
+                    class="lamsa-btn-count"></span>
+            </button>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    {# ==================== Mega panels ==================== #}
+    {% for block in megas %}
+      {% set b = block.data %}
+      {% if b.nav_label %}
+        {% set promoImg = b.promo_image.fileUrl if b.promo_image and b.promo_image.fileUrl else ((['lamsa-ph-bottle.jpg', 'lamsa-ph-makeup.jpg'][loop.index0 % 2]) | assets) %}
+        {% set hasPromo = (b.promo_image and b.promo_image.fileUrl) or b.promo_title %}
+        <div class="lamsa-mega"
+             :class="mega === 'm{{ loop.index }}' && 'is-open'"
+             @mouseenter="show('m{{ loop.index }}')"
+             @mouseleave="hide()">
+          <div class="lamsa-container">
+            <div class="lamsa-mega-inner {{ 'has-promo' if hasPromo }}"
+                 style="--cols: {% if b.col4_title %}4{% elif b.col3_title %}3{% elif b.col2_title %}2{% else %}1{% endif %};">
+
+              {% if b.col1_title %}
+                <div class="lamsa-mega-col">
+                  <span class="lamsa-mega-title font-body">{{ b.col1_title }}</span>
+                  {{ navLinks(b.col1_menu) }}
+                </div>
+              {% endif %}
+              {% if b.col2_title %}
+                <div class="lamsa-mega-col">
+                  <span class="lamsa-mega-title font-body">{{ b.col2_title }}</span>
+                  {{ navLinks(b.col2_menu) }}
+                </div>
+              {% endif %}
+              {% if b.col3_title %}
+                <div class="lamsa-mega-col">
+                  <span class="lamsa-mega-title font-body">{{ b.col3_title }}</span>
+                  {{ navLinks(b.col3_menu) }}
+                </div>
+              {% endif %}
+              {% if b.col4_title %}
+                <div class="lamsa-mega-col">
+                  <span class="lamsa-mega-title font-body">{{ b.col4_title }}</span>
+                  {{ navLinks(b.col4_menu) }}
+                </div>
+              {% endif %}
+
+              {% if hasPromo %}
+                <a href="{{ b.promo_url | default('/shop') }}"
+                   class="lamsa-mega-promo lamsa-megapromo-{{ id }} lamsa-scrim lamsa-scrim--medium">
+                  <img src="{{ promoImg }}" alt="{{ b.promo_title | default('') }}" loading="lazy"/>
+                  <div class="relative z-[2] flex flex-col gap-2.5 items-start">
+                    {% if b.promo_eyebrow %}
+                      <span class="lamsa-eyebrow lamsa-eyebrow--light">{{ b.promo_eyebrow }}</span>
+                    {% endif %}
+                    {% if b.promo_title %}
+                      <h4 class="m-0" style="color: #FFF;">{{ b.promo_title }}</h4>
+                    {% endif %}
+                    <span class="lamsa-micro inline-flex items-center gap-1.5 mt-0.5" style="color: rgba(255,255,255,0.88);">
+                      {{ t('common.view_all') }}
+                      <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                      </svg>
+                    </span>
+                  </div>
+                </a>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</header>
+
+{# Spacer — reserves the fixed header's height. Zero while overlaying a hero. #}
+{% if isSticky %}
+  <div id="lamsa-header-spacer-{{ id }}" aria-hidden="true"></div>
+{% endif %}
+
+<script>
+  (function () {
+    var header = document.getElementById('lamsa-header-{{ id }}');
+    if (!header) return;
+
+    var spacer = document.getElementById('lamsa-header-spacer-{{ id }}');
+    var sticky = {{ 'true' if isSticky else 'false' }};
+    var wantsOverlay = {{ 'true' if overlayHero else 'false' }};
+
+    /* Overlay only when: sticky + opted in + a [data-hero-top] section really
+       sits at the very top of the document (nothing rendered above it). */
+    var overlay = false;
+    if (sticky && wantsOverlay) {
+      var heroTop = document.querySelector('[data-hero-top]');
+      if (heroTop) overlay = (heroTop.getBoundingClientRect().top + window.scrollY) < 4;
+    }
+    header.classList.toggle('is-overlay', overlay);
+
+    function onScroll() { header.classList.toggle('is-scrolled', window.scrollY > 24); }
+
+    if (overlay) {
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      header.classList.add('is-scrolled');
+    }
+
+    if (spacer) {
+      var sync = function () {
+        var h = overlay ? 0 : header.offsetHeight;
+        spacer.style.height = h + 'px';
+        /* Published so sticky columns elsewhere (the product gallery) can clear
+           the fixed header without measuring it again. Falls back to 0px, which
+           is the right answer when the header is not sticky and scrolls away. */
+        document.documentElement.style.setProperty('--lamsa-header-h', h + 'px');
+      };
+      sync();
+      window.addEventListener('load', sync);
+      window.addEventListener('resize', sync);
+      if (window.ResizeObserver) new ResizeObserver(sync).observe(header);
+    }
+  })();
+</script>
+
+{# ---- Global panels triggered from the header ---- #}
+{#- `ui` rejects an undefined argument (prints an error box): a store with no
+    menu behind `header_menu` must still render the drawer. -#}
+{% ui "sidebar.njk", megas=megas, simple_menu=(d.header_menu or false), currentLang=currentLang, showLang=showLang %}
+{% ui "search.njk" %}
+{% ui "cart.njk" %}

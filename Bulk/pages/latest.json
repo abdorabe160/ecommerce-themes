@@ -1,0 +1,7 @@
+{
+  "layout": "layout",
+  "widgets": [
+    { "name": "عنوان الصفحة", "widget": "page-banner", "settings": { "title": "وصل حديثاً", "subtitle": "أحدث القطع اللي نزلت المتجر" } },
+    { "name": "أحدث المنتجات", "widget": "collection-products", "settings": { "remote_sort": "created-desc" } }
+  ]
+}

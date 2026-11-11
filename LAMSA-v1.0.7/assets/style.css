@@ -1,0 +1,3057 @@
+/* ============================================================================
+   LAMSA · لمسة — Beauty & Skincare Theme
+   Design language: "Soft Clinical" — ناعم · نظيف · موثوق
+   ----------------------------------------------------------------------------
+   Palette : Dusty Rose #C97B8E · Blush #FFF5F7 · Sage #7FA99B
+   Type    : El Messiri / Poppins (display) · Tajawal / Poppins (body)
+   Shape   : rounded cards (20px) · pill buttons · soft rose shadows
+   Prefix  : .lamsa-*   (single namespace — no legacy layers)
+   ----------------------------------------------------------------------------
+   SECTIONS
+     01. Design tokens
+     02. Base & reset
+     03. Typography
+     04. Layout primitives (container / section / heading)
+     05. Buttons
+     06. Badges · chips · tags · pills
+     07. Beauty primitives (swatches · stars · suitability · ingredients)
+     08. Cards & media
+     09. Forms & inputs
+     10. Navigation (mega menu · drawer · overlay · modal)
+     11. PDP primitives (accordion · before-after · routine)
+     12. Feedback (toast · skeleton · empty · loading)
+     13. Third-party overrides (Swiper · GLightbox · range slider)
+     14. Utilities & motion
+     15. Legacy bridge  ← DELETE once every widget is rebuilt
+   ========================================================================= */
+
+
+/* ==========================================================================
+   01. DESIGN TOKENS
+   Overridable from the Theme Editor via layout.njk :root block.
+   ========================================================================== */
+:root {
+    /* ---- Surfaces ---- */
+    --color-bg-primary: #FFF5F7;     /* وردي فاتح — the canvas */
+    --color-bg-secondary: #FFFFFF;   /* raised surface / cards */
+    --color-bg-tertiary: #FDECF0;    /* deeper blush — wells, inputs on white */
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #FFFAFB;
+
+    /* Section alternation — blush ↔ white rhythm */
+    --color-section-a: #FFF5F7;
+    --color-section-b: #FFFFFF;
+
+    /* ---- Accent · Dusty Rose (action) ---- */
+    --color-accent: #C97B8E;
+    --color-accent-hover: #B36679;
+    --color-accent-dark: #9E5568;
+    --color-accent-soft: #F5D3DB;    /* mid tint — rings, dividers */
+    --color-accent-light: #FBE8EC;   /* wash — chips, eyebrows */
+    --color-accent-rgb: 201, 123, 142;
+
+    /* ---- Sage (trust: ingredients · verified · clinical) ---- */
+    --color-sage: #7FA99B;
+    --color-sage-hover: #6B9285;
+    --color-sage-soft: #CFE1DA;
+    --color-sage-light: #EAF2EF;
+    --color-sage-rgb: 127, 169, 155;
+
+    /* ---- Text ---- */
+    --color-text-primary: #3B2C31;   /* warm near-black, never pure black */
+    --color-text-secondary: #6E585E;
+    --color-text-tertiary: #76636A;
+    /* One token per COLOURED surface. The surfaces below are all retargetable
+       from the Theme Editor; a hardcoded #FFF on them is white-on-white the
+       moment a merchant picks a pale accent. */
+    --color-text-on-accent: #FFFFFF;
+    --color-text-on-sage: #FFFFFF;
+    --color-text-on-ink: #FFFFFF;
+
+    /* ---- Lines ---- */
+    --color-border: #F4DFE4;
+    --color-border-strong: #E7C6CE;
+    --color-border-hover: #E7C6CE;
+    --color-border-focus: #C97B8E;
+
+    /* ---- Header ---- */
+    --color-header: #FFF5F7;
+    --color-header-text: #3B2C31;
+    --color-header-border: #F4DFE4;
+
+    /* ---- Footer ---- */
+    --color-footer: #3B2C31;
+    --color-footer-text: #C9B6BB;
+    --color-footer-text-muted: #B09BA1;
+    --color-footer-heading: #FFF5F7;
+    --color-footer-border: #4E3B40;
+
+    /* ---- Status ---- */
+    --color-success: #46705F; /* was #6E9E86 — «متوفر» read 3:1 */
+    --color-success-light: #E9F3EE;
+    --color-error: #D06B6B;
+    --color-error-light: #FBEBEB;
+    --color-warning: #D9A05B;
+    --color-warning-light: #FBF2E6;
+    --color-info: #7FA99B;
+
+    /* ---- Typography stacks ---- */
+    --font-display-ar: 'El Messiri', 'Tajawal', system-ui, sans-serif;
+    --font-display-en: 'Poppins', system-ui, -apple-system, sans-serif;
+    --font-body-ar: 'Tajawal', system-ui, -apple-system, sans-serif;
+    --font-body-en: 'Poppins', system-ui, -apple-system, sans-serif;
+    --font-size-base: 16px;
+
+    /* ---- Spacing · 8px grid ---- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 80px;
+    --space-10: 112px;
+
+    /* ---- Layout ---- */
+    --container-max: 1280px;
+    --container-px: 24px;
+    --container-px-sm: 16px;
+    --section-py: 88px;
+    --section-py-sm: 56px;
+
+    /* ---- Radii — soft is the brand ---- */
+    --radius-xs: 6px;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-2xl: 36px;
+    --radius-pill: 999px;
+    /* semantic — the Theme Editor retargets these three */
+    --radius-card: var(--radius-lg);
+    --radius-btn: var(--radius-pill);
+    --radius-input: var(--radius-md);
+    --radius-media: var(--radius-lg);
+
+    /* ---- Shadows — rose-tinted, never grey ---- */
+    --shadow-xs: 0 1px 2px rgba(59, 44, 49, 0.05);
+    --shadow-sm: 0 2px 8px rgba(201, 123, 142, 0.07);
+    --shadow-md: 0 6px 20px -6px rgba(201, 123, 142, 0.16);
+    --shadow-lg: 0 16px 40px -12px rgba(201, 123, 142, 0.22);
+    --shadow-xl: 0 28px 64px -20px rgba(201, 123, 142, 0.28);
+    --shadow-accent: 0 8px 22px -8px rgba(201, 123, 142, 0.45);
+    --shadow-sage: 0 8px 22px -8px rgba(127, 169, 155, 0.38);
+    --shadow-focus: 0 0 0 4px rgba(201, 123, 142, 0.18);
+    /* semantic — retargeted by the "card shadow" setting */
+    --shadow-card: var(--shadow-sm);
+    --shadow-card-hover: var(--shadow-md);
+
+    /* ---- Motion — gentle, never dramatic ---- */
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+    --t-fast: 180ms;
+    --t-base: 280ms;
+    --t-slow: 480ms;
+    --t-image: 700ms;
+
+    /* ---- Z-index scale ---- */
+    --z-header: 100;
+    --z-mega: 110;
+    --z-overlay: 200;
+    --z-drawer: 210;
+    --z-modal: 220;
+    --z-toast: 9999;
+}
+
+
+/* ==========================================================================
+   02. BASE & RESET
+   Tailwind preflight does the heavy lifting — this is the brand layer only.
+   ========================================================================== */
+
+/* Alpine.js — hide until initialised */
+[x-cloak] { display: none !important; }
+
+*,
+*::before,
+*::after { -webkit-tap-highlight-color: transparent; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font-body-ar);
+    font-size: var(--font-size-base);
+    font-weight: 400;
+    line-height: 1.75;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    animation: lamsaPageIn 500ms var(--ease-out) both;
+}
+
+html[lang="en"] body,
+html[dir="ltr"] body { font-family: var(--font-body-en); }
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--t-fast) var(--ease-soft);
+}
+
+img,
+svg,
+video { display: block; max-width: 100%; }
+
+::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-text-primary);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+}
+
+/* Native scrollbar — blush track, rose thumb */
+@supports selector(::-webkit-scrollbar) {
+    body::-webkit-scrollbar { width: 10px; }
+    body::-webkit-scrollbar-track { background: var(--color-bg-primary); }
+    body::-webkit-scrollbar-thumb {
+        background: var(--color-accent-soft);
+        border-radius: var(--radius-pill);
+        border: 3px solid var(--color-bg-primary);
+    }
+    body::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+}
+
+
+/* ==========================================================================
+   03. TYPOGRAPHY
+   Display = El Messiri (ar) / Poppins (en). Softer scale than editorial.
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display-ar);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+html[lang="en"] :is(h1, h2, h3, h4, h5, h6),
+html[dir="ltr"] :is(h1, h2, h3, h4, h5, h6) { font-family: var(--font-display-en); }
+
+h1 {
+    font-size: clamp(2.125rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+}
+
+h2 {
+    font-size: clamp(1.625rem, 3.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.008em;
+}
+
+h3 {
+    font-size: clamp(1.1875rem, 2vw, 1.4375rem);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+h4 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+h5 { font-size: 0.9375rem; font-weight: 600; line-height: 1.5; }
+h6 { font-size: 0.8125rem; font-weight: 600; line-height: 1.5; letter-spacing: 0.02em; }
+
+/* Arabic needs more leading and no negative tracking */
+html[dir="rtl"] :is(h1, h2, h3, h4) { letter-spacing: 0; }
+html[dir="rtl"] h1 { line-height: 1.28; }
+html[dir="rtl"] h2 { line-height: 1.34; }
+html[dir="rtl"] h3 { line-height: 1.5; }
+
+/* ---- Body variants ---- */
+.lamsa-lead {
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--color-text-secondary);
+}
+
+.lamsa-text { font-size: 0.9375rem; line-height: 1.8; }
+
+.lamsa-text-sm {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+}
+
+.lamsa-caption {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-text-tertiary);
+}
+
+/* ---- Micro label — uppercase Latin, natural Arabic ---- */
+.lamsa-micro {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+html[dir="rtl"] .lamsa-micro {
+    font-size: 0.75rem;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* ---- Price ---- */
+.lamsa-price {
+    font-family: var(--font-display-en);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.lamsa-price--lg { font-size: 1.5rem; font-weight: 700; }
+
+.lamsa-price-was {
+    font-family: var(--font-display-en);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-decoration: line-through;
+    color: var(--color-text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Rich text (CMS / description / article body) ---- */
+.lamsa-prose { max-width: 68ch; color: var(--color-text-secondary); line-height: 1.9; }
+.lamsa-prose > * + * { margin-top: 1.15em; }
+.lamsa-prose :is(h2, h3, h4) { color: var(--color-text-primary); margin-top: 1.9em; }
+.lamsa-prose :is(iframe, video, embed) { max-width: 100%; height: auto; aspect-ratio: 16 / 9; }
+.lamsa-prose img { max-width: 100%; height: auto; }
+.lamsa-prose table { display: block; max-width: 100%; overflow-x: auto; }
+.lamsa-prose pre { max-width: 100%; overflow-x: auto; }
+.lamsa-prose a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+.lamsa-prose a:hover { color: var(--color-accent-hover); }
+.lamsa-prose strong { color: var(--color-text-primary); font-weight: 700; }
+.lamsa-prose :is(ul, ol) { padding-inline-start: 1.4em; }
+.lamsa-prose ul { list-style: none; }
+.lamsa-prose ul > li { position: relative; }
+.lamsa-prose ul > li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -1.1em;
+    top: 0.72em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent-soft);
+}
+.lamsa-prose ol { list-style: decimal; }
+.lamsa-prose ol > li::marker { color: var(--color-accent); font-weight: 700; }
+.lamsa-prose img { border-radius: var(--radius-md); }
+.lamsa-prose blockquote {
+    border-inline-start: 3px solid var(--color-accent-soft);
+    padding-inline-start: 1.25em;
+    color: var(--color-text-primary);
+    font-family: var(--font-display-ar);
+    font-size: 1.0625rem;
+}
+html[dir="ltr"] .lamsa-prose blockquote { font-family: var(--font-display-en); }
+
+/* ---- Mobile type scale ---- */
+@media (max-width: 767px) {
+    body { font-size: 15px; }
+    .lamsa-lead { font-size: 1rem; }
+    .lamsa-text { font-size: 0.9375rem; }
+    .lamsa-price { font-size: 1rem; }
+    .lamsa-price--lg { font-size: 1.25rem; }
+}
+
+
+/* ==========================================================================
+   04. LAYOUT PRIMITIVES
+   ========================================================================== */
+.lamsa-container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-px);
+}
+@media (max-width: 640px) {
+    .lamsa-container { padding-inline: var(--container-px-sm); }
+}
+
+.lamsa-container--narrow { max-width: 860px; }
+.lamsa-container--wide { max-width: 1520px; }
+
+/* Section — vertical rhythm driven by the "section spacing" setting */
+.lamsa-section {
+    padding-block: var(--section-py);
+    position: relative;
+}
+@media (max-width: 767px) {
+    .lamsa-section { padding-block: var(--section-py-sm); }
+}
+
+.lamsa-section--tight { padding-block: calc(var(--section-py) * 0.62); }
+.lamsa-section--flush-top { padding-block-start: 0; }
+.lamsa-section--flush-bottom { padding-block-end: 0; }
+
+/* Backgrounds */
+.lamsa-bg-blush { background: var(--color-bg-primary); }
+.lamsa-bg-white { background: var(--color-surface); }
+.lamsa-bg-deep { background: var(--color-bg-tertiary); }
+.lamsa-bg-sage { background: var(--color-sage-light); }
+.lamsa-bg-rose { background: var(--color-accent-light); }
+.lamsa-bg-dark { background: var(--color-text-primary); color: var(--color-text-on-ink); }
+.lamsa-bg-dark :is(h1, h2, h3, h4) { color: var(--color-footer-heading); }
+.lamsa-bg-dark .lamsa-lead,
+.lamsa-bg-dark .lamsa-text-sm { color: var(--color-footer-text); }
+
+/* Soft blush glow — decorative section wash, purely CSS */
+.lamsa-glow { position: relative; overflow: hidden; isolation: isolate; }
+.lamsa-glow::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 50%; /* physical on purpose: translate(-50%) only centres from the left */
+    top: -30%;
+    width: 62vw;
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+    /* uses the editor-driven tint tokens so it tracks the accent setting */
+    background: radial-gradient(circle, var(--color-accent-light) 0%, transparent 68%);
+    pointer-events: none;
+}
+.lamsa-glow--sage::before {
+    background: radial-gradient(circle, var(--color-sage-light) 0%, transparent 68%);
+}
+
+/* ---- Eyebrow / kicker — soft rose pill ---- */
+.lamsa-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-light);
+    color: var(--color-accent-dark);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+html[dir="rtl"] .lamsa-eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0;
+    text-transform: none;
+}
+.lamsa-eyebrow--sage { background: var(--color-sage-light); color: var(--color-sage-hover); }
+.lamsa-eyebrow--plain { background: transparent; padding: 0; color: var(--color-accent); }
+.lamsa-eyebrow--light { background: rgba(0, 0, 0, 0.16); color: #FFF; } /* a white wash lifted the ground under white text to 4:1 */
+
+/* dot marker for the pill */
+.lamsa-eyebrow-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+/* ---- Section header ---- */
+.lamsa-head { margin-bottom: var(--space-8); }
+.lamsa-head--center { text-align: center; }
+.lamsa-head--center .lamsa-head-desc { margin-inline: auto; }
+.lamsa-head--split {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+}
+.lamsa-head-title { margin-top: var(--space-4); }
+.lamsa-head-desc {
+    margin-top: var(--space-3);
+    max-width: 54ch;
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.85;
+}
+@media (max-width: 767px) {
+    .lamsa-head { margin-bottom: var(--space-6); }
+}
+
+/* ---- Rules & dividers ---- */
+.lamsa-rule {
+    height: 1px;
+    width: 100%;
+    border: 0;
+    background: var(--color-border);
+}
+.lamsa-rule--soft { background: linear-gradient(90deg, transparent, var(--color-border), transparent); }
+.lamsa-rule--short { width: 48px; height: 2px; border-radius: var(--radius-pill); background: var(--color-accent-soft); }
+
+/* ---- Animated underline link ---- */
+.lamsa-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-accent);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+.lamsa-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -3px;
+    height: 1.5px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: var(--lamsa-origin-end, right);
+    transition: transform var(--t-base) var(--ease-out);
+}
+.lamsa-link:hover { color: var(--color-accent-hover); }
+.lamsa-link:hover::after { transform: scaleX(1); transform-origin: var(--lamsa-origin-start, left); }
+html[dir="rtl"] .lamsa-link { --lamsa-origin-start: right; --lamsa-origin-end: left; }
+/* directional arrow inside links */
+.lamsa-link svg { transition: transform var(--t-base) var(--ease-out); }
+html[dir="rtl"] .lamsa-link svg { transform: rotate(180deg); }
+.lamsa-link:hover svg { transform: translateX(3px); }
+html[dir="rtl"] .lamsa-link:hover svg { transform: rotate(180deg) translateX(3px); }
+
+
+/* ==========================================================================
+   05. BUTTONS
+   Pill by default (--radius-btn is retargetable from the editor).
+   ========================================================================== */
+.lamsa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 14px 30px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    transition: background var(--t-base) var(--ease-soft),
+                color var(--t-base) var(--ease-soft),
+                border-color var(--t-base) var(--ease-soft),
+                box-shadow var(--t-base) var(--ease-soft),
+                transform var(--t-fast) var(--ease-out);
+}
+.lamsa-btn:active { transform: translateY(1px); }
+.lamsa-btn:disabled,
+.lamsa-btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+.lamsa-btn svg { flex-shrink: 0; }
+
+/* Primary — rose, soft glow */
+.lamsa-btn--primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+    box-shadow: var(--shadow-accent);
+}
+.lamsa-btn--primary:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Sage — the trust CTA (quiz, routine, ingredients) */
+.lamsa-btn--sage {
+    background: var(--color-sage);
+    border-color: var(--color-sage);
+    color: var(--color-text-on-sage);
+    box-shadow: var(--shadow-sage);
+}
+.lamsa-btn--sage:hover { background: var(--color-sage-hover); border-color: var(--color-sage-hover); }
+
+/* Outline */
+.lamsa-btn--outline {
+    background: transparent;
+    border-color: var(--color-border-strong);
+    color: var(--color-text-primary);
+}
+.lamsa-btn--outline:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+/* Soft — filled wash, no border */
+.lamsa-btn--soft {
+    background: var(--color-accent-light);
+    border-color: transparent;
+    color: var(--color-accent-dark);
+}
+.lamsa-btn--soft:hover { background: var(--color-accent-soft); }
+
+/* White — for use on photos / dark blocks */
+/* The -light variants and the hero-overlay header sit ON PHOTOGRAPHY, not on a
+   themeable surface. Their white is literal and must NOT become a token. */
+.lamsa-btn--light {
+    background: #FFF;
+    border-color: #FFF;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-md);
+}
+.lamsa-btn--light:hover { background: var(--color-accent-light); border-color: var(--color-accent-light); }
+
+/* Outline on dark */
+.lamsa-btn--outline-light {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #FFF;
+}
+.lamsa-btn--outline-light:hover { background: #FFF; border-color: #FFF; color: var(--color-text-primary); }
+
+/* Ghost — text only */
+.lamsa-btn--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-text-primary);
+    padding-inline: 12px;
+    box-shadow: none;
+}
+.lamsa-btn--ghost:hover { color: var(--color-accent); background: var(--color-accent-light); }
+
+/* Sizes */
+.lamsa-btn--sm { padding: 10px 20px; font-size: 0.8125rem; }
+.lamsa-btn--lg { padding: 17px 40px; font-size: 0.9375rem; }
+.lamsa-btn--block { width: 100%; }
+
+/* Icon button — circular */
+.lamsa-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    position: relative;
+    transition: background var(--t-fast) var(--ease-soft),
+                color var(--t-fast) var(--ease-soft),
+                border-color var(--t-fast) var(--ease-soft);
+}
+.lamsa-btn-icon:hover { background: var(--color-accent-light); color: var(--color-accent); }
+.lamsa-btn-icon--filled {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+.lamsa-btn-icon--filled:hover { background: var(--color-accent); color: var(--color-text-on-accent); }
+.lamsa-btn-icon--outline { border-color: var(--color-border); background: var(--color-surface); }
+.lamsa-btn-icon--outline:hover { border-color: var(--color-accent); background: var(--color-accent-light); }
+.lamsa-btn-icon--sm { width: 34px; height: 34px; }
+.lamsa-btn-icon--lg { width: 50px; height: 50px; }
+
+/* Counter badge on an icon button (cart / wishlist) */
+.lamsa-btn-count {
+    position: absolute;
+    top: -1px;
+    inset-inline-end: -1px;
+    min-width: 18px;
+    height: 18px;
+    padding-inline: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+    font-family: var(--font-display-en);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 0 0 2px var(--color-header);
+}
+
+
+/* ==========================================================================
+   06. BADGES · CHIPS · TAGS
+   ========================================================================== */
+
+/* ---- Badge — corner flags on media ---- */
+.lamsa-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-xs);
+    white-space: nowrap;
+}
+.lamsa-badge--sale { background: var(--color-accent); color: var(--color-text-on-accent); box-shadow: none; }
+.lamsa-badge--new { background: var(--color-sage); color: var(--color-text-on-sage); box-shadow: none; }
+.lamsa-badge--best { background: var(--color-text-primary); color: var(--color-text-on-ink); box-shadow: none; }
+.lamsa-badge--soldout { background: var(--color-surface); color: var(--color-text-tertiary); }
+
+/* Out-of-stock veil over media */
+.lamsa-soldout-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 245, 247, 0.72);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+.lamsa-soldout-veil > span {
+    padding: 9px 20px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ---- Chip — filter / skin-type / concern selector ---- */
+.lamsa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 17px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--t-fast) var(--ease-soft);
+}
+.lamsa-chip:hover { border-color: var(--color-accent-soft); color: var(--color-text-primary); }
+.lamsa-chip.is-active,
+.lamsa-chip[aria-pressed="true"] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+}
+.lamsa-chip--sage.is-active { background: var(--color-sage); border-color: var(--color-sage); }
+.lamsa-chip-count { opacity: 0.6; font-size: 0.6875rem; font-variant-numeric: tabular-nums; }
+
+/* Horizontal scroll rail of chips (mobile filters) */
+.lamsa-chip-rail {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding-block: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+}
+.lamsa-chip-rail::-webkit-scrollbar { display: none; }
+.lamsa-chip-rail > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* ---- Tag — read-only descriptor ---- */
+.lamsa-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.lamsa-tag--sage { background: var(--color-sage-light); color: var(--color-sage-hover); }
+.lamsa-tag--rose { background: var(--color-accent-light); color: var(--color-accent-dark); }
+
+
+/* ==========================================================================
+   07. BEAUTY PRIMITIVES
+   The pieces that make this a skincare/makeup theme rather than a generic one.
+   ========================================================================== */
+
+/* ---- Shade swatches — product-card colour dots ---- */
+.lamsa-swatches {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.lamsa-swatch {
+    --lamsa-swatch-size: 20px;
+    width: var(--lamsa-swatch-size);
+    height: var(--lamsa-swatch-size);
+    flex-shrink: 0;
+    border-radius: 50%;
+    padding: 0;
+    border: 1.5px solid rgba(59, 44, 49, 0.10);
+    background-color: var(--lamsa-swatch, var(--color-bg-tertiary));
+    background-clip: padding-box;
+    cursor: pointer;
+    position: relative;
+    box-shadow: inset 0 -2px 4px rgba(59, 44, 49, 0.10);
+    transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-soft);
+}
+.lamsa-swatch:hover { transform: scale(1.14); }
+/* selected = outer ring, not a border change (keeps the shade colour honest) */
+.lamsa-swatch.is-active,
+.lamsa-swatch[aria-pressed="true"] {
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 3.5px var(--color-accent);
+}
+.lamsa-swatch--lg { --lamsa-swatch-size: 32px; }
+.lamsa-swatch--sm { --lamsa-swatch-size: 15px; }
+.lamsa-swatch:disabled { cursor: not-allowed; opacity: 0.45; }
+/* diagonal strike for unavailable shades */
+.lamsa-swatch:disabled::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(45deg, transparent 46%, var(--color-text-tertiary) 46%, var(--color-text-tertiary) 54%, transparent 54%);
+}
+/* "+3" overflow pill */
+.lamsa-swatch-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    padding-inline: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-tertiary);
+    font-family: var(--font-display-en);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Swatch chip variant — dot + label (PDP shade picker) */
+.lamsa-shade {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 8px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-soft);
+}
+html[dir="rtl"] .lamsa-shade { padding: 7px 8px 7px 14px; }
+.lamsa-shade:hover { border-color: var(--color-accent-soft); }
+.lamsa-shade.is-active { border-color: var(--color-accent); background: var(--color-accent-light); }
+.lamsa-shade-dot {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--lamsa-swatch, var(--color-bg-tertiary));
+    box-shadow: inset 0 -2px 4px rgba(59, 44, 49, 0.12);
+}
+
+/* ---- Star rating ---- */
+.lamsa-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+.lamsa-stars svg { width: 14px; height: 14px; }
+.lamsa-stars--sm svg { width: 12px; height: 12px; }
+.lamsa-stars--lg svg { width: 18px; height: 18px; }
+.lamsa-star-empty { color: var(--color-accent-soft); }
+.lamsa-rating-count {
+    font-family: var(--font-display-en);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Half star — an empty star with a clipped filled star on top */
+.lamsa-star-half { position: relative; display: inline-flex; }
+.lamsa-star-half > svg:first-child { color: var(--color-accent-soft); }
+.lamsa-star-half > svg:last-child {
+    position: absolute;
+    inset: 0;
+    color: var(--color-accent);
+    clip-path: inset(0 50% 0 0);
+}
+html[dir="rtl"] .lamsa-star-half > svg:last-child { clip-path: inset(0 0 0 50%); }
+
+/* Rating bar (review breakdown) */
+.lamsa-rating-bar {
+    height: 6px;
+    flex: 1;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-tertiary);
+    overflow: hidden;
+}
+.lamsa-rating-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    transition: width var(--t-slow) var(--ease-out);
+}
+
+/* ---- "مناسب لـ" suitability tag — sage = clinically framed ---- */
+.lamsa-suit {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px 4px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--color-sage-light);
+    color: var(--color-sage-hover);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+html[dir="rtl"] .lamsa-suit { padding: 4px 7px 4px 10px; }
+.lamsa-suit::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-sage) center / 9px no-repeat;
+    /* check mark */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6.5'/%3E%3C/svg%3E");
+}
+.lamsa-suit--bare::before { display: none; }
+
+/* ---- Ingredient pill (INCI / key actives) ---- */
+.lamsa-ing {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--color-sage-soft);
+    border-radius: var(--radius-md);
+    background: var(--color-sage-light);
+    font-size: 0.8125rem;
+    color: var(--color-text-primary);
+}
+.lamsa-ing-pct {
+    font-family: var(--font-display-en);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--color-sage-hover);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Free-from / claims row (paraben-free, cruelty-free…) ---- */
+.lamsa-claim {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+.lamsa-claim-icon {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-sage-light);
+    color: var(--color-sage-hover);
+}
+.lamsa-claim-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+}
+
+/* ---- Trust bar (shipping · returns · authentic) ---- */
+.lamsa-trust {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+.lamsa-trust-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+}
+.lamsa-trust--sage .lamsa-trust-icon { background: var(--color-sage-light); color: var(--color-sage-hover); }
+
+
+/* ==========================================================================
+   08. CARDS & MEDIA
+   ========================================================================== */
+.lamsa-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+}
+.lamsa-card--hover:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+}
+.lamsa-card--outline { box-shadow: none; border: 1px solid var(--color-border); }
+.lamsa-card--outline.lamsa-card--hover:hover { border-color: var(--color-accent-soft); box-shadow: var(--shadow-md); }
+.lamsa-card--flat { box-shadow: none; background: transparent; }
+.lamsa-card--pad { padding: var(--space-5); }
+.lamsa-card--sage { background: var(--color-sage-light); box-shadow: none; }
+.lamsa-card--rose { background: var(--color-accent-light); box-shadow: none; }
+
+/* ---- Media frame ---- */
+.lamsa-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-bg-tertiary);
+    isolation: isolate;
+}
+.lamsa-media > img,
+.lamsa-media > picture > img,
+.lamsa-media > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Ratios */
+.lamsa-ratio-1\/1 { aspect-ratio: 1 / 1; }
+.lamsa-ratio-4\/5 { aspect-ratio: 4 / 5; }
+.lamsa-ratio-3\/4 { aspect-ratio: 3 / 4; }
+.lamsa-ratio-4\/3 { aspect-ratio: 4 / 3; }
+.lamsa-ratio-16\/9 { aspect-ratio: 16 / 9; }
+.lamsa-ratio-2\/3 { aspect-ratio: 2 / 3; }
+
+/* Product media — soft blush well behind cut-out packshots */
+.lamsa-media--product {
+    background:
+        radial-gradient(120% 100% at 50% 12%, #FFFFFF 0%, var(--color-bg-primary) 55%, var(--color-bg-tertiary) 100%);
+}
+
+/* Slow zoom on hover */
+.lamsa-media--zoom > img { transition: transform var(--t-image) var(--ease-out); }
+.group:hover .lamsa-media--zoom > img,
+.lamsa-media--zoom:hover > img { transform: scale(1.05); }
+
+/* Two-image cross-fade */
+.lamsa-media-swap { position: absolute; inset: 0; }
+.lamsa-media-swap--primary { transition: opacity var(--t-image) var(--ease-out); }
+.lamsa-media-swap--alt { opacity: 0; transition: opacity var(--t-image) var(--ease-out); }
+.group:hover .lamsa-media-swap--primary { opacity: 0; }
+.group:hover .lamsa-media-swap--alt { opacity: 1; }
+
+/* Image scrim for text-over-photo blocks */
+.lamsa-scrim::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.lamsa-scrim--soft::after { background: linear-gradient(to top, rgba(59, 44, 49, 0.42) 0%, transparent 62%); }
+.lamsa-scrim--medium::after { background: linear-gradient(to top, rgba(59, 44, 49, 0.62) 0%, rgba(59, 44, 49, 0.10) 70%); }
+.lamsa-scrim--strong::after { background: linear-gradient(to top, rgba(59, 44, 49, 0.78) 0%, rgba(59, 44, 49, 0.28) 100%); }
+.lamsa-scrim--full::after { background: rgba(59, 44, 49, 0.42); }
+
+/* Hover reveal — the card's action tray slides up on hover (desktop only) */
+.lamsa-reveal-tray {
+    position: absolute;
+    inset-inline: 10px;
+    bottom: 10px;
+    z-index: 4;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.group:hover .lamsa-reveal-tray { opacity: 1; transform: translateY(0); }
+@media (hover: none) {
+    /* stays inside the image: the media box clips (overflow:hidden + fixed
+       ratio), so position:static pushed the tray out and hid it on every phone */
+    .lamsa-reveal-tray { opacity: 1; transform: none; inset-inline: 8px; bottom: 8px; }
+}
+
+/* Image fade-in once loaded (JS toggles .is-loaded) */
+.lamsa-img-fade { opacity: 0; transition: opacity var(--t-slow) var(--ease-out); }
+.lamsa-img-fade.is-loaded { opacity: 1; }
+
+
+/* ---- PRODUCT CARD ----------------------------------------------------------
+   Shared by ui/product-card.njk (SSR) and LamsaCard.build() (AJAX).
+   Keep ALL card styling here so the two renderers can never drift visually.
+   -------------------------------------------------------------------------- */
+.lamsa-pcard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+}
+
+.lamsa-pcard-media {
+    position: relative;
+    width: var(--lone-w, 100%); /* --lone-w: see LONE CARD at the end of this file */
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    /* soft blush well so cut-out packshots sit on something */
+    background: radial-gradient(118% 100% at 50% 8%, #FFFFFF 0%, var(--color-bg-primary) 52%, var(--color-bg-tertiary) 100%);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft);
+}
+.lamsa-pcard:hover .lamsa-pcard-media { box-shadow: var(--shadow-card-hover); }
+
+.lamsa-pcard-media > a { display: block; width: 100%; height: 100%; }
+
+.lamsa-pcard-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* contain, not cover: a portrait packshot in a square card loses its top
+       and bottom to `cover`, and on clothing that is the head and the hem.
+       The media box already paints a blush well behind the image for exactly
+       this — see the gradient on .lamsa-pcard-media above. */
+    object-fit: contain;
+    transition: opacity var(--t-image) var(--ease-out), transform var(--t-image) var(--ease-out);
+}
+.lamsa-pcard-img--alt { opacity: 0; }
+.lamsa-pcard:hover .lamsa-pcard-img--alt { opacity: 1; }
+.lamsa-pcard:hover .lamsa-pcard-img--only { transform: scale(1.045); }
+
+/* placeholder when the product has no image */
+.lamsa-pcard-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-soft);
+}
+
+/* badge stack — top start */
+.lamsa-pcard-badges {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 10px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+/* quick-view — top end, fades in on hover */
+.lamsa-pcard-quick {
+    position: absolute;
+    top: 10px;
+    inset-inline-end: 10px;
+    z-index: 4;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.lamsa-pcard:hover .lamsa-pcard-quick { opacity: 1; transform: none; }
+@media (hover: none) { .lamsa-pcard-quick { opacity: 1; transform: none; } }
+
+/* text block */
+.lamsa-pcard-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 14px;
+    min-width: 0;
+}
+
+.lamsa-pcard-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+}
+html[dir="ltr"] .lamsa-pcard-name { font-family: var(--font-display-en); }
+.lamsa-pcard-name:hover { color: var(--color-accent); }
+
+.lamsa-pcard-prices {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;      /* pin prices to the bottom so cards align in a grid */
+    padding-top: 2px;
+}
+
+/* add-to-cart — full-width pill inside the media on hover, or below on mobile */
+.lamsa-pcard-atc {
+    width: 100%;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 640px) {
+    .lamsa-pcard-body { gap: 7px; padding-top: 11px; }
+    .lamsa-pcard-name { font-size: 0.875rem; }
+    .lamsa-pcard-badges,
+    .lamsa-pcard-quick { top: 7px; }
+    .lamsa-pcard-badges { inset-inline-start: 7px; }
+    .lamsa-pcard-quick { inset-inline-end: 7px; }
+}
+
+
+/* ==========================================================================
+   09. FORMS & INPUTS
+   ========================================================================== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+textarea,
+select,
+.lamsa-input {
+    width: 100%;
+    padding: 13px 16px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-input);
+    outline: none;
+    transition: border-color var(--t-fast) var(--ease-soft), box-shadow var(--t-fast) var(--ease-soft);
+    appearance: none;
+}
+
+::placeholder { color: var(--color-text-tertiary); opacity: 1; }
+
+:is(input, textarea, select, .lamsa-input):focus {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-focus);
+}
+
+:is(input, textarea, select).is-error,
+.lamsa-input--compact { padding: 9px 12px; font-size: 0.8125rem; }
+
+.lamsa-input.is-error {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 4px rgba(208, 107, 107, 0.14);
+}
+
+textarea { min-height: 120px; resize: vertical; }
+
+/* Select — custom caret */
+select,
+.lamsa-select {
+    padding-inline-end: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236E585E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: right 14px center;
+    cursor: pointer;
+}
+html[dir="rtl"] select,
+html[dir="rtl"] .lamsa-select {
+    padding-inline-end: 40px;
+    background-position: left 14px center;
+}
+
+/* Search input with leading icon */
+.lamsa-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.lamsa-search > svg {
+    position: absolute;
+    inset-inline-start: 15px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-tertiary);
+    pointer-events: none;
+}
+.lamsa-search > input { padding-inline-start: 44px; border-radius: var(--radius-pill); }
+
+/* Field wrapper */
+.lamsa-field { display: flex; flex-direction: column; gap: 7px; }
+.lamsa-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.lamsa-help { font-size: 0.75rem; color: var(--color-text-tertiary); }
+.lamsa-error { font-size: 0.75rem; color: var(--color-error); font-weight: 500; }
+
+/* Checkbox / radio */
+.lamsa-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    user-select: none;
+}
+.lamsa-check input[type="checkbox"],
+.lamsa-check input[type="radio"] {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), border-color var(--t-fast) var(--ease-soft);
+}
+.lamsa-check input[type="radio"] { border-radius: 50%; }
+.lamsa-check input:checked {
+    background: var(--color-accent) center / 12px no-repeat;
+    border-color: var(--color-accent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9.5 18 20 6.5'/%3E%3C/svg%3E");
+}
+.lamsa-check input[type="radio"]:checked {
+    background-image: none;
+    box-shadow: inset 0 0 0 4px var(--color-surface);
+}
+.lamsa-check:hover input { border-color: var(--color-accent); }
+.lamsa-check input:focus-visible { box-shadow: var(--shadow-focus); }
+
+/* Quantity stepper */
+.lamsa-qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+.lamsa-qty button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.lamsa-qty button:hover:not(:disabled) { background: var(--color-accent-light); color: var(--color-accent); }
+.lamsa-qty button:disabled { opacity: 0.4; cursor: not-allowed; }
+.lamsa-qty-value {
+    min-width: 34px;
+    text-align: center;
+    font-family: var(--font-display-en);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.lamsa-qty--sm button { width: 32px; height: 32px; }
+
+/* Newsletter / coupon inline form */
+.lamsa-inline-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    transition: border-color var(--t-fast) var(--ease-soft), box-shadow var(--t-fast) var(--ease-soft);
+}
+.lamsa-inline-form:focus-within { border-color: var(--color-accent); box-shadow: var(--shadow-focus); }
+.lamsa-inline-form input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 8px 14px;
+}
+.lamsa-inline-form input:focus { box-shadow: none; }
+@media (max-width: 480px) {
+    .lamsa-inline-form { flex-direction: column; border-radius: var(--radius-lg); padding: 10px; }
+    .lamsa-inline-form input { width: 100%; text-align: center; }
+    .lamsa-inline-form .lamsa-btn { width: 100%; }
+}
+
+
+/* ==========================================================================
+   10. NAVIGATION · DRAWER · OVERLAY · MODAL
+   ========================================================================== */
+
+/* ---- Header shell ---- */
+.lamsa-header { position: relative; z-index: var(--z-header); width: 100%; }
+.lamsa-header.is-sticky { position: fixed; top: 0; inset-inline: 0; }
+.lamsa-header-bar {
+    background: var(--color-header);
+    color: var(--color-header-text);
+    transition: background var(--t-base) var(--ease-soft),
+                box-shadow var(--t-base) var(--ease-soft),
+                border-color var(--t-base) var(--ease-soft);
+}
+.lamsa-header.is-scrolled .lamsa-header-bar {
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--shadow-sm);
+}
+/* transparent-over-hero mode */
+.lamsa-header.is-overlay:not(.is-scrolled) .lamsa-header-bar { background: transparent; color: #FFF; }
+.lamsa-header.is-overlay:not(.is-scrolled) .lamsa-announce { background: rgba(255, 255, 255, 0.14); color: #FFF; }
+
+/* Announcement strip */
+.lamsa-announce {
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding-block: 9px;
+    transition: background var(--t-base) var(--ease-soft), color var(--t-base) var(--ease-soft);
+}
+.lamsa-announce--sage { background: var(--color-sage); }
+.lamsa-announce--soft { background: var(--color-accent-light); color: var(--color-accent-dark); }
+
+/* Nav link with underline */
+.lamsa-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding-block: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: currentColor;
+    white-space: nowrap;
+}
+.lamsa-nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--t-base) var(--ease-out);
+}
+.lamsa-nav-link:hover,
+.lamsa-nav-link.is-active { color: var(--color-accent); }
+.lamsa-nav-link:hover::after,
+.lamsa-nav-link.is-active::after { transform: scaleX(1); }
+.lamsa-nav-link-caret { transition: transform var(--t-fast) var(--ease-soft); }
+.lamsa-nav-item:hover .lamsa-nav-link-caret { transform: rotate(180deg); }
+
+/* ---- Mega menu — skin type / concern columns ---- */
+.lamsa-mega {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    z-index: var(--z-mega);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity var(--t-base) var(--ease-out),
+                transform var(--t-base) var(--ease-out),
+                visibility var(--t-base);
+}
+.lamsa-mega.is-open,
+.lamsa-nav-item:hover > .lamsa-mega {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.lamsa-mega-inner {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-7);
+}
+.lamsa-mega-col { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.lamsa-mega-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+html[dir="rtl"] .lamsa-mega-title { font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
+.lamsa-mega-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+    margin-inline: -8px;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.lamsa-mega-link:hover { background: var(--color-accent-light); color: var(--color-accent-dark); }
+/* small round thumb / concern swatch beside a mega link */
+.lamsa-mega-dot {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+}
+/* promo card pinned inside the mega panel */
+.lamsa-mega-promo {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    background: var(--color-accent-light);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-5);
+}
+
+/* ---- Overlay ---- */
+.lamsa-overlay,
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    background: rgba(59, 44, 49, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* ---- Drawer (cart / filters / mobile nav) ---- */
+.lamsa-drawer,
+.drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-drawer);
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-xl);
+    /* The foot paints its own background and is the last flex child, so without
+       this it squares off the rounded inner corner it sits in. The body keeps
+       its own overflow-y, so nothing here takes the scroll away from it. */
+    overflow: hidden;
+    transition: transform var(--t-slow) var(--ease-out);
+}
+/* rounded inner edge — the "soft" signature
+   PHYSICAL radii on purpose, and the one place in this file where that is the
+   correct call. The drawer's position is already pinned physically per `dir`
+   (`left: 0` / `right: 0` below), so the selector has done the flipping. A
+   logical radius would flip a second time on top of that and cancel out — which
+   is what used to happen: RTL rounded the edge lying flush against the screen
+   and exposed the scrim behind the curve. Group by where the drawer SITS. */
+
+/* pinned to the right edge → round the left (inner) side */
+html[dir="rtl"] :is(.lamsa-drawer, .drawer).drawer-start,
+html[dir="ltr"] :is(.lamsa-drawer, .drawer).drawer-end { border-top-left-radius: var(--radius-xl); border-bottom-left-radius: var(--radius-xl); }
+/* pinned to the left edge → round the right (inner) side */
+html[dir="rtl"] :is(.lamsa-drawer, .drawer).drawer-end,
+html[dir="ltr"] :is(.lamsa-drawer, .drawer).drawer-start { border-top-right-radius: var(--radius-xl); border-bottom-right-radius: var(--radius-xl); }
+
+html[dir="rtl"] :is(.lamsa-drawer, .drawer).drawer-start { right: 0; transform: translateX(100%); }
+html[dir="ltr"] :is(.lamsa-drawer, .drawer).drawer-start { left: 0; transform: translateX(-100%); }
+html[dir="rtl"] :is(.lamsa-drawer, .drawer).drawer-end { left: 0; transform: translateX(-100%); }
+html[dir="ltr"] :is(.lamsa-drawer, .drawer).drawer-end { right: 0; transform: translateX(100%); }
+:is(.lamsa-drawer, .drawer).open { transform: translateX(0) !important; }
+
+.lamsa-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+.lamsa-drawer-body { flex: 1; overflow-y: auto; padding: var(--space-5); }
+.lamsa-drawer-foot {
+    padding: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    flex-shrink: 0;
+}
+
+/* Cart drawer CTAs — checkout + view cart share one height so they read as a pair */
+.lamsa-cart-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.lamsa-cart-view {
+    background: var(--color-surface);
+    border-color: var(--color-accent-soft);
+    color: var(--color-accent-dark);
+}
+.lamsa-cart-view:hover {
+    background: var(--color-accent-light);
+    border-color: var(--color-accent);
+    color: var(--color-accent-dark);
+}
+
+/* ---- Modal / sheet ---- */
+.lamsa-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    pointer-events: none;
+}
+.lamsa-modal-panel {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    pointer-events: auto;
+}
+.lamsa-modal-close {
+    position: absolute;
+    top: 14px;
+    inset-inline-end: 14px;
+    z-index: 5;
+}
+/* bottom sheet on mobile */
+@media (max-width: 640px) {
+    .lamsa-modal { align-items: flex-end; padding: 0; }
+    .lamsa-modal-panel {
+        max-height: 92vh;
+        max-height: 92dvh;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+}
+
+
+/* ==========================================================================
+   11. PDP PRIMITIVES
+   Ingredients · How to use · Before/After · Suggested routine
+   ========================================================================== */
+
+/* ---- Accordion ---- */
+.lamsa-acc { border-top: 1px solid var(--color-border); }
+.lamsa-acc-item { border-bottom: 1px solid var(--color-border); }
+.lamsa-acc-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 18px 0;
+    background: transparent;
+    border: 0;
+    text-align: start;
+    cursor: pointer;
+    font-family: var(--font-display-ar);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+}
+html[dir="ltr"] .lamsa-acc-trigger { font-family: var(--font-display-en); }
+.lamsa-acc-trigger:hover { color: var(--color-accent); }
+.lamsa-acc-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    transition: transform var(--t-base) var(--ease-out), background var(--t-fast) var(--ease-soft);
+}
+.lamsa-acc-item.is-open .lamsa-acc-icon { transform: rotate(180deg); background: var(--color-accent); color: var(--color-text-on-accent); }
+.lamsa-acc-panel { padding-bottom: 20px; }
+
+/* ---- Tabs ---- */
+.lamsa-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-tertiary);
+}
+.lamsa-tab {
+    padding: 9px 20px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.lamsa-tab:hover { color: var(--color-text-primary); }
+.lamsa-tab.is-active {
+    background: var(--color-surface);
+    color: var(--color-accent-dark);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ---- Before / After comparison slider ----
+   Markup: .lamsa-ba > (img.after, .lamsa-ba-clip > img.before, input[type=range])
+   JS sets --pos (0–100) on .lamsa-ba. Works RTL because the clip is logical. */
+.lamsa-ba {
+    --pos: 50;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    user-select: none;
+    touch-action: pan-y;
+}
+.lamsa-ba img { width: 100%; display: block; pointer-events: none; }
+.lamsa-ba-clip {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--pos) * 1%) 0 0);
+}
+html[dir="rtl"] .lamsa-ba-clip { clip-path: inset(0 0 0 calc(100% - var(--pos) * 1%)); }
+.lamsa-ba-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--pos) * 1%);
+    width: 2px;
+    background: #FFF;
+    box-shadow: 0 0 12px rgba(59, 44, 49, 0.35);
+    pointer-events: none;
+    transform: translateX(-1px);
+}
+html[dir="rtl"] .lamsa-ba-handle { left: auto; right: calc(var(--pos) * 1%); transform: translateX(1px); }
+.lamsa-ba-grip {
+    position: absolute;
+    top: 50%;
+    left: 50%; /* physical on purpose — see .lamsa-glow */
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #FFF;
+    color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+}
+.lamsa-ba input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    z-index: 3;
+}
+.lamsa-ba-label {
+    position: absolute;
+    top: 14px;
+    z-index: 2;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+.lamsa-ba-label--before { inset-inline-start: 14px; }
+.lamsa-ba-label--after { inset-inline-end: 14px; }
+
+/* ---- Routine steps (numbered, connected) ---- */
+.lamsa-routine { display: flex; flex-direction: column; gap: var(--space-5); }
+.lamsa-routine-step {
+    position: relative;
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+}
+.lamsa-routine-num {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-display-en);
+    font-size: 0.875rem;
+    font-weight: 700;
+    z-index: 1;
+}
+.lamsa-routine-step--sage .lamsa-routine-num { border-color: var(--color-sage-soft); color: var(--color-sage-hover); }
+/* connector line down to the next step */
+.lamsa-routine-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 44px;
+    bottom: calc(var(--space-5) * -1);
+    inset-inline-start: 20px;
+    width: 1.5px;
+    background: linear-gradient(to bottom, var(--color-accent-soft), transparent);
+}
+
+/* Horizontal variant (home "how it works") */
+.lamsa-routine--row { flex-direction: row; gap: var(--space-6); }
+.lamsa-routine--row .lamsa-routine-step { flex-direction: column; flex: 1; text-align: center; align-items: center; }
+.lamsa-routine--row .lamsa-routine-step::before {
+    top: 20px;
+    bottom: auto;
+    inset-inline-start: 50%;
+    inset-inline-end: calc(var(--space-6) * -1);
+    width: auto;
+    height: 1.5px;
+    background: linear-gradient(to var(--lamsa-to, right), var(--color-accent-soft), transparent);
+}
+html[dir="rtl"] .lamsa-routine--row .lamsa-routine-step::before { --lamsa-to: left; }
+@media (max-width: 767px) {
+    .lamsa-routine--row { flex-direction: column; }
+    .lamsa-routine--row .lamsa-routine-step { flex-direction: row; text-align: start; align-items: flex-start; }
+    .lamsa-routine--row .lamsa-routine-step::before { top: 44px; bottom: calc(var(--space-5) * -1); inset-inline: 20px auto; width: 1.5px; height: auto; background: linear-gradient(to bottom, var(--color-accent-soft), transparent); }
+}
+
+/* ---- Spec / detail table (INCI, size, texture) ---- */
+.lamsa-specs { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.lamsa-specs th,
+.lamsa-specs td { padding: 13px 0; text-align: start; vertical-align: top; }
+.lamsa-specs tr + tr { border-top: 1px solid var(--color-border); }
+.lamsa-specs th { color: var(--color-text-tertiary); font-weight: 500; width: 38%; }
+.lamsa-specs td { color: var(--color-text-primary); font-weight: 500; }
+
+/* ---- Sticky PDP buy bar (mobile) ---- */
+.lamsa-buybar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px var(--container-px-sm);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -6px 24px -12px rgba(201, 123, 142, 0.3);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+
+/* ==========================================================================
+   12. FEEDBACK · TOAST · SKELETON · STATES
+   ========================================================================== */
+
+/* ---- Toast (ids/classes match assets/main.js) ---- */
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: var(--radius-pill);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #FFF;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+    animation: lamsaToastIn var(--t-base) var(--ease-out);
+}
+.toast-success { background: var(--color-success); }
+.toast-error { background: var(--color-error); }
+.toast-warning { background: var(--color-warning); }
+.toast-info { background: var(--color-accent); }
+
+/* ---- Skeleton shimmer ---- */
+.lamsa-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+.lamsa-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    animation: lamsaShimmer 1.4s infinite;
+}
+html[dir="rtl"] .lamsa-skeleton::after { animation-name: lamsaShimmerRtl; }
+
+/* ---- Spinner ---- */
+.lamsa-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-accent-soft);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: lamsaSpin 0.7s linear infinite;
+}
+
+/* ---- Empty state ---- */
+.lamsa-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: var(--space-9);
+    gap: var(--space-4);
+}
+.lamsa-empty-icon {
+    width: 92px;
+    height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+}
+
+/* ---- Interaction states used by main.js ---- */
+.loading { opacity: 0.55; pointer-events: none; }
+.removing { opacity: 0; transition: all var(--t-slow) var(--ease-soft); }
+html[dir="ltr"] .removing { transform: translateX(-24px); }
+html[dir="rtl"] .removing { transform: translateX(24px); }
+.cart-item-enter { animation: lamsaSlideUp var(--t-base) var(--ease-out); }
+.ajax-card { transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+
+/* ---- shop-products section widget: SSR copy hidden until AJAX-mounted ---- */
+.shop-products-content { display: none; }
+[data-qumra-section="shop-products"] .shop-products-content { display: block; }
+
+
+/* ==========================================================================
+   13. THIRD-PARTY OVERRIDES
+   ========================================================================== */
+
+/* ---- Swiper ---- */
+.swiper-pagination-bullet {
+    width: 7px;
+    height: 7px;
+    background: var(--color-accent) !important;
+    opacity: 0.28;
+    transition: all var(--t-fast) var(--ease-soft);
+}
+.swiper-pagination-bullet-active {
+    opacity: 1 !important;
+    width: 22px;
+    border-radius: var(--radius-pill);
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-accent) !important;
+    box-shadow: var(--shadow-md);
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.swiper-button-next:hover,
+.swiper-button-prev:hover { background: var(--color-accent); color: #FFF !important; }
+.swiper-button-next::after,
+.swiper-button-prev::after { font-size: 15px !important; font-weight: 700; }
+.swiper-button-disabled { opacity: 0.35 !important; }
+
+/* Equal-height slides + pagination below the track */
+.swiper-outside-pagination { overflow-x: clip; overflow-y: visible; }
+.swiper-outside-pagination .swiper-wrapper { align-items: stretch; }
+.swiper-outside-pagination .swiper-slide { height: auto; }
+.swiper-outside-pagination > .swiper-pagination {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: var(--space-5);
+}
+
+.swiper-scrollbar { background: var(--color-border) !important; border-radius: var(--radius-pill); }
+.swiper-scrollbar-drag { background: var(--color-accent) !important; border-radius: var(--radius-pill); }
+
+/* ---- GLightbox ---- */
+.glightbox-clean .gslide-description { background: var(--color-surface); }
+.glightbox-clean .gdesc-inner { font-family: var(--font-body-ar); }
+.gbtn.gclose,
+.gbtn.gnext,
+.gbtn.gprev { border-radius: var(--radius-pill); background: rgba(255, 255, 255, 0.16); }
+
+/* ---- Dual-thumb price range slider (used by filter widgets) ---- */
+.price-slider {
+    position: relative;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+.price-slider .slider-track,
+.price-slider .slider-range {
+    position: absolute;
+    height: 5px;
+    border-radius: var(--radius-pill);
+}
+.price-slider .slider-track { width: 100%; background: var(--color-bg-tertiary); }
+.price-slider .slider-range { background: var(--color-accent); }
+.price-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    margin: 0;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    pointer-events: none;
+    outline: none;
+}
+.price-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #FFF;
+    border: 2.5px solid var(--color-accent);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease-out);
+}
+.price-slider input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.price-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #FFF;
+    border: 2.5px solid var(--color-accent);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+}
+.price-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+
+
+/* ==========================================================================
+   14. UTILITIES & MOTION
+   ========================================================================== */
+
+/* ---- Colour utilities (widgets lean on these heavily) ---- */
+.bg-accent { background-color: var(--color-accent); }
+.bg-accent-light { background-color: var(--color-accent-light); }
+.bg-accent-soft { background-color: var(--color-accent-soft); }
+.bg-sage { background-color: var(--color-sage); }
+.bg-sage-light { background-color: var(--color-sage-light); }
+.bg-tertiary { background-color: var(--color-bg-tertiary); }
+.bg-surface { background-color: var(--color-surface); }
+
+.text-accent { color: var(--color-accent); }
+.text-accent-dark { color: var(--color-accent-dark); }
+.text-sage { color: var(--color-sage); }
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+
+.border-accent { border-color: var(--color-accent); }
+.border-sage { border-color: var(--color-sage); }
+.border-soft { border-color: var(--color-border); }
+
+.hover\:bg-accent:hover { background-color: var(--color-accent); }
+.hover\:bg-accent-light:hover { background-color: var(--color-accent-light); }
+.hover\:text-accent:hover { color: var(--color-accent); }
+.hover\:text-sage:hover { color: var(--color-sage); }
+.hover\:border-accent:hover { border-color: var(--color-accent); }
+
+/* Font-family helpers */
+.font-display { font-family: var(--font-display-ar); }
+html[dir="ltr"] .font-display { font-family: var(--font-display-en); }
+.font-display-en { font-family: var(--font-display-en); }
+.font-body { font-family: var(--font-body-ar); }
+html[dir="ltr"] .font-body { font-family: var(--font-body-en); }
+.font-num { font-family: var(--font-display-en); font-variant-numeric: tabular-nums; }
+
+/* Section alternation */
+.section-a { background: var(--color-section-a); }
+.section-b { background: var(--color-section-b); }
+
+/* ---- Line clamp ---- */
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-4 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.line-clamp-1 { -webkit-line-clamp: 1; }
+.line-clamp-2 { -webkit-line-clamp: 2; }
+.line-clamp-3 { -webkit-line-clamp: 3; }
+.line-clamp-4 { -webkit-line-clamp: 4; }
+
+/* ---- Scrollbars ---- */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-accent-soft); border-radius: var(--radius-pill); }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ---- Related products: columns follow the count, no card alone on a row ---- */
+.lamsa-related { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 16px; }
+.lamsa-related[data-n="1"] { grid-template-columns: minmax(0, 320px); justify-content: center; }
+@media (min-width: 768px) {
+    .lamsa-related { gap: 48px 24px; }
+    .lamsa-related[data-n="2"] { grid-template-columns: repeat(2, minmax(0, 320px)); justify-content: center; }
+    .lamsa-related[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    .lamsa-related:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* a shade whose name we can't turn into a colour keeps its label */
+.lamsa-swatch--named {
+    width: auto; height: auto; min-height: 32px; padding: 4px 12px;
+    border-radius: var(--radius-btn); border-color: var(--color-border-strong);
+    background-color: var(--color-surface); color: var(--color-text-primary);
+    font-size: 0.8125rem; box-shadow: none;
+}
+
+/* ---- Scroll reveal (class added by main.js only outside the builder) ---- */
+/* content stays visible whatever happens to the observer: it only slides */
+html.reveal-init .reveal {
+    transform: translateY(18px);
+    transition: transform var(--t-slow) var(--ease-out);
+}
+html.reveal-init .reveal.is-visible { transform: none; }
+/* staggered children */
+html.reveal-init .reveal-stagger > * {
+    transform: translateY(14px);
+    transition: transform var(--t-slow) var(--ease-out);
+}
+html.reveal-init .reveal-stagger.is-visible > * { transform: none; }
+html.reveal-init .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 70ms; }
+html.reveal-init .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 140ms; }
+html.reveal-init .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 210ms; }
+html.reveal-init .reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 280ms; }
+html.reveal-init .reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 350ms; }
+
+/* ---- Misc ---- */
+.lamsa-lift { transition: transform var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-soft); }
+.lamsa-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.hover-fade { transition: opacity var(--t-base) var(--ease-soft); }
+.hover-fade:hover { opacity: 0.82; }
+.lamsa-no-select { user-select: none; }
+.lang-form { margin: 0; padding: 0; }
+.active { color: var(--color-accent); }
+
+/* Flip directional icons in RTL */
+.rtl-flip { transition: transform var(--t-fast) var(--ease-soft); }
+html[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+/* ---- Keyframes ---- */
+@keyframes lamsaPageIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lamsaSpin { to { transform: rotate(360deg); } }
+@keyframes lamsaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lamsaSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes lamsaToastIn { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes lamsaShimmer { 100% { transform: translateX(100%); } }
+@keyframes lamsaShimmerRtl { 100% { transform: translateX(-200%); } }
+/* --ring tracks the accent setting where color-mix() is supported,
+   and falls back to the static rose rgb otherwise. */
+:root { --lamsa-ring: rgba(201, 123, 142, 0.35); }
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+    :root { --lamsa-ring: color-mix(in srgb, var(--color-accent) 35%, transparent); }
+}
+@keyframes lamsaPulseRing {
+    0% { box-shadow: 0 0 0 0 var(--lamsa-ring); }
+    70% { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes lamsaFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.animate-spin { animation: lamsaSpin 0.75s linear infinite; }
+.animate-fade-in { animation: lamsaFadeIn var(--t-base) var(--ease-out); }
+.animate-slide-up { animation: lamsaSlideUp var(--t-slow) var(--ease-out); }
+.lamsa-pulse-ring { animation: lamsaPulseRing 2.2s var(--ease-soft) infinite; }
+.lamsa-float { animation: lamsaFloat 6s var(--ease-soft) infinite; }
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    html.reveal-init .reveal,
+    html.reveal-init .reveal-stagger > * { opacity: 1; transform: none; }
+    .lamsa-img-fade { opacity: 1; }
+}
+
+/* ---- Print ---- */
+@media print {
+    .lamsa-header,
+    .lamsa-drawer,
+    .lamsa-overlay,
+    .lamsa-buybar,
+    #toast-container,
+    footer { display: none !important; }
+    body { background: #FFF; }
+}
+
+
+/* ==========================================================================
+   15. LEGACY BRIDGE  ⚠️  TEMPORARY
+   Keeps the not-yet-rebuilt ATTAR widgets rendering in LAMSA's skin.
+   DELETE this whole section once every widget in widgets/ is rebuilt.
+   ========================================================================== */
+
+/* --- token aliases the old widgets still read --- */
+:root {
+    --color-primary: var(--color-accent);
+    --color-primary-dark: var(--color-accent-hover);
+    --color-primary-rgb: var(--color-accent-rgb);
+    --primary-rgb: var(--color-accent-rgb);
+    --color-accent-secondary: var(--color-sage);
+    --color-accent-secondary-hover: var(--color-sage-hover);
+    --color-accent-secondary-light: var(--color-sage-light);
+    --color-bg-green: var(--color-sage-light);
+    --color-bg-peach: var(--color-accent-light);
+    --font-heading-ar: var(--font-display-ar);
+    --font-heading-en: var(--font-display-en);
+    --radius-none: 0px;
+    --radius-full: var(--radius-pill);
+    --shadow-accent-lg: var(--shadow-lg);
+    --gradient-accent: var(--color-accent);
+    --gradient-accent-hover: var(--color-accent-hover);
+    --gradient-accent-light: var(--color-accent-light);
+    --gradient-accent-subtle: var(--color-bg-tertiary);
+    --transition-fast: var(--t-fast) var(--ease-soft);
+    --transition-base: var(--t-base) var(--ease-soft);
+    --transition-slow: var(--t-slow) var(--ease-out);
+    --transition-glacial: var(--t-image) var(--ease-out);
+}
+
+/* --- old font helpers --- */
+.font-heading-ar, .font-heading-en { font-family: var(--font-display-ar); }
+html[dir="ltr"] :is(.font-heading-ar, .font-heading-en) { font-family: var(--font-display-en); }
+.font-body-ar, .font-body-en { font-family: var(--font-body-ar); }
+html[dir="ltr"] :is(.font-body-ar, .font-body-en) { font-family: var(--font-body-en); }
+
+/* --- old type helpers --- */
+.text-body-lg { font-size: 1.0625rem; line-height: 1.85; color: var(--color-text-secondary); }
+.text-body { font-size: 0.9375rem; line-height: 1.8; }
+.text-body-sm { font-size: 0.875rem; line-height: 1.7; color: var(--color-text-secondary); }
+.text-caption { font-size: 0.75rem; line-height: 1.6; color: var(--color-text-tertiary); }
+.text-price { font-family: var(--font-display-en); font-size: 1.0625rem; font-weight: 600; }
+.text-price-sale { font-family: var(--font-display-en); font-size: 0.8125rem; text-decoration: line-through; color: var(--color-text-tertiary); }
+
+/* --- MADAR buttons → LAMSA buttons --- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); font-family: inherit; font-size: 0.875rem; font-weight: 600; line-height: 1; border-radius: var(--radius-btn); cursor: pointer; transition: all var(--t-base) var(--ease-soft); text-transform: none; letter-spacing: 0; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-primary { padding: 14px 30px; background: var(--color-accent); color: var(--color-text-on-accent); border: 1.5px solid var(--color-accent); box-shadow: var(--shadow-accent); }
+.btn-primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.btn-secondary { padding: 13px 30px; background: transparent; color: var(--color-text-primary); border: 1.5px solid var(--color-border-strong); }
+.btn-secondary:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-light); }
+.btn-ghost { padding: 8px 12px; background: transparent; border: 0; color: var(--color-text-primary); }
+.btn-ghost:hover { color: var(--color-accent); }
+.btn-ghost::after { content: none; }
+.btn-breathe-white { animation: lamsaPulseRing 2.4s var(--ease-soft) infinite; }
+
+/* --- ANAQA editorial buttons → soft pills --- */
+.anaqa-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    padding: 14px 32px; font-size: 0.875rem; font-weight: 600; line-height: 1;
+    letter-spacing: 0; text-transform: none;
+    color: var(--color-text-on-accent); background: var(--color-accent); border: 1.5px solid var(--color-accent);
+    border-radius: var(--radius-btn); box-shadow: var(--shadow-accent); cursor: pointer;
+    transition: all var(--t-base) var(--ease-soft);
+}
+html[dir="rtl"] .anaqa-btn { letter-spacing: 0; text-transform: none; font-size: 0.875rem; }
+.anaqa-btn:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); color: var(--color-text-on-accent); }
+.anaqa-btn--light { background: #FFF; border-color: #FFF; color: var(--color-text-primary); box-shadow: var(--shadow-md); }
+.anaqa-btn--light:hover { background: var(--color-accent-light); border-color: var(--color-accent-light); color: var(--color-accent-dark); }
+
+.anaqa-add-btn {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; margin-top: 4px;
+    padding: 9px 18px; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0; text-transform: none;
+    color: var(--color-accent-dark); background: var(--color-accent-light);
+    border: 0; border-radius: var(--radius-btn); cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+html[dir="rtl"] .anaqa-add-btn { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.anaqa-add-btn:hover { background: var(--color-accent); color: var(--color-text-on-accent); }
+.anaqa-add-btn:disabled { opacity: 0.65; cursor: default; }
+.anaqa-pcard-name { font-family: var(--font-display-ar); }
+html[dir="ltr"] .anaqa-pcard-name { font-family: var(--font-display-en); }
+
+/* --- editorial helpers → soft equivalents --- */
+.editorial-label {
+    display: inline-block; font-size: 0.6875rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent);
+}
+html[dir="rtl"] .editorial-label { font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
+.editorial-label--rule::before {
+    content: ''; display: inline-block; width: 20px; height: 2px; border-radius: var(--radius-pill);
+    margin-inline-end: 10px; vertical-align: middle; background: var(--color-accent-soft);
+}
+.editorial-rule { display: block; width: 100%; height: 1px; border: 0; background: var(--color-border); }
+.editorial-link { position: relative; display: inline-block; color: var(--color-accent); }
+.editorial-link::after {
+    content: ''; position: absolute; inset-inline: 0; bottom: -2px; height: 1.5px;
+    border-radius: var(--radius-pill); background: currentColor;
+    transform: scaleX(0); transform-origin: center; transition: transform var(--t-base) var(--ease-out);
+}
+.editorial-link:hover::after { transform: scaleX(1); }
+
+/* --- ATTAR fragrance bits → beauty equivalents --- */
+.attar-note-tag {
+    display: inline-flex; align-items: center; padding: 4px 11px;
+    font-size: 0.6875rem; font-weight: 600; line-height: 1.4; letter-spacing: 0;
+    color: var(--color-sage-hover); background: var(--color-sage-light);
+    border: 1px solid var(--color-sage-soft); border-radius: var(--radius-pill); white-space: nowrap;
+}
+.attar-kicker-line { display: inline-block; width: 22px; height: 2px; border-radius: var(--radius-pill); background: var(--color-accent-soft); }
+.attar-pcard-media { border-radius: var(--radius-media); transition: box-shadow var(--t-base) var(--ease-soft); }
+.group:hover .attar-pcard-media { box-shadow: var(--shadow-md); }
+
+/* --- MAZAJ cards & decor --- */
+.mazaj-card, .mazaj-card-gradient {
+    border-radius: var(--radius-card); background: var(--color-surface);
+    border: 0; box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+}
+.mazaj-card:hover, .mazaj-card-gradient:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-3px); border-color: transparent; }
+.mazaj-card-gradient::before { content: none; }
+.mazaj-gradient-bg { background: var(--color-accent); }
+.mazaj-gradient-bg-hover:hover { background: var(--color-accent-hover); }
+.mazaj-gradient-bg-light { background: var(--color-accent-light); }
+.mazaj-gradient-bg-subtle { background: var(--color-bg-tertiary); }
+.mazaj-gradient-text { color: var(--color-accent); }
+.mazaj-lift { transition: transform var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-soft); }
+.mazaj-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.mazaj-section-deco { position: relative; overflow: hidden; }
+.mazaj-section-deco::before,
+.mazaj-deco-top-end::before,
+.mazaj-deco-bottom-start::before,
+.mazaj-deco-center::before,
+.mazaj-dots,
+.mazaj-ring { display: none; }
+.mazaj-section-header { text-align: center; margin-bottom: var(--space-8); position: relative; z-index: 1; }
+.mazaj-section-header .mazaj-sh-line { width: 48px; height: 2px; border-radius: var(--radius-pill); background: var(--color-accent-soft); margin: 0 auto 18px; }
+.mazaj-section-header h2 { margin-bottom: 14px; }
+.mazaj-section-header p { color: var(--color-text-secondary); max-width: 54ch; margin: 0 auto; font-size: 0.9375rem; }
+
+/* --- old image / section helpers --- */
+.img-product { aspect-ratio: 4 / 5; }
+.img-hero { aspect-ratio: 16 / 9; }
+.img-category { aspect-ratio: 1 / 1; }
+.img-product, .img-hero, .img-category, .img-cover { width: 100%; height: 100%; object-fit: cover; }
+.img-card, .img-full { border-radius: var(--radius-media); overflow: hidden; }
+.img-zoom { overflow: hidden; }
+.img-zoom img { transition: transform var(--t-image) var(--ease-out); }
+.img-zoom:hover img { transform: scale(1.05); }
+.img-placeholder { background: var(--color-bg-tertiary); display: flex; align-items: center; justify-content: center; }
+.img-fade { opacity: 0; transition: opacity var(--t-slow) var(--ease-out); }
+.img-fade.is-loaded { opacity: 1; }
+.img-blur { filter: blur(14px); transform: scale(1.04); transition: filter var(--t-image) var(--ease-out), transform var(--t-image) var(--ease-out); }
+.img-blur.is-loaded { filter: none; transform: none; }
+.header-scrolled { backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-sm); }
+.section-header { text-align: center; margin-bottom: var(--space-6); }
+.section-header h2 { margin-bottom: 8px; }
+.section-header p { color: var(--color-text-secondary); }
+.stars { display: inline-flex; gap: 2px; }
+.stars .star-filled { color: var(--color-accent); }
+.stars .star-empty { color: var(--color-accent-soft); }
+.animate-check { animation: lamsaSlideUp var(--t-base) var(--ease-out); }
+.p-qoute * { color: inherit; }
+
+
+/* ---- FILTER PANEL ----------------------------------------------------------
+   Shared by ui/filter-panel.njk (desktop aside + mobile drawer).
+   -------------------------------------------------------------------------- */
+.lamsa-ffilter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    margin-inline: -10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.lamsa-ffilter-row:hover { background: var(--color-accent-light); color: var(--color-text-primary); }
+.lamsa-ffilter-row.is-active { color: var(--color-accent-dark); font-weight: 600; }
+
+.lamsa-ffilter-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    background: var(--color-surface);
+    /* the tick, revealed once .is-active paints the box with the accent */
+    color: var(--color-text-on-accent);
+    transition: background var(--t-fast) var(--ease-soft), border-color var(--t-fast) var(--ease-soft);
+}
+.lamsa-ffilter-box.is-active { background: var(--color-accent); border-color: var(--color-accent); }
+
+.lamsa-ffilter-count {
+    flex-shrink: 0;
+    font-family: var(--font-display-en);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-tertiary);
+}
+
+/* active filter chips above the grid */
+.lamsa-fchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 8px 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-light);
+    color: var(--color-accent-dark);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+html[dir="rtl"] .lamsa-fchip { padding: 6px 14px 6px 8px; }
+.lamsa-fchip button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(var(--color-accent-rgb), 0.18);
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft);
+}
+.lamsa-fchip button:hover { background: var(--color-accent); color: var(--color-text-on-accent); }
+
+
+/* ---- CART ITEM -------------------------------------------------------------
+   Shared by ui/cart-item.njk (SSR) and LamsaCartItem.build() (drawer AJAX).
+   Keep ALL cart-line styling here so the two renderers cannot drift.
+   -------------------------------------------------------------------------- */
+.lamsa-citem {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    transition: opacity var(--t-base) var(--ease-soft), box-shadow var(--t-base) var(--ease-soft);
+}
+.lamsa-citem.is-removing { opacity: 0.25; pointer-events: none; }
+.lamsa-citem--compact { padding: 12px; gap: 12px; background: transparent; }
+
+.lamsa-citem-media {
+    position: relative;
+    width: 84px;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-tertiary);
+}
+.lamsa-citem--compact .lamsa-citem-media { width: 68px; }
+.lamsa-citem-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.lamsa-citem-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.lamsa-citem-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+}
+html[dir="ltr"] .lamsa-citem-name { font-family: var(--font-display-en); }
+.lamsa-citem-name:hover { color: var(--color-accent); }
+.lamsa-citem--compact .lamsa-citem-name { font-size: 0.875rem; }
+
+.lamsa-citem-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    margin: -3px -4px 0 0;
+    margin-inline: 0 -4px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+}
+.lamsa-citem-remove:hover { background: var(--color-error-light); color: var(--color-error); }
+
+.lamsa-citem-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--color-text-tertiary);
+}
+.lamsa-citem-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: inset 0 -1px 2px rgba(59, 44, 49, 0.15);
+}
+
+.lamsa-citem-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: auto;
+    padding-top: 4px;
+}
+.lamsa-citem-foot .lamsa-price { font-size: 0.9375rem; }
+.lamsa-citem-foot .lamsa-price-was { font-size: 0.75rem; }
+
+/* unit price × qty — inline-flex so the order is identical in RTL and LTR
+   instead of being reordered by the bidi algorithm around the × sign */
+.lamsa-citem-unit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-tertiary);
+}
+.lamsa-citem--compact .lamsa-citem-unit { font-size: 0.6875rem; }
+@media (max-width: 400px) {
+    .lamsa-citem { gap: 10px; }
+    .lamsa-citem-media { width: 64px; }
+}
+
+.lamsa-citem-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: var(--color-error-light);
+    color: var(--color-error);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+/* ---- CART SUMMARY ---- */
+.lamsa-csum-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+.lamsa-csum-row--total {
+    padding-top: 14px;
+    border-top: 1px solid var(--color-border);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+
+/* ---- ARTICLE CARD --------------------------------------------------------- */
+.lamsa-acard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+}
+.lamsa-acard:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-3px); }
+
+.lamsa-acard-media {
+    position: relative;
+    width: var(--lone-w, 100%); /* --lone-w: see LONE CARD at the end of this file */
+    flex-shrink: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--color-bg-tertiary);
+}
+.lamsa-acard-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+}
+.lamsa-acard:hover .lamsa-acard-media img { transform: scale(1.05); }
+
+.lamsa-acard-cat {
+    position: absolute;
+    top: 12px;
+    inset-inline-start: 12px;
+    z-index: 2;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--color-accent-dark);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.lamsa-acard-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 9px;
+    padding: 20px;
+}
+
+.lamsa-acard-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+}
+html[dir="ltr"] .lamsa-acard-title { font-family: var(--font-display-en); }
+.lamsa-acard:hover .lamsa-acard-title { color: var(--color-accent); }
+
+.lamsa-acard-excerpt {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+}
+
+/* compact — sidebar / related lists: image beside text */
+.lamsa-acard--compact { flex-direction: row; align-items: stretch; box-shadow: none; background: transparent; }
+.lamsa-acard--compact:hover { transform: none; box-shadow: none; }
+.lamsa-acard--compact .lamsa-acard-media {
+    width: 104px;
+    flex-shrink: 0;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+}
+.lamsa-acard--compact .lamsa-acard-cat { display: none; }
+.lamsa-acard--compact .lamsa-acard-body { padding: 0; padding-inline-start: 14px; gap: 6px; }
+.lamsa-acard--compact .lamsa-acard-title { font-size: 0.9375rem; }
+.lamsa-acard--compact .lamsa-acard-excerpt { display: none; }
+
+@media (max-width: 640px) {
+    .lamsa-acard-body { padding: 16px; }
+    .lamsa-acard-title { font-size: 1rem; }
+    .lamsa-acard--compact .lamsa-acard-media { width: 84px; }
+}
+
+/* ---- ARTICLE BODY (single post) ---- */
+.lamsa-article-hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--color-bg-tertiary);
+}
+.lamsa-article-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 767px) { .lamsa-article-hero { aspect-ratio: 16 / 10; border-radius: var(--radius-lg); } }
+
+.lamsa-article-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px 18px;
+    flex-wrap: wrap;
+    font-size: 0.8125rem;
+    color: var(--color-text-tertiary);
+}
+.lamsa-article-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+
+
+/* ==========================================================================
+   TOUCH TARGETS  ·  @media (pointer: coarse)
+   --------------------------------------------------------------------------
+   Scoped to the INPUT DEVICE, not to a width. A 1024px tablet is a finger and
+   a 1024px laptop is a mouse, and no width query tells them apart. Nothing in
+   the desktop design moves: these controls keep their drawn size wherever
+   there is a cursor.
+
+   `min-*`, not `width`/`height` — several of these are flex children already
+   sized by their content, and a hard height fights that.
+   ========================================================================== */
+@media (pointer: coarse) {
+  /* ---- iOS auto-zoom ----
+     Safari zooms the page when a focused field's font-size is under 16px, and
+     it does NOT zoom back out on blur — the shopper is left on a magnified,
+     sideways-scrolling page with no way back but a pinch. There is no meta-tag
+     fix that does not also kill pinch-zoom for everyone.
+
+     These fields are drawn at 13-15px because that is what the design calls
+     for beside their labels; on a cursor they keep it. `1rem`, not `16px`, so
+     a root font-size change still scales them together.
+
+     ⚠️  A field added anywhere in this theme has to be listed here too. */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  textarea,
+  select,
+  .lamsa-input,
+  .lamsa-input--compact,
+  .lamsa-search > input {
+    font-size: 1rem;
+  }
+
+  /* ---- Tap targets ----
+     Header row, modal closes, the quantity stepper. Drawn at 34-42px; the box
+     grows, the glyph inside does not. */
+  .lamsa-btn-icon,
+  .lamsa-btn-icon--sm,
+  .lamsa-qty button,
+  .lamsa-modal-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* The cart row's remove is 26px and sits in a flex row beside the title —
+     growing the BOX would shove the title. So the artwork keeps its size and
+     an invisible overlay takes the tap instead. Zero layout change. */
+  .lamsa-citem-remove { position: relative; }
+  .lamsa-citem-remove::after {
+    content: '';
+    position: absolute;
+    inset: -9px;  /* 26 + 9 + 9 = 44 */
+  }
+}
+
+/* Print: a section the reader never scrolled to must still print. */
+@media print {
+    html.reveal-init .reveal,
+    html.reveal-init .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+}
+
+/* ==========================================================================
+   FLOATING WHATSAPP + BACK-TO-TOP  (widgets/whatsapp-float, widgets/scroll-top)
+   WhatsApp on the start side, back-to-top on the opposite corner; both lift
+   above the product page's sticky buy bar while it is on screen.
+   ========================================================================== */
+.lamsa-wa,
+.lamsa-totop {
+  position: fixed;
+  bottom: 20px;
+  z-index: 60;
+  min-width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  transition: transform 0.2s ease, bottom 0.3s ease;
+}
+.lamsa-wa {
+  padding: 0 12px;
+  background: #25d366;
+  color: #08341f;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+}
+.lamsa-wa-label { display: none; font-size: 0.875rem; font-weight: 600; }
+.lamsa-wa--start { inset-inline-start: 20px; }
+.lamsa-wa--end { inset-inline-end: 20px; }
+.lamsa-totop {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  inset-inline-end: 20px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+}
+body:has(.lamsa-wa--end) .lamsa-totop { inset-inline-end: auto; inset-inline-start: 20px; }
+.lamsa-wa:hover, .lamsa-totop:hover { transform: translateY(-2px); }
+.lamsa-wa:focus-visible, .lamsa-totop:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+body:has(.lamsa-buybar.is-on) .lamsa-wa,
+body:has(.lamsa-buybar.is-on) .lamsa-totop { bottom: 92px; }
+@media (min-width: 1024px) {
+  .lamsa-wa-label { display: inline; }
+  body:has(.lamsa-buybar.is-on) .lamsa-wa,
+  body:has(.lamsa-buybar.is-on) .lamsa-totop { bottom: 20px; }
+}
+@media (max-width: 1023px) { .lamsa-wa--desktop { display: none; } }
+@media print { .lamsa-wa, .lamsa-totop { display: none !important; } }
+
+/* ==========================================================================
+   TOUCH TARGETS — phones and tablets (≤1023px)
+   Every control a thumb has to hit gets a 44px box; where the drawn shape
+   was already that size nothing changes. Product-card titles are left as
+   text: the picture above them is the same link and the large target.
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .lamsa-btn--sm,
+  .lamsa-chip,
+  .lamsa-link,
+  .lamsa-sb-wordmark,
+  .lamsa-drawer .font-body,
+  .lamsa-drawer .font-body-en,
+  [class*="lamsa-lang-"],
+  [class*="lamsa-ft-"][class*="-top"],
+  [class*="lamsa-pd-"][class*="-opt"],
+  [class*="lamsa-qv-"][class*="-opt"] {
+    min-height: 44px;
+  }
+  [class*="lamsa-pd-"][class*="-opt"],
+  [class*="lamsa-qv-"][class*="-opt"],
+  .lamsa-drawer .font-body,
+  .lamsa-drawer .font-body-en { min-width: 44px; }
+  /* standalone links in lists: footer columns, footer brand, mobile logo */
+  [class*="lamsa-ft-"][class*="-link"],
+  footer a.inline-flex.w-fit,
+  header a.lg\:hidden.flex.items-center {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  /* taller links, so the list drops its gap and keeps its rhythm */
+  footer[class^="lamsa-ft-"] ul.flex.flex-col { gap: 0; }
+  /* the announcement bar stays thin; its link's hit area grows past it */
+  .lamsa-announce-link { display: inline-block; padding-block: 13px; margin-block: -13px; }
+  /* every footer link (columns and the bottom legal row) and the small
+     language toggles: tall enough, and never narrower than a thumb */
+  footer[class^="lamsa-ft-"] a:not(.lamsa-btn) { display: inline-flex; align-items: center; min-height: 44px; }
+  [class*="lamsa-lang-"],
+  header a.lg\:hidden.flex.items-center { min-width: 44px; justify-content: center; }
+}
+
+/* ---- Arabic: tracking breaks joined letters, and a lone last word reads as a slip ---- */
+:lang(ar) * { letter-spacing: 0 !important; }
+h1, h2, h3, .lamsa-head-title, .lamsa-head-desc { text-wrap: balance; }
+
+
+/* ==========================================================================
+   LONE CARD: one card left on a last row spans it, as a horizontal card whose
+   photo keeps its neighbours' size (--lone-w). CSS only, so server cards and
+   AJAX cards behave the same. nth-of-type, because Alpine <template> nodes can
+   sit in a grid. Columns come from Tailwind classes (shop, search) or from
+   data-lone-* on section grids that set their columns in their own <style>.
+   ========================================================================== */
+@media (max-width: 640px) {
+    [data-lone-m="2"] > .lamsa-pcard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 14px; --lone-w: calc(50% - 7px); }
+}
+@media (max-width: 767px) {
+    :is(.grid.grid-cols-2, .lamsa-related:not([data-n="1"])) > .lamsa-pcard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 16px; --lone-w: calc(50% - 8px); }
+}
+@media (min-width: 641px) and (max-width: 767px) {
+    [data-lone-m] > .lamsa-pcard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(50% - 12px); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    :is(.grid.md\:grid-cols-2, .lamsa-related:not([data-n="1"]):not([data-n="3"]), [data-lone-t="2"]) > .lamsa-pcard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(50% - 12px); }
+    :is(.grid.md\:grid-cols-3, [data-lone-t="3"]) > .lamsa-pcard:nth-of-type(3n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(33.333% - 16px); }
+}
+@media (min-width: 1024px) {
+    :is(.grid.md\:grid-cols-2:not(.lg\:grid-cols-3):not(.lg\:grid-cols-4), [data-lone-d="2"]) > .lamsa-pcard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(50% - 12px); }
+    :is(.grid.lg\:grid-cols-3, [data-lone-d="3"]) > .lamsa-pcard:nth-of-type(3n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(33.333% - 16px); }
+    :is(.grid.lg\:grid-cols-4, .lamsa-related:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]), [data-lone-d="4"]) > .lamsa-pcard:nth-of-type(4n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(25% - 18px); }
+    [data-lone-d="5"] > .lamsa-pcard:nth-of-type(5n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; align-items: center; column-gap: 24px; --lone-w: calc(20% - 20px); }
+}
+
+/* article grids: 2 columns from 640px, then 2, 3 or 4 */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .grid.sm\:grid-cols-2 > .lamsa-acard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(50% - 12px); }
+}
+@media (min-width: 1024px) {
+    .grid.sm\:grid-cols-2:not(.lg\:grid-cols-3):not(.lg\:grid-cols-4) > .lamsa-acard:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(50% - 12px); }
+    .grid.lg\:grid-cols-4 > .lamsa-acard:nth-of-type(4n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(25% - 18px); }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .grid.lg\:grid-cols-3 > .lamsa-acard:nth-of-type(3n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(33.333% - 16px); }
+}
+@media (min-width: 1280px) {
+    .grid.lg\:grid-cols-3:not(.xl\:grid-cols-4) > .lamsa-acard:nth-of-type(3n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(33.333% - 16px); }
+    .grid.xl\:grid-cols-4 > .lamsa-acard:nth-of-type(4n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(25% - 18px); }
+}
+
+/* search sheet: result rows on two columns */
+@media (min-width: 768px) {
+    .grid.md\:grid-cols-2 > .lamsa-srch-hit:nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; }
+}
+
+/* ---- status colours (--color-sale, --color-stock, --color-low are only set
+        when the merchant picks one, see layouts/layout.njk) ---- */
+.lamsa-badge--sale { background: var(--color-sale, var(--color-accent)); }
+.lamsa-tag--sale { background: var(--color-sale-soft, var(--color-accent-light)); color: var(--color-sale, var(--color-accent-dark)); }
+.lamsa-tag--stock { background: var(--color-stock-soft, var(--color-sage-light)); color: var(--color-stock, var(--color-sage-hover)); }
+.lamsa-tag--low { background: var(--color-low-soft, var(--color-accent-light)); color: var(--color-low, var(--color-accent-dark)); }
+
+/* ---- enableAnimations off: same rules as prefers-reduced-motion ---- */
+html.lamsa-no-motion *,
+html.lamsa-no-motion *::before,
+html.lamsa-no-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+html.lamsa-no-motion.reveal-init .reveal,
+html.lamsa-no-motion.reveal-init .reveal-stagger > * { opacity: 1; transform: none; }
+html.lamsa-no-motion .lamsa-img-fade { opacity: 1; }
+html.lamsa-no-motion .lamsa-spinner { animation-duration: 0.8s !important; animation-iteration-count: infinite !important; }
+
+/* ---- 44px tap targets on touch layouts, without moving anything ---- */
+@media (max-width: 1023px) {
+    .lamsa-pcard-name, .lamsa-citem-name { min-height: 44px; }
+    footer a { min-width: 44px; }
+    nav[aria-label="breadcrumb"] a, a.lamsa-eyebrow { position: relative; }
+    nav[aria-label="breadcrumb"] a::after, a.lamsa-eyebrow::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: 44px;
+        transform: translate(-50%, -50%);
+    }
+    .lamsa-swatch--lg::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+    /* a clamped crumb clips ::after, so it grows by padding, on one line */
+    nav[aria-label="breadcrumb"] a.line-clamp-1 { display: block; padding-block: 12px; margin-block: -12px; white-space: nowrap; text-overflow: ellipsis; }
+    nav[aria-label="breadcrumb"] a.line-clamp-1::after { content: none; }
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+[hidden] { display: none !important; }

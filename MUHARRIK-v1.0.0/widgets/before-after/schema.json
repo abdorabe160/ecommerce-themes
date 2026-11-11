@@ -1,0 +1,149 @@
+{
+  "name": "قبل / بعد",
+  "settings": {
+    "image_before": {
+      "type": "media",
+      "label": { "ar": "▸ صورة «قبل» — يفضّل ١٩٢٠×١٠٨٠ · فارغ = صورة الثيم", "en": "▸ “Before” image — 1920×1080 recommended · empty = theme photo" }
+    },
+    "image_after": {
+      "type": "media",
+      "label": { "ar": "صورة «بعد» — نفس الإطار تمامًا · فارغ = صورة الثيم", "en": "“After” image — the exact same framing · empty = theme photo" }
+    },
+    "label_before": {
+      "type": "string",
+      "label": { "ar": "تسمية «قبل» (فارغ = نص الثيم بلغة الزائر)", "en": "“Before” label (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "label_after": {
+      "type": "string",
+      "label": { "ar": "تسمية «بعد» (فارغ = نص الثيم)", "en": "“After” label (empty = theme copy)" },
+      "default": ""
+    },
+    "start": {
+      "type": "range",
+      "label": { "ar": "موضع الخط عند البداية", "en": "Divider start position" },
+      "default": 50,
+      "min": 10,
+      "max": 90,
+      "step": 5,
+      "unit": "%"
+    },
+    "layout": {
+      "type": "select",
+      "label": { "ar": "▸ مكان النص", "en": "▸ Text placement" },
+      "default": "side",
+      "options": [
+        { "value": "side", "label": { "ar": "بجانب الصورة", "en": "Beside the compare" } },
+        { "value": "below", "label": { "ar": "تحت الصورة", "en": "Under the compare" } }
+      ]
+    },
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير — مثال: التلميع · الحماية (فارغ = نص الثيم)", "en": "Kicker — e.g. DETAILING · PROTECTION (empty = theme copy)" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (فارغ = نص الثيم بلغة الزائر)", "en": "Title (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "title_hl": {
+      "type": "string",
+      "label": { "ar": "الكلمة المميزة — تُضاف بعد العنوان بلون الهوية", "en": "Highlighted word — appended to the title in the accent colour" },
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "label": { "ar": "النص (فارغ = نص الثيم)", "en": "Text (empty = theme copy)" },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": { "ar": "نص الزر (فارغ = نص الثيم)", "en": "Button label (empty = theme copy)" },
+      "default": ""
+    },
+    "cta_url": {
+      "type": "string",
+      "label": { "ar": "رابط الزر — مثال: /shop/<التشكيلة> أو /products/<المنتج>", "en": "Button link — e.g. /shop/<collection> or /products/<slug>" },
+      "default": "/shop"
+    },
+    "show_hud": {
+      "type": "boolean",
+      "label": { "ar": "إظهار إطار الزوايا (HUD)", "en": "Show the HUD corner frame" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (الخط الفاصل، الكلمة المميزة)", "en": "Accent colour (divider, highlight word)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية الزر", "en": "Button background" },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": { "ar": "نص الزر", "en": "Button text" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "result": {
+      "name": "نتيجة",
+      "settings": {
+        "text": {
+          "type": "string",
+          "label": { "ar": "النتيجة — مثال: لمعان ×3", "en": "Result — e.g. ×3 gloss" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "القصة", "name": "قبل / بعد" }
+  ]
+}

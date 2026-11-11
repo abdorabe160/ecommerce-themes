@@ -1,0 +1,20 @@
+{
+  "name": "نتائج البحث",
+  "settings": {
+    "limit": {
+      "type": "number",
+      "label": { "ar": "عدد النتائج", "en": "Results per page" },
+      "default": 24,
+      "min": 8,
+      "max": 48,
+      "step": 4
+    },
+    "trending": {
+      "type": "products",
+      "label": { "ar": "منتجات رائجة تُعرض عند عدم وجود نتائج", "en": "Trending products for empty results" }
+    }
+  },
+  "presets": [
+    { "category": "صفحة البحث", "name": "نتائج البحث" }
+  ]
+}

@@ -1,0 +1,440 @@
+{# ============================================================================
+   HYPER CART — the drawer AND the cart page's row list, in one file
+   ----------------------------------------------------------------------------
+   ⚠️  Why one file: the row markup exists exactly once (the `row` macro below).
+   Splitting it out meant `{% ui %}` calling `{% ui %}` — a construct with NO
+   precedent anywhere in this theme, so it is avoided everywhere now.
+   Do not reintroduce nested {% ui %} here.
+
+   ⚠️  THE ROW HAS A JS TWIN: CartManager._buildItemHTML() in assets/main.js
+   renders the same markup when a row is appended to an already-open drawer.
+   Change the `row` macro → change that too. Styling is all in style.css →
+   "15.25 CART", so they cannot drift visually.
+
+   ⚠️  Every data-* below is read by CartManager._refreshDrawer():
+       data-cart-container · data-cart-list · data-cart-footer · data-cart-empty
+       data-cart-count-bar · data-cart-count · data-cart-total
+       data-cart-savings-row · data-cart-savings
+       data-cart-item · data-item-total · data-item-compare
+
+   ⚠️  The drawer SHELL (.taqa-drawer / .taqa-overlay) is shared with the filters
+   drawer and the search sheet and stays as it is. Only the contents are .hy-*.
+
+   Locals:
+     data.variant   'drawer' (header mini-cart) | 'list' (cart page rows only)
+   ========================================================================= #}
+
+{% set variant = data.variant | default('drawer', true) %}
+{% set isDrawer = variant == 'drawer' %}
+
+{# ---- Drawer settings, passed down from the header widget ----
+   This partial has no schema of its own, so everything configurable arrives as
+   a local. The header is the widget that RENDERS the drawer, which is where a
+   merchant looks for its settings; putting them on the theme's global settings
+   instead would have separated the control from the thing it controls. #}
+{% set freeShip = data.free_shipping | default(0, true) %}
+{% set upsellTitle = data.upsell_title | default('', true) %}
+{% set upsell = data.upsell | default([], true) %}
+{% set emptyCols = data.empty_collections | default([], true) %}
+{% set footDark = data.footer_dark %}
+{% set footDark = true if footDark is not defined else footDark %}
+{% set cartNote = data.note | default('', true) %}
+{% set upsOn = data.upsell_enabled %}
+{% set upsOn = true if upsOn is not defined else upsOn %}
+{% set upsTitle = upsellTitle or t('cart.upsell_title') %}
+{% set payKeys = (data.payments | default('mada,visa,mastercard,applepay', true) | replace(' ', '') | lower).split(',') %}
+
+{# Small drawn payment marks for the drawer foot — the same marks as
+   ui/payment-icons.njk (and its .hy-pay CSS), inlined because this file must
+   never call the ui tag itself (see the note at the top). #}
+{% macro payMark(k) %}
+  {% if k == 'mastercard' %}<span class="hy-pay hy-pay--mastercard" role="img" aria-label="Mastercard"><svg viewBox="0 0 34 22" width="30" height="20" aria-hidden="true"><circle cx="13" cy="11" r="7.6" fill="#EB001B"/><circle cx="21" cy="11" r="7.6" fill="#F79E1B"/><path fill="#FF5F00" d="M17 5.2a7.6 7.6 0 0 0 0 11.6 7.6 7.6 0 0 0 0-11.6Z"/></svg></span>
+  {% elif k == 'visa' %}<span class="hy-pay hy-pay--visa" role="img" aria-label="Visa"><span class="hy-pay-word">VISA</span></span>
+  {% elif k == 'amex' %}<span class="hy-pay hy-pay--amex" role="img" aria-label="American Express"><span class="hy-pay-word">AMEX</span></span>
+  {% elif k == 'mada' %}<span class="hy-pay hy-pay--mada" role="img" aria-label="mada"><span class="hy-pay-row"><svg viewBox="0 0 14 12" width="11" height="10" aria-hidden="true"><path fill="#84B740" d="M0 8.4 4.6 0h2.6L2.6 8.4H0Z"/><path fill="#159BD7" d="M6.2 8.4 10.8 0h2.6L8.8 8.4H6.2Z"/></svg><span class="hy-pay-word">mada</span></span></span>
+  {% elif k == 'applepay' %}<span class="hy-pay hy-pay--applepay" role="img" aria-label="Apple Pay"><span class="hy-pay-row"><svg viewBox="0 0 16 20" width="12" height="15" fill="currentColor" aria-hidden="true"><path d="M11.2 3.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.8-.9 2.8 1 .1 2-.5 2.6-1.3Zm.9 1.5c-1.4-.1-2.6.8-3.3.8-.7 0-1.7-.8-2.8-.7-1.5 0-2.8.9-3.6 2.2-1.5 2.6-.4 6.5 1.1 8.7.7 1 1.6 2.2 2.7 2.1 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1 2.6-2.1.8-1.2 1.1-2.3 1.2-2.4 0 0-2.3-.9-2.3-3.4 0-2.1 1.7-3.1 1.8-3.2-1-1.4-2.5-1.6-3-1.6Z"/></svg><span class="hy-pay-word">Pay</span></span></span>
+  {% elif k == 'paypal' %}<span class="hy-pay hy-pay--paypal" role="img" aria-label="PayPal"><span class="hy-pay-word"><b>Pay</b><i>Pal</i></span></span>
+  {% elif k == 'stcpay' %}<span class="hy-pay hy-pay--stcpay" role="img" aria-label="STC Pay"><span class="hy-pay-word">stc pay</span></span>
+  {% elif k == 'tabby' %}<span class="hy-pay hy-pay--tabby" role="img" aria-label="Tabby"><span class="hy-pay-word">tabby</span></span>
+  {% elif k == 'tamara' %}<span class="hy-pay hy-pay--tamara" role="img" aria-label="Tamara"><span class="hy-pay-word">tamara</span></span>
+  {% elif k == 'cod' %}<span class="hy-pay hy-pay--cod" role="img" aria-label="{{ t('footer.cod') }}"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg></span>
+  {% endif %}
+{% endmacro %}
+
+{#- scale 1, not 100: live prices are in whole units («1000 | money» →
+    «1,000ج.م», measured), so the threshold the merchant types compares as-is.
+    main.js recomputes with the detected scale after load. -#}
+{% set shipTarget = freeShip %}
+{% set shipNow = cart.totalPrice | default(0, true) %}
+{% set shipLeft = (shipTarget - shipNow) if shipTarget > shipNow else 0 %}
+{% set shipPct = 100 if shipTarget <= 0 or shipLeft <= 0 else ((shipNow / shipTarget) * 100) | round %}
+{# Formatted here rather than inline: this theme substitutes translation tokens
+   with `| replace`, never by passing a vars dict to t() — every existing call
+   site does it that way — and a filter chained inside a filter's ARGUMENT list
+   is the one place Nunjucks parses `|` ambiguously. #}
+{% set shipLeftTxt = shipLeft | money %}
+
+{# ⚠️  These go through a <script>, NOT into the x-data attribute. `| dump`
+   emits double quotes and the first one would close the attribute — which has
+   already killed Alpine on a whole page twice in this theme. #}
+<script>
+  /* the partial renders twice on the cart page (drawer + list) — assign once */
+  window.__hyCartStrings = window.__hyCartStrings || {
+    maxStock:     {{ t('pages.cart.max_stock') | dump | safe }},
+    needsVariant: {{ t('pages.cart.needs_variant') | dump | safe }},
+    lineSoldOut:  {{ t('pages.cart.line_sold_out') | dump | safe }}
+  };
+</script>
+
+{% set itemCount = cart.items | length %}
+
+
+{# ============================ THE ROW ============================
+   Written once. Both variants call it.
+   =============================================================== #}
+{% macro row(item, compact, onClick) %}
+  {% set pd = item.productData %}
+  {% set url = '/products/' ~ (pd.slug | default(pd.handle, true) | default('', true)) %}
+  {% set img = pd.image.fileUrl if pd.image and pd.image.fileUrl else '' %}
+  {% set hasCompare = item.compareAtPrice and item.compareAtPrice > item.price %}
+
+<div class="hy-citem{% if compact %} hy-citem--compact{% endif %}"
+     data-cart-item="{{ item._id }}"
+     x-show="activeItems.includes('{{ item._id }}')"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0 translate-y-2"
+     x-transition:enter-end="opacity-100 translate-y-0"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     :class="removingId === '{{ item._id }}' && 'is-removing'">
+
+  {# Portrait, like every other image in the theme — a garment cropped square
+     loses the drape, which is the thing being confirmed at this step. #}
+  <a href="{{ url }}" class="hy-citem-media"{% if onClick %} @click="{{ onClick }}"{% endif %}>
+    {% if img %}
+      <img src="{{ img }}" alt="{{ pd.title }}" loading="lazy"/>
+    {% else %}
+      <span class="hy-citem-noimg">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+        </svg>
+      </span>
+    {% endif %}
+  </a>
+
+  <div class="hy-citem-body">
+
+    <div class="hy-citem-head">
+      <a href="{{ url }}" class="hy-citem-name"{% if onClick %} @click="{{ onClick }}"{% endif %}>
+        {{ pd.title }}
+      </a>
+      <button type="button" @click="removeItem('{{ item._id }}')" class="hy-citem-remove"
+              aria-label="{{ t('pages.cart.remove_item') }}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {# which size and colour this line actually is — the answer the whole
+       variant fix exists to make possible #}
+    {% if item.variantData and item.variantData.options and (item.variantData.options | length) > 0 %}
+      <div class="hy-citem-opts">
+        {% for opt in item.variantData.options %}
+          <span class="hy-citem-opt">
+            {{ opt.option.name }}:
+            {% if opt.option.type == 'color' %}
+              <i class="hy-citem-dot" style="background: {{ opt.value | default('#CBD3DE', true) }};"></i>
+            {% endif %}
+            <b>{{ opt.label }}</b>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# Why this line will not go up: sold out, or a variant product that was
+       added without one. See cartInteraction.ensureStock() in main.js. #}
+    <p class="hy-citem-note" x-show="lineNote['{{ item._id }}']" x-cloak
+       x-text="lineNote['{{ item._id }}']"></p>
+
+    <div class="hy-citem-foot">
+      <div class="hy-qty hy-qty--sm">
+        <button type="button" @click="decrement('{{ item._id }}')" aria-label="−">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+        </button>
+        <span>
+          <span x-show="updating !== '{{ item._id }}'" x-text="quantities['{{ item._id }}']">{{ item.quantity | default(1, true) }}</span>
+          <span x-show="updating === '{{ item._id }}'" x-cloak class="hy-spinner"
+                style="width: 13px; height: 13px;"></span>
+        </span>
+        <button type="button" @click="increment('{{ item._id }}')"
+                :disabled="atCap('{{ item._id }}')" aria-label="+">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+      <div class="hy-citem-money{% if hasCompare %} is-sale{% endif %}">
+        {# Unit price × quantity. Rendered unconditionally — gating it on
+           quantity > 1 server-side means it never appears when the shopper
+           raises the quantity from 1 in the same session. The price is static
+           (per-unit never changes); only the multiplier is Alpine-reactive, so
+           it tracks +/- instantly without waiting for the cart round trip. #}
+        <span class="hy-citem-unit" title="{{ t('pages.cart.unit_price') }}">
+          <bdi>{{ item.price | default(0, true) | money }}</bdi>
+          <span aria-hidden="true">×</span>
+          <bdi x-text="quantities['{{ item._id }}']">{{ item.quantity | default(1, true) }}</bdi>
+        </span>
+        <span class="hy-citem-total" data-item-total="{{ item._id }}"
+              :class="updating === '{{ item._id }}' && 'is-pending'">{{ item.totalPrice | default(0, true) | money }}</span>
+        <span class="hy-citem-was" data-item-compare="{{ item._id }}"
+              {% if not hasCompare %}style="display: none;"{% endif %}>{{ item.totalCompareAtPrice | default(0, true) | money }}</span>
+      </div>
+    </div>
+
+    {# shown only when the host passed confirmRemove: true (the cart page) #}
+    <div class="hy-citem-confirm" x-show="confirmRemoveId === '{{ item._id }}'" x-cloak>
+      <span>{{ t('pages.cart.remove_confirm') }}</span>
+      <div class="hy-citem-confirm-acts">
+        <button type="button" @click="removeItem('{{ item._id }}')" class="hy-btn hy-btn--solid hy-btn--xs">
+          {{ t('common.delete') }}
+        </button>
+        <button type="button" @click="confirmRemoveId = null" class="hy-btn hy-btn--outline hy-btn--xs">
+          {{ t('common.cancel') }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endmacro %}
+
+
+{# ============================ VARIANTS ============================ #}
+
+{% if not isDrawer %}
+
+  {# ---------- rows only — the cart page supplies its own chrome ---------- #}
+  <div class="hy-cart-list" data-cart-list>
+    {% for item in cart.items %}
+      {{ row(item, false, '') }}
+    {% endfor %}
+  </div>
+
+{% else %}
+
+  {# ---------- header mini-cart drawer ---------- #}
+  <div x-data="cartInteraction({
+         items: [{% for item in cart.items %}{ id: '{{ item._id }}', qty: {{ item.quantity | default(1, true) }}, slug: '{{ item.productData.slug | default(item.productData.handle, true) | default('', true) }}', variantId: {{ ("'" ~ item.variantId ~ "'") if item.variantId else 'null' }} }{% if not loop.last %},{% endif %}{% endfor %}],
+         strings: window.__hyCartStrings
+       })" x-cloak>
+
+    <div x-show="$store.modal.current === 'cart'"
+         @click="$store.modal.close()"
+         class="taqa-overlay"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"></div>
+
+    {# `.hy-cdrawer` is what insets the panel from three edges and rounds it —
+       the shared `.taqa-drawer` shell keeps owning the off-canvas side and the
+       slide, which are direction-sensitive and already correct. #}
+    <div class="taqa-drawer hy-cdrawer {{ 'hy-cdrawer--dark-foot' if footDark }}"
+         :class="{ 'is-open': $store.modal.current === 'cart' }"
+         role="dialog"
+         aria-label="{{ t('pages.cart.title') }}">
+
+      {# ===== head ===== #}
+      <div class="hy-drawer-head">
+        <h2 class="hy-drawer-title">
+          {{ t('pages.cart.title') }}
+          {# Raised, not a pill — it reads as a count OF the title rather than as
+             a badge sitting beside it. Hidden at zero by the same data hook the
+             rest of the drawer uses. #}
+          <sup class="hy-drawer-count" data-cart-count-bar
+               {% if itemCount == 0 %}style="display: none;"{% endif %}><span data-cart-count>{{ cart.totalQuantity | default(0, true) }}</span></sup>
+        </h2>
+        <button type="button" @click="$store.modal.close()"
+                class="hy-drawer-close"
+                aria-label="{{ t('common.close') }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      {# ===== free-shipping progress =====
+         Rendered only when the merchant has set a threshold. Every value here
+         is also written by _refreshDrawer() in main.js — see the data hooks. #}
+      {% if freeShip > 0 %}
+        <div class="hy-ship"
+             data-cart-ship
+             data-ship-target="{{ freeShip }}"
+             {% if itemCount == 0 %}style="display: none;"{% endif %}>
+          <p class="hy-ship-msg {{ 'is-done' if shipLeft <= 0 }}" data-ship-msg>
+            {% if shipLeft > 0 %}
+              {{ t('pages.cart.free_shipping_left') | replace('{amount}', shipLeftTxt) }}
+            {% else %}
+              {{ t('pages.cart.free_shipping_done') }}
+            {% endif %}
+          </p>
+          <div class="hy-ship-track" role="progressbar"
+               aria-valuemin="0" aria-valuemax="100" :aria-valuenow="0">
+            <span class="hy-ship-fill" data-ship-fill style="width: {{ shipPct }}%;"></span>
+          </div>
+        </div>
+      {% endif %}
+
+      {# ===== items ===== #}
+      <div class="hy-drawer-body"
+           data-cart-container
+           {% if itemCount == 0 %}style="display: none;"{% endif %}>
+        {# data-cart-list marks where _refreshDrawer appends new rows #}
+        <div class="hy-cart-list" data-cart-list>
+          {% for item in cart.items %}
+            {{ row(item, true, '$store.modal.close()') }}
+          {% endfor %}
+        </div>
+
+        {# ===== "You'll love this too" =====
+           Desktop: a second panel standing beside the cart (positioned against
+           the drawer, so it slides in with it). Phone: a rail inside the list.
+           Hand-picked in the header settings; with none picked it fills itself
+           with the newest products (HayatAuto). Lives inside the body so it
+           hides with it when the cart is empty. #}
+        {% if upsOn %}
+          <aside class="hx-ups" aria-label="{{ upsTitle }}">
+            <h3 class="hx-ups-title">{{ upsTitle }}</h3>
+            <div class="hx-ups-list" {% if (upsell | length) == 0 %}data-hx-ups-fill data-atc="{{ t('pages.product.add_to_cart') }}"{% endif %}>
+              {% for p in upsell %}
+                {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+                {% set pUrl = '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true)) %}
+                {% set pSale = p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+                <div class="hx-ups-item" x-data="productCard('{{ p._id }}', '{{ pUrl }}')">
+                  <a href="{{ pUrl }}" class="hx-ups-media" @click="$store.modal.close()">{% if img %}<img src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>{% endif %}</a>
+                  <div class="hx-ups-body">
+                    <a href="{{ pUrl }}" class="hx-ups-name" @click="$store.modal.close()">{{ p.title }}</a>
+                    <p class="hx-ups-price"><span class="{{ 'is-sale' if pSale }}">{{ p.pricing.price | default(0, true) | money }}</span>{% if pSale %}<s>{{ p.pricing.compareAtPrice | money }}</s>{% endif %}</p>
+                  </div>
+                  <button type="button" class="hx-ups-add" @click="addToCart()" :disabled="cartLoading" aria-label="{{ t('pages.product.add_to_cart') }}">
+                    <span x-show="!cartLoading && !cartSuccess"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></span>
+                    <span x-show="cartLoading" x-cloak class="hx-spin"></span>
+                    <span x-show="cartSuccess && !cartLoading" x-cloak><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg></span>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          </aside>
+        {% endif %}
+      </div>
+
+      {# ===== footer =====
+         ⚠️  The reference puts three circular controls here — a discount code, an
+         order note and a shipping estimate. NONE of the three exist on Qumra:
+         the cart API is get/add/change/remove/clear, and `couponApplied` /
+         `couponDiscount` are RESPONSE fields, set at checkout, with no endpoint
+         to post a code to. Three buttons that opened a panel and then could not
+         save anything would be worse than their absence, so the row carries the
+         numbers instead — including the discount, when checkout has applied one. #}
+      <div class="hy-drawer-foot"
+           data-cart-footer
+           {% if itemCount == 0 %}style="display: none;"{% endif %}>
+
+        <div class="hy-sum">
+          <div class="hy-sum-row hy-sum-row--save" data-cart-savings-row
+               {% if not cart.totalSavings or cart.totalSavings <= 0 %}style="display: none;"{% endif %}>
+            <span>{{ t('pages.cart.savings') }}</span>
+            {# `<bdi>`-style isolation on the SIGN AND the amount, not just the
+               amount. `-` is a neutral character: on its own in an Arabic line it
+               drifts to the logical end and "−50,000" renders as "50,000−". #}
+            <span class="hy-neg" data-cart-savings>-{{ cart.totalSavings | default(0, true) | money }}</span>
+          </div>
+
+          {% if cart.couponApplied %}
+            <div class="hy-sum-row hy-sum-row--save">
+              <span>{{ t('pages.cart.discount_applied') }}</span>
+              <span class="hy-neg">-{{ cart.couponDiscount | default(0, true) | money }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="hy-cfoot-total">
+          <div>
+            <span class="hy-cfoot-label">{{ t('pages.cart.estimated_total') }}</span>
+            <span class="hy-cfoot-amount" data-cart-total>{{ cart.totalPrice | default(0, true) | money }}</span>
+          </div>
+          <p class="hy-cfoot-note">{{ cartNote | default(t('pages.cart.tax_note'), true) }}</p>
+        </div>
+
+        <div class="hy-cfoot-acts">
+          <a href="/cart" class="hy-btn hy-btn--pill hy-cfoot-secondary"
+             @click="$store.modal.close()">
+            {{ t('pages.cart.view_cart') }}
+          </a>
+          {# ⚠️  An <a>, so there is no `:disabled` — the theme says as much beside
+             the pager in 15.26. The block is therefore three things together:
+             `@click.prevent` when it must not proceed, `is-blocked` for the look,
+             and `aria-disabled` so it is announced rather than only greyed.
+             The link is NOT removed: a checkout button that vanishes reads as a
+             broken page, while one that says why reads as an instruction. #}
+          <a href="/checkout"
+             class="hy-btn hy-btn--pill hy-cfoot-primary"
+             :class="hasSoldOut() && 'is-blocked'"
+             :aria-disabled="hasSoldOut() ? 'true' : 'false'"
+             @click="if (hasSoldOut()) $event.preventDefault()">
+            {{ t('pages.cart.checkout') }}
+          </a>
+        </div>
+        {% if (payKeys | length) > 0 and payKeys[0] %}
+          <div class="hx-cart-pay" aria-label="{{ t('footer.payments') }}">
+            {% for k in payKeys %}{{ payMark(k) }}{% endfor %}
+          </div>
+        {% endif %}
+        <p class="hy-cart-blocked" x-show="hasSoldOut()" x-cloak role="alert">
+          {{ t('pages.cart.blocked_sold_out') }}
+        </p>
+      </div>
+
+      {# ===== empty ===== #}
+      <div class="hy-drawer-empty"
+           data-cart-empty
+           {% if itemCount > 0 %}style="display: none;"{% endif %}>
+        <p class="hy-cempty-title">{{ t('pages.cart.empty_title') }}</p>
+
+        {% if (emptyCols | length) > 0 %}
+          <p class="hy-cempty-hint">{{ t('pages.cart.empty_hint') }}</p>
+          <div class="hy-cempty-cols">
+            {% for c in emptyCols %}
+              <a href="/shop/{{ c.handle | default(c._id, true) }}" class="hy-cempty-col"
+                 @click="$store.modal.close()">
+                <span class="hy-cempty-col-media">
+                  {% if c.image and c.image.fileUrl and not c.image.notFound %}
+                    <img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy"/>
+                  {% endif %}
+                </span>
+                <span class="hy-cempty-col-name">{{ c.title }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="hy-cempty-hint">{{ t('pages.cart.empty_message') }}</p>
+        {% endif %}
+
+        <a href="/shop" class="hy-btn hy-btn--solid hy-btn--pill hy-btn--arrow"
+           @click="$store.modal.close()">
+          <span>{{ t('pages.cart.continue') }}</span>
+          <i class="hy-btn-arrow" aria-hidden="true">
+            <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+          </i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+{% endif %}

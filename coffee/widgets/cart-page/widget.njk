@@ -1,0 +1,42 @@
+<section class="dc-cart-page section surface-cream" aria-labelledby="dc-cart-title">
+  <div class="shell">
+    <header class="dc-cart-heading"><p class="eyebrow">{{ t('cart.eyebrow') }}</p><h1 id="dc-cart-title" class="h-display">{{ t('cart.title') }}</h1></header>
+    <div class="dc-cart-layout" x-show="cartItems.length" x-cloak>
+      <ul class="dc-cart-lines" role="list">
+        <template x-for="item in cartItems" :key="item._id">
+          <li class="dc-cart-line" :aria-busy="isBusy('item:' + item._id).toString()">
+            <a class="dc-cart-line__image" :href="itemUrl(item)">
+              <img :src="itemImage(item)" :alt="itemTitle(item)" width="140" height="160" loading="lazy" decoding="async">
+            </a>
+            <div class="dc-cart-line__body">
+              <a class="dc-cart-line__title" :href="itemUrl(item)" x-text="itemTitle(item)"></a>
+              <p class="dc-cart-line__options" x-show="itemOptions(item)" x-text="itemOptions(item)"></p>
+              <div class="dc-cart-line__bottom">
+                <div class="qty qty-sm" role="group" :aria-label="itemTitle(item)">
+                  <button type="button" @click="updateItem(item, item.quantity - 1)" aria-label="{{ t('product.decrease') }}"> {% ui "icon.njk", name="minus", size=15 %}</button>
+                  <output x-text="item.quantity"></output>
+                  <button type="button" @click="updateItem(item, item.quantity + 1)" aria-label="{{ t('product.increase') }}">{% ui "icon.njk", name="plus", size=15 %}</button>
+                </div>
+                <div class="dc-cart-line__price"><span x-text="formatMoney(itemLineTotal(item))"></span><s x-show="item.compareAtPrice > item.price" x-text="formatMoney(item.compareAtPrice * item.quantity)"></s></div>
+                <button type="button" class="dc-remove" @click="removeItem(item)" aria-label="{{ t('cart.remove') }}">{% ui "icon.njk", name="trash", size=17 %}</button>
+              </div>
+            </div>
+          </li>
+        </template>
+      </ul>
+      <aside class="dc-cart-summary">
+        <h2>{{ t('cart.summary') }}</h2>
+        <div><span>{{ t('cart.subtotal') }}</span><b x-text="formatMoney(cartSubtotal)"></b></div>
+        <div x-show="cartSavings > 0"><span>{{ t('cart.savings') }}</span><b x-text="formatMoney(cartSavings)"></b></div>
+        <div class="dc-cart-summary__total"><span>{{ t('cart.total') }}</span><b x-text="formatMoney(cartTotal)"></b></div>
+        <p>{{ t('cart.shipping_note') }}</p>
+        <button type="button" class="btn btn-primary btn-block" @click="checkout()" :disabled="isBusy('checkout')">{{ t('cart.checkout') }}</button>
+      </aside>
+    </div>
+    <div class="dc-empty-state" x-show="!cartItems.length" x-cloak>
+      <span>{% ui "icon.njk", name="cart", size=36 %}</span>
+      <h2>{{ t('cart.empty') }}</h2><p>{{ t('cart.empty_text') }}</p>
+      <a href="/shop" class="btn btn-dark">{{ t('cart.start_shopping') }}</a>
+    </div>
+  </div>
+</section>

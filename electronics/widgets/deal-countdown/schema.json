@@ -1,0 +1,81 @@
+{
+  "name": "عرض اليوم (عداد تنازلي)",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان صغير",
+        "en": "Eyebrow"
+      },
+      "default": "عرض خاص"
+    },
+    "eyebrow_en": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان صغير (إنجليزي)",
+        "en": "Eyebrow (English)"
+      },
+      "default": "Special offer"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "عرض مميز"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Featured offer"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Text"
+      },
+      "default": ""
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف (إنجليزي)",
+        "en": "Text (English)"
+      },
+      "default": ""
+    },
+    "product": {
+      "type": "products",
+      "label": {
+        "ar": "المنتج (يُستخدم أول منتج)",
+        "en": "Product (first one is used)"
+      }
+    },
+    "ends_at": {
+      "type": "string",
+      "label": {
+        "ar": "تاريخ انتهاء العرض، فارغ = بدون عداد (مثال: 2026-12-31T23:59)",
+        "en": "Ends at, empty = no timer (e.g. 2026-12-31T23:59)"
+      },
+      "default": ""
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة بديلة (اختياري)",
+        "en": "Override image (optional)"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "عرض اليوم"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "layout": "layout",
+  "name": "صفحة المنتج",
+  "title": "صفحة المنتج",
+  "widgets": [
+    {
+      "name": "تفاصيل المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "show_buy_now": true,
+        "show_share": true,
+        "show_sku": true,
+        "sticky_mobile": true,
+        "shipping_title": "الشحن والاستبدال",
+        "shipping_title_en": "Shipping & returns",
+        "shipping_text": ""
+      }
+    },
+    {
+      "name": "صورة",
+      "widget": "image-banner",
+      "settings": {
+        "width": "container",
+        "rounded": true
+      }
+    },
+    {
+      "name": "منتجات ذات صلة",
+      "widget": "related-products",
+      "settings": {
+        "title": "قد يعجبك أيضاً",
+        "title_en": "You may also like",
+        "limit": 8
+      }
+    }
+  ]
+}

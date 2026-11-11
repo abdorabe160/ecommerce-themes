@@ -1,0 +1,50 @@
+{
+  "name": "كل التصنيفات",
+  "description": "شبكة كروت التصنيفات بنفس تأثير التوهج والأنيميشن",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "العنوان",
+      "default": "تسوق حسب القسم"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": "الوصف",
+      "default": "كل اللي محتاجه لتمرينك في مكان واحد"
+    },
+    "collections": {
+      "type": "collections",
+      "label": "التصنيفات المعروضة"
+    },
+    "card_height": {
+      "type": "select",
+      "label": "ارتفاع الكارت",
+      "options": [
+        {
+          "label": "مدمج (280px)",
+          "value": "280px"
+        },
+        {
+          "label": "قياسي (340px)",
+          "value": "340px"
+        },
+        {
+          "label": "كبير (420px)",
+          "value": "420px"
+        }
+      ],
+      "default": "340px"
+    },
+    "show_product_count": {
+      "type": "boolean",
+      "label": "إظهار عدد المنتجات على كارت القسم (المنصة بتحسب المنتجات المؤرشفة كمان)",
+      "default": false
+    }
+  },
+  "presets": [
+    {
+      "name": "كل التصنيفات (Dark Blood)",
+      "category": "التصنيف"
+    }
+  ]
+}

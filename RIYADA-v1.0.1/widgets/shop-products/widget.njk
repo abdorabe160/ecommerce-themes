@@ -1,0 +1,175 @@
+{# ============================================================================
+   RIYADA SHOP PRODUCTS — the grid injected into shop-page
+   ----------------------------------------------------------------------------
+   ⚠️  Qumra mounts this widget into
+       #products-grid-wrapper[data-qumra-section="shop-products"] and re-renders
+       it on every filter/sort/page change. It runs INSIDE the collectionFilter()
+       Alpine scope, so goToPage() is available here.
+
+   ⚠️  Two contracts, both load-bearing:
+     · the outer .shop-products-content wrapper — style.css hides this markup
+       unless it is inside [data-qumra-section], so a stray SSR copy of the grid
+       never shows up twice on the page.
+     · #products-count-data — main.js copies its innerHTML into #products-count
+       in the sidebar after each run. Keep the id and keep it hidden.
+   ========================================================================= #}
+<div class="shop-products-content">
+
+{% set d = widget.data %}
+{# /shop sends context.shop; /collections/<handle> was seen sending context.products + context.pagination #}
+{% set products = (context.shop.products if context.shop else context.products) or [] %}
+{% set pagination = (context.shop.pagination if context.shop else context.pagination) %}
+{% set totalItems = pagination.totalItems if pagination else (products | length) %}
+{% set isSearch = context.shop and (context.shop.mode == 'search' or context.shop.query) %}
+
+{% set colsD = d.columns_desktop | default('4', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{% set ratio = d.card_image_ratio | default('1x1', true) %}
+
+{# tablet sits one step below desktop, floored at 3 #}
+{% set colsInt = colsD | int %}
+{% set colsTablet = 3 if colsInt > 3 else colsInt %}
+
+
+
+{# ---- count source ----
+   main.js mirrors this into #products-count (sidebar) and #products-count-toolbar
+   after every filter run. It does NOT run on first paint — the partial is server
+   rendered — so the inline script below does that one initial copy. Without it
+   both slots sit empty until the shopper touches a filter. #}
+<div id="products-count-data" style="display: none;">
+  {% ui "count.njk", n=(totalItems or 0) %}
+</div>
+<script>
+  (function () {
+    /* ---------------------------------------------------------------------
+       FIRST-PAINT MOUNT
+       `shop-products` is its own widget in pages/shop.json, so on a cold load
+       Qumra renders it in PAGE ORDER — after the shop-page section, i.e.
+       OUTSIDE #products-grid-wrapper. style.css keeps .shop-products-content
+       hidden until it sits inside [data-qumra-section], which is what stops the
+       same grid appearing twice once qumra.filters.section() takes over.
+
+       The consequence, if nothing else happens: the grid is invisible until the
+       shopper touches a filter, because only then does the section runtime
+       re-render it into the wrapper. So on the SSR pass we relocate ourselves
+       into the mount point once. Every later render is produced by the section
+       runtime directly inside the wrapper, and this script does not re-run
+       (scripts injected via innerHTML never execute) — so it cannot fight it.
+       --------------------------------------------------------------------- */
+    /* `document.currentScript` is only valid while this script runs, so grab the
+       reference NOW — but do the move later: right now the HTML parser is still
+       writing into .shop-products-content, and relocating a node it is actively
+       filling is how you lose the rest of the markup. */
+    var me = document.currentScript;
+    var content = me && me.closest ? me.closest('.shop-products-content') : null;
+
+    var mount = function () {
+      var wrapper = document.getElementById('products-grid-wrapper');
+      if (content && wrapper && !wrapper.contains(content)) {
+        wrapper.appendChild(content);
+      }
+
+      /* mirror the count into every slot that asked for it */
+      var src = document.getElementById('products-count-data');
+      if (!src) return;
+      ['#products-count', '#products-count-toolbar'].forEach(function (sel) {
+        var slot = document.querySelector(sel);
+        if (slot && !slot.innerHTML.trim()) slot.innerHTML = src.innerHTML;
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mount, { once: true });
+    } else {
+      mount();
+    }
+  })();
+</script>
+
+
+{% if (products | length) > 0 %}
+
+  <div class="riyada-grid"
+       style="--cols-desktop: {{ colsInt }}; --cols-tablet: {{ colsTablet }}; --cols-mobile: {{ colsM }};">
+    {% for product in products %}
+      {% ui "product-card.njk", product=product, image_ratio=ratio %}
+    {% endfor %}
+  </div>
+
+  {# ---- pagination — goToPage() comes from the collectionFilter scope ---- #}
+  {% if pagination and pagination.totalPages > 1 %}
+    <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+
+      {% if pagination.currentPage > 1 %}
+        <button type="button" @click.prevent="goToPage({{ pagination.currentPage - 1 }})"
+                class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm" aria-label="{{ t('common.prev') }}">
+          <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm" style="opacity: .35;" aria-hidden="true">
+          <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+          </svg>
+        </span>
+      {% endif %}
+
+      {% for n in range(1, pagination.totalPages + 1) %}
+        {% if n == pagination.currentPage %}
+          <span class="riyada-btn-icon riyada-num" aria-current="page"
+                style="background: var(--color-flame-fill); color: #fff;">{{ n }}</span>
+        {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+          <button type="button" @click.prevent="goToPage({{ n }})"
+                  class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm riyada-num">{{ n }}</button>
+        {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+          <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if pagination.hasNextPage %}
+        <button type="button" @click.prevent="goToPage({{ pagination.currentPage + 1 }})"
+                class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm" aria-label="{{ t('common.next') }}">
+          <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm" style="opacity: .35;" aria-hidden="true">
+          <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </span>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+
+  {# ---- nothing matched ---- #}
+  <div class="riyada-empty">
+    <span class="riyada-empty-icon">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7.25"/><path d="m20.5 20.5-4.2-4.2"/>
+      </svg>
+    </span>
+    {% if isSearch %}
+      <h3 class="m-0">{{ t('pages.search.no_results') }}</h3>
+      <p class="riyada-text-sm m-0 max-w-md mx-auto">{{ t('pages.search.try_different') }}</p>
+    {% else %}
+      <h3 class="m-0">{{ t('collection.no_products') }}</h3>
+    {% endif %}
+    <button type="button" @click="clearFilters()" class="riyada-btn riyada-btn--outline riyada-btn--sm mt-1"
+            x-show="activeCount > 0" x-cloak>
+      {{ t('pages.collection.clear_filters') }}
+    </button>
+    <a href="/shop" class="riyada-btn riyada-btn--outline riyada-btn--sm mt-1" x-show="activeCount === 0">
+      {{ t('pages.shop.all_products') }}
+    </a>
+  </div>
+
+{% endif %}
+
+</div>{# /.shop-products-content #}

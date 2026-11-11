@@ -1,0 +1,180 @@
+{# ============================================================================
+   HYPER · SECTION COLOURS — a per-widget palette override
+   ----------------------------------------------------------------------------
+   Every widget in this theme paints itself from the same design tokens
+   (--color-text-primary, --color-accent, --color-border …). So redefining those
+   tokens on the section's own root element is all it takes to recolour
+   everything inside it — the widget's bespoke CSS *and* the shared primitives
+   it borrows (.hy-btn, .hy-price, .hy-label, and the legacy .taqa-* set)
+   — without editing a single existing rule.
+
+   ── Contract ───────────────────────────────────────────────────────────────
+   The caller passes exactly two things:
+
+     scope   the section's CSS selector, e.g. '#hy-cols-' ~ id
+     c       the widget's whole data object (widget.data)
+
+   Every widget exposes the same field names, so the call is one identical line
+   at the end of each widget file:
+
+     ui "section-colors.njk", scope='#hy-xx-' ~ id, c=d
+
+   ⚠️  `scope` MUST be the id the widget actually renders. A stale prefix here
+   (the PDP shipped `#taqa-pd-` while rendering `#hy-pdp-`) fails silently: the
+   style block is emitted, matches nothing, and every picker looks dead.
+
+   ── The switch ─────────────────────────────────────────────────────────────
+   `colors_enabled` off → this file emits NOTHING, and the section falls
+   straight back to the theme palette. That is the revert: the merchant's
+   picked colours stay saved and come back the moment the switch goes on again.
+   An individual picker left empty does the same for that one surface, so
+   nobody has to clear a field to undo it.
+
+   ── Three things that are load-bearing ─────────────────────────────────────
+   1. This MUST be included AFTER the widget's own <style> block. Both target
+      the same id with identical specificity, so source order decides.
+
+   2. `--hy-sec-bg` is why the background picker works at all. Several widgets
+      paint their root from an INLINE `style="background: …"` (that is how the
+      `background` select — white / warm off-white — is applied), and an inline
+      declaration beats any stylesheet rule no matter how specific. So those
+      widgets write `background: var(--hy-sec-bg, <their default token>)`
+      instead, and the override lands on the CUSTOM PROPERTY, which this block
+      does win. The plain `background:` below stays for the widgets that paint
+      their root from a class rule instead.
+
+   3. The accent tints are derived with color-mix() rather than exposed as more
+      pickers. A merchant who picks one brand colour should not then have to
+      hand-pick its hover, its wash and its ring — and if they did, nothing
+      would stop the four drifting out of relation to each other.
+   ========================================================================= #}
+
+{% set c = data.c | default({}) %}
+{% set sc = data.scope %}
+
+{% if c.colors_enabled and sc %}
+<style>
+  {{ sc }} {
+    {% if c.color_bg %}
+    /* the section's own surface — see note 2 above */
+    --hy-sec-bg: {{ c.color_bg }};
+    --color-bg-primary: {{ c.color_bg }};
+    --color-bg-secondary: {{ c.color_bg }};
+    /* the header paints from its own token family */
+    --color-header: {{ c.color_bg }};
+    /* …and so does the footer. `--fo-bg` is separate from `--color-footer` on
+       purpose: the subscribe button paints its LABEL with the footer's ground,
+       so it needs the picked colour, not the tone default. */
+    --color-footer: {{ c.color_bg }};
+    --fo-bg: {{ c.color_bg }};
+    {% endif %}
+
+    {% if c.color_card %}
+    --color-surface: {{ c.color_card }};
+    --color-bg-tertiary: {{ c.color_card }};
+    {% endif %}
+
+    {# titles and any strong text #}
+    {% if c.color_title %}
+    --color-text-primary: {{ c.color_title }};
+    --color-header-text: {{ c.color_title }};
+    {# Copy laid over a photograph (hero, banner, video, newsletter in their
+       `is-light` tone) is white by default and beats the token above on
+       specificity. These two let the picker reach it anyway; unset, the CSS
+       fallback keeps the white. #}
+    --hy-title-on-media: {{ c.color_title }};
+    --color-footer-heading: {{ c.color_title }};
+    {# Same trick as `--hy-sec-bg` (note 2 above), for TEXT. A few sections
+       paint from a bespoke token of their own rather than from
+       `--color-text-primary` — the testimonials band sets `--hy-q-fg` from its
+       own picker, which meant this override reached nothing there. Those
+       widgets now read `var(--hy-sec-title, <their own default>)`, so the pick
+       lands on the custom property and wins without touching their defaults. #}
+    --hy-sec-title: {{ c.color_title }};
+    {% endif %}
+
+    {# body copy and captions ride together — splitting them gives the merchant
+       a way to make captions unreadable and no way to notice #}
+    {% if c.color_text %}
+    --color-text-secondary: {{ c.color_text }};
+    --color-text-tertiary: {{ c.color_text }};
+    --hy-text-on-media: {{ c.color_text }};
+    --color-footer-text: {{ c.color_text }};
+    --color-footer-text-muted: color-mix(in srgb, {{ c.color_text }} 72%, transparent);
+    {# the secondary half of the bridge described above #}
+    --hy-sec-text: {{ c.color_text }};
+    {% endif %}
+
+    {% if c.color_accent %}
+    --color-accent: {{ c.color_accent }};
+    --color-border-focus: {{ c.color_accent }};
+    --color-accent-hover: color-mix(in srgb, {{ c.color_accent }} 88%, #000);
+    --color-accent-dark:  color-mix(in srgb, {{ c.color_accent }} 72%, #000);
+    --color-accent-soft:  color-mix(in srgb, {{ c.color_accent }} 38%, #FFF);
+    --color-accent-light: color-mix(in srgb, {{ c.color_accent }} 12%, #FFF);
+    {# `--color-ink*` is a second family that predates `--color-accent*` and is
+       still what .taqa-btn--primary, the qty stepper and a few insets paint
+       from. In the default palette the two are the same colour, so leaving ink
+       behind made an accent pick apply to only half a section. #}
+    --color-ink: {{ c.color_accent }};
+    --color-ink-hover: color-mix(in srgb, {{ c.color_accent }} 88%, #000);
+    --color-ink-light: color-mix(in srgb, {{ c.color_accent }} 12%, #FFF);
+    {% endif %}
+
+    {% if c.color_border %}
+    --color-border: {{ c.color_border }};
+    --color-border-strong: {{ c.color_border }};
+    --color-border-hover: {{ c.color_border }};
+    --color-header-border: {{ c.color_border }};
+    --color-footer-border: {{ c.color_border }};
+    {% endif %}
+
+    {# for the widgets that paint their root from a class rule rather than an
+       inline style — `#id` outranks any class, so this one wins there #}
+    {% if c.color_bg %}background: {{ c.color_bg }};{% endif %}
+  }
+
+  {# The CTA gets its own pair. It is routinely a different colour from the
+     accent that tints links, icons and the highlighted word in the title.
+
+     Every button family is listed. `.hy-btn--*` is what most sections render;
+     `.taqa-btn--*` is still emitted by the pages that have not been rebuilt
+     yet; `.hy-cd-cta` is the countdown banner's bespoke pill, which belongs to
+     neither family and so was invisible to both pickers. Dropping either one silently breaks the colour picker on half
+     the theme — which is exactly what happened while this partial listed only
+     the old names. #}
+  {% if c.color_btn_bg %}
+  {{ sc }} .hy-btn--solid,
+  {{ sc }} .hy-btn--light,
+  {{ sc }} .hy-cd-cta,
+  {{ sc }} .taqa-btn--primary {
+    background: {{ c.color_btn_bg }};
+    border-color: {{ c.color_btn_bg }};
+  }
+  {{ sc }} .hy-btn--solid:hover:not(:disabled),
+  {{ sc }} .hy-btn--light:hover:not(:disabled),
+  {{ sc }} .hy-cd-cta:hover,
+  {{ sc }} .taqa-btn--primary:hover:not(:disabled) {
+    background: color-mix(in srgb, {{ c.color_btn_bg }} 88%, #000);
+    border-color: color-mix(in srgb, {{ c.color_btn_bg }} 88%, #000);
+  }
+  {{ sc }} .hy-btn--outline,
+  {{ sc }} .hy-btn--light-outline,
+  {{ sc }} .taqa-btn--outline,
+  {{ sc }} .taqa-btn--ghost {
+    border-color: {{ c.color_btn_bg }};
+    color: {{ c.color_btn_bg }};
+  }
+  {% endif %}
+
+  {% if c.color_btn_text %}
+  {{ sc }} .hy-btn--solid,
+  {{ sc }} .hy-btn--solid:hover:not(:disabled),
+  {{ sc }} .hy-btn--light,
+  {{ sc }} .hy-btn--light:hover:not(:disabled),
+  {{ sc }} .hy-cd-cta,
+  {{ sc }} .taqa-btn--primary,
+  {{ sc }} .taqa-btn--primary:hover:not(:disabled) { color: {{ c.color_btn_text }}; }
+  {% endif %}
+</style>
+{% endif %}

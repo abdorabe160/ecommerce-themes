@@ -1,0 +1,186 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "full_width": true,
+        "sticky": true,
+        "logo_height": 40,
+        "topbar_enabled": true,
+        "topbar_bg_start": "",
+        "topbar_bg_end": "",
+        "topbar_text": "",
+        "topbar_speed": 50,
+        "topbar_pause": true,
+        "show_menu_button": true,
+        "menu_button_label": "",
+        "menu_button_bg": "",
+        "menu_button_text": "",
+        "show_search": true,
+        "search_placeholder": "",
+        "search_voice": true,
+        "search_products_title": "",
+        "search_collections_title": "",
+        "search_bg": "",
+        "show_theme_toggle": true,
+        "action1_icon": "pin",
+        "action1_url": "",
+        "action1_label": "",
+        "action2_icon": "pin",
+        "action2_url": "",
+        "action2_label": "",
+        "show_cart": true,
+        "nav_enabled": true,
+        "nav_align": "center",
+        "utility_enabled": true,
+        "utility_menu": "footer-menu",
+        "utility_email": "",
+        "utility_phone": "",
+        "utility_language": true,
+        "cart_free_shipping": 0,
+        "cart_upsell_title": "",
+        "cart_footer_dark": false,
+        "cart_note": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "name": "إعلان",
+          "block": "announcement",
+          "settings": {
+            "ann_text": "تصفّح أحدث المنتجات في المتجر",
+            "ann_icon": "badge",
+            "ann_url": "/shop"
+          }
+        },
+        {
+          "name": "وصل حديثًا",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "وصل حديثًا",
+            "item_url": "/shop?sort=createdAt-desc",
+            "item_style": "auto",
+            "item_menu": "header-menu",
+            "item_badge": "",
+            "item_view_all": ""
+          }
+        },
+        {
+          "name": "كل المنتجات",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "كل المنتجات",
+            "item_url": "/shop",
+            "item_style": "auto",
+            "item_menu": "header-menu",
+            "item_badge": "",
+            "item_badge_bg": "",
+            "item_badge_text": ""
+          }
+        },
+        {
+          "name": "كل الأقسام",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "كل الأقسام",
+            "item_url": "/collections",
+            "item_style": "tabs",
+            "item_menu": "",
+            "item_badge": ""
+          }
+        },
+        {
+          "name": "↳ القسم ١",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "القسم الأول",
+            "group_url": "/collections",
+            "group_menu": "header-menu"
+          }
+        },
+        {
+          "name": "↳ القسم ٢",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "القسم الثاني",
+            "group_url": "/collections",
+            "group_menu": "footer-menu"
+          }
+        },
+        {
+          "name": "تسوّق حسب التصنيف",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "تسوّق حسب التصنيف",
+            "item_url": "/shop",
+            "item_style": "columns",
+            "item_menu": "",
+            "item_badge": "",
+            "item_badge_bg": "",
+            "item_badge_text": ""
+          }
+        },
+        {
+          "name": "↳ مجموعة ١",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "تسوّق",
+            "group_url": "",
+            "group_menu": "header-menu"
+          }
+        },
+        {
+          "name": "↳ مجموعة ٢",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "روابط مهمة",
+            "group_url": "",
+            "group_menu": "footer-menu"
+          }
+        },
+        {
+          "name": "↳ بطاقة ١",
+          "block": "nav_promo",
+          "settings": {
+            "promo_title": "خطوة نحو المستقبل",
+            "promo_text": "تصفّح أحدث المنتجات في المتجر.",
+            "promo_cta": "تسوّق الآن",
+            "promo_url": "/shop",
+            "promo_bg": ""
+          }
+        },
+        {
+          "name": "↳ بطاقة ٢",
+          "block": "nav_promo",
+          "settings": {
+            "promo_title": "أبدع بلا حدود",
+            "promo_text": "تصميم خفيف وأداء قوي.",
+            "promo_cta": "تسوّق الآن",
+            "promo_url": "/shop",
+            "promo_bg": ""
+          }
+        },
+        {
+          "name": "المدونة",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "المدونة",
+            "item_url": "/blogs",
+            "item_style": "none",
+            "item_menu": ""
+          }
+        }
+      ]
+    }
+  ]
+}

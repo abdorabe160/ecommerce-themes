@@ -1,0 +1,68 @@
+{#
+  ============================================================================
+  MORVA · PRODUCT DROP — "— 02 / SHOP · ALL PIECES"
+  ----------------------------------------------------------------------------
+  Section head (kicker + heading · VIEW ALL) over a hairline grid of the
+  shared product card. 1–2 products switch to the "sparse" layout so a single
+  card never blows up to half the page.
+  Empty picker + auto-fill on → main.js (HayatAuto.fillCards) fills the grid
+  with the store's newest products through the same HayatCard renderer.
+  ============================================================================
+#}
+{% set d = widget.data %}
+{% set products = d.products | default([]) %}
+{% set limit = d.limit | default(8) %}
+{% set shown = products.slice(0, limit) %}
+{% set n = shown | length %}
+{% set autoFill = d.auto_fill | default(true) %}
+{% set kicker = d.kicker | default(t('morva.shop'), true) %}
+
+{% if n > 0 or autoFill %}
+{#- Nothing picked: the section stands on demo pieces / skeletons until main.js
+    swaps in the store's real products (and drops `data-mv-live-hide`). On the
+    live store an empty store therefore shows no fake section at all. -#}
+<section class="mv-section" id="{{ d.anchor | default('drop') }}"{% if n == 0 %} data-mv-live-hide{% endif %}>
+  <div class="mv-head">
+    <div class="reveal" style="--i: 0;">
+      <div class="mv-kicker">— {% if d.index %}{{ d.index }} / {% endif %}{{ kicker }}</div>
+      <h2 class="mv-h">{{ d.heading | default(t('morva.all_pieces'), true) }}</h2>
+    </div>
+    {% if d.view_all_url | default('/shop') %}
+      <a href="{{ d.view_all_url | default('/shop') }}" class="mv-viewall reveal" style="--i: 1;">
+        {{ d.view_all_text | default(t('morva.view_all'), true) }}
+        <span aria-hidden="true" class="mv-arrow">→</span>
+      </a>
+    {% endif %}
+  </div>
+
+  {% if n > 0 %}
+    {# data-mv-stagger: main.js turns every child into a staggered reveal #}
+    <div class="mv-grid{{ ' mv-grid--sparse' if n <= 2 }}" data-mv-stagger>
+      {% for p in shown %}
+        {% ui "product-card.njk", product=p %}
+      {% endfor %}
+    </div>
+  {% else %}
+    {# Empty picker: bundled demo pieces (or grey skeletons with demo content
+       off). main.js swaps them for the store's newest products when it has
+       any, and leaves the demo in place when it has none. #}
+    {% set showDemo = settings.demoContent | default(true) %}
+    <div class="mv-grid" data-hy-auto-cards="{{ limit }}" data-mv-stagger>
+      {% if showDemo %}
+        {% set dn = 8 if limit > 8 else limit %}
+        {% for i in range(0, dn) %}
+          {% set di = '' ~ i %}
+          {% ui "product-card.njk", demo=di %}
+        {% endfor %}
+      {% else %}
+        {% for i in range(0, 4) %}
+          <div class="mv-card mv-card--ph" aria-hidden="true">
+            <div class="mv-card-img mv-skel"></div>
+            <div class="mv-card-meta"><div style="flex:1"><div class="mv-ph-line"></div><div class="mv-ph-line"></div></div></div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endif %}

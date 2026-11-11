@@ -1,0 +1,23 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر",
+      "widget": "header",
+      "settings": {
+        "use_theme_logo": false,
+        "logo_height": 26,
+        "menu": "header-menu",
+        "show_language": true,
+        "search_popular": "هودي, تيشيرت, كارجو, تانك",
+        "shop_label": "",
+        "quick_menu": "footer-menu",
+        "cart_free_shipping": 0,
+        "cart_note": ""
+      }
+    }
+  ]
+}

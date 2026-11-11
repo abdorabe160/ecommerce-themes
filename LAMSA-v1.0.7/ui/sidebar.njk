@@ -1,0 +1,286 @@
+{# ============================================================================
+   LAMSA MOBILE SIDEBAR
+   Mirrors the header taxonomy: one accordion per mega block, then plain links.
+   Locals (from the header widget):
+     data.megas · data.simple_menu · data.currentLang · data.showLang
+   ========================================================================= #}
+
+{% set megas = data.megas | default([]) %}
+{% set simpleMenu = data.simple_menu %}
+{% set sbLang = data.currentLang | default(localization.language) | default('ar') %}
+{# A local passed through the ui tag arrives as a STRING. A flag set to
+   the literal false reaches here as "false" — non-empty, therefore truthy.
+   Compare against the text; a real boolean from a variable still works. #}
+{# First three words only — a long store name otherwise shoves the close button off-screen #}
+{% set sbName = (store.name | default('LAMSA') | trim).split(' ').slice(0, 3) | join(' ') %}
+{% set showLang = (data.showLang | string) != 'false' and (data.showLang | string) != 'off' if data.showLang is defined else true %}
+
+{% macro sbLinks(menu) %}
+  {% if menu %}
+    {% for item in (menu.items if menu.items else menu) %}
+      <a href="{{ item.url | default('#') }}" class="lamsa-sb-sublink font-body">{{ item.title }}</a>
+    {% endfor %}
+  {% endif %}
+{% endmacro %}
+
+<style>
+  .lamsa-sb-wordmark {
+    font-family: var(--font-display-en);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    padding-inline-start: 0.16em;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lamsa-drawer-head .lamsa-btn-icon { flex-shrink: 0; }
+  html[dir="rtl"] .lamsa-sb-wordmark, .lamsa-sb-wordmark:lang(ar) {
+    font-family: var(--font-display-ar);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    padding-inline-start: 0;
+  }
+
+  /* accordion trigger + plain link share one look */
+  .lamsa-sb-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 2px;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-align: start;
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-sb-row:hover { color: var(--color-accent); }
+  .lamsa-sb-item + .lamsa-sb-item { border-top: 1px solid var(--color-border); }
+
+  .lamsa-sb-caret {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    transition: transform var(--t-base) var(--ease-out), background var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-sb-item.is-open .lamsa-sb-caret { transform: rotate(180deg); background: var(--color-accent); color: #FFF; }
+
+  .lamsa-sb-panel { padding-bottom: 14px; }
+
+  .lamsa-sb-group-title {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+  html[dir="rtl"] .lamsa-sb-group-title { font-size: 0.75rem; letter-spacing: 0; text-transform: none; }
+
+  .lamsa-sb-sublink {
+    display: block;
+    padding: 9px 14px;
+    margin-bottom: 2px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-sb-sublink:hover { background: var(--color-accent-light); color: var(--color-accent-dark); }
+
+  .lamsa-sb-viewall {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 0 14px;
+    margin-inline: 14px 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  /* language segmented control */
+  .lamsa-sb-seg {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-tertiary);
+  }
+  .lamsa-sb-seg button {
+    flex: 1;
+    padding: 9px 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-sb-seg button.is-active {
+    background: var(--color-surface);
+    color: var(--color-accent-dark);
+    box-shadow: var(--shadow-xs);
+  }
+</style>
+
+<div x-data="{ open: null }" x-cloak>
+
+  {# ---- Overlay ---- #}
+  <div x-show="$store.modal.current === 'sidebar'"
+       @click="$store.modal.close()"
+       class="lamsa-overlay"
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"></div>
+
+  {# ---- Drawer ---- #}
+  <div class="lamsa-drawer drawer-start"
+       :class="{ 'open': $store.modal.current === 'sidebar' }"
+       style="max-width: 380px;">
+
+    {# head #}
+    <div class="lamsa-drawer-head">
+      <a href="/" class="lamsa-sb-wordmark"{% if ((sbName | string) | upper) == ((sbName | string) | lower) %} lang="ar"{% endif %} aria-label="{{ store.name | default('LAMSA') }}">{{ sbName }}</a>
+      <button type="button"
+              @click="$store.modal.close()"
+              class="lamsa-btn-icon lamsa-btn-icon--sm"
+              aria-label="{{ t('common.close') }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {# body #}
+    <div class="lamsa-drawer-body custom-scrollbar">
+
+      {# search shortcut #}
+      <button type="button"
+              @click="$store.modal.close(); setTimeout(() => toggleModal('search'), 260)"
+              class="lamsa-search w-full mb-5 text-start">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+          <circle cx="11" cy="11" r="7.25"/>
+          <path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/>
+        </svg>
+        <span class="lamsa-input flex items-center" style="padding-inline-start: 44px; color: var(--color-text-tertiary);">
+          {{ t('header.search_placeholder') }}
+        </span>
+      </button>
+
+      <nav aria-label="{{ t('common.menu') }}">
+
+        {# ---- mega blocks as accordions ---- #}
+        {% for block in megas %}
+          {% set b = block.data %}
+          {% if b.nav_label %}
+            {% set key = 'sb' ~ loop.index %}
+            <div class="lamsa-sb-item" :class="open === '{{ key }}' && 'is-open'">
+              {% if b.col1_title or b.col2_title or b.col3_title or b.col4_title %}
+                <button type="button"
+                        class="lamsa-sb-row"
+                        @click="open = open === '{{ key }}' ? null : '{{ key }}'"
+                        :aria-expanded="open === '{{ key }}'">
+                  <span>{{ b.nav_label }}</span>
+                  <span class="lamsa-sb-caret">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <div x-show="open === '{{ key }}'" x-collapse class="lamsa-sb-panel">
+                  {% if b.col1_title %}
+                    <span class="lamsa-sb-group-title">{{ b.col1_title }}</span>
+                    {{ sbLinks(b.col1_menu) }}
+                  {% endif %}
+                  {% if b.col2_title %}
+                    <span class="lamsa-sb-group-title">{{ b.col2_title }}</span>
+                    {{ sbLinks(b.col2_menu) }}
+                  {% endif %}
+                  {% if b.col3_title %}
+                    <span class="lamsa-sb-group-title">{{ b.col3_title }}</span>
+                    {{ sbLinks(b.col3_menu) }}
+                  {% endif %}
+                  {% if b.col4_title %}
+                    <span class="lamsa-sb-group-title">{{ b.col4_title }}</span>
+                    {{ sbLinks(b.col4_menu) }}
+                  {% endif %}
+
+                  <a href="{{ b.nav_url | default('#') }}" class="lamsa-sb-viewall">
+                    {{ t('common.view_all') }}
+                    <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                    </svg>
+                  </a>
+                </div>
+              {% else %}
+                {# no columns configured — behave as a plain link #}
+                <a href="{{ b.nav_url | default('#') }}" class="lamsa-sb-row">
+                  <span>{{ b.nav_label }}</span>
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                  </svg>
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {# ---- plain links ---- #}
+        {% if simpleMenu %}
+          {% for item in (simpleMenu.items if simpleMenu.items else simpleMenu) %}
+            <div class="lamsa-sb-item">
+              <a href="{{ item.url | default('#') }}" class="lamsa-sb-row">
+                <span>{{ item.title }}</span>
+                <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </nav>
+    </div>
+
+    {# foot #}
+    {% if showLang %}
+      <div class="lamsa-drawer-foot">
+        <span class="lamsa-caption block mb-2">{{ t('common.language') }}</span>
+        {% form 'lang' %}
+          <div class="lamsa-sb-seg">
+            <button type="submit" name="lang" value="ar" class="font-body {{ 'is-active' if sbLang == 'ar' }}">العربية</button>
+            <button type="submit" name="lang" value="en" class="font-body-en {{ 'is-active' if sbLang == 'en' }}">English</button>
+          </div>
+        {% endform %}
+      </div>
+    {% endif %}
+
+  </div>
+</div>

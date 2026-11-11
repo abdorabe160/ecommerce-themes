@@ -1,0 +1,97 @@
+{# الصور الافتراضية (Pexels — نفس مصدر صور المنتجات الافتراضية): بتظهر لحد ما التاجر يرفع صوره من إعدادات الويدجت.
+   الكمبيوتر صورة عريضة، والموبايل صورة طولية عشان ماتتقصّش #}
+{% set heroDefaultDesktop = 'https://images.pexels.com/photos/1480530/pexels-photo-1480530.jpeg?auto=compress&cs=tinysrgb&w=1920' %}
+{% set heroDefaultMobile = 'https://images.pexels.com/photos/4162449/pexels-photo-4162449.jpeg?auto=compress&cs=tinysrgb&w=900' %}
+{# الإعدادات بتيجي في widget.data (وwidget.settings احتياطي) #}
+{% set s = widget.data or widget.settings or {} %}
+{# الإعداد ممكن ييجي أوبجكت media ({ fileUrl }) أو لينك نصي أو أوبجكت فاضي — الفاضي يعتبر مفيش صورة #}
+{% set hi = s.hero_image %}
+{% set customDesktop = hi.fileUrl if (hi and hi.fileUrl) else (hi if (hi and hi.length) else '') %}
+{% set hm = s.hero_image_mobile %}
+{% set customMobile = hm.fileUrl if (hm and hm.fileUrl) else (hm if (hm and hm.length) else '') %}
+{% set desktopImg = customDesktop or heroDefaultDesktop %}
+{# صورة موبايل التاجر ← صورة الكمبيوتر بتاعته ← الافتراضية #}
+{% set mobileImg = customMobile or (customDesktop if customDesktop else heroDefaultMobile) %}
+{% set opacity = s.overlay_opacity | default('0.65') %}
+{% set align = s.text_align | default('right') %}
+{% set height = s.hero_height | default('80vh') %}
+
+<section 
+  class="blk-hero blk-hero-animated blk-hero-align-{{ align }}" 
+  id="blkHero-{{ widget.id }}"
+  style="--blk-hero-min-h: {{ height }}; --blk-hero-overlay-op: {{ opacity }};"
+>
+  <!-- عناصر الإضاءة التفاعلية في الخلفية -->
+  <div class="blk-hero-ambience">
+    <div class="blk-orb blk-orb-1"></div>
+    <div class="blk-orb blk-orb-2"></div>
+  </div>
+
+  <div class="blk-hero-bg">
+    {% if desktopImg %}
+      <picture>
+        {% if mobileImg and mobileImg != desktopImg %}
+          <source media="(max-width: 768px)" srcset="{{ mobileImg }}">
+        {% endif %}
+        <img 
+          src="{{ desktopImg }}" 
+          alt="{% ui "blk-t.njk", text=s.title %}" 
+          class="blk-hero-img blk-zoom-effect"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        >
+      </picture>
+    {% else %}
+      <div class="blk-hero-placeholder"></div>
+    {% endif %}
+    <div class="blk-hero-overlay"></div>
+  </div>
+
+  <div class="blk-container">
+    <div class="blk-hero-content">
+      {% if s.badge_text %}
+        <div class="blk-badge-wrap blk-anim-fade-up" style="--anim-delay: 0.1s;">
+          <span class="blk-badge blk-badge-glow">
+            <span class="blk-badge-dot"></span>
+            {% ui "blk-t.njk", text=s.badge_text %}
+          </span>
+        </div>
+      {% endif %}
+
+      {% if s.title %}
+        <h1 class="blk-hero-title blk-anim-fade-up blk-text-glow" style="--anim-delay: 0.25s;">
+          {% ui "blk-t.njk", text=s.title %}
+        </h1>
+      {% else %}
+        {#- الهيرو من غير عنوان: H1 مخفي باسم المتجر عشان الرئيسية يفضل فيها H1 واحد -#}
+        <h1 class="blk-sr-only">{{ store.name or 'BULK' }}</h1>
+      {% endif %}
+
+      {% if s.subtitle %}
+        <p class="blk-hero-desc blk-anim-fade-up" style="--anim-delay: 0.4s;">
+          {% ui "blk-t.njk", text=s.subtitle, html=true %}
+        </p>
+      {% endif %}
+
+      {% if s.primary_btn_text or s.secondary_btn_text %}
+        <div class="blk-hero-actions blk-anim-fade-up" style="--anim-delay: 0.55s;">
+          {% if s.primary_btn_text %}
+            <a href="{{ s.primary_btn_url | default('#') }}" class="blk-btn blk-btn-primary blk-btn-shine">
+              <span>{% ui "blk-t.njk", text=s.primary_btn_text %}</span>
+              <svg class="blk-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </a>
+          {% endif %}
+
+          {% if s.secondary_btn_text %}
+            <a href="{{ s.secondary_btn_url | default('#') }}" class="blk-btn blk-btn-outline blk-btn-pulse">
+              <span>{% ui "blk-t.njk", text=s.secondary_btn_text %}</span>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

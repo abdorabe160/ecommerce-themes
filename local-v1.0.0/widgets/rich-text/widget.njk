@@ -1,0 +1,91 @@
+{# ============================================================================
+   LOCAL · RICH TEXT — نص منسق
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────┐
+     │                 (optional background picture)                │
+     │                                                              │
+     │                       Delicious Recipes                      │
+     │                        ( Explore All )                       │
+     └──────────────────────────────────────────────────────────────┘
+
+   Heading, rich text and up to two buttons — on a colour, or over a picture.
+   The block sits top / middle / bottom and start / centre / end (logical,
+   so "start" is right in Arabic). `min_height: 0` lets the band hug its
+   content, which is how it works as a plain text section.
+
+   `text` is the editor's rich-text field → rendered with `| safe`.
+
+   Styling: assets/style.css → "15.5.9 RICH TEXT · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set full = d.full_width | default(true) %}
+{% set animate = d.animate | default(true) %}
+{% set btnStyle = d.button_style | default('outline') %}
+
+<section id="lc-rt-{{ id }}"
+         class="lc-rt {{ 'is-full' if full else 'is-card' }} lc-rt--v-{{ d.v_align | default('bottom') }} lc-rt--h-{{ d.h_align | default('center') }} lc-rt--{{ d.title_size | default('l') }} {{ 'is-animated' if animate }}"
+         style="--lc-rt-bg: {{ d.bg_color | default('color-mix(in srgb, var(--color-bg-tertiary) 92%, var(--color-text-primary))', true) }};
+                --lc-rt-h: {{ d.min_height | default(650) }}px;
+                --lc-rt-h-sm: {{ d.min_height_mobile | default(480) }}px;
+                --lc-rt-w: {{ d.text_width | default(640) }}px;
+                --lc-rt-title: {{ d.title_color | default('var(--color-text-primary)', true) }};
+                --lc-rt-text: {{ d.text_color | default('color-mix(in srgb, var(--color-text-primary) 90%, var(--color-bg-primary))', true) }};
+                --lc-rt-btn: {{ d.button_color | default('var(--color-accent)', true) }};
+                --lc-rt-btn-fg: {{ d.button_text_color | default('var(--color-text-on-accent)', true) }};
+                padding-block: {{ d.padding_top | default(24) }}px {{ d.padding_bottom | default(24) }}px;">
+  <div class="{{ '' if full else 'lc-hwrap' }}">
+    <div class="lc-rt-stage">
+      {% if (img | length) > 0 %}
+        <picture class="lc-rt-media">
+          {% if (imgM | length) > 0 %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+          <img src="{{ img }}" alt="" loading="lazy"/>
+        </picture>
+      {% endif %}
+
+      <div class="lc-hwrap lc-rt-inner">
+        <div class="lc-rt-copy">
+          {% if d.eyebrow %}<p class="lc-rt-eyebrow lc-rt-in" style="--i: 0;">{{ d.eyebrow }}</p>{% endif %}
+          {% if d.title %}<h2 class="lc-rt-title lc-rt-in" style="--i: 1;">{{ d.title }}</h2>{% endif %}
+          {% if d.text %}<div class="lc-rt-text lc-rt-in" style="--i: 2;">{{ d.text | safe }}</div>{% endif %}
+          {% if d.button_text or d.button2_text %}
+            <div class="lc-rt-btns lc-rt-in" style="--i: 3;">
+              {% if d.button_text %}
+                <a href="{{ d.button_url | default('#', true) }}" class="lc-rt-btn lc-rt-btn--{{ btnStyle }}">{{ d.button_text }}</a>
+              {% endif %}
+              {% if d.button2_text %}
+                {# the second button always takes the OTHER style, so the pair reads as primary + secondary #}
+                <a href="{{ d.button2_url | default('#', true) }}" class="lc-rt-btn lc-rt-btn--{{ 'solid' if btnStyle == 'outline' else 'outline' }}">{{ d.button2_text }}</a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if animate %}
+<script>
+  (function () {
+    var el = document.getElementById('lc-rt-{{ id }}');
+    if (!el) return;
+    var reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('lc-no-motion');
+    if (reduce || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        el.classList.add('is-in');
+        io.disconnect();
+      });
+    }, { rootMargin: '0px 0px 15% 0px' });
+    io.observe(el);
+  })();
+</script>
+{% endif %}

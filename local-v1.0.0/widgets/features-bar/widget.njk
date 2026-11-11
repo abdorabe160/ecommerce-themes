@@ -1,0 +1,55 @@
+{# ============================================================================
+   LOCAL · FEATURES BAR — شريط المزايا
+   ----------------------------------------------------------------------------
+     ──────────────────────────────────────────────────────────────────────
+      🚚 Fast delivery   │  🛡 Secure payment  │  🌿 Always fresh  │  ↺ Easy returns
+         within 2 days   │     cards & COD     │     every morning │     14 days
+     ──────────────────────────────────────────────────────────────────────
+
+   The reassurance strip that closes the inner pages (404, blogs,
+   collections, static page, shop). One row of equal items — icon (the
+   ui/lc-icon.njk library, or the merchant's own), a title and a line —
+   between hairlines. `stacked` centres the icon above the text instead.
+   Phones: two per row.
+
+   Styling: assets/style.css → "15.12 FEATURES BAR · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([], true) %}
+{% set count = items | length %}
+{% set iconSize = d.icon_size | default(30) %}
+
+{% if count > 0 %}
+<section id="lc-fb-{{ id }}"
+         class="lc-fb lc-fb--{{ d.layout | default('inline') }} {{ 'lc-fb--lines' if (d.dividers | default(true)) }} lc-fb--bg-{{ d.background | default('none') }}"
+         style="--lc-fb-n: {{ count }}; --lc-fb-icon: {{ iconSize }}px;
+                padding-block: {{ d.padding_top | default(32) }}px {{ d.padding_bottom | default(32) }}px;">
+  <div class="lc-hwrap">
+    {% if d.title %}<h2 class="lc-sec-title lc-fb-title">{{ d.title }}</h2>{% endif %}
+    <ul class="lc-fb-row">
+      {% for block in items %}
+        {% set b = block.data %}
+        {% set custom = b.custom_icon.fileUrl if b.custom_icon and b.custom_icon.fileUrl else (b.custom_icon if b.custom_icon is string else '') %}
+        {% set tag = 'a' if b.url else 'div' %}
+        <li class="lc-fb-cell">
+          <{{ tag }} class="lc-fb-item"{% if b.url %} href="{{ b.url }}"{% endif %}>
+            {% if custom %}
+              <span class="lc-fb-icon"><img src="{{ custom }}" alt="" loading="lazy" style="width: {{ iconSize }}px; height: {{ iconSize }}px;"/></span>
+            {% elif b.icon and b.icon != 'none' %}
+              <span class="lc-fb-icon">{% ui "lc-icon.njk", name=b.icon, size=iconSize, stroke=(36 / iconSize) %}</span>
+            {% endif %}
+            <span class="lc-fb-copy">
+              {% if b.title %}<span class="lc-fb-name">{{ b.title }}</span>{% endif %}
+              {% if b.text %}<span class="lc-fb-text">{{ b.text }}</span>{% endif %}
+            </span>
+          </{{ tag }}>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#lc-fb-' ~ id, c=d %}
+{% endif %}

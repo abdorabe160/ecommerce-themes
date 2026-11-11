@@ -1,0 +1,40 @@
+{
+  "name": "منتجات المتجر",
+  "settings": {
+    "columns_desktop": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (كمبيوتر)", "en": "Columns (Desktop)" },
+      "default": "3",
+      "options": [
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } },
+        { "value": "3", "label": { "ar": "٣ أعمدة", "en": "3" } },
+        { "value": "4", "label": { "ar": "٤ أعمدة", "en": "4" } }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (موبايل)", "en": "Columns (Mobile)" },
+      "default": "2",
+      "options": [
+        { "value": "1", "label": { "ar": "عمود واحد", "en": "1" } },
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": { "ar": "أبعاد صورة البطاقة", "en": "Card Image Ratio" },
+      "default": "1/1",
+      "options": [
+        { "value": "1/1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "4/5", "label": { "ar": "طولي خفيف", "en": "Portrait" } },
+        { "value": "3/4", "label": { "ar": "طولي", "en": "Tall" } }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المتجر",
+      "name": "منتجات المتجر"
+    }
+  ]
+}

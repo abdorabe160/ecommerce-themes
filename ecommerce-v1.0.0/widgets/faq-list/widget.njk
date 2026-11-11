@@ -1,0 +1,34 @@
+{#
+  FAQ LIST · أسئلة وأجوبة — collapsible questions in one or two columns.
+  Blocks; with none, six store-wide demo questions in the visitor's language.
+  Styles: assets/sections.css → "FAQ LIST".
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set qs = [] %}
+{% for block in widget.blocks | default([]) %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% if b.q %}{% set _ = qs.push({ q: b.q, a: b.a | default('') }) %}{% endif %}
+{% endfor %}
+{% set hxDemo = (qs | length) == 0 %}
+{% if (qs | length) == 0 %}
+  {% for n in [1, 2, 3, 4, 5, 6] %}{% set _ = qs.push({ q: t('extra.qa.q' ~ n ~ '.q'), a: t('extra.qa.q' ~ n ~ '.a') }) %}{% endfor %}
+{% endif %}
+{% set title = (d.title or t('extra.faq')) if d.show_title != false else '' %}
+<section id="hx-fq-{{ id }}" {% if hxDemo %}data-hx-demo{% endif %} class="hx-fq is-c{{ d.columns | default('2') }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}<h2 class="hx-sec-h">{{ title | safe }}</h2>{% endif %}
+    <div class="hx-fq-grid">
+      {% for x in qs %}
+        <div class="hx-fq-item" x-data="{ o: {{ 'true' if (loop.first and d.first_open) else 'false' }} }" :class="{ 'is-open': o }">
+          <button type="button" class="hx-fq-q" @click="o = !o" :aria-expanded="o">
+            <span>{{ x.q | safe }}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="hx-fq-a" x-show="o" x-collapse x-cloak><div class="hx-rte">{{ x.a | safe }}</div></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

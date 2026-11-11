@@ -1,0 +1,19 @@
+{#- 404 body — rendered from pages/404.json when the platform serves an unknown route. -#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = (wd['title' + L] or wd.title) or t('notfound.title') -%}
+{%- set text = (wd['text' + L] or wd.text) or t('notfound.text') -%}
+<section class="section surface-cream" aria-labelledby="dc-notfound-title">
+  <div class="shell">
+    <div class="dc-empty-state" data-reveal>
+      <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+      <p class="eyebrow" aria-hidden="true">404</p>
+      <h1 id="dc-notfound-title" class="dc-empty-state__title">{{ title }}</h1>
+      <p>{{ text }}</p>
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-3">
+        <a href="/" class="btn btn-dark">{{ t('notfound.home') }} {% ui "icon.njk", name="arrow", size=18, cls="btn-arrow" %}</a>
+        <a href="/search" class="btn btn-outline">{{ t('notfound.search') }}</a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,129 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set all = widget.blocks | default([]) %}
+{% set slides = [] %}
+{% set trust = [] %}
+{% for b in all %}
+  {# نوع البلوك: السيرفر يرسله في blockKey، و type/block في ملفات الصفحات المحلية #}
+  {% if (b.blockKey or b.type or b.block) == 'trust' %}{% if (b.settings or {}).title and trust.push(b) %}{% endif %}{% else %}{% if slides.push(b) %}{% endif %}{% endif %}
+{% endfor %}
+{% set multi = slides | length > 1 %}
+{% set autoplayMs = ((wd.interval | default(6)) * 1000) if (wd.autoplay and multi) else 0 %}
+
+{# لون نصوص الهيرو: داخل القسم، وللهيدر الشفاف فوقه (خارج القسم فلا يرث المتغير) #}
+{% if wd.text_color %}<style>body.has-hero .lg-header { --hero-text: {{ wd.text_color }}; }</style>{% endif %}
+<section class="lg-hero-section"
+         style="--hero-c1: {{ wd.color_1 | default('var(--hero-d1)', true) }}; --hero-c2: {{ wd.color_2 | default('var(--hero-d2)', true) }}; --hero-c3: {{ wd.color_3 | default('var(--hero-d3)', true) }}; --hero-c4: {{ wd.color_4 | default('var(--hero-d4)', true) }};{% if wd.text_color %} --hero-text: {{ wd.text_color }};{% endif %}"
+         data-lg-slider-scope>
+  <div class="swiper" {% if multi %}data-lg-swiper='{"slidesPerView":1,"spaceBetween":0,"loop":{{ "true" if multi else "false" }},"speed":700,"effect":"fade","fadeEffect":{"crossFade":true},"autoplayMs":{{ autoplayMs }}}'{% endif %}>
+    <div class="swiper-wrapper">
+      {% for block in slides %}
+        {% set s = block.settings %}
+        {# مصدر الصورة: المرفوعة أولاً، ثم الصورة التجريبية المفرّغة #}
+        {% set demo = s.demo_image if (s.demo_image and s.demo_image != 'none') else '' %}
+        {% if s.image and s.image.fileUrl %}
+          {% set src = s.image.fileUrl %}
+        {% elif demo and 'cutout_' in demo %}{% set src = ('demo-' + (demo | replace('cutout_', '')) + '.webp') | assets %}
+        {% else %}
+          {% set src = '' %}
+        {% endif %}
+        {% set mode = s.image_mode | default('product') %}
+        {% set cover = src and mode == 'cover' %}
+        {% set framed = src and mode == 'framed' %}
+        <div class="swiper-slide">
+          <div class="lg-hero-slide lg-container flex flex-col md:flex-row md:items-center">
+
+            <div class="lg-hero-media {% if cover %}!w-full !inset-0{% endif %}" {% if not src %}aria-hidden="true"{% endif %}>
+              {% if wd.show_shapes and not cover %}
+                <span class="lg-liquid lg-liquid--1"></span>
+                <span class="lg-liquid lg-liquid--2"></span>
+                <span class="lg-liquid lg-liquid--3"></span>
+                {% if not framed %}
+                  {# شرائط زجاج سائل ملتفة حول المنتج #}
+                  <span class="lg-swirl lg-swirl--1"></span>
+                  <span class="lg-swirl lg-swirl--2"></span>
+                {% endif %}
+              {% endif %}
+              {% if cover %}
+                <img src="{{ src }}" alt="{{ (s['title' + L] or s.title) }} {{ (s['title_highlight' + L] or s.title_highlight) }}" class="lg-hero-cover" width="1400" height="900" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+                <span class="lg-hero-shade"></span>
+              {% elif framed %}
+                {# صورة حقيقية داخل إطار زجاجي سائل #}
+                <figure class="lg-hero-frame">
+                  <img src="{{ src }}" alt="{{ (s['title' + L] or s.title) }} {{ (s['title_highlight' + L] or s.title_highlight) }}" width="900" height="640" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+                </figure>
+              {% elif src %}
+                <img src="{{ src }}" alt="{{ (s['title' + L] or s.title) }} {{ (s['title_highlight' + L] or s.title_highlight) }}" class="lg-hero-product" width="560" height="560" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+              {% endif %}
+            </div>
+
+            <div class="lg-hero-copy relative z-10 max-w-xl order-first md:order-none">
+              {% if (s['badge' + L] or s.badge) %}<span class="lg-hero-badge">{{ (s['badge' + L] or s.badge) }}</span>{% endif %}
+              {% if (s['title' + L] or s.title) or (s['title_highlight' + L] or s.title_highlight) %}
+                {% if loop.first %}<h1 class="lg-hero-title">{% else %}<h2 class="lg-hero-title">{% endif %}
+                  {{ (s['title' + L] or s.title) }}{% if (s['title_highlight' + L] or s.title_highlight) %}<br><em>{{ (s['title_highlight' + L] or s.title_highlight) }}</em>{% endif %}
+                {% if loop.first %}</h1>{% else %}</h2>{% endif %}
+              {% elif loop.first %}
+                {# أول شريحة من غير عنوان: عنوان الصفحة الوحيد يفضل موجود #}
+                <h1 class="sr-only">{{ store.name }}</h1>
+              {% endif %}
+              {% if (s['subtitle' + L] or s.subtitle) %}<p class="lg-hero-sub text-sm md:text-lg max-w-md leading-relaxed">{{ (s['subtitle' + L] or s.subtitle) | safe }}</p>{% endif %}
+              {% if (s['button_text' + L] or s.button_text) %}
+                <div class="pt-2">
+                  <a href="{{ s.button_url | default('/collections') }}" class="btn btn-ghost-light lg-cta">
+                    <span class="lg-cta__label">{{ (s['button_text' + L] or s.button_text) }}</span>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="swiper-slide">
+          <div class="lg-hero-slide lg-container flex flex-col md:flex-row md:items-center">
+            <div class="lg-hero-media" aria-hidden="true">
+              <span class="lg-liquid lg-liquid--1"></span>
+              <span class="lg-liquid lg-liquid--2"></span>
+              <span class="lg-liquid lg-liquid--3"></span>
+            </div>
+            <div class="relative z-10 max-w-xl py-16 space-y-5">
+              <h1 class="lg-hero-title">{{ store.name }}</h1>
+              <a href="/collections" class="btn btn-ghost-light lg-cta">
+                <span class="lg-cta__label">{{t('common.shop_now')}}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# نقاط الثقة + التحكم #}
+  {% if (trust | length) or multi %}
+    <div class="lg-hero-foot relative z-10 lg-container pb-5 md:pb-10 -mt-2 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+      {% if trust | length %}
+        <ul class="lg-trust-list grid grid-cols-1 sm:grid-cols-3 md:flex md:flex-wrap gap-4 md:gap-0 md:divide-x md:rtl:divide-x-reverse md:divide-white/20 flex-1">
+          {% for b in trust %}
+            <li class="lg-trust md:px-6 first:md:ps-0">
+              <span class="shrink-0 opacity-90">{% ui "icon.njk", name=b.settings.icon | default('truck'), cls="w-7 h-7" %}</span>
+              <span><strong>{{ (b.settings['title' + L] or b.settings.title) }}</strong>{% if (b.settings['text' + L] or b.settings.text) %}<span>{{ (b.settings['text' + L] or b.settings.text) }}</span>{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if multi %}
+        <div class="flex items-center gap-4 md:ms-auto">
+          <div data-lg-pagination class="!static !w-auto flex gap-1.5"></div>
+          <div class="lg-slider-nav ms-auto md:ms-0">
+            <button type="button" class="btn btn-ghost-light btn-icon !w-11 !h-11" data-lg-prev aria-label="{{t('common.previous')}}">{% ui "icon.njk", name="prev", cls="w-4 h-4 lg-flip-rtl" %}</button>
+            <button type="button" class="btn btn-ghost-light btn-icon !w-11 !h-11" data-lg-next aria-label="{{t('common.next')}}">{% ui "icon.njk", name="chevron", cls="w-4 h-4 lg-flip-rtl" %}</button>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="pb-6"></div>
+  {% endif %}
+</section>

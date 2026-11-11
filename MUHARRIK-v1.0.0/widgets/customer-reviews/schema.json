@@ -1,0 +1,254 @@
+{
+  "name": "آراء العملاء",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير فوق العنوان (مثل: 01 / العناية بالسيارة)",
+        "en": "Kicker above the title (e.g. 01 / CAR CARE)"
+      },
+      "default": "",
+      "info": {
+        "ar": "فارغ = عدد الآراء",
+        "en": "Empty = the review count"
+      }
+    },
+    "show_readout": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار قراءة التقييم (المتوسط والنجوم والعدد)",
+        "en": "Show the rating readout (average, stars, count)"
+      },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد الآراء الظاهرة — كمبيوتر",
+        "en": "Visible reviews — desktop"
+      },
+      "default": 5,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الآراء الظاهرة — موبايل",
+        "en": "Visible reviews — mobile"
+      },
+      "default": "1.2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "1",
+            "en": "1"
+          }
+        },
+        {
+          "value": "1.2",
+          "label": {
+            "ar": "1 وجزء من التالي",
+            "en": "1 and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ حركة تلقائية — رأي كل فترة وتدور بلا نهاية",
+        "en": "▸ Autoplay — one review at a time, looping"
+      },
+      "default": true
+    },
+    "interval": {
+      "type": "range",
+      "label": {
+        "ar": "المدة بين كل حركة",
+        "en": "Time between steps"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s"
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل",
+        "en": "Arrows"
+      },
+      "default": true
+    },
+    "show_stars": {
+      "type": "boolean",
+      "label": {
+        "ar": "نجوم التقييم",
+        "en": "Star rating"
+      },
+      "default": false
+    },
+    "band_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "dividers": {
+      "type": "boolean",
+      "label": {
+        "ar": "خط فاصل أعلى وأسفل القسم",
+        "en": "Line above and below the section"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "review": {
+      "name": "رأي عميل",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان الرأي — مثال: صوت مذهل",
+            "en": "Review headline — e.g. Immersive sound"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "نص الرأي",
+            "en": "Review text"
+          },
+          "default": ""
+        },
+        "name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Customer name"
+          },
+          "default": ""
+        },
+        "avatar": {
+          "type": "media",
+          "label": {
+            "ar": "صورة العميل (اختياري)",
+            "en": "Customer photo (optional)"
+          }
+        },
+        "rating": {
+          "type": "range",
+          "label": {
+            "ar": "التقييم",
+            "en": "Rating"
+          },
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "آراء العملاء"
+    }
+  ]
+}

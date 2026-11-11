@@ -1,0 +1,10 @@
+{# زر الوضع الداكن/الفاتح للزائر — يظهر إذا فعّله التاجر (إعدادات الثيم ← الألوان ← schemeToggle).
+   الأيقونة تتبدّل بالـ CSS حسب html[data-scheme] فتكون صحيحة قبل تشغيل Alpine.
+   الاستخدام: {% ui "scheme-toggle.njk", cls="lg-hbtn" %} #}
+{% if settings.schemeToggle != false %}
+<button type="button" class="lg-scheme-btn {{ data.cls }}" @click="toggleScheme($event)"
+        :aria-pressed="(scheme === 'dark').toString()" aria-label="{{ t('header.dark_mode') }}" title="{{ t('header.dark_mode') }}">
+  <span class="lg-scheme-btn__moon">{% ui "icon.njk", name="moon", cls="w-[18px] h-[18px]" %}</span>
+  <span class="lg-scheme-btn__sun">{% ui "icon.njk", name="sun", cls="w-[18px] h-[18px]" %}</span>
+</button>
+{% endif %}

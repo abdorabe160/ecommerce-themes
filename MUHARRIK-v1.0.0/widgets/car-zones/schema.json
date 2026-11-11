@@ -1,0 +1,153 @@
+{
+  "name": "تسوّق حسب جزء العربية — Car Zones",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "▸ السطر الصغير (فارغ = نص الثيم بلغة الزائر)", "en": "▸ Kicker (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (فارغ = تسوّق حسب جزء العربية)", "en": "Title (empty = Shop by car zone)" },
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "label": { "ar": "النص القصير (فارغ = نص الثيم)", "en": "Short text (empty = theme copy)" },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": { "ar": "نص رابط المنطقة في اللوحة (فارغ = تسوّق)", "en": "Zone link label in the panel (empty = Shop)" },
+      "default": ""
+    },
+    "show_index": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الأرقام بجانب النقاط", "en": "Show the indices next to the hotspots" },
+      "default": true
+    },
+    "spin_wheels": {
+      "type": "boolean",
+      "label": { "ar": "دوران بطيء للجنوط", "en": "Slow wheel spin" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": { "ar": "خلفية لوحة المنطقة", "en": "Zone panel background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان وخطوط السيارة", "en": "Title and car-outline colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (النقاط، الزوايا)", "en": "Accent colour (hotspots, ticks)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "zone": {
+      "name": "منطقة في السيارة",
+      "settings": {
+        "zone": {
+          "type": "select",
+          "label": { "ar": "▸ نوع المنطقة — يحدد الصورة الافتراضية والموضع الافتراضي", "en": "▸ Zone type — sets the default image and position" },
+          "default": "lighting",
+          "options": [
+            { "value": "lighting", "label": { "ar": "الإضاءة (المصابيح)", "en": "Lighting (headlights)" } },
+            { "value": "exterior", "label": { "ar": "الخارجية (الهيكل)", "en": "Exterior (body)" } },
+            { "value": "tyres", "label": { "ar": "الإطارات والجنوط", "en": "Tyres and wheels" } },
+            { "value": "interior", "label": { "ar": "الداخلية (المقصورة)", "en": "Interior (cabin)" } },
+            { "value": "electronics", "label": { "ar": "الإلكترونيات (لوحة القيادة)", "en": "Electronics (dashboard)" } },
+            { "value": "care", "label": { "ar": "العناية (الطلاء)", "en": "Care (paint)" } },
+            { "value": "engine", "label": { "ar": "الصيانة (غطاء المحرك)", "en": "Maintenance (engine bay)" } }
+          ]
+        },
+        "label": {
+          "type": "string",
+          "label": { "ar": "الاسم (فارغ = اسم المنطقة بلغة الزائر)", "en": "Name (empty = the zone's name in the visitor's language)" },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": { "ar": "وصف قصير (فارغ = نص الثيم)", "en": "Short text (empty = theme copy)" },
+          "default": ""
+        },
+        "x": {
+          "type": "range",
+          "label": { "ar": "موضع النقطة أفقيًا % (0 = بداية السيارة · فارغ/0 = الموضع الافتراضي للنوع)", "en": "Hotspot X % (0 = the car's start · empty/0 = the type's default)" },
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%"
+        },
+        "y": {
+          "type": "range",
+          "label": { "ar": "موضع النقطة عموديًا % (0 = أعلى · فارغ/0 = الموضع الافتراضي للنوع)", "en": "Hotspot Y % (0 = top · empty/0 = the type's default)" },
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%"
+        },
+        "collection": {
+          "type": "collections",
+          "label": { "ar": "التشكيلة التي تفتحها المنطقة", "en": "The collection this zone opens" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "أو رابط يدوي — مثال: /shop/lighting (فارغ = /shop)", "en": "Or a manual link — e.g. /shop/lighting (empty = /shop)" },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": { "ar": "صورة اللوحة — يفضّل ٨٠٠×١٠٠٠ (فارغ = صورة الفئة من الثيم)", "en": "Panel image — 800×1000 recommended (empty = the theme's category photo)" }
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الواجهة", "name": "تسوّق حسب جزء العربية — Car Zones" }
+  ]
+}

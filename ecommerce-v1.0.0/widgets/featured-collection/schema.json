@@ -1,0 +1,398 @@
+{
+  "name": "تشكيلات مميزة",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_eyebrow": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ السطر الصغير فوق العنوان",
+        "en": "▸ Small line above the title"
+      },
+      "default": true
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Small line above the title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ رابط «عرض الكل»",
+        "en": "▸ “View all” link"
+      },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص «عرض الكل» — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "“View all” label — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط «عرض الكل» — فارغ = صفحة التصنيف المختار أو /shop",
+        "en": "“View all” link — empty = the chosen collection or /shop"
+      },
+      "default": ""
+    },
+    "countdown_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العدّاد التنازلي — اختياري؛ النوع اليومي يبدأ من جديد كل منتصف ليل",
+        "en": "▸ Countdown timer — optional; the daily type starts over every midnight"
+      },
+      "default": false
+    },
+    "countdown_label": {
+      "type": "string",
+      "label": {
+        "ar": "النص قبل العدّاد — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Text before the timer — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "countdown_mode": {
+      "type": "select",
+      "label": {
+        "ar": "نوع العدّاد",
+        "en": "Timer type"
+      },
+      "default": "daily",
+      "options": [
+        {
+          "value": "daily",
+          "label": {
+            "ar": "يومي — ينتهي كل يوم منتصف الليل",
+            "en": "Daily — ends every midnight"
+          }
+        },
+        {
+          "value": "date",
+          "label": {
+            "ar": "حتى تاريخ محدد — يختفي بعد انتهائه",
+            "en": "Until a date — hides once it ends"
+          }
+        }
+      ]
+    },
+    "countdown_end": {
+      "type": "string",
+      "label": {
+        "ar": "تاريخ الانتهاء — مثال: 2026-12-31 23:59",
+        "en": "End date — e.g. 2026-12-31 23:59"
+      },
+      "default": "2026-12-31 23:59"
+    },
+    "timer_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية مربعات العدّاد",
+        "en": "Timer box background"
+      },
+      "default": ""
+    },
+    "timer_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون أرقام العدّاد",
+        "en": "Timer digits colour"
+      },
+      "default": ""
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "▸ المنتجات — اختر يدويًا، أو اتركها فارغة",
+        "en": "▸ Products — pick by hand, or leave empty"
+      }
+    },
+    "collection": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيف — يُعرض لو لم تختر منتجات (يؤخذ أول تصنيف)",
+        "en": "Collection — used when no products are picked (the first one is used)"
+      }
+    },
+    "limit": {
+      "type": "range",
+      "label": {
+        "ar": "أقصى عدد منتجات من التصنيف أو الأحدث",
+        "en": "Max products from the collection / newest"
+      },
+      "default": 12,
+      "min": 4,
+      "max": 24,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات في الصف — كمبيوتر",
+        "en": "Products per row — desktop"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 6,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد المنتجات في الصف — موبايل",
+        "en": "Products per row — mobile"
+      },
+      "default": "2.2",
+      "options": [
+        {
+          "value": "1.3",
+          "label": {
+            "ar": "1 مع جزء من التالي",
+            "en": "1 and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        },
+        {
+          "value": "2.2",
+          "label": {
+            "ar": "2 مع جزء من التالي",
+            "en": "2 and a peek"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل — تظهر عند مرور الماوس",
+        "en": "Arrows — shown on hover"
+      },
+      "default": true
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة عرض صورة المنتج",
+        "en": "Product image fit"
+      },
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة داخل الإطار",
+            "en": "Whole, inside the frame"
+          }
+        },
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ الإطار",
+            "en": "Fill the frame"
+          }
+        }
+      ]
+    },
+    "image_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية إطار الصورة",
+        "en": "Image frame background"
+      },
+      "default": ""
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "التقييم بالنجوم",
+        "en": "Star rating"
+      },
+      "default": true
+    },
+    "show_thumbs": {
+      "type": "boolean",
+      "label": {
+        "ar": "صور مصغّرة تحت السعر — تبدّل الصورة الرئيسية",
+        "en": "Thumbnails under the price — switch the main image"
+      },
+      "default": true
+    },
+    "hover_images": {
+      "type": "boolean",
+      "label": {
+        "ar": "تبديل الصور عند تحريك الماوس على الصورة",
+        "en": "Switch images while moving over the picture"
+      },
+      "default": true
+    },
+    "show_stock": {
+      "type": "boolean",
+      "label": {
+        "ar": "حالة المخزون",
+        "en": "Stock status"
+      },
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر العرض السريع",
+        "en": "Quick view button"
+      },
+      "default": true
+    },
+    "show_atc": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر الإضافة للسلة",
+        "en": "Add to cart button"
+      },
+      "default": true
+    },
+    "show_sale_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة المنتجات المخفّضة",
+        "en": "▸ Badge on discounted products"
+      },
+      "default": true
+    },
+    "sale_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص شارة المنتجات المخفّضة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Discounted-product badge text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_low_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة الكمية المحدودة",
+        "en": "▸ Low-stock badge"
+      },
+      "default": true
+    },
+    "low_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص شارة الكمية المحدودة (5 قطع أو أقل) — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Low-stock badge text (5 or fewer) — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ملاحظة أسفل المنتجات المخفّضة",
+        "en": "▸ Note under discounted products"
+      },
+      "default": true
+    },
+    "card_note": {
+      "type": "string",
+      "label": {
+        "ar": "ملاحظة أسفل المنتجات المخفّضة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Note under discounted products — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز (الروابط والمخزون)",
+        "en": "Accent (links, stock)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "تشكيلات مميزة"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "name": "أسئلة وأجوبة",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — كمبيوتر",
+        "en": "Columns — desktop"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "1",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "first_open": {
+      "type": "boolean",
+      "label": {
+        "ar": "فتح أول سؤال افتراضيًا",
+        "en": "Open the first question"
+      },
+      "default": false
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "blocks": {
+    "qa": {
+      "name": "سؤال",
+      "settings": {
+        "q": {
+          "type": "string",
+          "label": {
+            "ar": "السؤال",
+            "en": "Question"
+          },
+          "default": ""
+        },
+        "a": {
+          "type": "text",
+          "label": {
+            "ar": "الإجابة",
+            "en": "Answer"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "أسئلة وأجوبة"
+    }
+  ]
+}

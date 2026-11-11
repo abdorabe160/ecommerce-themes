@@ -1,0 +1,269 @@
+{# ============================================================================
+   NAKHA FILTER PANEL — desktop aside AND mobile drawer in one file
+   ----------------------------------------------------------------------------
+   ⚠️  Why one file: the controls exist exactly once (in the `controls` macro
+   below) and each variant only wraps them in different chrome. An earlier
+   version split this into filter-panel + filter-sidebar + filter-mobile, which
+   meant `{% ui %}` calling `{% ui %}` — a construct with NO precedent anywhere
+   in this theme. Do not reintroduce nested {% ui %} here.
+
+   Locals:
+     data.variant           'sidebar' (desktop aside) | 'drawer' (mobile sheet)
+     data.filters           context.shop.filters.available
+     data.collections       context.collections
+     data.show_collections  also list collections inside the panel
+
+   Drives `collectionFilter` from assets/main.js:
+     toggleFilter(handle, value) · isActive(handle, value) · activeCount
+     priceMin / priceMax / _debouncedApplyPrice() · clearFilters()
+     setCollection(id, slug) · collectionId · filtersOpen
+
+   Filter shape:
+     handle · name (lang-keyed object or plain string) · inputType
+     items|values[] → { value, label (lang-keyed or string), count? }
+     range → { min, max, step }
+   ========================================================================= #}
+
+{% set variant = data.variant | default('sidebar') %}
+{% set filters = data.filters | default([]) %}
+{% set collections = data.collections | default([]) %}
+{% set showCollections = data.show_collections | default(false) %}
+{% set lang = localization.language | default('ar') %}
+
+
+{# ---- lang-keyed label → string ---- #}
+{% macro lbl(v, lang) %}{% if v is string %}{{ v }}{% else %}{{ v[lang] | default(v.ar) | default(v.en) | default('') }}{% endif %}{% endmacro %}
+
+
+{# ============================ THE CONTROLS ============================
+   Written once. Both variants call this.
+   ==================================================================== #}
+{% macro controls(filters, collections, showCollections, lang) %}
+<div class="flex flex-col gap-6">
+
+  {# ---------- collections ---------- #}
+  {% if showCollections and (collections | length) > 0 %}
+    <div class="flex flex-col gap-3">
+      <span class="nakha-label m-0">{{ t('pages.shop.collections') }}</span>
+      <div class="flex flex-col gap-1">
+        <button type="button" class="nakha-ffilter-row"
+                :class="!collectionId && 'is-active'"
+                @click="setCollection('', '')">
+          <span>{{ t('pages.shop.all_products') }}</span>
+        </button>
+        {% for col in collections %}
+          <button type="button" class="nakha-ffilter-row"
+                  :class="collectionId === '{{ col._id }}' && 'is-active'"
+                  @click="setCollection('{{ col._id }}', '{{ (col.slug | default('')) }}')">
+            <span class="line-clamp-1">{{ col.title }}</span>
+            {% if col.productsCount %}<span class="nakha-ffilter-count">{{ col.productsCount }}</span>{% endif %}
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ---------- filters ---------- #}
+  {% for filter in filters %}
+
+    {# ===== range (price) ===== #}
+    {% if filter.inputType == 'range' %}
+      {% set rmin = filter.range.min | default(0) %}
+      {% set rmax = filter.range.max | default(1000) %}
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-2">
+          <span class="nakha-label m-0">{{ lbl(filter.name, lang) | default(t('pages.collection.price_range'), true) }}</span>
+          {# Prices are in MINOR units, so `toLocaleString()` printed 244500
+             instead of 2,445.00 ر.س — a number that looks like a price and is
+             off by a hundred. Qumra.utils.formatMoney is the JS mirror of the
+             server-side `| money` filter, so both sides agree on separators,
+             symbol and placement. #}
+          <span class="nakha-caption nakha-num">
+            <span x-text="Qumra.utils.formatMoney(+(priceMin) || {{ rmin }})"></span>
+            —
+            <span x-text="Qumra.utils.formatMoney(+(priceMax) || {{ rmax }})"></span>
+          </span>
+        </div>
+
+        <div class="nakha-price-slider">
+          <span class="slider-track"></span>
+          <span class="slider-range"
+                :style="`inset-inline-start: ${((+(priceMin) || {{ rmin }}) - {{ rmin }}) / ({{ rmax }} - {{ rmin }}) * 100}%; inset-inline-end: ${100 - ((+(priceMax) || {{ rmax }}) - {{ rmin }}) / ({{ rmax }} - {{ rmin }}) * 100}%`"></span>
+
+          <input type="range" min="{{ rmin }}" max="{{ rmax }}" step="{{ filter.range.step | default(1) }}"
+                 :value="+(priceMin) || {{ rmin }}"
+                 aria-label="{{ t('pages.search.min_price') }}"
+                 @input="priceMin = Math.min(+$event.target.value, +(priceMax) || {{ rmax }}); $event.target.value = priceMin; _debouncedApplyPrice()"/>
+          <input type="range" min="{{ rmin }}" max="{{ rmax }}" step="{{ filter.range.step | default(1) }}"
+                 :value="+(priceMax) || {{ rmax }}"
+                 aria-label="{{ t('pages.search.max_price') }}"
+                 @input="priceMax = Math.max(+$event.target.value, +(priceMin) || {{ rmin }}); $event.target.value = priceMax; _debouncedApplyPrice()"/>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="number" class="nakha-input" style="padding: 9px 12px; font-size: 0.8125rem;"
+                 :value="priceMin" @input="priceMin = $event.target.value; _debouncedApplyPrice()"
+                 placeholder="{{ t('pages.search.min_price') }}" aria-label="{{ t('pages.search.min_price') }}"/>
+          <span style="color: var(--color-text-tertiary);">—</span>
+          <input type="number" class="nakha-input" style="padding: 9px 12px; font-size: 0.8125rem;"
+                 :value="priceMax" @input="priceMax = $event.target.value; _debouncedApplyPrice()"
+                 placeholder="{{ t('pages.search.max_price') }}" aria-label="{{ t('pages.search.max_price') }}"/>
+        </div>
+      </div>
+
+    {# ===== colour swatches ===== #}
+    {% elif filter.inputType == 'color' %}
+      {% set items = filter.items | default(filter.values) | default([]) %}
+      {% if (items | length) > 0 %}
+        <div class="flex flex-col gap-3">
+          <span class="nakha-label m-0">{{ lbl(filter.name, lang) }}</span>
+          <div class="nakha-size-row">
+            {% for item in items %}
+              {# Same contract as the PDP and the quick view: .nakha-swatch
+                 paints from `background-color` (with background-clip:content-box
+                 for the ring), NOT from a custom property. Setting a var here
+                 left every colour filter as an empty circle. #}
+              <button type="button" class="nakha-swatch"
+                      data-swatch="{{ item.value }}" data-swatch-label="{{ lbl(item.label, lang) | default(item.value) }}"
+                      :class="isActive('{{ filter.handle }}', '{{ item.value }}') && 'is-active'"
+                      :aria-pressed="isActive('{{ filter.handle }}', '{{ item.value }}')"
+                      @click="toggleFilter('{{ filter.handle }}', '{{ item.value }}')"
+                      title="{{ lbl(item.label, lang) | default(item.value) }}"
+                      aria-label="{{ lbl(item.label, lang) | default(item.value) }}"></button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    {# ===== checkbox / select / text ===== #}
+    {% else %}
+      {% set items = filter.items | default(filter.values) | default([]) %}
+      {% if (items | length) > 0 %}
+        <div class="flex flex-col gap-3">
+          <span class="nakha-label m-0">{{ lbl(filter.name, lang) }}</span>
+          <div class="flex flex-col gap-1 max-h-64 overflow-y-auto nakha-scroll-thin">
+            {% for item in items %}
+              <button type="button" class="nakha-ffilter-row"
+                      :class="isActive('{{ filter.handle }}', '{{ item.value }}') && 'is-active'"
+                      :aria-pressed="isActive('{{ filter.handle }}', '{{ item.value }}')"
+                      @click="toggleFilter('{{ filter.handle }}', '{{ item.value }}')">
+                <span class="nakha-ffilter-box"
+                      :class="isActive('{{ filter.handle }}', '{{ item.value }}') && 'is-active'">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"
+                       x-show="isActive('{{ filter.handle }}', '{{ item.value }}')">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                  </svg>
+                </span>
+                <span class="flex-1 line-clamp-1 text-start">{{ lbl(item.label, lang) | default(item.value) }}</span>
+                {% if item.count %}<span class="nakha-ffilter-count">{{ item.count }}</span>{% endif %}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {# ---------- clear ---------- #}
+  <button type="button"
+          class="nakha-btn nakha-btn--outline nakha-btn--sm nakha-btn--block"
+          x-show="activeCount > 0" x-cloak
+          @click="clearFilters()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+    {{ t('pages.collection.clear_filters') }}
+    (<span x-text="activeCount"></span>)
+  </button>
+
+</div>
+{% endmacro %}
+
+
+{# ============================ VARIANTS ============================ #}
+
+{% if variant == 'drawer' %}
+
+  {# ---------- mobile bottom sheet ----------
+       Uses collectionFilter's own `filtersOpen` flag, NOT $store.modal, so the
+       cart and search drawers can never fight over the same state. #}
+  {# `lg:hidden` has the same Play-CDN timing hole as the aside above, but it
+     does not bite here: x-cloak hides the wrapper until Alpine boots, and the
+     sheet inside starts at x-show="filtersOpen" === false. #}
+  <div class="nakha-only-lg" x-cloak>
+    <div x-show="filtersOpen"
+         @click="filtersOpen = false"
+         class="nakha-overlay"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"></div>
+
+    <div x-show="filtersOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full"
+         {# .nakha-sheet, not hand-rolled utilities: `fixed inset-x-0 bottom-0
+            z-[210]` came from the Tailwind Play CDN, which generates its
+            classes only after it has scanned the DOM — so for the first frames
+            the sheet was an unpositioned block in the page flow. The primitive
+            ships in style.css and is correct on frame one, and it puts the
+            panel back on --z-drawer instead of a hard-coded 210.
+
+            .nakha-sheet and NOT .nakha-drawer--bottom: the drawer parks itself
+            off-screen with a transform, which would fight the transform the
+            Alpine transition classes below apply. See the note in style.css. #}
+         class="nakha-sheet">
+
+      <div class="nakha-drawer-head">
+        <span class="nakha-eyebrow">
+          {{ t('pages.collection.filter') }}
+        </span>
+        <button type="button" @click="filtersOpen = false"
+                class="nakha-btn-icon nakha-btn-icon--sm"
+                aria-label="{{ t('common.close') }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="nakha-drawer-body nakha-scroll-thin">
+        {{ controls(filters, collections, showCollections, lang) }}
+      </div>
+
+      <div class="nakha-drawer-foot">
+        <button type="button" @click="filtersOpen = false" class="nakha-btn nakha-btn--primary nakha-btn--block">
+          {{ t('pages.collection.show_results') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+
+  {# ---------- desktop aside ---------- #}
+  <aside class="nakha-filter-aside" aria-label="{{ t('pages.collection.filter') }}">
+    {# --header-h is published by the header widget; 96px was a guess that breaks
+       the moment the announcement strip or the quick-links rail is switched on. #}
+    <div class="flex flex-col gap-5" style="position: sticky; top: calc(var(--header-h, 132px) + 16px);">
+      <div class="flex items-center justify-between gap-3">
+        <span class="nakha-eyebrow">
+          {{ t('pages.collection.filter') }}
+        </span>
+        {# main.js copies #products-count-data into here after every filter run #}
+        <span id="products-count" class="nakha-caption"></span>
+      </div>
+
+      <div class="nakha-card" style="padding: 18px;">
+        {{ controls(filters, collections, showCollections, lang) }}
+      </div>
+    </div>
+  </aside>
+
+{% endif %}

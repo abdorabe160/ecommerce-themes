@@ -1,0 +1,18 @@
+{# بطاقة مقال — نفس شكل صفحة المدونة (blog-posts). الاستخدام: {% ui "post-card.njk", article=a %} (ممكن heading='h3')
+   رابط المقال /articles/<handle> (/blogs/<x> صفحة تصنيف). الغلاف بيوصل كـ image.fileUrl أو imageUrl أو image نص أو images[0]. #}
+{% set a = data.article %}
+{% if a and a.title %}
+  {% set aslug = a.handle or a.slug %}
+  {% set aurl = ('/articles/' + aslug) if aslug else (a.url or '/blogs') %}
+  {% set aimg = (a.image.fileUrl if (a.image and a.image.fileUrl) else '') or a.imageUrl or (a.image if (a.image is string) else '') or (a.images[0].fileUrl if (a.images and a.images[0] and a.images[0].fileUrl) else '') %}
+  {% set adate = a.publishedAt or a.createdAt %}
+  {% set htag = 'h3' if data.heading == 'h3' else 'h2' %}
+  <a href="{{ aurl }}" class="mw-post"{% if adate %} data-date="{{ adate }}"{% endif %}>
+    <div class="mw-post__media">{% if aimg %}<img src="{{ aimg }}" alt="{{ a.title }}" loading="lazy" width="800" height="500"/>{% else %}<span class="mw-card__placeholder" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 3.5 4 6l1.5 4H8V20.5h8V10h2.5L20 6l-4.5-2.5c-.6 1.4-1.9 2.3-3.5 2.3S9.1 4.9 8.5 3.5Z" stroke="currentColor" stroke-width=".8" stroke-linejoin="round"/></svg></span>{% endif %}</div>
+    {% if adate %}<span class="mw-post__date">{{ (adate | string).slice(0, 10) }}</span>{% endif %}
+    <{{ htag }} class="mw-post__title" dir="auto">{{ a.title }}</{{ htag }}>
+    {% set ex = a.excerpt or a.summary or a.description or a.content %}
+    {% if ex %}<p class="mw-post__excerpt" dir="auto">{{ ex | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(140) }}</p>{% endif %}
+    <span class="mw-link">{{ t('blog.read_more') }}</span>
+  </a>
+{% endif %}

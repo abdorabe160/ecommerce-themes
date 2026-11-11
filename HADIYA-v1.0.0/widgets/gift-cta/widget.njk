@@ -1,0 +1,65 @@
+{# ============================================================================
+   HADIYA · بانر هدايا الشركات  (gift-cta) — engine E4
+   ----------------------------------------------------------------------------
+   ┌───────────────────┬──────────────────────────────┐
+   │                   │ للشركات                       │
+   │   صورة / رسم       │ هدايا لفريقك وعملائك          │
+   │   الهدية           │ وصف                           │
+   │                   │ ✓ نقطة  ✓ نقطة  ✓ نقطة         │
+   │                   │ [اطلب عرض سعر] [بوكسات جاهزة]  │
+   └───────────────────┴──────────────────────────────┘
+
+   Written for corporate gifting, but nothing in it is corporate-only: any
+   "talk to us" offer (weddings, bulk Ramadan boxes) uses the same band.
+
+   The quote button is a LINK (contact page, WhatsApp, mailto) — Qumra has no
+   quote-request endpoint (plan §11, question 5), so the theme does not pretend
+   to submit anything.
+
+   The three points default EMPTY on purpose (lesson 10): "branded packaging"
+   is a promise only the merchant can make.
+
+   Styling: assets/theme.css → "gift-cta".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set img = mediaUrl(d.image) | trim %}
+{% set bg = 'var(--hy-sec-bg, var(--color-bg-tertiary))' if (d.background | default('well', true)) == 'well' else 'var(--hy-sec-bg, transparent)' %}
+{% set points = [] %}
+{% for k in ['point_1', 'point_2', 'point_3'] %}{% if d[k] %}{% set _ = points.push(d[k]) %}{% endif %}{% endfor %}
+
+<section id="hd-cta-{{ id }}" class="hd-cta {{ 'hd-cta--end' if d.media_position == 'end' }}" style="background: {{ bg }};"
+         aria-labelledby="hd-cta-t-{{ id }}">
+  <div class="hd-cta-in">
+    <div class="hd-cta-media {{ 'has-img' if img | length }}">
+      {% if img | length %}
+        <img src="{{ img }}" alt="" loading="lazy"/>
+      {% else %}
+        <img src="{{ 'slot-cta.jpg' | assets }}" alt="" loading="lazy"/>
+      {% endif %}
+    </div>
+    <div class="hd-cta-copy">
+      {% if d.eyebrow %}<p class="hd-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+      <h2 id="hd-cta-t-{{ id }}" class="hd-title">{{ d.title | default(t('gifts.cta_title'), true) }}</h2>
+      {% if d.text %}<div class="hd-cta-text">{{ d.text | safe }}</div>{% endif %}
+      {% if points | length %}
+        <ul class="hd-cta-points">
+          {% for p in points %}
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ p }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if d.btn1_text or d.btn2_text %}
+        <div class="hd-cta-btns">
+          {% if d.btn1_text %}<a class="hy-btn hy-btn--solid" href="{{ d.btn1_url | default('#', true) }}">{{ d.btn1_text }}</a>{% endif %}
+          {% if d.btn2_text %}<a class="hy-btn hy-btn--outline" href="{{ d.btn2_url | default('/shop', true) }}">{{ d.btn2_text }}</a>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#hd-cta-' ~ id, c=d %}

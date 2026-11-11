@@ -1,0 +1,816 @@
+{# ============================================================================
+   HYPER PRODUCT PAGE (PDP)
+   ----------------------------------------------------------------------------
+   ⚠️  DATA REALITY: Qumra products expose only _id, title, handle, description
+   (HTML), sku, quantity, pricing, images[], options[], variants[], tags[],
+   averageRating, reviewsCount — there are NO metafields. So per-product copy
+   lives in `description` (a panel with source="description" renders it) and
+   store-wide copy (shipping, returns, care) in a panel with source="text".
+   Nothing here invents a data source that does not exist.
+
+   ⚠️  JS CONTRACT — carried over verbatim from the previous version. The whole
+   <script> at the bottom is unchanged; only the markup around it was rebuilt:
+     · reads `context.product` (NOT the bare `product` global)
+     · exposes window['productPage_<widget.id>'], which x-data calls directly
+     · matches variants client-side against the dumped `variants` array,
+       comparing `variant.options` (an array of option-VALUE ids)
+     · adds to cart via Qumra.cart.add(id, qty, optionIds)
+   Restyle freely; do not change those four things.
+
+   Styling lives in assets/style.css → "15.23 PRODUCT PAGE".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set p = context.product %}
+{% set panels = widget.blocks | default([], true) %}
+
+{% set ratio = d.image_ratio | default('3x4') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+{% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+{% set showCrumbs = d.show_breadcrumb | default(true) %}
+
+{# The h1 text belongs to the product, so what the merchant gets is its SIZE.
+   It ships as one multiplier rather than a font-size, because the title carries
+   two different clamps — Arabic runs smaller than the Latin display face at the
+   same nominal size — and a raw px value would flatten that distinction. The
+   scale multiplies whichever clamp is in force, so both stay in proportion.
+   Weight is deliberately NOT offered: layout.njk loads a SINGLE weight per
+   font family, so a weight picker would only ever trigger synthetic bolding. #}
+{% set tSize = d.title_size | default('md') %}
+{% if tSize == 'sm' %}{% set titleScale = '0.85' %}
+{% elif tSize == 'lg' %}{% set titleScale = '1.15' %}
+{% elif tSize == 'xl' %}{% set titleScale = '1.32' %}
+{% else %}{% set titleScale = '1' %}{% endif %}
+{% set showSavings = d.show_savings | default(true) %}
+{% set showStock = d.show_stock_status | default(true) %}
+{# The point at which a count stops being "available" and starts being
+   "hurry". Below it the bar and the "only N left" line show; at or above it
+   the plain "in stock" pill does.
+
+   ⚠️  THIS IS THE THIRD READER OF ONE SETTING, `lowStockThreshold`. `LOW_STOCK_AT`
+   in ui/product-card.njk and `lowStock` in the `cardDefaults` block of
+   layouts/layout.njk are the other two, and all three must keep one fallback
+   — the card and the product page are looking at the same stock.
+
+   It was 50 here while both of those were 5, so a variant with 45 in hand
+   announced "بقي ٤٥ فقط!" on the product page and nothing at all on its card.
+   It also made the bar meaningless: the fill is measured against THIS number,
+   so 2 of 50 drew a 4% sliver next to a line claiming urgency. #}
+{% set lowStockAt = settings.lowStockThreshold | default(5, true) | int %}
+{% set relatedTitle = t('pages.product.related') %}
+{% set relatedLimit = 4 %}
+{# Live stores send `context.related_products` (measured 2026-11-02 on
+   madar.qumra.store); `related` is kept as a fallback. #}
+{% set related = context.related_products or context.related or [] %}
+{% set showZoom = d.show_zoom | default(true) %}
+{# widgets do not inherit the layout's `set` locals — resolve it here #}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+
+{% set images = p.images | default([], true) %}
+{% set imgCount = images | length %}
+{% set untracked = p.allowBackorder or (not p.trackQuantity) %}
+{% set canPurchase = untracked or (p.quantity | default(0, true)) > 0 %}
+{% set hasDiscount = p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+
+
+{% if p %}
+<section id="hy-pdp-{{ id }}" class="hy-pdp" x-data="productPage_{{ id }}()"
+         style="--hy-pdp-title-scale: {{ titleScale }};">
+  <div class="hy-container">
+
+    {% if showCrumbs %}
+      <nav class="hy-crumbs" style="padding-top: var(--space-5);" aria-label="{{t('common.home')}}">
+        <a href="/">{{t('common.home')}}</a>
+        <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+        </svg>
+        <a href="/shop">{{t('pages.shop.all_products')}}</a>
+        <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+        </svg>
+
+        {# ---- The product's collection, when the payload carries one ----
+           The DATA REALITY note at the top of this file lists what a Qumra
+           product exposes, and `collections` is not in it — the LIST payload
+           has it (ui/product-card.njk builds its eyebrow from it) but the
+           product page's own payload has not been seen to. So this is written
+           to cost nothing when the field is absent and to work the moment it
+           appears, rather than being left out on the assumption it never will.
+
+           Two guards, both taken from the card's own note:
+             · the list may be missing or empty — hence the length test before
+               any index is taken;
+             · `collections[0]` may be an id STRING rather than an object, and
+               `.title` on a string is undefined, so that case renders nothing
+               instead of printing a raw hash.
+
+           Falls back to `/shop` when there is a title but no usable slug: a
+           crumb that reads right and navigates somewhere sane beats one that
+           links to /shop/undefined. #}
+        {% set pCols = p.collections | default([], true) %}
+        {% set pCol = pCols[0] if (pCols | length) > 0 else null %}
+        {% set pColTitle = (pCol.title | default('', true)) if pCol else '' %}
+        {% if pColTitle %}
+          {% set pColSlug = pCol.handle | default(pCol.slug) | default('', true) %}
+          <a href="{{ ('/shop/' ~ pColSlug) if pColSlug else '/shop' }}">{{ pColTitle }}</a>
+          <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+          </svg>
+        {% endif %}
+
+        <span aria-current="page">{{ p.title }}</span>
+      </nav>
+    {% endif %}
+
+    <div class="hy-pdp-grid">
+
+      {# ═══════════════ gallery ═══════════════
+         One large stage with a thumb strip down its end edge. Clothing is
+         judged on drape, so the main shot gets the room; the strip is there to
+         switch, not to be looked at.
+
+         The `#pdZoom-<id>-<index>` ids are a CONTRACT — openZoom() in the
+         script clicks the one matching activeImageIndex to open GLightbox. #}
+      <div class="hy-pdp-stage">
+        {# `.passive` on touchstart — this listener only reads coordinates and
+           never calls preventDefault, and saying so lets the browser keep
+           scrolling on the main thread instead of waiting to find out. #}
+        <div class="hy-pdp-main" style="--pdp-ratio: {{ ratioVal }};"
+             @touchstart.passive="swipeStart($event)"
+             @touchend.passive="swipeEnd($event)">
+          {% if imgCount > 0 %}
+            {% for img in images %}
+              <a id="pdZoom-{{ id }}-{{ loop.index0 }}"
+                 class="hy-pdp-shot {{ 'glightbox' if showZoom }}"
+                 {% if showZoom %}href="{{ img.fileUrl }}" data-gallery="pd-{{ id }}"{% else %}href="#" @click.prevent{% endif %}
+                 x-show="activeImageIndex === {{ loop.index0 }}"
+                 {% if not loop.first %}x-cloak{% endif %}
+                 aria-label="{{ p.title }}">
+                <img src="{{ img.fileUrl }}" alt="{{ p.title }}"
+                     {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="hy-pdp-shot" style="cursor: default;">
+              <span class="hy-pdp-noimg">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                </svg>
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if imgCount > 1 %}
+          <div class="hy-pdp-thumbs" role="group" aria-label="{{ p.title }}">
+            {% for img in images %}
+              <button type="button" class="hy-pdp-thumb"
+                      :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                      @click="setImage({{ loop.index0 }})"
+                      aria-label="{{ loop.index }}">
+                <img src="{{ img.fileUrl }}" alt="" loading="lazy"/>
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# ═══════════════ buy column ═══════════════ #}
+      <div class="hy-pdp-buy">
+        <h1 class="hy-pdp-title">{{ p.title }}</h1>
+
+        {# ═══════════════ rating ═══════════════
+           `averageRating` and `reviewsCount` are the only two review fields a
+           Qumra product carries — there is no list of reviews and no endpoint
+           to post one (docs/store-ajax/ has cart, product, search and wishlist,
+           and nothing else). So this is the summary, and it is all the summary
+           can honestly be. Nothing here invents the rest.
+
+           ⚠️  Rendered ONLY when there is something to report. A product with
+           no reviews shows nothing — not five hollow stars, which read as a
+           score of zero rather than as an absence and make a new product look
+           rejected.
+
+           The stars are drawn from ONE gradient-clipped element rather than
+           five glyphs, so a 4.2 shows four stars and a fifth filled to 20% —
+           a half-star set could only ever round to 4 or 4.5. `--pct` carries
+           the fraction; the CSS does the clipping. #}
+        {% set rvCount = p.reviewsCount | default(0, true) %}
+        {% set rvAvg = p.averageRating | default(0, true) %}
+        {% if rvCount > 0 and rvAvg > 0 %}
+          <div class="hy-pdp-rating"
+               aria-label="{{ rvAvg }} / 5">
+            <span class="hy-stars" style="--pct: {{ (rvAvg / 5 * 100) | round }}%;" aria-hidden="true">★★★★★</span>
+            <span class="hy-pdp-rating-num">{{ rvAvg }}</span>
+            <span class="hy-pdp-rating-count">{{ t('pages.product.reviews_count') | replace('{count}', rvCount) }}</span>
+          </div>
+        {% endif %}
+
+        {# The headline figure is the LINE TOTAL (unit × qty). The was-price and
+           the savings were already multiplied by qty, so leaving the main price
+           at the unit rate made the stepper look broken: press + and every
+           number on the block moved except the one being read. #}
+        <div class="hy-pdp-prices">
+          <span class="hy-pdp-price" :class="hasDiscount() && 'hy-pdp-price--sale'" x-text="displayPrice()">{% if (p.pricing.price | default(0, true)) == 0 %}{{t('common.free')}}{% else %}{{ p.pricing.price | default(0, true) | money }}{% endif %}</span>
+          <span class="hy-pdp-was" x-show="hasDiscount()" x-cloak x-text="displayComparePrice()"></span>
+          {% if showSavings %}
+            <span class="hy-pdp-save" x-show="hasDiscount()" x-cloak>
+              {# `<bdi>` around the SIGN AND the amount, not just the amount. `-` is a
+                 neutral character: on its own in an Arabic line it drifts to the
+                 logical end and "−50,000" renders as "50,000−". Isolated with the
+                 digits it stays a single LTR run in the right place. Same reason the
+                 unit price and the article counts are already wrapped. #}
+              <span class="hy-neg">−<span x-text="discountPercent"></span>%</span>
+            </span>
+          {% endif %}
+        </div>
+
+        {# so "2,000ج.م" on a 1,000ج.م product is never a mystery #}
+        <p class="hy-pdp-unit" x-show="qty > 1" x-cloak>
+          <bdi x-text="displayUnitPrice()"></bdi>
+          <span aria-hidden="true">×</span>
+          <bdi x-text="qty"></bdi>
+        </p>
+
+        {# ═══════════ options ═══════════ #}
+        {% for option in p.options %}
+          {% if (option.values | length) > 0 %}
+            <div class="hy-pdp-opt">
+              {# Inline, not stacked: "Colour: Gray blue" reads as one fact.
+                 Naming the picked value also saves the shopper working out
+                 which swatch is the outlined one. #}
+              <div class="hy-pdp-opt-head">
+                <span class="hy-pdp-opt-name">{{ option.name }}:</span>
+                {# Nothing is pre-selected, so the head doubles as the prompt.
+                   "المقاس: اختر المقاس" states the outstanding task instead of
+                   showing a value the shopper never picked. #}
+                <span class="hy-pdp-opt-value" data-opt="{{ option.name }}"
+                      data-prompt="{{ t('pages.product.select_option') | replace('{{option}}', option.name) }}"
+                      :class="!selectedOptions[$el.dataset.opt] && 'is-empty'"
+                      x-text="selectedLabels[$el.dataset.opt] || $el.dataset.prompt"></span>
+              </div>
+              <div class="hy-pdp-swatches" role="group" aria-label="{{ option.name }}">
+                {% for v in option.values %}
+                  {# data- attributes, not interpolation: `| dump` emits double
+                     quotes and the first one would close the attribute. #}
+                  {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+                  <button type="button" class="hy-pdp-swatch {{ 'hy-pdp-swatch--img' if vImg }}"
+                          data-opt="{{ option.name }}"
+                          data-val="{{ v._id }}"
+                          data-label="{{ v.label }}"
+                          :aria-pressed="selectedOptions[$el.dataset.opt] === $el.dataset.val ? 'true' : 'false'"
+                          :class="{
+                            'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val,
+                            'is-unavailable': valueDisabled($el.dataset.opt, $el.dataset.val)
+                          }"
+                          :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                          :title="valueDisabled($el.dataset.opt, $el.dataset.val)
+                            ? _strings.variantSoldOut : $el.dataset.label"
+                          @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)"
+                          {% if vImg %}title="{{ v.label }}" aria-label="{{ v.label }}"{% endif %}>
+                    {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% else %}{{ v.label }}{% endif %}
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {# ═══════════ stock ═══════════
+           The bar is a rough gauge, not a report: Qumra gives the remaining
+           quantity but no starting total, so the fill is measured against a
+           merchant-set ceiling. It only appears while the number is genuinely
+           low — a full bar on every product says nothing and a bar drawn from
+           an invented total would be a lie. #}
+        <div class="hy-pdp-stockwrap">
+          <span class="hy-pdp-stock hy-pdp-stock--out" x-show="isOutOfStock" x-cloak>
+            <i></i>{{t('pages.product.out_of_stock')}}
+          </span>
+
+          {% if showStock %}
+            {# ── FOUR states, and they must stay exhaustive and exclusive ──
+               Every line below reads `availableNow()`: the shop's shelf MINUS
+               what this shopper already holds. `null` means uncapped (a product
+               the store does not count, or one on backorder) — there is no
+               number to show for those, only "available".
+
+                 1. sold out          the shop has none            → isOutOfStock
+                 2. all in cart       shop has some, you hold them → available === 0
+                 3. running low       1 … {{ lowStockAt }}
+                 4. available         uncapped, or above the band
+
+               State 2 is the one that was missing. Everything that was not sold
+               out and not in the low band fell through to "متوفر", so a shopper
+               holding the last unit read "متوفر" above "المتاح من هذا الخيار 0
+               فقط" — the shop's truth and theirs, contradicting each other on
+               one screen. #}
+            <template x-if="!isOutOfStock && availableNow() === 0">
+              <span class="hy-pdp-stock hy-pdp-stock--low">
+                <i></i>{{t('pages.product.all_in_cart')}}
+              </span>
+            </template>
+
+            <template x-if="!isOutOfStock && availableNow() !== null && availableNow() > 0 && availableNow() <= {{ lowStockAt }}">
+              <div>
+                <span class="hy-pdp-stock hy-pdp-stock--low" x-text="lowStockText()"></span>
+                <div class="hy-pdp-bar-track" aria-hidden="true">
+                  <span class="hy-pdp-bar-fill"
+                        :style="'width:' + Math.max(4, Math.min(100, (availableNow() / {{ lowStockAt }}) * 100)) + '%'"></span>
+                </div>
+              </div>
+            </template>
+
+            {# The exact inverse of states 1–3, never `> max`: written as a
+               positive test it would leave every uncapped product (available
+               === null) matching nothing at all, and the whole "show
+               availability" setting rendered blank. #}
+            {# The count rides on this line rather than getting one of its own:
+               a shopper reads ONE availability sentence, and two lines saying
+               "متوفر" and "١٠ قطع" separately is the same fact twice.
+               `x-text` because the number is only known once a variant is
+               chosen — with no selection, or on an untracked/backorder product,
+               `availableNow()` is null and the plain word is all we can honestly
+               say. #}
+            <span class="hy-pdp-stock hy-pdp-stock--in" x-cloak
+                  x-show="!isOutOfStock && availableNow() !== 0 && !(availableNow() !== null && availableNow() > 0 && availableNow() <= {{ lowStockAt }})">
+              <i></i><span x-text="inStockText()">{{t('pages.product.in_stock')}}</span>
+            </span>
+          {% endif %}
+        </div>
+
+        {# ═══════════ actions ═══════════ #}
+        <div class="hy-pdp-actions" id="pdInfo-{{ id }}">
+            <div class="hy-qty">
+              <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+              </button>
+              <span x-text="qty">1</span>
+              <button type="button" @click="incQty()"
+                      :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+
+          {# NOT disabled while the selection is incomplete: a dead button
+             explains nothing. Clicking it prints which option is still missing.
+             It only hard-disables once the answer is "you cannot buy this". #}
+          <button type="button" class="hy-btn hy-btn--solid"
+                  @click="addToCart()" :disabled="addDisabled()">
+            <span x-show="addingToCart" class="hy-spinner" style="width:15px;height:15px;"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak>{{t('pages.product.added')}}</span>
+            <span x-show="!addingToCart && !addedSuccess">
+              <span x-show="!isOutOfStock">{{t('pages.product.add_to_cart')}}</span>
+              <span x-show="isOutOfStock" x-cloak>{{t('pages.product.out_of_stock')}}</span>
+            </span>
+          </button>
+
+          {# Always rendered — it is the second half of the buy decision, not an
+             option. `buyNow()` adds and then sends the shopper to /cart. #}
+          <button type="button" class="hy-btn hy-btn--outline"
+                  @click="buyNow()" :disabled="addDisabled()">{{t('pages.product.buy_now')}}</button>
+        </div>
+
+        {# Why the add did not happen, next to the button that refused. The
+           toast says the same thing but slides away; this stays until fixed. #}
+        <p class="hy-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+          <div class="hy-pdp-meta">
+            {# The SELECTED variant's code, not the parent's. `currentSku` starts
+               as the product's own and is replaced the moment a combination
+               resolves — so the server-rendered value is correct before Alpine
+               boots and stays correct after. x-show rather than a bare {% if %}
+               because a product with no parent SKU can still have one per
+               variant, and the line has to be able to appear. #}
+            <span x-show="currentSku" {% if not p.sku %}x-cloak{% endif %}>
+              {{t('pages.product.sku')}}: <span x-text="currentSku">{{ p.sku | default('', true) }}</span>
+            </span>
+              {# The label is server-rendered and x-text REPLACES it. It used to
+                 live only in the x-text, so until Alpine booted — and for good
+                 if its script failed — this was an empty, unnamed button. #}
+              <button type="button" class="hy-shop-clear" @click="share()"
+                      x-text="shared ? copiedText : shareText">{{ t('common.share') }}</button>
+          </div>
+
+        {# ═══════════ panels ═══════════ #}
+        {% if (panels | length) > 0 %}
+          <div class="hy-pdp-panels">
+            {# `descUsed` stops several panels rendering the SAME description.
+               The block default used to be source="description", so a merchant
+               who added four panels and only filled the text of three got the
+               product description four times over. The first panel that asks
+               for it wins; the rest fall back to their own text. #}
+            {# An array is the only thing that carries state across `for`
+               iterations in Nunjucks — `set` inside the loop is scoped to it,
+               and there is no `namespace()` (that is Jinja2). Pushing into a
+               list declared outside works because it is the same object. #}
+            {% set descTaken = [] %}
+            {% for block in panels %}
+              {% set b = block.data %}
+              {% set wantsDesc = b.source == 'description' and (descTaken | length) == 0 %}
+              {% if wantsDesc %}{% set _ = descTaken.push(1) %}{% endif %}
+              {% set body = p.description if wantsDesc else (b.text | default('', true)) %}
+              {% if b.title and body %}
+                <div class="hy-pdp-panel" x-data="{ open: {{ 'true' if b.open_by_default else 'false' }} }">
+                  <button type="button" class="hy-pdp-panel-head"
+                          @click="open = !open" :aria-expanded="open ? 'true' : 'false'">
+                    <span>{{ b.title }}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </button>
+                  <div class="hy-pdp-panel-body" x-show="open" x-collapse
+                       {% if not b.open_by_default %}x-cloak{% endif %}>{{ body | safe }}</div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════ recommended ═══════════════
+     Rendered from `context.related`, which Qumra populates on a product page.
+     No fallback fetch: unlike the home page there is no endpoint that returns
+     "products like this one", and a row of unrelated newest products under a
+     heading that says "recommended" is worse than no row. #}
+  {# The open product is filtered out first and the cards are counted after, so
+     the columns follow what is really shown: 1 and 2 stay centred at card width,
+     3 takes three columns (a swipe strip on phones), and 4 goes 2×2 on tablets.
+     An array carries the list out of the loop: Nunjucks scopes `set` to the loop
+     body and has no namespace(). Capped at four, so nothing is hidden silently
+     beyond the row's own limit. #}
+  {% set shownRel = [] %}
+  {% for rp in related %}
+    {% if rp._id != p._id and (shownRel | length) < relatedLimit %}{% set _ = shownRel.push(rp) %}{% endif %}
+  {% endfor %}
+  {% set relN = shownRel | length %}
+  {% if relN > 0 %}
+    <div class="hy-container">
+      <div class="hy-prow-head" style="margin-top: var(--space-7);">
+        <h2 class="hy-prow-title">{{ relatedTitle }}</h2>
+      </div>
+      <div class="hy-shop-grid hy-rel-grid hy-rel-grid--{{ relN }}" style="padding-bottom: var(--space-8);">
+        {% for rp in shownRel %}
+          {% ui "product-card.njk", product=rp %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ═══════════════ sticky buy bar ═══════════════ #}
+    <div class="hy-pdp-bar" x-show="showBar" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0">
+      <div class="hy-pdp-bar-info">
+        <span class="hy-pdp-bar-title">{{ p.title }}</span>
+        <span class="hy-price" x-text="displayPrice()"></span>
+      </div>
+      <button type="button" class="hy-btn hy-btn--solid hy-btn--sm"
+              @click="addToCart()" :disabled="addDisabled()">
+        <span x-show="addingToCart" class="hy-spinner" style="width:14px;height:14px;"></span>
+        <span x-show="!addingToCart">
+          <span x-show="!isOutOfStock">{{t('pages.product.add_to_cart')}}</span>
+          <span x-show="isOutOfStock" x-cloak>{{t('pages.product.out_of_stock')}}</span>
+        </span>
+      </button>
+    </div>
+</section>
+{% else %}
+{#- No product in the context (deleted, unpublished, or a mistyped link): the
+    page still gets its one H1 and a way on, and the JSON-LD and the script
+    below are skipped — they used to run with an empty product and threw
+    «Unexpected token ','». -#}
+<section id="hy-pdp-{{ id }}" class="hy-pdp">
+  <div class="hy-container" style="padding-block: var(--section-py); text-align: center;">
+    <h1 class="hy-pdp-title">{{ t('pages.404.title') }}</h1>
+    <p style="margin-block: 12px 24px; color: var(--color-text-secondary);">{{ t('pages.404.message') }}</p>
+    <a class="hy-btn hy-btn--solid" href="/shop">{{ t('pages.shop.all_products') }}</a>
+  </div>
+</section>
+{% endif %}
+
+
+{# ═══════════════════ JSON-LD ═══════════════════
+   Structured data for the Product. The seo tag writes the title, the
+   description and the Open Graph tags; it does not write this, and a search
+   result carrying a price and an in-stock line is the difference between a
+   listing and a rich one.
+
+   ⚠️  `| dump` on every string. This is JSON inside a <script>, so one quote or
+   newline in a merchant's title breaks the document — silently, because a
+   malformed ld+json is ignored rather than reported. `dump` is also what
+   escapes a stray closing script tag out of a description.
+
+   ⚠️  The price goes out in MAJOR units. Everything else here works in minor
+   units and pipes through `| money`, but schema.org wants a bare decimal with
+   no symbol and no grouping, so this is the one place that divides by 100.
+
+   Availability mirrors the SAME three fields the buy button reads, so a page
+   that tells a shopper "in stock" cannot tell a crawler otherwise. #}
+{% if p %}
+{% set ldStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ p.title | default('', true) | dump | safe }},
+  {% if imgCount > 0 %}"image": [{% for img in images %}{{ img.fileUrl | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": {{ (p.description | default('', true) | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('<br>', ' ') | striptags | truncate(300)) | dump | safe }},
+  {% if p.sku %}"sku": {{ p.sku | dump | safe }},{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "url": {{ ((store.url | default('', true)) ~ '/products/' ~ (p.slug | default(p.handle) | default(p._id))) | dump | safe }},
+    "priceCurrency": {{ (localization.currency.currencyCode | default('EGP')) | dump | safe }},
+    "price": "{{ p.pricing.price | default(0, true) }}",
+    "availability": "https://schema.org/{{ 'InStock' if ldStock else 'OutOfStock' }}"
+  }
+}
+</script>
+
+<script>
+  /* ==========================================================================
+     Factory hung on `window` (NOT Alpine.data) — the x-data above calls
+     productPage_<id>() directly. Same contract as the previous version.
+     ======================================================================= */
+  (function () {
+    var wid = '{{ id }}';
+
+    window['productPage_' + wid] = function () {
+      /* Buy-side state and logic come from the shared engine in main.js so the
+         product page and the quick view can never disagree about what is
+         addable. Everything below it is page-only: gallery, share, sticky bar,
+         and the two sentences that need a placeholder swapped. */
+      return Object.assign(window.HayatVariants({
+        productId: '{{ p._id }}',
+        sku: {{ (p.sku | default('', true)) | dump | safe }},
+        price: {{ p.pricing.price | default(0, true) }},
+        compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+        quantity: {{ p.quantity | default(0, true) }},
+        trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+        allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+
+        groups: [
+          {% for option in p.options %}{% if (option.values | length) > 0 %}
+          { name: {{ (option.name | default('', true)) | dump | safe }},
+            values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ (v.label | default('', true)) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+          {% endif %}{% endfor %}
+        ],
+
+        {# `pricing` may be an empty object on a variant that inherits the
+           product's price — `default` turns the missing number into the
+           product's own rather than into zero. #}
+        variants: [
+          {% for variant in p.variants %}
+          {# ── which of the product's photos belongs to this variant ──
+             `variant.images` holds IDs that point back into `p.images`, so the
+             index is resolved HERE, once, instead of shipping the whole gallery
+             to the client to search at runtime.
+
+             The match is pushed into an array and read back with `[0]`: a plain
+             `{% set idx = loop.index0 %}` inside the loop does NOT survive it —
+             Nunjucks scopes `set` to the iteration and there is no
+             `namespace()`. `-1` means "this variant has no photo of its own",
+             and the gallery is then left where the shopper put it. #}
+          {% set vRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else '' %}
+          {% set vImgId = (vRaw._id if vRaw._id else vRaw) | string %}
+          {% set hit = [] %}
+          {% for img in p.images | default([], true) %}
+            {# ⚠️  `| string` on BOTH sides. These ids are not JavaScript
+               strings — they are ObjectId-like objects that serialise to the
+               same hex through `| dump` and print identically, and still
+               compare FALSE. Measured on the live page: `img._id == vImgId`
+               was false while `(img._id | string) == (vImgId | string)` was
+               true, for ids that render character-for-character the same.
+               Without the cast every variant resolved to -1 and the gallery
+               never moved. #}
+            {% if vImgId and (img._id | string) == vImgId %}{% set _ = hit.push(loop.index0) %}{% endif %}
+          {% endfor %}
+          {
+            id: '{{ variant._id }}',
+            imageIndex: {{ hit[0] if (hit | length) > 0 else -1 }},
+            price: {{ variant.pricing.price | default(p.pricing.price) | default(0, true) }},
+            compareAtPrice: {{ variant.pricing.compareAtPrice | default(p.pricing.compareAtPrice) | default(0, true) }},
+            sku: {{ (variant.sku | default('', true)) | dump | safe }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            {# what the server actually counts — see the note in HayatVariants #}
+            available: {{ variant.inventoryLevel.available | default(variant.available) | default(variant.quantity) | default(0, true) }},
+            trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            options: {{ (variant.options | default([], true)) | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+
+        strings: {
+          selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+          comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+          maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+          outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+          variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+          addError:           {{ t('common.error') | dump | safe }},
+          listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+        }
+      }), {
+
+        /* ---------------- page-only state ---------------- */
+        activeImageIndex: 0,
+        imageCount: {{ imgCount | int }},
+        shared: false,
+        showBar: false,
+        shareText: {{ t('pages.product.share') | dump | safe }},
+        copiedText: {{ t('pages.blog.copied') | dump | safe }},
+
+        init() {
+          var self = this;
+
+          this.initVariants();
+
+          /* ---- the gallery follows the chosen variant ----
+             Watched rather than wired into every swatch: the variant can change
+             from a swatch, from the arrow keys, or from a combination becoming
+             valid once a second option is picked, and all three have to move the
+             photo. `currentVariantId` is the one thing all of them change.
+
+             A variant with no photo of its own (-1) leaves the gallery alone —
+             snapping back to image 0 would undo a shopper who had just swiped to
+             look at something. */
+          this.$watch('currentVariantId', function (id) { self.syncVariantImage(id); });
+          this.syncVariantImage(this.currentVariantId);
+
+          /* ---- What is already in the cart ----
+             Read for the CAP, not to pre-fill the stepper.
+
+             This block used to set `qty` to the quantity already in the cart —
+             and it never ran: it matched on `item.product` and
+             `item.productData._id`, and a Qumra cart line carries neither. The
+             documented shape is `productId` / `variantId`, with `productData`
+             holding only title, handle and image. So `found` was always
+             undefined and the feature was dead from the start.
+
+             It is not being repaired, it is being replaced, because the idea
+             was wrong even if the fields had matched: /ajax/cart/add ADDS a
+             quantity, and there is a separate /ajax/cart/change that sets one.
+             Pre-filling the stepper with 8 and then pressing a button that adds
+             what the stepper says turns 8 into 16.
+
+             What the number is genuinely good for is the ceiling. Stock is what
+             the STORE has; what this shopper may still take is that minus what
+             they are already holding. Without it, five in stock could be added
+             five at a time, forever — which is what a cart counting past forty
+             on a product with five units looks like. */
+          var readCart = function () {
+            Qumra.cart.get().then(function (data) {
+              self.cartLines = (data && data.items) || [];
+            }).catch(function () { self.cartLines = []; });
+          };
+          readCart();
+          window.addEventListener('cart:updated', readCart);
+
+          /* the sticky bar appears only once the real buy button is off-screen */
+          var anchor = document.getElementById('pdInfo-' + wid);
+          if (anchor && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              self.showBar = !entries[0].isIntersecting;
+            }, { rootMargin: '-140px 0px 0px 0px' }).observe(anchor);
+          }
+        },
+
+        setImage(idx) { this.activeImageIndex = idx; },
+
+        /* Moves the gallery to the selected variant's photo. Guards on the
+           index being a real slot in THIS product's gallery: the index is
+           resolved server-side against `p.images`, so a stale or mismatched id
+           arrives as -1 rather than as a number that would blank the stage. */
+        syncVariantImage(id) {
+          if (!id) return;
+          var v = (this._variants || []).find(function (x) { return x.id === id; });
+          if (!v) return;
+          var i = v.imageIndex;
+          if (typeof i === 'number' && i >= 0 && i < this.imageCount) this.setImage(i);
+        },
+
+        /* ---- Touch swipe on the main shot ----
+           The gallery switched on thumbnail taps only, so on a phone — where
+           the strip is small and the photograph fills the screen — the obvious
+           gesture did nothing.
+
+           Written by hand rather than by turning the stage into a Swiper: the
+           `#pdZoom-<id>-<index>` ids are a contract with openZoom(), the
+           `x-show` stack is what GLightbox's `.glightbox` anchors hang off, and
+           a carousel would have to reproduce both. Twenty lines against a
+           rewrite of two contracts.
+
+           Guards, each for a real gesture:
+             · single touch only — two fingers is a pinch-zoom, not a swipe;
+             · |dx| must beat |dy|, or a vertical page scroll that drifts
+               sideways would flip the image out from under the reader;
+             · 40px floor, so a tap with a shake in it stays a tap. */
+        _swipeX: 0,
+        _swipeY: 0,
+        _swipeOK: false,
+
+        swipeStart(e) {
+          this._swipeOK = e.touches && e.touches.length === 1;
+          if (!this._swipeOK) return;
+          this._swipeX = e.touches[0].clientX;
+          this._swipeY = e.touches[0].clientY;
+        },
+
+        swipeEnd(e) {
+          if (!this._swipeOK || this.imageCount < 2) return;
+          this._swipeOK = false;
+          var t = e.changedTouches && e.changedTouches[0];
+          if (!t) return;
+          var dx = t.clientX - this._swipeX;
+          var dy = t.clientY - this._swipeY;
+          if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+
+          /* Direction follows the reading order, the same way Swiper resolves
+             it from `dir`: dragging the picture toward the start of the line
+             brings the NEXT one in. In Arabic that is a drag to the right. */
+          var forward = {{ 'dx > 0' if isAr else 'dx < 0' }};
+          var n = this.imageCount;
+          this.activeImageIndex = forward
+            ? (this.activeImageIndex + 1) % n
+            : (this.activeImageIndex - 1 + n) % n;
+        },
+
+
+        openZoom() {
+          {% if showZoom and imgCount > 0 %}
+          var link = document.getElementById('pdZoom-' + wid + '-' + this.activeImageIndex);
+          if (link) link.click();
+          {% endif %}
+        },
+
+        /* the locale string carries a {{count}} placeholder — swap it here so
+           the sentence stays translatable instead of being glued together */
+        /* NOTE: The placeholder is assembled from pieces on purpose.
+           Written literally, Nunjucks reads `{{count}}` as one of ITS
+           expressions while compiling this file: `count` is undefined, so it
+           renders as an empty string and the call becomes `.replace('', qty)`
+           — which pastes the number at position 0 and leaves the literal
+           `{{count}}` sitting in the sentence for the shopper to read.
+
+           Qumra's t() ignores its second argument, so the substitution has to
+           happen here either way. */
+        /* "متوفر" on its own, or with the count when there is one to give.
+           Same `availableNow()` every other line on this page reads, so the
+           number here can never disagree with the cap on the stepper. */
+        inStockText() {
+          var n = this.availableNow();
+          if (n === null || n === undefined) return {{ t('pages.product.in_stock') | dump | safe }};
+          return String({{ t('pages.product.in_stock_count') | dump | safe }}).split('{count}').join(n);
+        },
+
+        lowStockText() {
+          var ph = '{' + '{count}' + '}';
+          return String({{ t('pages.product.low_stock') | dump | safe }}).split(ph)
+            .join(this.availableNow());
+        },
+
+        async share() {
+          var url = window.location.href;
+          /* native share sheet on mobile, clipboard on desktop */
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: {{ (p.title | default('', true)) | dump | safe }}, url: url });
+              return;
+            } catch (e) { /* dismissed — fall through to copy */ }
+          }
+          try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+          this.shared = true;
+          var self = this;
+          setTimeout(function () { self.shared = false; }, 2000);
+        }
+      });
+    };
+  })();
+
+  {% if showZoom and imgCount > 0 %}
+  /* On DOMContentLoaded, not inline.
+     GLightbox is loaded with `defer` (see layouts/layout.njk), so at the moment
+     this script is parsed the library does not exist yet and the guard below
+     would return early — the zoom would silently never bind. Deferred scripts
+     all finish executing BEFORE DOMContentLoaded fires, so by here it is there.
+     This is what buys the head 18KB of blocking transfer on every page in the
+     shop that is not a product page. */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof GLightbox === 'undefined') return;
+    GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true });
+  });
+  {% endif %}
+</script>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-pdp-' ~ id, c=d %}

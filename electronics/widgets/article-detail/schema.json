@@ -1,0 +1,13 @@
+{
+  "name": "محتوى المقال",
+  "settings": {
+    "show_share": {
+      "type": "boolean",
+      "label": { "ar": "إظهار المشاركة", "en": "Show share" },
+      "default": true
+    }
+  },
+  "presets": [
+    { "category": "المدونة", "name": "محتوى المقال" }
+  ]
+}

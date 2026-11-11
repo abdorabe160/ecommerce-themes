@@ -1,0 +1,153 @@
+{
+  "name": "النشرة البريدية",
+  "settings": {
+    "index": {
+      "type": "string",
+      "label": {
+        "ar": "رقم القسم",
+        "en": "Section index"
+      },
+      "default": "05"
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الصغير",
+        "en": "Kicker"
+      },
+      "default": "ابقَ في المقدمة"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "كن أول من يعرف بالإصدار القادم."
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "النص الصغير",
+        "en": "Subtitle"
+      },
+      "default": "خلّيك أول واحد يعرف بكل إصدار جديد."
+    },
+    "mode": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة الاشتراك",
+        "en": "Sign-up with"
+      },
+      "default": "any",
+      "options": [
+        {
+          "value": "any",
+          "label": {
+            "ar": "حقل واحد: بريد أو موبايل",
+            "en": "One field: email or phone"
+          }
+        },
+        {
+          "value": "email",
+          "label": {
+            "ar": "بريد إلكتروني",
+            "en": "Email"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "رقم موبايل",
+            "en": "Phone number"
+          }
+        },
+        {
+          "value": "both",
+          "label": {
+            "ar": "الاثنين (بريد وموبايل)",
+            "en": "Both (email and phone)"
+          }
+        }
+      ]
+    },
+    "placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص حقل البريد",
+        "en": "Email placeholder"
+      },
+      "default": "your@email.com"
+    },
+    "any_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص الحقل الواحد (بريد أو موبايل)",
+        "en": "Single field placeholder (email or phone)"
+      },
+      "default": "البريد الإلكتروني أو رقم الموبايل"
+    },
+    "phone_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص حقل الموبايل",
+        "en": "Phone placeholder"
+      },
+      "default": "01xxxxxxxxx"
+    },
+    "button": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button label"
+      },
+      "default": "اشترك"
+    },
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط استقبال الاشتراكات (Mailchimp / Brevo / Klaviyo…) — مطلوب لتفعيل النموذج",
+        "en": "Sign-up form action URL (Mailchimp / Brevo / Klaviyo…) — required to enable the form"
+      },
+      "default": ""
+    },
+    "field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد في الخدمة (عادة EMAIL)",
+        "en": "Email field name at the service (usually EMAIL)"
+      },
+      "default": "EMAIL"
+    },
+    "phone_field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل الموبايل في الخدمة (عادة PHONE أو SMS)",
+        "en": "Phone field name at the service (usually PHONE or SMS)"
+      },
+      "default": "PHONE"
+    },
+    "strip_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشريط المتحرك الخافت أسفل القسم (فارغ لإخفائه)",
+        "en": "Muted kinetic strip under the section (empty hides it)"
+      },
+      "default": "تحرّك بسرعة"
+    },
+    "anchor": {
+      "type": "string",
+      "label": {
+        "ar": "معرّف القسم للروابط (#news)",
+        "en": "Section anchor id (#news)"
+      },
+      "default": "news"
+    }
+  },
+  "presets": [
+    {
+      "category": "نصوص",
+      "name": "النشرة البريدية"
+    }
+  ]
+}

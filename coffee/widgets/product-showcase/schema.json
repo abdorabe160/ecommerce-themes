@@ -1,0 +1,242 @@
+{
+  "name": "عرض المنتجات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "النص التمهيدي (اختياري)",
+        "en": "Eyebrow (optional)"
+      },
+      "default": ""
+    },
+    "eyebrow_en": {
+      "type": "string",
+      "label": {
+        "ar": "النص التمهيدي (اختياري) (إنجليزي)",
+        "en": "Eyebrow (optional) (English)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "الأكثر مبيعًا"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Best sellers"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": ""
+    },
+    "subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي (إنجليزي)",
+        "en": "Subtitle (English)"
+      },
+      "default": ""
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل",
+        "en": "View all text"
+      },
+      "default": "عرض الكل"
+    },
+    "view_all_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل (إنجليزي)",
+        "en": "View all text (English)"
+      },
+      "default": "View all"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل — اتركه فارغًا لإخفائه",
+        "en": "View all link — leave empty to hide"
+      },
+      "default": "/shop"
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات المختارة (لها الأولوية)",
+        "en": "Picked products (take priority)"
+      }
+    },
+    "source": {
+      "type": "select",
+      "label": {
+        "ar": "المصدر التلقائي — يُستخدم فقط عند عدم اختيار منتجات",
+        "en": "Automatic source — used only when no products are picked"
+      },
+      "default": "top-rated",
+      "options": [
+        {
+          "value": "top-rated",
+          "label": "الأعلى تقييمًا / Top rated"
+        },
+        {
+          "value": "newest",
+          "label": "الأحدث / Newest"
+        },
+        {
+          "value": "collection",
+          "label": "من مجموعة / From a collection"
+        },
+        {
+          "value": "none",
+          "label": "بدون / None"
+        }
+      ]
+    },
+    "collection": {
+      "type": "collections",
+      "label": {
+        "ar": "المجموعة (عند اختيار المصدر: من مجموعة)",
+        "en": "Collection (when source is \"From a collection\")"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات التلقائية",
+        "en": "Number of automatic products"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة على الشاشات الكبيرة",
+        "en": "Columns on desktop"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة العرض",
+        "en": "Layout"
+      },
+      "default": "grid",
+      "options": [
+        {
+          "value": "grid",
+          "label": "شبكة / Grid"
+        },
+        {
+          "value": "rail",
+          "label": "شريط أفقي / Rail"
+        }
+      ]
+    },
+    "surface": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": "أبيض دافئ / Warm white"
+        },
+        {
+          "value": "cream",
+          "label": "كريمي / Cream"
+        },
+        {
+          "value": "sand",
+          "label": "رملي / Sand"
+        },
+        {
+          "value": "dark",
+          "label": "داكن / Dark"
+        }
+      ]
+    },
+    "demo_kind": {
+      "type": "select",
+      "label": {
+        "ar": "منتجات المعاينة التجريبية (في المحرر فقط)",
+        "en": "Preview demo set (editor only)"
+      },
+      "default": "best",
+      "options": [
+        {
+          "value": "best",
+          "label": "الأكثر مبيعًا / Best sellers"
+        },
+        {
+          "value": "new",
+          "label": "وصل حديثًا / New arrivals"
+        },
+        {
+          "value": "equipment",
+          "label": "أدوات التحضير / Equipment"
+        }
+      ]
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "مستوى العنوان (H1 لو السكشن هو عنوان الصفحة)",
+        "en": "Heading level (H1 when this section is the page title)"
+      },
+      "options": [
+        {
+          "value": "h2",
+          "label": {
+            "ar": "H2 — سكشن داخل صفحة",
+            "en": "H2 — section in a page"
+          }
+        },
+        {
+          "value": "h1",
+          "label": {
+            "ar": "H1 — عنوان الصفحة",
+            "en": "H1 — page title"
+          }
+        }
+      ],
+      "default": "h2"
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "عرض المنتجات — الأكثر مبيعًا / وصل حديثًا"
+    }
+  ]
+}

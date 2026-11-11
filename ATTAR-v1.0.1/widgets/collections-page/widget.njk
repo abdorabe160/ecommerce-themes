@@ -1,0 +1,193 @@
+{# ===== ATTAR COLLECTIONS PAGE — Fragrance families ===== #}
+
+{% set collections = context.collections | default(widget.data.collections) %}
+{% set title = widget.data.title | default(t('pages.collections.title'), true) %}
+{% set eyebrow = widget.data.eyebrow | default(t('pages.collections.eyebrow'), true) %}
+{% set showTitle = widget.data.show_title if widget.data.show_title is defined else true %}
+{% set perPage = widget.data.per_page | default(9) %}
+{% set id = widget.id %}
+
+{# ——— Server-side pagination —————————————————————————————————————
+   Qumra caps /collections at ~10 collections per page. The `per_page`
+   widget setting does NOT reach the backend, so we drive real pagination
+   through the URL: /collections?page=N&limit=<pageSize>. All numbers come
+   from context.pagination (totalItems / currentPage) so they stay honest. #}
+{% set pagination = context.pagination | default(null) %}
+{% set currentPage = pagination.currentPage | default(1) %}
+{% set totalItems = pagination.totalItems | default(collections | length) %}
+{% set pageSize = perPage if perPage > 0 else 9 %}
+{# Qumra returns at most ~10 collections per request; clamp so pages never gap #}
+{% if pageSize > 10 %}{% set pageSize = 10 %}{% endif %}
+{# ceil(totalItems / pageSize) using integer division (both are positive) #}
+{% set totalPages = ((totalItems + pageSize - 1) / pageSize) | int %}
+{% if totalPages < 1 %}{% set totalPages = 1 %}{% endif %}
+
+<style>
+  /* ===== ATTAR Collections Page ===== */
+  .anaqa-cp-{{ id }} .anaqa-cp-page-title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  html[dir="rtl"] .anaqa-cp-{{ id }} .anaqa-cp-page-title { line-height: 1.25; font-weight: 600; }
+  .anaqa-cp-{{ id }} .anaqa-cp-page-title p { margin: 0; }
+
+  /* Collection card */
+  .anaqa-cp-{{ id }} .anaqa-cp-img { filter: saturate(1.03) contrast(1.02); transition: transform 1.1s ease; }
+  .anaqa-cp-{{ id }} .anaqa-cp-card:hover .anaqa-cp-img { transform: scale(1.05); }
+  .anaqa-cp-{{ id }} .anaqa-cp-frame { border: 1px solid var(--color-border); transition: border-color 0.4s ease, box-shadow 0.5s ease; }
+  .anaqa-cp-{{ id }} .anaqa-cp-card:hover .anaqa-cp-frame { border-color: color-mix(in srgb, var(--color-accent) 50%, transparent); box-shadow: 0 20px 46px -26px rgba(0,0,0,0.85); }
+  .anaqa-cp-{{ id }} .anaqa-cp-name { font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 500; line-height: 1.15; }
+  html[dir="rtl"] .anaqa-cp-{{ id }} .anaqa-cp-name { font-weight: 600; }
+
+  /* Pagination — editorial square controls */
+  .anaqa-cp-{{ id }} .anaqa-cp-pgn {
+    min-width: 44px; height: 44px; padding: 0 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-cp-{{ id }} a.anaqa-cp-pgn:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg-primary);
+  }
+  .anaqa-cp-{{ id }} .anaqa-cp-pgn.is-active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg-primary);
+  }
+  .anaqa-cp-{{ id }} .anaqa-cp-pgn.is-disabled {
+    color: var(--color-text-tertiary);
+    background: transparent;
+    border-color: var(--color-border);
+    cursor: default; opacity: 0.45;
+  }
+
+  @media (max-width: 639px) {
+    .anaqa-cp-{{ id }} .anaqa-cp-pgn { min-width: 40px; height: 40px; }
+  }
+</style>
+
+<section id="{{ id }}" class="anaqa-cp-{{ id }} py-24 max-lg:py-16 max-sm:py-12 min-h-[60vh]" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ——— Page Header ——— #}
+    {% if showTitle %}
+    <div class="mb-16 max-sm:mb-10">
+      {% if eyebrow %}<span class="editorial-label block mb-4">{{ eyebrow }}</span>{% endif %}
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <h1 class="anaqa-cp-page-title font-heading-ar">{{ title | safe }}</h1>
+        {% if collections and (collections | length) > 0 %}
+          <p class="editorial-label shrink-0 sm:mb-1.5">
+            {% ui "count.njk", n=totalItems, kind='collection' %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    {# the title is hidden visually, but the page still needs its one H1 #}
+    <h1 class="sr-only">{{ title | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags }}</h1>
+    {% endif %}
+
+    {# ——— Collections ——— #}
+    {% if collections and (collections | length) > 0 %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 attar-fit-3 attar-fit-span">
+        {% for collection in collections %}
+          {# cap each page to pageSize items so server pagination stays honest #}
+          {% if loop.index0 < pageSize %}
+            <a href="{{ ('/shop/' ~ (collection.slug or collection.handle)) if (collection.slug or collection.handle) else '/shop' }}" class="anaqa-cp-card group block">
+              <div class="anaqa-cp-frame relative aspect-[3/4] w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+                {% if collection.image and collection.image.fileUrl %}
+                  <img src="{{ collection.image.fileUrl }}" alt="{{ collection.title }}" loading="lazy"
+                       class="anaqa-cp-img absolute inset-0 w-full h-full object-cover"/>
+                {% else %}
+                  <div class="attar-mark" aria-hidden="true"></div>
+                {% endif %}
+
+                {# Subtle bottom scrim #}
+                <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(12,8,18,0.82) 0%, rgba(12,8,18,0.30) 46%, rgba(12,8,18,0.04) 78%);"></div>
+
+                {# Content #}
+                <div class="absolute inset-x-0 bottom-0 p-6 max-sm:p-4" style="color: var(--color-text-primary);">
+                  {% if widget.data.show_count and (collection.productCount or collection.productsCount) %}
+                    <span class="editorial-label block mb-2">{% ui "count.njk", n=(collection.productCount or collection.productsCount), kind='product' %}</span>
+                  {% endif %}
+                  <h2 class="anaqa-cp-name font-heading-ar" style="color: var(--color-text-primary);">{{ collection.title or t('common.products') }}</h2>
+                  <span class="inline-flex items-center gap-2 mt-3 text-[12px] tracking-[0.14em] uppercase rtl:tracking-normal rtl:normal-case rtl:text-[13px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 font-body-ar" style="color: var(--color-accent);">
+                    {{ t('categories.explore') | default('استكشف') }}
+                    <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                  </span>
+                </div>
+              </div>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {# ——— Pagination (server-side: full navigation to /collections?page=N) ——— #}
+      {% if totalPages > 1 %}
+        <nav class="flex items-center justify-center gap-2 mt-16 max-sm:mt-12" aria-label="pagination">
+
+          {# Prev #}
+          {% if currentPage > 1 %}
+            <a href="/collections?page={{ currentPage - 1 }}&limit={{ pageSize }}"
+               rel="prev" aria-label="{{ t('common.back') | default('السابق') }}" class="anaqa-cp-pgn">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+          {% else %}
+            <span class="anaqa-cp-pgn is-disabled">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/></svg>
+            </span>
+          {% endif %}
+
+          {# Numbered pages (with ellipsis) #}
+          {% for i in range(1, totalPages + 1) %}
+            {% if i == currentPage %}
+              <span class="anaqa-cp-pgn is-active" aria-current="page">{{ i }}</span>
+            {% elif i == 1 or i == totalPages or (i >= currentPage - 1 and i <= currentPage + 1) %}
+              <a href="/collections?page={{ i }}&limit={{ pageSize }}" class="anaqa-cp-pgn">{{ i }}</a>
+            {% elif i == currentPage - 2 or i == currentPage + 2 %}
+              <span class="w-6 flex items-center justify-center text-sm" style="color: var(--color-text-tertiary);">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {# Next #}
+          {% if currentPage < totalPages %}
+            <a href="/collections?page={{ currentPage + 1 }}&limit={{ pageSize }}"
+               rel="next" aria-label="{{ t('common.continue') | default('التالي') }}" class="anaqa-cp-pgn">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          {% else %}
+            <span class="anaqa-cp-pgn is-disabled">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          {% endif %}
+
+        </nav>
+      {% endif %}
+
+    {% else %}
+      {# ——— Empty State ——— #}
+      <div class="text-center py-24 flex flex-col items-center">
+        <svg class="w-12 h-12 mb-6" style="color: var(--color-text-tertiary); opacity: 0.5;" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p class="text-base font-heading-ar mb-2" style="color: var(--color-text-primary);">
+          {{ t('categories.no_categories') | default('لا توجد تصنيفات بعد') }}
+        </p>
+        <p class="text-[13px] mb-8 max-w-xs mx-auto font-body-ar" style="color: var(--color-text-secondary);">
+          {{ t('categories.no_categories_desc') | default('ستظهر التصنيفات هنا بمجرد إضافتها') }}
+        </p>
+        <a href="/" class="anaqa-btn font-body-ar">
+          {{ t('cart.continue_shopping') | default('تسوق الآن') }}
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

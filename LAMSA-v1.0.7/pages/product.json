@@ -1,0 +1,66 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "gallery_layout": "thumbs-side",
+        "image_ratio": "1/1",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "show_rating": true,
+        "show_shade_labels": true,
+        "show_savings": true,
+        "show_stock_status": true,
+        "show_short_description": true,
+        "show_size": true,
+        "show_qty": true,
+        "show_buy_now": true,
+        "show_sku": false,
+        "show_share": true,
+        "show_sticky_bar": true,
+        "show_related": true,
+        "related_title": "أكملي روتينك",
+        "related_limit": 4
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "الوصف والمكوّنات",
+          "settings": {
+            "title": "الوصف والمكوّنات",
+            "source": "description",
+            "icon": "flask",
+            "open_by_default": true
+          }
+        },
+        {
+          "block": "panel",
+          "name": "طريقة الاستخدام",
+          "settings": {
+            "title": "طريقة الاستخدام",
+            "source": "text",
+            "text": "<p>على بشرة نظيفة وجافة، ضعي كمية بحجم حبة البازلاء ووزّعيها بحركات دائرية لطيفة. استخدميها صباحاً ومساءً ما لم يُذكر غير ذلك على العبوة.</p><p>عند تجربة منتج جديد، اختبريه أولاً على منطقة صغيرة خلف الأذن لمدة ٢٤ ساعة.</p>",
+            "icon": "droplet",
+            "open_by_default": false
+          }
+        },
+        {
+          "block": "panel",
+          "name": "الشحن والإرجاع",
+          "settings": {
+            "title": "الشحن والإرجاع",
+            "source": "text",
+            "text": "",
+            "icon": "shipping",
+            "open_by_default": false
+          }
+        }
+      ]
+    }
+  ]
+}

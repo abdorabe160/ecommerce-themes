@@ -1,0 +1,31 @@
+{
+  "title": "Header",
+  "allowAdd": false,
+  "allowRemove": false,
+  "allowReorder": false,
+  "widgets": [
+    {
+      "name": "header",
+      "widget": "header",
+      "settings": {
+        "menu": "header-menu",
+        "announcement_text": "New collection just landed",
+        "announcement_text_2": "Training essentials for every day",
+        "announcement_text_3": "",
+        "announcement_speed": 60,
+        "announcement_link_text": "New Products",
+        "announcement_link_url": "/collections",
+        "show_search": true,
+        "show_language": true,
+        "english_url": "/en",
+        "arabic_url": "/ar",
+        "show_notification": true,
+        "notification_title": "New arrivals",
+        "notification_text": "Explore the latest pieces in the store.",
+        "notification_button": "Shop now",
+        "notification_url": "/collections",
+        "popular_searches": "Compression, Sweatpants, Oversized Tee, Tank, Shorts"
+      }
+    }
+  ]
+}

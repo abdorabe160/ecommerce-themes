@@ -1,0 +1,18 @@
+{
+  "name": "page-content",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "عنوان احتياطي", "en": "Fallback title" },
+      "default": ""
+    },
+    "fallback_text": {
+      "type": "text",
+      "label": { "ar": "محتوى احتياطي (لو الصفحة فاضية)", "en": "Fallback content" },
+      "default": ""
+    }
+  },
+  "presets": [
+    { "category": "page", "name": "page-content" }
+  ]
+}

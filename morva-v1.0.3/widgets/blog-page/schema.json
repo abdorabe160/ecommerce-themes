@@ -1,0 +1,10 @@
+{
+  "name": "صفحة المدونة",
+  "settings": {
+    "kicker": { "type": "string", "label": { "ar": "العنوان الصغير", "en": "Kicker" }, "default": "اليوميات" },
+    "show_cover": { "type": "boolean", "label": { "ar": "صورة غلاف المدونة", "en": "Blog cover image" }, "default": true }
+  },
+  "presets": [
+    { "category": "المدونة", "name": "صفحة المدونة" }
+  ]
+}

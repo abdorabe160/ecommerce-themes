@@ -1,0 +1,183 @@
+{# ============================================================================
+   HYPER BLOGS PAGE — /blogs
+   ----------------------------------------------------------------------------
+   Shows the ARTICLES, newest first. The platform sends only the categories here
+   (`context.blogs`), so the script reads each category's own page, /blogs/<handle>,
+   and gathers the server-rendered cards: one card markup, one source of truth.
+   The categories become a filter above the grid, hidden when there is only one.
+
+   The card is ui/article-card.njk, the same `.hy-post-*` object as everywhere
+   else. Styling: style.css → "15.18 POST GRID" for the card, "15.27 BLOG" for
+   the page around it.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blogs = context.blogs or [] %}
+{% set handles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = handles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+{% set count = handles | length %}
+
+{% set showHead = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default(t('defaults.journal'), true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.blog.title') %}
+{% set subtitle = d.subtitle | default('', true) %}
+{% set cols = d.columns | default('3', true) %}
+
+{# No `background` select here on purpose — the page rides the theme's paper.
+   A per-section surface is still reachable through the custom-colours switch
+   below (`color_bg`), which is the one place a merchant changes it. #}
+<section id="hy-blogs-{{ id }}"
+         class="hy-blogpage"
+         style="--blog-cols: {{ cols }};">
+  <div class="hy-container">
+
+    <nav class="hy-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <span aria-current="page">{{ title }}</span>
+    </nav>
+
+    {# The title must not disappear with the head: it is the page's one H1. #}
+    {% if showHead %}
+      <div class="hy-blog-head">
+        {% if eyebrow %}<span class="hy-blog-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="hy-blog-title">{{ title }}</h1>
+        {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+             HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the CSS. #}
+        {% if subtitle %}<div class="hy-blog-desc">{{ subtitle | safe }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if count > 1 %}
+      <div class="hy-shop-rail" role="group" aria-label="{{ t('pages.blog.title') }}" data-blog-filters>
+        <a href="/blogs" class="hy-chip is-active" data-blog-filter="" aria-current="true">{{ t('common.view_all') }}</a>
+        {% for blog in blogs %}
+          {% set _h = blog.handle or blog.slug %}
+          {% if _h and blog.title %}<a href="/blogs/{{ _h }}" class="hy-chip" data-blog-filter="{{ _h }}">{{ blog.title }}</a>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if count > 0 %}
+      <div class="hy-blog-grid" data-blogs-grid aria-busy="true">
+        {% for i in range(0, 3) %}<div class="hy-blog-skel" aria-hidden="true"></div>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div data-blogs-empty{% if count > 0 %} hidden{% endif %}>
+      {# placeholders first — the shape of the page says more than the sentence #}
+      <div class="hy-blog-grid">
+        {% ui "placeholder.njk", kind='article', count=cols %}
+      </div>
+      <p class="hy-ph-note">{{ t('pages.blog.no_articles_desc') }}</p>
+    </div>
+
+  </div>
+</section>
+
+{% if count > 0 %}
+<script>
+  (function () {
+    var root = document.getElementById('hy-blogs-{{ id }}');
+    if (!root) return;
+    var grid = root.querySelector('[data-blogs-grid]');
+    var empty = root.querySelector('[data-blogs-empty]');
+    var bar = root.querySelector('[data-blog-filters]');
+    var handles = {{ handles | dump | safe }};
+    var COLS = {{ cols | int }} || 3, MAX_PAGES = 5;
+
+    function page(handle, n) {
+      return fetch('/blogs/' + encodeURIComponent(handle) + (n > 1 ? '?page=' + n : ''))
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .then(function (html) { return new DOMParser().parseFromString(html, 'text/html'); })
+        .catch(function () { return null; });
+    }
+    function cards(doc, handle) {
+      if (!doc) return [];
+      return Array.prototype.map.call(doc.querySelectorAll('main .hy-post[data-date]'), function (el) {
+        el.setAttribute('data-blog', handle);
+        return document.importNode(el, true);
+      });
+    }
+    function load(handle) {
+      return page(handle, 1).then(function (doc) {
+        var first = cards(doc, handle);
+        var holder = doc && doc.querySelector('[data-pages]');
+        var pages = Math.min(Number(holder && holder.getAttribute('data-pages')) || 1, MAX_PAGES);
+        var rest = [];
+        for (var i = 2; i <= pages; i++) rest.push(page(handle, i));
+        return Promise.all(rest).then(function (docs) {
+          return docs.reduce(function (all, d) { return all.concat(cards(d, handle)); }, first);
+        });
+      });
+    }
+    /* Columns follow the count, so the last row never holds one lone card. */
+    function fit(n, c) {
+      if (n <= c) return n || c;
+      if (n % c !== 1) return c;
+      if (n % (c + 1) !== 1) return c + 1;
+      return c;
+    }
+    function show(list, filter) {
+      var shown = list.filter(function (c) { return !filter || c.getAttribute('data-blog') === filter; });
+      grid.innerHTML = '';
+      shown.forEach(function (c) { grid.appendChild(c); });
+      grid.classList.toggle('hy-blog-grid--single', shown.length === 1);
+      grid.style.setProperty('--blog-cols', fit(shown.length, COLS));
+      grid.style.setProperty('--blog-cols-md', fit(shown.length, 2));
+      if (window.HayatLocaliseDates) window.HayatLocaliseDates(grid);
+    }
+
+    Promise.all(handles.map(load)).then(function (lists) {
+      /* A multi-category article appears on every category's page. */
+      var seen = {};
+      var all = lists.reduce(function (a, b) { return a.concat(b); }, []).filter(function (c) {
+        var href = c.getAttribute('href');
+        if (seen[href]) return false;
+        seen[href] = true;
+        return true;
+      }).sort(function (a, b) {
+        return String(b.getAttribute('data-date')).localeCompare(String(a.getAttribute('data-date')));
+      });
+      grid.removeAttribute('aria-busy');
+      if (!all.length) {
+        grid.hidden = true;
+        if (bar) bar.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+      show(all, '');
+      if (!bar) return;
+      /* A category with no articles would lead to an empty grid: no chip. One
+         category left means nothing to filter: no bar. */
+      var used = {};
+      all.forEach(function (c) { used[c.getAttribute('data-blog')] = true; });
+      bar.querySelectorAll('[data-blog-filter]').forEach(function (c) {
+        var h = c.getAttribute('data-blog-filter');
+        if (h && !used[h]) c.remove();
+      });
+      if (Object.keys(used).length < 2) { bar.hidden = true; return; }
+      bar.addEventListener('click', function (e) {
+        var chip = e.target.closest('[data-blog-filter]');
+        if (!chip) return;
+        e.preventDefault();
+        bar.querySelectorAll('[data-blog-filter]').forEach(function (c) {
+          c.classList.remove('is-active');
+          c.removeAttribute('aria-current');
+        });
+        chip.classList.add('is-active');
+        chip.setAttribute('aria-current', 'true');
+        show(all, chip.getAttribute('data-blog-filter'));
+      });
+    });
+  })();
+</script>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-blogs-' ~ id, c=d %}

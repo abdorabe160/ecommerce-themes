@@ -1,0 +1,147 @@
+{# ============================================================================
+   LOCAL · FEATURED PRODUCTS — تشكيلة مميزة
+   ----------------------------------------------------------------------------
+     Best Sellers                                          View all products
+     ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+     │  card  │ │  card  │ │  card  │ │  card  │     ui/lc-product-card.njk
+     └────────┘ └────────┘ └────────┘ └────────┘
+                       ‹   ▬▬  •   ›
+
+   ── Where the products come from ──
+   The picker, when the merchant fills it. Left EMPTY, the row draws
+   placeholder cards and then fills itself from /ajax/search/products with
+   `auto_sort` (newest / highest rated / lowest price). The AJAX cards come
+   from LocalCard.build() in main.js, the twin of the partial.
+
+   Qumra has no "best sellers" sort, so the heading says whatever the
+   merchant picks — the automatic order is one of the three that exist.
+
+   Slider: LocalSlider() in main.js + the shared `.lc-pager`.
+   Styling: assets/style.css → "15.5.2 PRODUCT CARD · LOCAL" and
+            "15.5.3 FEATURED PRODUCTS · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set products = d.products | default([], true) %}
+{# On a product page the row is "you may also like": with nothing picked it
+   shows the platform's own recommendations (context.related_products), and the
+   product being viewed is never one of its own suggestions — neither here nor
+   in the catalogue fallback below (`exclude`). #}
+{% set curProduct = (context or {}).product %}
+{% set curId = curProduct._id if curProduct and curProduct._id else '' %}
+{% if not (products | length) and curId %}
+  {% set recs = [] %}
+  {% for rp in (context.related_products or context.related or curProduct.recommendations or []) %}
+    {% if rp and rp._id and rp._id != curId %}{% set _ = recs.push(rp) %}{% endif %}
+  {% endfor %}
+  {% set products = recs %}
+{% endif %}
+{% set hasPicked = (products | length) > 0 %}
+
+{% set title = d.title | default('', true) %}
+{% set viewText = d.view_all_text | default('', true) %}
+{% set viewUrl = d.view_all_url | default('/shop', true) %}
+{% set limit = d.auto_limit | default(8, true) %}
+{% set perView = d.columns | default(4, true) %}
+{% set perViewM = d.columns_mobile | default('1.5', true) %}
+{% set ratio = d.image_ratio | default('1x1') %}
+{% set action = d.button_action | default('add') %}
+{% set rating = 'on' if (d.show_rating | default(true)) else 'off' %}
+{% set badges = 'on' if (d.show_badges | default(true)) else 'off' %}
+{% set quick = 'on' if (d.show_quick_view | default(true)) else 'off' %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showDots = d.show_dots | default(true) %}
+{% set ratioVal = '4 / 5' if ratio == '4x5' else ('3 / 4' if ratio == '3x4' else '1 / 1') %}
+
+<section id="lc-fp-{{ id }}"
+         class="lc-fp"
+         style="padding-block: {{ d.padding_top | default(56) }}px {{ d.padding_bottom | default(56) }}px;">
+  <div class="lc-hwrap">
+
+    {% if title or viewText %}
+      <div class="lc-sec-head">
+        {% if title %}<h2 class="lc-sec-title">{{ title }}</h2>{% endif %}
+        {% if viewText %}<a href="{{ viewUrl }}" class="lc-sec-link">{{ viewText }}</a>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="swiper lc-fp-track" id="lc-fpSw-{{ id }}">
+      <div class="swiper-wrapper" id="lc-fpList-{{ id }}">
+        {% if hasPicked %}
+          {% for item in products %}
+            {% ui "lc-product-card.njk", product=item, action=action, rating=rating, badges=badges, quick_view=quick, ratio=ratio, wrap='swiper-slide' %}
+          {% endfor %}
+        {% else %}
+          {# Inert stand-ins, replaced by the fetch below. Same box as a real
+             card so nothing jumps when they swap. #}
+          {% for i in range(perView) %}
+            <div class="swiper-slide lc-pcard lc-pcard--ph" data-lc-ph aria-hidden="true" style="--lc-pcard-ratio: {{ ratioVal }};">
+              <span class="lc-pcard-media"><span class="lc-pcard-noimg"></span></span>
+              <div class="lc-pcard-body">
+                <span class="lc-ph-line" style="width: 30%;"></span>
+                <span class="lc-ph-line lc-ph-line--lg" style="width: 70%;"></span>
+                <span class="lc-pcard-btn" style="visibility: hidden;">·</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if showArrows or showDots %}
+      <div class="lc-pager lc-fp-pager">
+        {% if showArrows %}
+          <button type="button" class="lc-pager-arrow" id="lc-fpPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/>
+            </svg>
+          </button>
+        {% endif %}
+        {% if showDots %}<div class="lc-pager-dots" id="lc-fpDots-{{ id }}"></div>{% endif %}
+        {% if showArrows %}
+          <button type="button" class="lc-pager-arrow" id="lc-fpNext-{{ id }}" aria-label="{{ t('common.next') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  LocalReady(function () {
+    var sw = LocalSlider({
+      root: 'lc-fp-{{ id }}',
+      el: 'lc-fpSw-{{ id }}',
+      {% if showArrows %}prev: '#lc-fpPrev-{{ id }}', next: '#lc-fpNext-{{ id }}',{% endif %}
+      {% if showDots %}dots: '#lc-fpDots-{{ id }}',{% endif %}
+      desk: {{ perView | default(4, true) }},
+      mob: {{ perViewM | default('1.5', true) }},
+      gap: 22
+    });
+
+    {% if not hasPicked %}
+    /* Nothing picked → fill from the catalogue (LocalCard.fill in main.js). */
+    LocalCard.fill(document.getElementById('lc-fpList-{{ id }}'), {
+      limit: {{ limit | default(8, true) }},
+      sort: '{{ d.auto_sort | default("created-desc") }}',
+      exclude: '{{ curId }}',
+      swiper: sw,
+      card: {
+        action: '{{ action }}',
+        rating: {{ 'true' if rating == 'on' else 'false' }},
+        badges: {{ 'true' if badges == 'on' else 'false' }},
+        quickView: {{ 'true' if quick == 'on' else 'false' }},
+        ratio: '{{ ratio }}',
+        wrap: 'swiper-slide'
+      }
+    });
+    {% endif %}
+  });
+</script>
+
+{% ui "section-colors.njk", scope='#lc-fp-' ~ id, c=d %}

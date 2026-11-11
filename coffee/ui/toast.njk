@@ -1,0 +1,12 @@
+<div class="dc-toast-stack" aria-live="polite" aria-relevant="additions text">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="dc-toast" :class="'dc-toast--' + toast.type" :role="toast.type === 'error' ? 'alert' : 'status'" x-transition>
+      <span class="dc-toast__mark" aria-hidden="true">
+        <span x-show="toast.type !== 'error'">{% ui "icon.njk", name="check", size=17 %}</span>
+        <span x-show="toast.type === 'error'">{% ui "icon.njk", name="close", size=17 %}</span>
+      </span>
+      <p x-text="toast.message"></p>
+      <button type="button" @click="dismissToast(toast.id)" aria-label="{{ t('common.close') }}">{% ui "icon.njk", name="close", size=16 %}</button>
+    </div>
+  </template>
+</div>

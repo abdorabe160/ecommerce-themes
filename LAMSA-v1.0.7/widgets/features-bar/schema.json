@@ -1,0 +1,406 @@
+{
+  "name": "شريط المزايا",
+  "settings": {
+    "style": {
+      "type": "select",
+      "label": {
+        "ar": "نمط الشريط",
+        "en": "Bar Style"
+      },
+      "default": "trust",
+      "options": [
+        {
+          "value": "trust",
+          "label": {
+            "ar": "مزايا — أيقونة وعنوان ووصف",
+            "en": "Trust — icon + title + description"
+          }
+        },
+        {
+          "value": "claims",
+          "label": {
+            "ar": "شهادات — أيقونة دائرية وعنوان قصير",
+            "en": "Claims — round icon + short label"
+          }
+        },
+        {
+          "value": "marquee",
+          "label": {
+            "ar": "شريط متحرّك",
+            "en": "Scrolling ticker"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "transparent",
+          "label": {
+            "ar": "شفافة",
+            "en": "Transparent"
+          }
+        },
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        },
+        {
+          "value": "ink",
+          "label": {
+            "ar": "غامق",
+            "en": "Ink"
+          }
+        }
+      ]
+    },
+    "icon_tone": {
+      "type": "select",
+      "label": {
+        "ar": "لون الأيقونات",
+        "en": "Icon Colour"
+      },
+      "default": "rose",
+      "options": [
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج",
+            "en": "Sage"
+          }
+        }
+      ]
+    },
+    "icon_shape": {
+      "type": "select",
+      "label": {
+        "ar": "شكل خلفية الأيقونة (لنمط المزايا)",
+        "en": "Icon Shape (trust style)"
+      },
+      "default": "rounded",
+      "options": [
+        {
+          "value": "rounded",
+          "label": {
+            "ar": "مربّع ناعم",
+            "en": "Soft square"
+          }
+        },
+        {
+          "value": "circle",
+          "label": {
+            "ar": "دائرة",
+            "en": "Circle"
+          }
+        },
+        {
+          "value": "bare",
+          "label": {
+            "ar": "بدون خلفية",
+            "en": "No background"
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥ أعمدة",
+            "en": "5"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "٦ أعمدة",
+            "en": "6"
+          }
+        }
+      ]
+    },
+    "align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة المحتوى",
+        "en": "Content Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "وسط",
+            "en": "Center"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "show_dividers": {
+      "type": "boolean",
+      "label": {
+        "ar": "فواصل بين العناصر",
+        "en": "Dividers Between Items"
+      },
+      "default": false
+    },
+    "border_top": {
+      "type": "boolean",
+      "label": {
+        "ar": "خط فاصل أعلى",
+        "en": "Top Border"
+      },
+      "default": false
+    },
+    "border_bottom": {
+      "type": "boolean",
+      "label": {
+        "ar": "خط فاصل أسفل",
+        "en": "Bottom Border"
+      },
+      "default": false
+    },
+    "compact": {
+      "type": "boolean",
+      "label": {
+        "ar": "مسافات مضغوطة",
+        "en": "Compact Spacing"
+      },
+      "default": false
+    },
+    "marquee_speed": {
+      "type": "number",
+      "label": {
+        "ar": "سرعة الشريط المتحرّك (ثانية للدورة)",
+        "en": "Ticker Speed (seconds per loop)"
+      },
+      "default": 26,
+      "min": 10,
+      "max": 80,
+      "step": 2
+    }
+  },
+  "blocks": {
+    "feature": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "shipping",
+          "options": [
+            {
+              "value": "shipping",
+              "label": {
+                "ar": "شحن",
+                "en": "Shipping"
+              }
+            },
+            {
+              "value": "returns",
+              "label": {
+                "ar": "إرجاع",
+                "en": "Returns"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "حماية / دفع آمن",
+                "en": "Shield · secure payment"
+              }
+            },
+            {
+              "value": "card",
+              "label": {
+                "ar": "بطاقة دفع",
+                "en": "Payment card"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية / تغليف",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "ar": "دعم العملاء",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "توصيل سريع",
+                "en": "Fast delivery"
+              }
+            },
+            {
+              "value": "badge",
+              "label": {
+                "ar": "منتج أصلي",
+                "en": "Authentic"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "مكوّنات طبيعية",
+                "en": "Natural ingredients"
+              }
+            },
+            {
+              "value": "flask",
+              "label": {
+                "ar": "مُختبر معملياً",
+                "en": "Lab tested"
+              }
+            },
+            {
+              "value": "droplet",
+              "label": {
+                "ar": "ترطيب / خالٍ من العطر",
+                "en": "Hydrating · fragrance-free"
+              }
+            },
+            {
+              "value": "ban",
+              "label": {
+                "ar": "خالٍ من (بارابين…)",
+                "en": "Free from (parabens…)"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "غير مُختبر على الحيوانات",
+                "en": "Cruelty-free"
+              }
+            },
+            {
+              "value": "sparkle",
+              "label": {
+                "ar": "نتائج مثبتة",
+                "en": "Proven results"
+              }
+            },
+            {
+              "value": "check",
+              "label": {
+                "ar": "صح",
+                "en": "Check"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "تقييم",
+                "en": "Rating"
+              }
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (يظهر في نمط المزايا فقط)",
+            "en": "Description (trust style only)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "شريط المزايا"
+    }
+  ]
+}

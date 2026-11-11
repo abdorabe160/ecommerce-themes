@@ -1,0 +1,175 @@
+{
+  "layout": "layout",
+  "name": "الصفحة الرئيسية",
+  "title": "الصفحة الرئيسية",
+  "widgets": [
+    {
+      "name": "الهيرو الرئيسي",
+      "widget": "hero-slider",
+      "settings": {
+        "autoplay": true,
+        "interval": 6,
+        "show_shapes": true
+      },
+      "blocks": [
+        {
+          "name": "شريحة الهواتف",
+          "block": "slide",
+          "settings": {
+            "image_mode": "product",
+            "demo_image": "cutout_phone",
+            "badge": "وصل حديثاً",
+            "badge_en": "New arrival",
+            "title": "أحدث التقنيات",
+            "title_en": "The latest tech",
+            "title_highlight": "لحياة أفضل",
+            "title_highlight_en": "for a better life",
+            "subtitle": "اكتشف أحدث الأجهزة والإلكترونيات والإكسسوارات — كلها في مكان واحد.",
+            "subtitle_en": "Discover the latest devices, electronics and accessories — all in one place.",
+            "button_text": "تسوّق الآن",
+            "button_text_en": "Shop now",
+            "button_url": "/collections"
+          }
+        },
+        {
+          "name": "شريحة السماعات",
+          "block": "slide",
+          "settings": {
+            "image_mode": "product",
+            "demo_image": "cutout_headphones",
+            "badge": "صوت نقي",
+            "badge_en": "Pure sound",
+            "title": "استمع لكل التفاصيل",
+            "title_en": "Hear every detail",
+            "title_highlight": "بوضوح أكبر",
+            "title_highlight_en": "more clearly",
+            "subtitle": "سماعات لاسلكية لكل وقتك، في البيت وخارجه.",
+            "subtitle_en": "Wireless headphones for your day, at home and on the go.",
+            "button_text": "تسوّق الآن",
+            "button_text_en": "Shop now",
+            "button_url": "/collections"
+          }
+        },
+        {
+          "name": "شريحة الساعات",
+          "block": "slide",
+          "settings": {
+            "image_mode": "product",
+            "demo_image": "cutout_watch",
+            "badge": "ذكاء على معصمك",
+            "badge_en": "Smart on your wrist",
+            "title": "تابع صحتك",
+            "title_en": "Track your health",
+            "title_highlight": "بأناقة كاملة",
+            "title_highlight_en": "in full style",
+            "subtitle": "ساعات ذكية تتابع نشاطك ونومك وإشعاراتك لحظة بلحظة.",
+            "subtitle_en": "Smartwatches that track your activity, sleep and notifications in real time.",
+            "button_text": "تسوّق الآن",
+            "button_text_en": "Shop now",
+            "button_url": "/collections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب الفئة",
+      "widget": "collections-grid",
+      "settings": {
+        "title": "تسوّق حسب الفئة",
+        "title_en": "Shop by category",
+        "subtitle": "اعثر على ما تحتاجه بالضبط",
+        "subtitle_en": "Find exactly what you need",
+        "show_view_all": true
+      }
+    },
+    {
+      "name": "منتجات مميزة",
+      "widget": "product-grid",
+      "settings": {
+        "title": "منتجات مميزة",
+        "title_en": "Featured products",
+        "subtitle": "اختيارات مميزة من متجرنا",
+        "subtitle_en": "Hand-picked from our store",
+        "layout": "grid",
+        "columns": "4",
+        "view_all_url": "/collections",
+        "limit": 4
+      }
+    },
+    {
+      "name": "بانرات العروض",
+      "widget": "promo-banners",
+      "settings": {
+        "columns": "2"
+      },
+      "blocks": [
+        {
+          "name": "بانر عالم الألعاب",
+          "block": "banner",
+          "settings": {
+            "eyebrow": "جديد",
+            "eyebrow_en": "New",
+            "title": "عالم الألعاب",
+            "title_en": "Gaming world",
+            "text": "معدات الألعاب كلها في مكان واحد.",
+            "text_en": "All your gaming gear in one place.",
+            "button_text": "تسوّق الآن",
+            "button_text_en": "Shop now",
+            "url": "/collections",
+            "demo_image": "cutout_gamepad",
+            "image_mode": "product"
+          }
+        },
+        {
+          "name": "بانر المنزل الذكي",
+          "block": "banner",
+          "settings": {
+            "eyebrow": "",
+            "title": "المنزل الذكي",
+            "title_en": "Smart home",
+            "text": "اجعل منزلك أكثر ذكاءً.",
+            "text_en": "Make your home smarter.",
+            "button_text": "اكتشف",
+            "button_text_en": "Discover",
+            "url": "/collections",
+            "demo_image": "cutout_speaker",
+            "image_mode": "product"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأكثر مبيعاً",
+      "widget": "best-sellers",
+      "settings": {
+        "title": "الأكثر مبيعاً",
+        "title_en": "Best sellers",
+        "subtitle": "الأكثر طلبًا في متجرنا",
+        "subtitle_en": "Most ordered in our store",
+        "view_all_url": "/collections",
+        "limit": 4
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "title": "ماذا يقول عملاؤنا",
+        "title_en": "What our customers say",
+        "subtitle": "",
+        "subtitle_en": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "title": "اشترك في نشرتنا البريدية",
+        "title_en": "Subscribe to our newsletter",
+        "text": "احصل على آخر التحديثات والعروض الخاصة وأكثر.",
+        "text_en": "Get the latest updates, special offers and more."
+      }
+    }
+  ]
+}

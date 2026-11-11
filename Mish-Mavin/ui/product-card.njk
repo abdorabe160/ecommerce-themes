@@ -1,0 +1,156 @@
+{# بطاقة منتج — مطابقة لبطاقات mavin-wear.com + زرين (أضف إلى السلة / اشترِ الآن) وحالات المخزون.
+   الاستخدام: {% ui "product-card.njk", product=item %}  أو  {% ui "product-card.njk", product=item, rank=loop.index %}
+   - المنتج اللي ليه خيارات (مقاس/لون): الزرين بيفتحوا بوب أب "اختر الخيارات" (ui/quick-add.njk) عشان يختار متغير متوفر.
+   - المنتج بدون خيارات: بيتضاف مباشرة، والكمية محدودة بالمخزون المتاح.
+   - المخزون (REG-13): 0 = «نفد من المخزون» + زر معطّل · 1…الحد (3) = «أوشك على النفاد» · غير كده متاح.
+   - data-facets: قيم الفلاتر (وسوم key:value + قيم الخيارات) — صفحة التصنيف بتفلتر بيها لو مفيش فلاتر من لوحة التحكم.
+   ملاحظة: نفس الـ markup مكرر في main.js (cardHTML) لنتائج البحث والمعاينة — أي تعديل هنا لازم يتعمل هناك. #}
+{% set p = data.product %}
+{% if p %}
+{% set S = settings or {} %}
+{% set price = p.pricing.price | default(0, true) if p.pricing else (p.price | default(0, true)) %}
+{% set compare = p.pricing.compareAtPrice | default(0, true) if p.pricing else (p.compareAtPrice | default(0, true)) %}
+{% set onSale = compare and compare > price %}
+{% set discount = ((compare - price) / compare * 100) | round(0, 'floor') if onSale else 0 %}
+{% set handle = p.slug or p.handle or p._id %}
+{% set url = '/products/' + handle %}
+{% set imgs = p.images or [] %}
+{% set img = imgs[0].fileUrl if (imgs | length and imgs[0]) else '' %}
+{% set img2 = imgs[1].fileUrl if (imgs | length > 1 and imgs[1]) else '' %}
+{#- Live stores send tags as objects ({ name, displayName… }); read each as text
+    first, or `| lower` turns them into «[object object]» and nothing matches. -#}
+{% set tags = [] %}
+{% for tg0 in p.tags or [] %}{% if tg0 is string %}{% set tgT = tg0 %}{% elif tg0 and tg0.name %}{% set tgT = tg0.name %}{% elif tg0 and tg0.displayName %}{% set tgT = tg0.displayName %}{% elif tg0 and tg0.title %}{% set tgT = tg0.title %}{% elif tg0 and tg0.label %}{% set tgT = tg0.label %}{% elif tg0 and tg0.value %}{% set tgT = tg0.value %}{% else %}{% set tgT = '' %}{% endif %}{% if tgT %}{% set _ = tags.push(tgT | string) %}{% endif %}{% endfor %}
+{% set options = p.options or [] %}
+{# صفحات القوايم بتبعت المنتج مختصر: /shop من غير trackQuantity / variants / options، و /latest والمقترحة فيها trackQuantity بس.
+   من غير بيانات خيارات المخزون الحقيقي مش معروف: ما نقولش "نفد"، والزرار يفتح بوب أب "اختر الخيارات" اللي بيحمّل المنتج كامل
+   (الإضافة المباشرة لمنتج بخيارات بترجع POST 400). variantsCount: 0 بس هو اللي بيأكد إنه منتج من غير خيارات. #}
+{% set partial = (p.variants is not defined) and (p.options is not defined) and not (p.variantsCount is number and p.variantsCount == 0) %}
+{% set hasOptions = (options | length) > 0 or ((p.variants or []) | length) > 0 or (p.variantsCount | default(0, true)) > 0 or partial %}
+{# كمية المتغيرات أهم من كمية المنتج: الأب ممكن يبقى 0 والمتغيرات متاحة. منتج بخيارات وكميته 0 من غير كميات متغيرات = مش معروف #}
+{% set vQty = [] %}
+{% for v0 in p.variants or [] %}{% if v0 and v0.quantity is number %}{% set _ = vQty.push(v0.quantity if v0.quantity > 0 else 0) %}{% endif %}{% endfor %}
+{% set qty = (vQty | sum) if (vQty | length) else p.quantity %}
+{% set unknownQty = hasOptions and not (vQty | length) and not (p.quantity > 0) %}
+{# المخزون: غير محدود لو التتبع مقفول، الطلب المسبق مسموح، أو التاجر قافل «اتباع مخزون المنتج» #}
+{% set tracked = S.followProductStock != false and not partial and not unknownQty and not p.allowBackorder and p.trackQuantity != false and (qty is number) %}
+{% set stock = qty if tracked else -1 %}
+{% set outOfStock = tracked and qty <= 0 %}
+{% set threshold = S.low_stock_threshold or 3 %}
+{% set lowStock = tracked and qty > 0 and qty <= threshold %}
+{% set promo = S.promo_badge or '' %}
+{% set fit = p.subtitle | default('') %}
+{% if not fit %}{% for tg in tags %}{% if not fit and (tg | lower | replace(' ', '')) | length > 3 and ('fit' in (tg | lower)) %}{% set fit = (tg | string).split(':') | last %}{% endif %}{% endfor %}{% endif %}
+{% set colorOpt = null %}
+{% for o in options %}{% if not colorOpt and o.name and ((o.name | lower) in ['color', 'colour', 'اللون', 'لون', 'الالوان', 'الألوان']) %}{% set colorOpt = o %}{% endif %}{% endfor %}
+{% set rating = p.averageRating | default(0) %}
+{% set isAr = (localization.language | default('ar')) == 'ar' %}
+{% set facets = [] %}
+{% for tg in tags %}{% if tg and (tg | string).indexOf(':') > 0 %}{% set _ = facets.push((tg | string | trim)) %}{% endif %}{% endfor %}
+{% for o in options %}{% if o and o.name %}{% for v in (o.values or []) %}{% set _ = facets.push(o.name + ':' + (v.label or v.value or v)) %}{% endfor %}{% endif %}{% endfor %}
+
+<article class="mw-card{% if data.compact %} mw-card--compact{% endif %}{% if outOfStock %} is-soldout{% endif %}" x-data data-mw-card
+         data-id="{{ p._id }}" data-handle="{{ handle }}" data-url="{{ url }}" data-options="{{ '1' if hasOptions else '0' }}"
+         data-stock="{{ stock }}" data-price="{{ price }}" data-rating="{{ rating }}" data-title="{{ p.title }}" data-facets="{{ facets | join('|') }}">
+  <div class="mw-card__media">
+    <a href="{{ url }}" tabindex="-1" aria-hidden="true">
+      {% if img %}
+        <img src="{{ img }}" alt="{{ p.title }}" loading="lazy" decoding="async" width="600" height="800"/>
+        {% if img2 %}<img class="mw-card__img--hover" src="{{ img2 }}" alt="" loading="lazy" decoding="async" width="600" height="800"/>{% endif %}
+      {% else %}
+        <span class="mw-card__placeholder" role="img" aria-label="{{ p.title }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 3.5 4 6l1.5 4H8V20.5h8V10h2.5L20 6l-4.5-2.5c-.6 1.4-1.9 2.3-3.5 2.3S9.1 4.9 8.5 3.5Z" stroke="currentColor" stroke-width=".8" stroke-linejoin="round"/></svg></span>
+      {% endif %}
+    </a>
+    {% if data.rank %}<span class="mw-card__rank">#{{ data.rank }}</span>{% endif %}
+    <div class="mw-card__badges">
+      {% if outOfStock %}
+        <span class="mw-badge mw-badge--soldout">{{ t('product.sold_out') }}</span>
+      {% else %}
+        {% if onSale and discount > 0 %}<span class="mw-badge mw-badge--discount">{% if isAr %}%{{ discount }}{% else %}{{ discount }}%{% endif %} {{ t('product.off') }}</span>{% endif %}
+        {% if lowStock %}<span class="mw-badge mw-badge--low">{{ t('stock.low_badge') }}</span>{% endif %}
+        {% if promo %}<span class="mw-badge mw-badge--promo">{{ promo }}</span>{% endif %}
+      {% endif %}
+    </div>
+    {% if S.showWishlist == true %}
+    <button type="button" class="mw-wish" :class="{ 'is-on': $store.mw.isWished('{{ p._id }}') }" :aria-pressed="$store.mw.isWished('{{ p._id }}').toString()" @click="$store.mw.toggleWish('{{ p._id }}')" aria-label="{{ t('wishlist.toggle') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4 7.4 4c2 0 3.6 1.1 4.6 2.7C13 5.1 14.6 4 16.6 4c3.5 0 5.8 3.6 4.6 7.1-1.7 4.8-9.2 9.4-9.2 9.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+    </button>
+    {% endif %}
+  </div>
+
+  {% if colorOpt and ((colorOpt.values or []) | length) > 1 %}
+    {% set colorMap = {
+      'أسود': '#111111', 'اسود': '#111111', 'black': '#111111',
+      'أبيض': '#ffffff', 'ابيض': '#ffffff', 'white': '#ffffff',
+      'أوف وايت': '#f4f4f4', 'اوف وايت': '#f4f4f4', 'أوفوايت': '#f4f4f4', 'اوفوايت': '#f4f4f4', 'offwhite': '#f4f4f4', 'off white': '#f4f4f4',
+      'بيج': '#e8dcc8', 'beige': '#e8dcc8',
+      'بني': '#6b4b2a', 'brown': '#6b4b2a', 'كافيه': '#4b3621', 'coffee': '#4b3621',
+      'رمادي': '#9aa0a6', 'رمادى': '#9aa0a6', 'grey': '#9aa0a6', 'gray': '#9aa0a6', 'grey marl': '#8f9398', 'tan': '#c8ad8d',
+      'رصاصي': '#555555', 'رصاصى': '#555555', 'charcoal': '#4a4a4a', 'فحمي': '#4a4a4a',
+      'كحلي': '#1f2a5a', 'navy': '#2b3f8f',
+      'أزرق': '#2f6fed', 'ازرق': '#2f6fed', 'blue': '#2f6fed',
+      'لبني': '#7f9fbf', 'سماوي': '#7f9fbf', 'lightblue': '#7f9fbf', 'light blue': '#7f9fbf',
+      'تركواز': '#3fb6c4', 'turquoise': '#3fb6c4',
+      'أخضر': '#1f7a3a', 'اخضر': '#1f7a3a', 'green': '#1f7a3a',
+      'زيتي': '#4c7a34', 'olive': '#4c7a34',
+      'أحمر': '#c0392b', 'احمر': '#c0392b', 'red': '#c0392b',
+      'نبيتي': '#6e1423', 'بورجوندي': '#6e1423', 'burgundy': '#6e1423', 'maroon': '#6e1423',
+      'بينك': '#f2a7c3', 'وردي': '#f2a7c3', 'pink': '#f2a7c3', 'فوشيا': '#d63384', 'fuchsia': '#d63384',
+      'موف': '#6b4b8a', 'بنفسجي': '#6b4b8a', 'purple': '#6b4b8a',
+      'أصفر': '#f5c518', 'اصفر': '#f5c518', 'yellow': '#f5c518',
+      'برتقالي': '#e67e22', 'برتقالى': '#e67e22', 'orange': '#e67e22',
+      'ذهبي': '#c9a227', 'gold': '#c9a227', 'فضي': '#c0c0c0', 'silver': '#c0c0c0'
+    } %}
+    <div class="mw-card__swatches" role="group" aria-label="{{ colorOpt.name }}">
+      {% for v in (colorOpt.values or []).slice(0, 9) %}
+        {% set vLabel = v.label or v.value or v %}
+        {% set vKey = (vLabel | string | lower) %}
+        {% set swRaw = v.color or v.hex or v.swatch or '' %}
+        {% set sw = swRaw if swRaw else (colorMap[vKey] or vKey) %}
+        <button type="button" class="mw-card__swatch{% if loop.first %} is-active{% endif %}{% if v.quantity is number and v.quantity <= 0 %} is-unavailable{% endif %}" data-color="{{ vLabel }}"{% if v.image and v.image.fileUrl %} data-img="{{ v.image.fileUrl }}"{% endif %} title="{{ vLabel }}" aria-label="{{ vLabel }}" style="--sw: {{ sw }}" onclick="window.mwCardSwatch && window.mwCardSwatch(this)"><span></span></button>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="mw-card__info">
+    <h3 class="mw-card__title"><a href="{{ url }}" title="{{ p.title }}">{{ p.title }}</a></h3>
+    {% if fit %}<p class="mw-card__fit">{{ fit }}</p>{% endif %}
+    <div class="mw-price">
+      {% if onSale %}
+        <span class="visually-hidden">{{ t('product.regular_price') }}</span>
+        <s>{{ compare | money }}</s>
+        <span class="visually-hidden">{{ t('product.sale_price') }}</span>
+        <span class="is-sale">{{ price | money }}</span>
+      {% elif price == 0 %}
+        <span>{{ t('product.free') }}</span>
+      {% else %}
+        <span>{{ price | money }}</span>
+      {% endif %}
+    </div>
+    {% if p.reviewsCount and p.reviewsCount > 0 %}
+      <div class="mw-rating" aria-label="{{ rating | round(1) }} / 5">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8L12 2.5Z"/></svg>
+        <span class="mw-rating__value">{{ rating | round(1) }}</span>
+        <span class="mw-rating__count">({{ p.reviewsCount }})</span>
+      </div>
+    {% endif %}
+    {% if lowStock %}<p class="mw-stock mw-stock--low">{{ t('product.only_left_short') | replace('{count}', qty) }}</p>{% endif %}
+  </div>
+
+  {% if S.show_card_buttons != false %}
+  <div class="mw-card__actions">
+    {% if outOfStock %}
+      <button type="button" class="mw-card__btn mw-card__btn--soldout" disabled>{{ t('product.sold_out') }}</button>
+    {% else %}
+      <button type="button" class="mw-card__btn mw-card__btn--add" @click="$store.mw.cardAction($el, 'add')" :disabled="$store.mw.isBusy('add:{{ p._id }}')">
+        {% if not hasOptions %}<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.5 8.5h13l-.9 11.2a1.5 1.5 0 0 1-1.5 1.3H7.9a1.5 1.5 0 0 1-1.5-1.3L5.5 8.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 10.5V7a3 3 0 0 1 6 0v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>{% endif %}
+        <span>{{ t('product.choose_options') if hasOptions else t('product.add_to_cart') }}</span>
+      </button>
+      <button type="button" class="mw-card__btn mw-card__btn--buy" @click="$store.mw.cardAction($el, 'buy')" :disabled="$store.mw.isBusy('add:{{ p._id }}')">
+        <span>{{ t('product.buy_now') }}</span>
+      </button>
+    {% endif %}
+  </div>
+  {% endif %}
+</article>
+{% endif %}

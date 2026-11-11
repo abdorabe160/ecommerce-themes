@@ -1,0 +1,694 @@
+{
+  "name": "الرئيسية",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "height": 600,
+        "height_mobile": 560,
+        "transition": "reveal",
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_arrows": true,
+        "show_dots": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_accent": ""
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "الشريحة الأولى",
+          "settings": {
+            "image_focus": "end",
+            "bg_color": "#ECECE8",
+            "content_align": "start",
+            "rating_enabled": false,
+            "rating_stars": "5",
+            "rating_text": "",
+            "title": "طازج.|مختار.|لبيتك.",
+            "description": "",
+            "cta_text": "تسوّق الآن",
+            "cta_url": "/shop",
+            "text_color": "#2F3A33",
+            "accent_color": "#2F3A33",
+            "star_color": "#5B9A5E",
+            "button_text_color": "#FFFFFF",
+            "image": "",
+            "image_mobile": ""
+          }
+        },
+        {
+          "block": "slide",
+          "name": "الشريحة الثانية",
+          "settings": {
+            "image_focus": "end",
+            "bg_color": "#E6E9E1",
+            "content_align": "start",
+            "rating_enabled": false,
+            "rating_stars": "5",
+            "rating_text": "",
+            "title": "من السوق|إلى مطبخك.",
+            "description": "",
+            "cta_text": "اكتشف المنتجات",
+            "cta_url": "/shop",
+            "text_color": "#2F3A33",
+            "accent_color": "#2F3A33",
+            "star_color": "#5B9A5E",
+            "button_text_color": "#FFFFFF",
+            "image": "",
+            "image_mobile": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط نص متحرك",
+      "widget": "scrolling-text",
+      "settings": {
+        "background_color": "#2F3A33",
+        "text_color": "#FFFFFF",
+        "size": "small",
+        "speed": "normal",
+        "separator": "dot",
+        "pause_on_hover": true,
+        "padding": 12
+      },
+      "blocks": [
+        {
+          "block": "message",
+          "name": "خضار وفاكهة ومخبوزات",
+          "settings": {
+            "text": "خضار وفاكهة ومخبوزات ولحوم في مكان واحد",
+            "icon": "leaf",
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب التصنيف",
+      "widget": "image-columns",
+      "settings": {
+        "title": "تسوّق حسب التصنيف",
+        "columns": 6,
+        "columns_mobile": "2.3",
+        "layout": "slider",
+        "card_style": "bordered",
+        "image_size": 120,
+        "image_fit": "contain",
+        "show_arrows": true,
+        "show_dots": true,
+        "padding_top": 64,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "مخبوزات",
+          "settings": {
+            "image": "",
+            "title": "مخبوزات",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "column",
+          "name": "دقيق ومستلزمات الخبز",
+          "settings": {
+            "image": "",
+            "title": "دقيق ومستلزمات الخبز",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "column",
+          "name": "فواكه وخضروات",
+          "settings": {
+            "image": "",
+            "title": "فواكه وخضروات",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "column",
+          "name": "وجبات جاهزة وبيتزا",
+          "settings": {
+            "image": "",
+            "title": "وجبات جاهزة وبيتزا",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "column",
+          "name": "مشروبات",
+          "settings": {
+            "image": "",
+            "title": "مشروبات",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "column",
+          "name": "لحوم طازجة",
+          "settings": {
+            "image": "",
+            "title": "لحوم طازجة",
+            "subtitle": "",
+            "url": "/collections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "أحدث المنتجات",
+      "widget": "featured-products",
+      "settings": {
+        "title": "أحدث المنتجات",
+        "view_all_text": "عرض كل المنتجات",
+        "view_all_url": "/shop",
+        "auto_sort": "created-desc",
+        "auto_limit": 8,
+        "columns": 4,
+        "columns_mobile": "1.5",
+        "image_ratio": "1x1",
+        "button_action": "add",
+        "show_rating": true,
+        "show_badges": true,
+        "show_arrows": true,
+        "show_dots": true,
+        "padding_top": 56,
+        "padding_bottom": 56,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "products": [],
+        "show_quick_view": true
+      }
+    },
+    {
+      "name": "بطاقات ترويجية",
+      "widget": "promo-cards",
+      "settings": {
+        "title": "",
+        "columns": 3,
+        "card_ratio": "3x4",
+        "text_align": "center",
+        "mobile_layout": "slider",
+        "padding_top": 32,
+        "padding_bottom": 56,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": ""
+      },
+      "blocks": [
+        {
+          "block": "card",
+          "name": "المخبوزات",
+          "settings": {
+            "bg_color": "#E8E0CA",
+            "eyebrow": "طازج كل يوم",
+            "title": "المخبوزات",
+            "button_text": "اكتشف المزيد",
+            "url": "/collections",
+            "text_color": "",
+            "button_bg": "",
+            "button_text_color": "",
+            "image": "",
+            "fade": true
+          }
+        },
+        {
+          "block": "card",
+          "name": "منتجات جديدة",
+          "settings": {
+            "bg_color": "#D3DED5",
+            "eyebrow": "وصل حديثاً",
+            "title": "منتجات جديدة",
+            "button_text": "اكتشف المزيد",
+            "url": "/collections",
+            "text_color": "",
+            "button_bg": "",
+            "button_text_color": "",
+            "image": "",
+            "fade": true
+          }
+        },
+        {
+          "block": "card",
+          "name": "منتجات مختارة",
+          "settings": {
+            "bg_color": "#D3DEE4",
+            "eyebrow": "مجموعة",
+            "title": "منتجات مختارة",
+            "button_text": "اكتشف المزيد",
+            "url": "/collections",
+            "text_color": "",
+            "button_bg": "",
+            "button_text_color": "",
+            "image": "",
+            "fade": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "منتجات من المتجر",
+      "widget": "featured-products",
+      "settings": {
+        "title": "منتجات من المتجر",
+        "view_all_text": "عرض كل المنتجات",
+        "view_all_url": "/shop",
+        "auto_sort": "created-desc",
+        "auto_limit": 8,
+        "columns": 4,
+        "columns_mobile": "1.5",
+        "image_ratio": "1x1",
+        "button_action": "add",
+        "show_rating": true,
+        "show_badges": true,
+        "show_arrows": true,
+        "show_dots": true,
+        "padding_top": 56,
+        "padding_bottom": 56,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "products": [],
+        "show_quick_view": true
+      }
+    },
+    {
+      "name": "شبكة مرنة: طعام عضوي",
+      "widget": "image-banner",
+      "settings": {
+        "title": "",
+        "columns": 1,
+        "height": 580,
+        "height_mobile": 460,
+        "full_width": true,
+        "gap": 0,
+        "animate": true,
+        "padding_top": 24,
+        "padding_bottom": 24,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": ""
+      },
+      "blocks": [
+        {
+          "block": "tile",
+          "name": "طعام طازج",
+          "settings": {
+            "image": "",
+            "image_mobile": "",
+            "bg_color": "#EDEDEA",
+            "content_position": "middle-center",
+            "overlay": 0,
+            "eyebrow": "",
+            "title": "طعام طازج",
+            "text": "",
+            "button_text": "تصفّح المنتجات",
+            "button_url": "/shop",
+            "title_color": "#4A6B47",
+            "text_color": "#2F3A33",
+            "button_bg": "#4A6B47",
+            "button_text_color": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "منتج مميز",
+      "widget": "featured-product",
+      "settings": {
+        "image_position": "start",
+        "show_top_price": true,
+        "show_rating": true,
+        "show_description": true,
+        "description_lines": 4,
+        "show_zoom": true,
+        "show_buy_now": true,
+        "padding_top": 56,
+        "padding_bottom": 56,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "product": null
+      }
+    },
+    {
+      "name": "شبكة مرنة: وعدنا لك",
+      "widget": "image-banner",
+      "settings": {
+        "title": "مختاراتنا",
+        "columns": 2,
+        "height": 390,
+        "height_mobile": 420,
+        "full_width": false,
+        "gap": 22,
+        "animate": true,
+        "padding_top": 40,
+        "padding_bottom": 40,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": ""
+      },
+      "blocks": [
+        {
+          "block": "tile",
+          "name": "مخبوزات طازجة",
+          "settings": {
+            "bg_color": "#E9E6E1",
+            "content_position": "bottom-start",
+            "overlay": 0,
+            "eyebrow": "كل يوم",
+            "title": "مخبوزات طازجة",
+            "text": "",
+            "button_text": "اطلبها الآن",
+            "button_url": "/shop",
+            "title_color": "",
+            "text_color": "",
+            "button_bg": "",
+            "button_text_color": "",
+            "image": "",
+            "image_mobile": ""
+          }
+        },
+        {
+          "block": "tile",
+          "name": "فواكه وخضروات",
+          "settings": {
+            "bg_color": "#DCEBE0",
+            "content_position": "bottom-start",
+            "overlay": 0,
+            "eyebrow": "منتقاة بعناية",
+            "title": "فواكه وخضروات",
+            "text": "",
+            "button_text": "تسوّق الآن",
+            "button_url": "/shop",
+            "title_color": "",
+            "text_color": "",
+            "button_bg": "",
+            "button_text_color": "",
+            "image": "",
+            "image_mobile": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب احتياجك",
+      "widget": "icon-columns",
+      "settings": {
+        "title": "تسوّق حسب احتياجك",
+        "columns": 5,
+        "circle_size": 92,
+        "icon_scale": 58,
+        "shape": "circle",
+        "mobile_layout": "slider",
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "خضار وفاكهة",
+          "settings": {
+            "icon": "carrot",
+            "custom_icon": "",
+            "circle_color": "#D4E2CC",
+            "icon_color": "",
+            "title": "خضار وفاكهة",
+            "text": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "column",
+          "name": "مخبوزات",
+          "settings": {
+            "icon": "bread",
+            "custom_icon": "",
+            "circle_color": "#E3DFD0",
+            "icon_color": "",
+            "title": "مخبوزات",
+            "text": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "column",
+          "name": "حبوب وبقوليات",
+          "settings": {
+            "icon": "grain",
+            "custom_icon": "",
+            "circle_color": "#D6E3E0",
+            "icon_color": "",
+            "title": "حبوب وبقوليات",
+            "text": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "column",
+          "name": "لحوم ودواجن",
+          "settings": {
+            "icon": "meat",
+            "custom_icon": "",
+            "circle_color": "#E5D1D3",
+            "icon_color": "",
+            "title": "لحوم ودواجن",
+            "text": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "column",
+          "name": "ألبان وأجبان",
+          "settings": {
+            "icon": "milk",
+            "custom_icon": "",
+            "circle_color": "#D5E0E0",
+            "icon_color": "",
+            "title": "ألبان وأجبان",
+            "text": "",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "مختارات من المتجر",
+      "widget": "shop-the-look",
+      "settings": {
+        "title": "مختارات من المتجر",
+        "bg_color": "#F1F1F0",
+        "slider_side": "end",
+        "min_height": 560,
+        "auto_sort": "created-desc",
+        "auto_limit": 6,
+        "columns": 2,
+        "button_action": "add",
+        "show_rating": true,
+        "show_badges": true,
+        "show_quick_view": true,
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "image": "",
+        "image_mobile": "",
+        "products": []
+      }
+    },
+    {
+      "name": "نص منسق: وصفات شهية",
+      "widget": "rich-text",
+      "settings": {
+        "eyebrow": "",
+        "title": "وصفات شهية",
+        "title_size": "l",
+        "text": "",
+        "button_text": "استكشف الكل",
+        "button_url": "/blogs",
+        "button_style": "outline",
+        "button2_text": "",
+        "button2_url": "/shop",
+        "bg_color": "#E3E1DA",
+        "full_width": true,
+        "min_height": 650,
+        "min_height_mobile": 480,
+        "v_align": "bottom",
+        "h_align": "center",
+        "text_width": 640,
+        "title_color": "",
+        "text_color": "#3A3A3A",
+        "button_color": "",
+        "button_text_color": "",
+        "animate": true,
+        "padding_top": 24,
+        "padding_bottom": 24,
+        "image": "",
+        "image_mobile": ""
+      }
+    },
+    {
+      "name": "مقاطع فيديو قابلة للتسوق",
+      "widget": "shoppable-videos",
+      "settings": {
+        "title": "شاهد، اطبخ، تسوّق",
+        "subtitle": "أطيب منتجاتنا… بالصوت والصورة.",
+        "columns": 5,
+        "columns_mobile": "1.6",
+        "autoplay": "view",
+        "open_viewer": true,
+        "show_product": true,
+        "show_vendor": true,
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": "",
+        "products": []
+      },
+      "blocks": [
+        {
+          "block": "video",
+          "name": "بيتزا نابولي من الفرن",
+          "settings": {
+            "video": "",
+            "video_url": "",
+            "poster": "",
+            "caption": "بيتزا نابولي من الفرن"
+          }
+        },
+        {
+          "block": "video",
+          "name": "سلطة يونانية طازجة",
+          "settings": {
+            "video": "",
+            "video_url": "",
+            "poster": "",
+            "caption": "سلطة يونانية طازجة"
+          }
+        },
+        {
+          "block": "video",
+          "name": "مكسرات كيتو",
+          "settings": {
+            "video": "",
+            "video_url": "",
+            "poster": "",
+            "caption": "مكسرات كيتو"
+          }
+        },
+        {
+          "block": "video",
+          "name": "عصير رمان",
+          "settings": {
+            "video": "",
+            "video_url": "",
+            "poster": "",
+            "caption": "عصير رمان"
+          }
+        },
+        {
+          "block": "video",
+          "name": "خبز العجين المخمّر",
+          "settings": {
+            "video": "",
+            "video_url": "",
+            "poster": "",
+            "caption": "خبز العجين المخمّر"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الفعاليات القادمة",
+      "widget": "events",
+      "settings": {
+        "title": "الفعاليات القادمة",
+        "view_all_text": "كل الفعاليات",
+        "view_all_url": "/blogs",
+        "time_format": "24",
+        "hide_past": true,
+        "button_style": "outline",
+        "image_side": "end",
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "شهادات العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "",
+        "title": "",
+        "quote_style": "serif",
+        "show_rating": false,
+        "star_color": "#E8A33D",
+        "autoplay": 7,
+        "card_style": "bordered",
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

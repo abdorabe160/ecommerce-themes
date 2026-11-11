@@ -1,0 +1,79 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "sticky": true,
+        "logo_height": 44,
+        "show_search": true,
+        "search_placeholder": "",
+        "search_show_suggestions": true,
+        "action_link_url": "",
+        "action_link_label": "",
+        "action_link_icon": "whatsapp",
+        "show_cart": true,
+        "cart_show_total": true,
+        "cart_free_shipping": 0,
+        "cart_upsell_title": "",
+        "cart_footer_dark": true,
+        "cart_note": "",
+        "nav_enabled": true,
+        "nav_extra_menu": "",
+        "show_locale": true,
+        "info1_enabled": false,
+        "info1_icon": "store",
+        "info1_eyebrow": "",
+        "info1_title": "",
+        "info1_url": "",
+        "info2_enabled": false,
+        "info2_icon": "box",
+        "info2_eyebrow": "",
+        "info2_title": "",
+        "info2_url": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "block": "nav_item",
+          "name": "التصنيفات",
+          "settings": {
+            "nav_label": "التصنيفات",
+            "nav_url": "/collections",
+            "nav_menu": "header-menu",
+            "nav_columns": "2"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "المتجر",
+          "settings": {
+            "nav_label": "المتجر",
+            "nav_url": "/shop",
+            "nav_menu": "",
+            "nav_columns": "1"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "المدونة",
+          "settings": {
+            "nav_label": "المدونة",
+            "nav_url": "/blogs",
+            "nav_menu": "",
+            "nav_columns": "1"
+          }
+        }
+      ]
+    }
+  ]
+}

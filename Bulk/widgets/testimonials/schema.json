@@ -1,0 +1,110 @@
+{
+  "name": "آراء العملاء - Testimonials",
+  "description": "آراء العملاء في شريطين بيتحركوا لوحدهم عكس بعض، مع تقييم إجمالي بأرقام بتعد لما السكشن يظهر",
+  "settings": {
+    "badge_text": {
+      "type": "string",
+      "label": "الشارة",
+      "default": "آراء عملائنا"
+    },
+    "title": {
+      "type": "string",
+      "label": "العنوان",
+      "default": "أبطالنا بيقولوا إيه"
+    },
+    "rating_value": {
+      "type": "string",
+      "label": "التقييم الإجمالي (مثال: 4.9) - سيبه فاضي لو مش عايزه",
+      "default": ""
+    },
+    "reviews_count": {
+      "type": "number",
+      "label": "عدد التقييمات"
+    },
+    "two_rows": {
+      "type": "boolean",
+      "label": "شريطين عكس بعض (لو في 4 آراء أو أكتر)",
+      "default": true
+    },
+    "speed": {
+      "type": "select",
+      "label": "سرعة الحركة",
+      "options": [
+        {
+          "label": "بطيئة",
+          "value": "70"
+        },
+        {
+          "label": "متوسطة",
+          "value": "50"
+        },
+        {
+          "label": "سريعة",
+          "value": "32"
+        }
+      ],
+      "default": "50"
+    }
+  },
+  "blocks": {
+    "testimonial": {
+      "name": "رأي عميل",
+      "settings": {
+        "name": {
+          "type": "string",
+          "label": "اسم العميل",
+          "default": "أحمد محمود"
+        },
+        "meta": {
+          "type": "string",
+          "label": "المدينة أو الوصف",
+          "default": "القاهرة"
+        },
+        "avatar": {
+          "type": "media",
+          "label": "صورة العميل (اختياري)"
+        },
+        "rating": {
+          "type": "select",
+          "label": "التقييم",
+          "options": [
+            {
+              "label": "★★★★★",
+              "value": "5"
+            },
+            {
+              "label": "★★★★",
+              "value": "4"
+            },
+            {
+              "label": "★★★",
+              "value": "3"
+            }
+          ],
+          "default": "5"
+        },
+        "text": {
+          "type": "text",
+          "label": "الرأي",
+          "default": "الخامة ممتازة والمقاس مظبوط."
+        },
+        "product": {
+          "type": "string",
+          "label": "المنتج اللي اشتراه (اختياري)",
+          "default": ""
+        },
+        "verified": {
+          "type": "boolean",
+          "label": "علامة \"مشتري مؤكد\"",
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "name": "آراء العملاء (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

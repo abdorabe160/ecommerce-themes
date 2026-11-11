@@ -1,0 +1,278 @@
+{
+  "name": "قائمة المجموعات: شبكة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم",
+        "en": "Section title"
+      },
+      "default": ""
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط \"عرض الكل\" (اتركه فارغاً للإخفاء)",
+        "en": "\"View all\" link label (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط \"عرض الكل\" · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "\"View all\" URL · available routes: / · /shop · /collections · /blogs"
+      },
+      "default": "/shop"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيفات (اتركها فارغة لعرض أماكن مؤقتة — لا يوجد مصدر تلقائي للتصنيفات)",
+        "en": "Collections (leave empty for placeholders — there is no automatic source for collections)"
+      }
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "الأعمدة — سطح المكتب",
+        "en": "Columns — desktop"
+      },
+      "default": "6",
+      "options": [
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "٦",
+            "en": "6"
+          }
+        },
+        {
+          "value": "7",
+          "label": {
+            "ar": "٧",
+            "en": "7"
+          }
+        }
+      ]
+    },
+    "columns_tablet": {
+      "type": "select",
+      "label": {
+        "ar": "الأعمدة — التابلت",
+        "en": "Columns — tablet"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "الأعمدة — الموبايل",
+        "en": "Columns — mobile"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        }
+      ]
+    },
+    "show_rules": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار خطوط الشبكة الفاصلة",
+        "en": "Show the grid rules"
+      },
+      "default": true
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عدد المنتجات (يظهر فقط إذا وفّره المتجر)",
+        "en": "Show the product count (only appears when the store provides it)"
+      },
+      "default": false
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "رمادي فاتح",
+            "en": "Soft grey"
+          }
+        }
+      ]
+    },
+    "promo_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ خانة مميّزة في بداية الشبكة (دائرة ملوّنة بدل صورة)",
+        "en": "▸ Highlight tile at the start of the grid (a coloured disc instead of a photo)"
+      },
+      "default": false
+    },
+    "promo_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص داخل الدائرة",
+        "en": "Text inside the disc"
+      },
+      "default": ""
+    },
+    "promo_label": {
+      "type": "string",
+      "label": {
+        "ar": "النص تحت الدائرة",
+        "en": "Label under the disc"
+      },
+      "default": ""
+    },
+    "promo_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الخانة المميّزة",
+        "en": "Highlight tile URL"
+      },
+      "default": "/shop"
+    },
+    "promo_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الدائرة المميّزة",
+        "en": "Highlight disc colour"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الخانات",
+        "en": "Cell surface"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخطوط الفاصلة",
+        "en": "Grid rules"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "قائمة المجموعات: شبكة"
+    }
+  ]
+}

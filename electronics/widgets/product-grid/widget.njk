@@ -1,0 +1,74 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set products = wd.products | default([]) %}
+{% set cols = wd.columns | default('4') %}
+{# تصنيف المنتجات المميزة (يُختار مرة واحدة): القسم يعرض أول "عدد المنتجات" منه (lgAutoProducts يجلبها من التصنيف)،
+   و"عرض الكل" يفتح صفحة نفس التصنيف ببقية منتجاته. نوع collections يرجع مصفوفة — نأخذ الأول #}
+{% set fc = wd.collection %}
+{% if fc and fc[0] %}{% set fc = fc[0] %}{% endif %}
+{% set fcOk = fc and fc._id and (fc.handle or fc.slug) and fc.status != 'inactive' and fc.status != 'draft' and fc.active != false and fc.isActive != false and fc.deleted != true and not (fc.salesChannels and fc.salesChannels.onlineStore == false) and fc.published != false %}
+{% set viewAll = ('/collections/' + (fc.handle or fc.slug)) if fcOk else wd.view_all_url %}
+{# بدون تصنيف: المنتجات المختارة من الإعدادات؛ وبدون اختيار (المعاينة فقط): منتجات توضيحية إن كان المتجر بلا منتجات، وإلا تلميح للتاجر (lgAutoProducts) #}
+{% set auto = fcOk or (products | length) == 0 %}
+{% set count = (wd.limit | default(cols) | int) if auto else (products | length) %}
+{% set carousel = wd.layout == 'carousel' and count > (cols | int) %}
+<section class="lg-section" data-lg-slider-scope
+  {%- if fcOk %} x-data="lgAutoProducts({{ count }}, '{{ fc._id }}')" x-show="loading || items.length || empty" x-cloak
+  {%- elif auto %} x-data="lgAutoProducts({{ count }})" x-show="items.length || hint" x-cloak{% endif %}>
+  <div class="lg-container">
+    <div class="lg-section-head">
+      <div>
+        {% if (wd['title' + L] or wd.title) %}<h2 class="lg-title">{{ (wd['title' + L] or wd.title) }}</h2>{% endif %}
+        {% if (wd['subtitle' + L] or wd.subtitle) %}<p class="lg-subtitle">{{ (wd['subtitle' + L] or wd.subtitle) }}</p>{% endif %}
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        {% if carousel %}
+          <div class="lg-slider-nav hidden md:inline-flex">
+            <button type="button" class="btn btn-glass btn-icon" data-lg-rail-prev aria-label="{{t('common.previous')}}">{% ui "icon.njk", name="prev", cls="w-4 h-4 lg-flip-rtl" %}</button>
+            <button type="button" class="btn btn-glass btn-icon" data-lg-rail-next aria-label="{{t('common.next')}}">{% ui "icon.njk", name="chevron", cls="w-4 h-4 lg-flip-rtl" %}</button>
+          </div>
+        {% endif %}
+        {% if viewAll %}
+          <a href="{{ viewAll }}" class="btn-link">{{t('common.view_all')}} {% ui "icon.njk", name="arrow", cls="w-3.5 h-3.5 lg-flip-rtl" %}</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if fcOk %}
+      {# المعاينة فقط: التصنيف المختار بلا منتجات #}
+      <p x-show="empty" x-cloak class="lg-editor-hint">{{ t('preview.empty_collection') }}</p>
+      {% set skel = count if count < (cols | int) else (cols | int) %}
+      <div x-show="loading" class="lg-grid" data-cols="{{ cols }}" aria-hidden="true">
+        {% for i in range(0, skel) %}<div class="lg-skeleton h-[340px]"></div>{% endfor %}
+      </div>
+      <div x-show="!loading" class="{{ 'lg-rail' if carousel else 'lg-grid' }}" data-cols="{{ cols }}">
+        <template x-for="p in items" :key="p._id">
+          {% if carousel %}<div>{% ui "card-js.njk" %}</div>{% else %}{% ui "card-js.njk" %}{% endif %}
+        </template>
+      </div>
+    {% elif auto %}
+      {# المعاينة فقط: المتجر فيه بيانات حقيقية ولم يُختر شيء لهذا القسم #}
+      <p x-show="hint" x-cloak class="lg-editor-hint">{{ t('preview.pick_products') }}</p>
+      <div class="{{ 'lg-rail' if carousel else 'lg-grid' }}" data-cols="{{ cols }}">
+        <template x-for="p in items" :key="p._id">
+          {% if carousel %}<div>{% ui "card-js.njk" %}</div>{% else %}{% ui "card-js.njk" %}{% endif %}
+        </template>
+      </div>
+      {% ui "demo-data.njk", kind="featured" %}
+    {% elif carousel %}
+      <div class="lg-rail" data-cols="{{ cols }}">
+        {% for item in products %}
+          <div>{% ui "product-card.njk", product=item %}</div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="lg-grid" data-cols="{{ cols }}">
+        {% for item in products %}
+          {% ui "product-card.njk", product=item %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>

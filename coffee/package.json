@@ -1,0 +1,16 @@
+{
+  "name": "decafe-theme",
+  "private": true,
+  "description": "DECAFE — premium specialty coffee theme for Qumra Cloud. Only build tooling lives here; the theme itself is the Qumra folders (layouts, widgets, ui, ...).",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i src/tailwind.input.css -o assets/decafe.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i src/tailwind.input.css -o assets/decafe.css --watch",
+    "stamp": "node scripts/stamp-assets.js",
+    "build": "npm run build:css && npm run stamp",
+    "check": "qumra theme publish",
+    "bundle": "npm run build && qumra theme bundle"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

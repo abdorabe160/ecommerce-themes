@@ -1,0 +1,46 @@
+{# أزرار بطاقات المنتجات المرسومة على السيرفر (product-card / product-mini): "أضف إلى السلة" + "اشترِ الآن" لكل منتج وعلى كل المقاسات —
+   متجاوران في البطاقة العريضة وفوق بعض في الضيقة (.lg-card__actions في style.css). نفس الأزرار في card-actions-js.njk.
+   state (نص، لأن الوسم ui بيسقط القيم true):
+     out = نفد: الزرّان ظاهران ومعطّلان (PRD-26) · options = منتج بخيارات: «اختر الخيارات» تفتح صفحة المنتج (REG-10)
+     check = كمية 0 من غير بيانات خيارات: «عرض المنتج» لحد ما watchCard يتأكد · buy = الزرّان شغالين
+   الاستخدام: {% ui "card-actions.njk", id=p._id, url=url, state=cardState, handle=slug, opts=cartOpts, cls="" %} #}
+{# كل المدخلات تُقرأ أولاً: {% ui %} المتداخل (الأيقونات) قد يستبدل data #}
+{% set id = data.id %}{% set url = data.url %}{% set state = data.state %}{% set handle = data.handle | default('', true) %}{% set opts = data.opts | default('') %}{% set extra = data.cls | default('') %}
+{% macro outBtns() %}
+      <button type="button" class="btn btn-soft" disabled aria-disabled="true"><span class="lg-btn-label">{{t('product.out_of_stock')}}</span></button>
+      <button type="button" class="btn btn-primary" disabled aria-disabled="true"><span class="lg-btn-label">{{t('product.buy_now')}}</span></button>
+{% endmacro %}
+{% macro buyBtns(id, opts) %}
+      <button type="button"
+              class="btn btn-soft"
+              @click="addToCart('{{ id }}', 1{{ opts }})"
+              :disabled="isBusy('add:{{ id }}')">
+        <span x-show="!isBusy('add:{{ id }}') || isBusy('buy:{{ id }}')" class="lg-btn-in">
+          {% ui "icon.njk", name="cart", cls="w-4 h-4 shrink-0" %}<span class="lg-btn-label">{{t('product.add_to_cart')}}</span>
+        </span>
+        <span x-show="isBusy('add:{{ id }}') && !isBusy('buy:{{ id }}')" x-cloak class="lg-spinner" role="status"></span>
+      </button>
+      <button type="button"
+              class="btn btn-primary"
+              @click="buyNow('{{ id }}', 1{{ opts }})"
+              :disabled="isBusy('add:{{ id }}') || isBusy('buy:{{ id }}')">
+        <span x-show="!isBusy('buy:{{ id }}')" class="lg-btn-label">{{t('product.buy_now')}}</span>
+        <span x-show="isBusy('buy:{{ id }}')" x-cloak class="lg-spinner" role="status"></span>
+      </button>
+{% endmacro %}
+<div class="lg-card__actions {{ extra }}">
+  <div class="lg-card__btns"{% if state == 'check' %} x-init="watchCard('{{ id }}', {{ handle | dump | escape }}, $el)"{% endif %}>
+    {% if state == 'out' %}
+      {{ outBtns() }}
+    {% elif state == 'options' %}
+      <a href="{{ url }}" class="btn btn-primary lg-card__btn--full"><span class="lg-btn-label">{{t('product.choose_options')}}</span></a>
+    {% elif state == 'check' %}
+      <a href="{{ url }}" class="btn btn-soft lg-card__btn--full" x-show="!cardInfo['{{ id }}']"><span class="lg-btn-label">{{t('product.view_product')}}</span></a>
+      <a href="{{ url }}" class="btn btn-primary lg-card__btn--full" x-show="cardInfo['{{ id }}'] === 'options'" x-cloak><span class="lg-btn-label">{{t('product.choose_options')}}</span></a>
+      <template x-if="cardInfo['{{ id }}'] === 'out'"><div class="contents">{{ outBtns() }}</div></template>
+      <template x-if="cardInfo['{{ id }}'] === 'buy'"><div class="contents">{{ buyBtns(id, '') }}</div></template>
+    {% else %}
+      {{ buyBtns(id, opts) }}
+    {% endif %}
+  </div>
+</div>

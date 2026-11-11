@@ -1,0 +1,116 @@
+{#
+  ============================================================================
+  HYPER · STORY SECTION  ·  قسم مخصص
+  ----------------------------------------------------------------------------
+    ┌──────────────────────────┬──────────────────────────┐
+    │  OUR STORY               │        ╭─────────╮       │
+    │  Delicate ruffles with   │   (Wow)│  round  │       │
+    │  soft finishes.          │        │  photo  │       │
+    │  a paragraph…            │        ╰─────────╯(Playful)
+    │  ( Learn More › )        │                          │
+    └──────────────────────────┴──────────────────────────┘
+
+  Styled in assets/style.css → "15.13.1 STORY SECTION", where the measurements
+  are written down.
+
+  ── The floating labels ──
+  Blocks, each with an x/y in per-cent of the CIRCLE's box plus a rotation and
+  a colour. Per-cent rather than pixels so a label holds its place as the
+  circle resizes, and applied with `left`/`top` rather than logical insets: the
+  photograph does not mirror in Arabic, so a coordinate read off it must not
+  either — the same rule the bundle's pins follow.
+
+  ── The cap ──
+  Four labels. They are decoration scattered on one circle; past four they
+  stop reading as accents and start covering the photograph. Per the
+  over-supply rule this is a fixed-position composition, so the extras are not
+  rendered rather than rendered badly.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set eyebrow  = d.eyebrow | default('') %}
+{% set title    = d.title | default('') %}
+{% set body     = d.body | default('') %}
+{% set ctaText  = d.cta_text | default('') %}
+{% set ctaUrl   = d.cta_url | default('/') %}
+{% set mediaPos = d.media_position | default('end') %}
+{% set mediaW   = d.media_width | default(48) %}
+{% set gapW     = d.column_gap | default(6) %}
+{% set circle   = d.circle_size | default(422) %}
+
+{% set TAG_MAX = 4 %}
+{% set tags = (widget.blocks | default([])).slice(0, TAG_MAX) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set shot = mediaUrl(d.image) | trim %}
+{# Demo picture while the field is empty: assets/demo-*.jpg are CC0 photos
+   (sources in _ref/demo-images-sources.txt). An uploaded image replaces it. #}
+{% set shot = shot if (shot | length) else ('demo-story.jpg' | assets) %}
+{% set hasShot = (shot | length) > 0 %}
+
+<section id="hy-st-{{ id }}"
+         class="hy-st {{ 'hy-st--start' if mediaPos == 'start' }}">
+  <div class="hy-st-inner">
+
+    {# ---------- copy ---------- #}
+    <div class="hy-st-copy">
+      {% if eyebrow %}<p class="hy-st-eyebrow">{{ eyebrow }}</p>{% endif %}
+      {% if title %}<h2 class="hy-st-title">{{ title }}</h2>{% endif %}
+      {% if body %}<p class="hy-st-text">{{ body }}</p>{% endif %}
+
+      {% if ctaText %}
+        <div class="hy-st-cta">
+          {# The shared solid pill — `ui/section-colors.njk` already covers
+             `.hy-btn--solid`, and a section that invents its own button has to
+             be registered there or its colour picker does nothing. #}
+          <a href="{{ ctaUrl }}" class="hy-btn hy-btn--solid hy-btn--pill hy-btn--arrow">
+            <span>{{ ctaText }}</span>
+            <i class="hy-btn-arrow" aria-hidden="true">
+              <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </i>
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    {# ---------- the circle ---------- #}
+    <div class="hy-st-media">
+      <div class="hy-st-circle">
+        {# The clip is on the FRAME, not the circle: the labels are siblings of
+           it and an `overflow: hidden` on the circle would cut off the very
+           thing meant to hang over its edge. #}
+        <span class="hy-st-frame">
+          {% if hasShot %}<img src="{{ shot }}" alt="{{ title }}" loading="lazy"/>{% endif %}
+        </span>
+
+        {% for b in tags %}
+          {% set t = b.data %}
+          {% if t.label %}
+            <span class="hy-st-tag {{ 'hy-st-tag--round' if t.shape == 'round' }}"
+                  style="--tag-x: {{ t.x | default(20) }}%; --tag-y: {{ t.y | default(20) }}%; --tag-rot: {{ t.rotate | default(-10) }}deg;{% if t.color %} --tag-bg: {{ t.color }};{% endif %}{% if t.text_color %} --tag-fg: {{ t.text_color }};{% endif %}">{{ t.label }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{# Shape knobs. The `-set` suffix is load-bearing: this block is an ID selector,
+   so a plain name would beat the stylesheet's responsive rules and a merchant's
+   desktop value would survive into a 390px viewport. #}
+<style>
+  #hy-st-{{ id }} {
+    --hy-st-media-set: {{ mediaW }}%;
+    --hy-st-gap-set: {{ gapW }}%;
+    --hy-st-circle-set: {{ circle }}px;
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-st-' ~ id, c=d %}

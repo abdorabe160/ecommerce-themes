@@ -1,0 +1,122 @@
+{# ============================================================================
+   PAGE 404 — MUHARRIK: "طريق مسدود / Dead end"
+   ----------------------------------------------------------------------------
+   A dead end is a chance to send the shopper somewhere useful, so this offers a
+   search box and the store instead of only an apology.
+
+   Look: on the carbon ground, start-aligned like morva's 404 — a mono kicker
+   (the eyebrow), a GIANT outline "404" with a yellow kinetic wipe running
+   through it, the display title, the copy, a hairline search row with a
+   yellow button, the two buttons, then the quick links as mono chips. A
+   kinetic marquee of "404 · <title> · <eyebrow>" closes the section.
+
+   The search posts to /shop?q= — a route this theme has. There is no dedicated
+   search page in Qumra, and inventing one here would 404 a second time.
+
+   Copy: "طريق مسدود / Dead end" — the eyebrow, title, message and the quick
+   links' labels default bilingually in the template (isAr), so pages/404.json
+   leaves them empty and the English store reads English.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set links = widget.blocks | default([], true) %}
+
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+{# ---- the car twist, bilingual in the template; every line can be overridden
+        from the schema (a filled setting wins, in whichever language). ---- #}
+{% set eyebrow = d.eyebrow | default('', true) | trim %}
+{% if not eyebrow %}{% set eyebrow = 'خطأ 404 / خارج المسار' if isAr else 'ERROR 404 / OFF TRACK' %}{% endif %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else ('طريق مسدود' if isAr else 'Dead end') %}
+{% set message = d.message if (d.message | default('', true) | trim | length) > 0 else ('الصفحة اللي بتدوّر عليها مش موجودة أو اتنقلت. ارجع للطريق الرئيسي، أو دوّر على القطعة اللي محتاجها.' if isAr else 'The page you are looking for is not here or has moved. Head back to the main road, or search for the part you need.') %}
+{% set showSearch = d.show_search | default(true) %}
+{% set showStrip = d.show_strip != false %}
+{% set homeUrl = d.home_url | default('/', true) %}
+{% set shopUrl = d.shop_url | default('/shop', true) %}
+{% set stripText = d.strip_text | default('', true) | trim %}
+{% if not stripText %}{% set stripText = title %}{% endif %}
+
+
+<section id="hy-404-{{ id }}" class="hy-404 hx-404p mh-carbon">
+  <div class="hy-container">
+    <div class="hy-404-inner">
+
+      {% if eyebrow %}<span class="hy-404-eyebrow mh-kicker">{{ eyebrow }}</span>{% endif %}
+
+      <span class="hy-404-num" aria-hidden="true" data-text="404">404</span>
+
+      <h1 class="hy-404-title mh-h">{{ title }}</h1>
+
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+           HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+           the outer one and the content becomes a SIBLING, so every style on
+           this class stops reaching the text. Inner margins are reset in the CSS. #}
+      {% if message %}<div class="hy-404-text">{{ message | safe }}</div>{% endif %}
+
+      {# ---- search: the fastest way out of a dead end ---- #}
+      {% if showSearch %}
+        <form action="/shop" method="get" class="hy-404-search" role="search">
+          <span class="hy-404-search-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7.25"/><path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/></svg></span>
+          <input type="search" name="q" class="mh-mono"
+                 placeholder="{{ t('pages.shop.search_placeholder') }}"
+                 aria-label="{{ t('pages.search.title') }}"/>
+          <button type="submit" aria-label="{{ t('pages.search.title') }}">
+            <span class="mh-arrow" aria-hidden="true">→</span>
+          </button>
+        </form>
+      {% endif %}
+
+      <div class="hy-404-acts">
+        <a href="{{ shopUrl }}" class="hy-btn hy-btn--solid">{{ t('pages.404.browse_shop') }}</a>
+        <a href="{{ homeUrl }}" class="hy-btn hy-btn--outline">{{ t('pages.404.back_home') }}</a>
+      </div>
+
+      {# ---- optional quick links ---- #}
+      {% if (links | length) > 0 %}
+        <div class="hy-404-links">
+          <span class="hy-404-links-label mh-kicker">{{ t('pages.404.try_these') }}</span>
+          <div class="hy-404-chips">
+            {% for block in links %}
+              {% set b = block.data | default(block.settings, true) | default({}, true) %}
+              {# an empty label reads the store's own page names, bilingual; the merchant's label wins #}
+              {% set url = b.url | default('/shop', true) %}
+              {% set label = b.label | default('', true) | trim %}
+              {% if not label %}
+                {% if url == '/shop' %}{% set label = 'كل القطع' if isAr else 'All parts' %}
+                {% elif url == '/collections' %}{% set label = t('common.categories') %}
+                {% elif url == '/blogs' %}{% set label = 'أدلة الصيانة' if isAr else 'DIY guides' %}
+                {% elif url == '/cart' %}{% set label = 'السلة' if isAr else 'Cart' %}
+                {% elif url == '/' %}{% set label = t('common.home') %}
+                {% endif %}
+              {% endif %}
+              {% if label %}
+                <a href="{{ url }}" class="hy-404-chip"><span class="mh-mono hy-404-chip-n" aria-hidden="true">{{ '0' ~ loop.index }}</span>{{ label }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {# ---- kinetic strip: the copy runs past like a road marking ---- #}
+  {% if showStrip %}
+    <div class="hy-404-strip mh-marquee" aria-hidden="true">
+      {% for rep in [1, 2] %}
+        <div class="mh-marquee-track">
+          {% for k in [1, 2, 3] %}
+            <span class="hy-404-strip-code">404</span>
+            <span class="hy-404-strip-dot"></span>
+            <span class="hy-404-strip-word">{{ stripText }}</span>
+            <span class="hy-404-strip-dot"></span>
+            {% if eyebrow %}<span class="hy-404-strip-word mh-outline">{{ eyebrow }}</span><span class="hy-404-strip-dot"></span>{% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-404-' ~ id, c=d %}

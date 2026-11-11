@@ -1,0 +1,187 @@
+{#-
+  Collection listing. Results are server-rendered (SEO + no-JS); the facet panel filters that real
+  DOM data client-side: values are discovered from each card's data-dc-* attributes (tags + options +
+  stock), so only attributes that actually exist ever appear — never decorative filters.
+  Sort stays server-driven (?sort=, documented platform option) and re-applies state from the URL.
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{#- Live Qumra hands /shop and /shop/<collection> their data as context.shop { mode, collection, products,
+    pagination, sort, filters } (verified 2026-10-26), and /collections/<handle> as context.collection + context.products +
+    context.pagination + context.filters (verified 2026-11-04); the documented `collection` global is kept as a fallback. -#}
+{%- set pctx = context or {} -%}
+{%- set shop = pctx.shop or {} -%}
+{%- set shopCol = shop.collection or {} -%}
+{%- if collection and (collection.title or collection.products) -%}
+  {%- set col = collection -%}
+{%- elif pctx.collection or (pctx.products and not pctx.shop) -%}
+  {%- set pcol = pctx.collection or {} -%}
+  {%- set col = { 'title': pcol.title, 'description': pcol.description, 'image': pcol.image or {}, 'products': pctx.products or [], 'pagination': pctx.pagination or {}, 'filters': ({ 'available': pctx.filters } if (pctx.filters and pctx.filters.length) else {}) } -%}
+{%- elif shop.products or shop.collection -%}
+  {%- set col = { 'title': shopCol.title or (t('nav.shop') if shop.mode != 'collection' else ''), 'description': shopCol.description, 'image': shopCol.image or {}, 'products': shop.products or [], 'pagination': shop.pagination or {}, 'filters': shop.filters } -%}
+{%- else -%}
+  {%- set col = {} -%}
+{%- endif -%}
+{%- set products = col.products or [] -%}
+{%- set pg = col.pagination or {} -%}
+{%- set cols = wd.columns or '4' -%}
+{#- FLT-01: filters the merchant configures in the dashboard arrive as collection.filters.<name> = [{ value, label, count }].
+    When present they drive the panel and filtering happens on the server (filters[name][]=… in the URL, every page of
+    results); otherwise the panel falls back to facets discovered from the cards' tags on this page. -#}
+{%- set dashKeys = [] -%}
+{%- set flist = [] -%}
+{%- if col.filters and col.filters.available and col.filters.available.length -%}
+  {#- context.shop.filters = { available: [{ key|name|handle, label|title, values|options }], applied } -#}
+  {%- for f in col.filters.available -%}
+    {%- set fk = (f.key or f.name or f.handle or '') | string -%}{%- set fv = f.values or f.options or [] -%}
+    {%- if fk and fk != 'price' and fv.length and dashKeys.push(fk) and flist.push({ 'name': fk, 'label': f.label or f.title or fk, 'opts': fv }) -%}{%- endif -%}
+  {%- endfor -%}
+{%- elif col.filters -%}
+  {%- for fname, fopts in col.filters -%}
+    {%- if fname != 'price' and fname != 'applied' and fname != 'available' and fopts and fopts.length and dashKeys.push(fname) and flist.push({ 'name': fname, 'label': fopts.label or fname, 'opts': fopts }) -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- set cfg = {
+  'serverKeys': dashKeys,
+  'labels': {
+    'origin': t('collection.filter_origin'),
+    'roast': t('collection.filter_roast'),
+    'grind': t('collection.filter_grind'),
+    'weight': t('collection.filter_weight'),
+    'price': t('collection.price')
+  },
+  'showing': t('collection.showing'),
+  'priceSwapped': t('collection.price_swapped'),
+  'totalItems': (pg.totalItems or 0) | int
+} -%}
+<section class="dc-collection section surface-cream" x-data="dcCollection({{ cfg | dump | escape }})" aria-labelledby="dc-collection-title">
+  <div class="shell">
+    <nav class="dc-breadcrumb" aria-label="{{ t('a11y.breadcrumb') }}">
+      <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span>{% if col.title != t('nav.shop') %}<a href="/shop">{{ t('nav.shop') }}</a><span aria-hidden="true">/</span>{% endif %}<span aria-current="page">{{ col.title or t('nav.collections') }}</span>
+    </nav>
+    <header class="dc-collection-heading">
+      <div>
+        <p class="eyebrow">{{ t('collection.eyebrow') }}</p>
+        <h1 id="dc-collection-title" class="h-display">{{ col.title or t('nav.collections') }}</h1>
+        {%- if col.description %}<div class="dc-collection-description prose-decafe">{{ col.description | safe }}</div>{%- endif %}
+      </div>
+      {%- if col.image.fileUrl or col.image.url %}
+      <img src="{{ col.image.fileUrl or col.image.url }}" alt="" width="720" height="420" loading="eager" decoding="async">
+      {%- endif %}
+    </header>
+
+    <div class="dc-collection-controls">
+      {%- set resultCount = pg.totalItems or products.length -%}
+      <p class="dc-collection-count" x-text="countText">{% ui "count.njk", n=resultCount %}</p>
+      <div class="dc-controls-actions">
+        <button type="button" class="btn btn-outline btn-sm dc-filter-open" @click="openFilters()"
+                aria-haspopup="dialog" x-show="total > 0 || activeCount" x-cloak>
+          {% ui "icon.njk", name="filter", size=17 %} <span>{{ t('collection.open_filters') }}</span>
+          <span class="dc-filter-open__badge" x-show="activeCount" x-text="activeCount" x-cloak></span>
+        </button>
+        <label class="dc-sort-label">
+          <span>{{ t('collection.sort') }}</span>
+          <select class="field field-select" :value="sort" @change="setSort($event.target.value)">
+            <option value="">{{ t('collection.sort_default') }}</option>
+            <option value="createdAt-desc">{{ t('collection.sort_newest') }}</option>
+            <option value="price-asc">{{ t('collection.sort_price_asc') }}</option>
+            <option value="price-desc">{{ t('collection.sort_price_desc') }}</option>
+            <option value="rating-desc">{{ t('collection.sort_rating') }}</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="dc-collection-layout" :class="!total && 'is-empty'">
+      <div class="dc-filter-scrim" x-show="open" x-transition.opacity @click="cancelFilters()" aria-hidden="true"></div>
+
+      <aside class="dc-filter-panel" :class="open && 'is-open'" aria-label="{{ t('collection.filters') }}"
+             x-show="total > 0 || open || activeCount" @keydown.esc.window="open && cancelFilters()">
+        <div class="dc-filter-heading">
+          <h2>{{ t('collection.filters') }}</h2>
+          <div class="dc-filter-heading__actions">
+            <button type="button" x-show="activeCount" @click="clearAll()" x-cloak>{{ t('collection.clear_all') }}</button>
+            <button type="button" class="dc-filter-close icon-btn" @click="cancelFilters()" aria-label="{{ t('collection.cancel') }}">{% ui "icon.njk", name="close", size=18 %}</button>
+          </div>
+        </div>
+
+        {%- if dashKeys.length %}
+        {%- for fl in flist %}
+        {%- set fname = fl.name -%}{%- set fopts = fl.opts -%}
+        {%- set lk = 'collection.filter_' ~ fname -%}{%- set lbl = t(lk) -%}
+        <fieldset class="dc-facet">
+          <legend>{{ lbl if lbl != lk else fl.label }}</legend>
+          {%- for o in fopts %}
+          {%- set ov = (o.value if o.value is defined else o) | string -%}
+          <label class="dc-facet__opt">
+            <input type="checkbox" value="{{ ov }}" :checked="isSel({{ fname | dump | escape }}, {{ ov | dump | escape }})" @change="toggle({{ fname | dump | escape }}, {{ ov | dump | escape }})">
+            <span>{{ o.label or ov }}</span>
+            {%- if o.count is defined %}<small>{{ o.count }}</small>{%- endif %}
+          </label>
+          {%- endfor %}
+        </fieldset>
+        {%- endfor %}
+        {%- else %}
+        <template x-for="f in facets" :key="f.key">
+          <fieldset class="dc-facet">
+            <legend x-text="f.label"></legend>
+            <template x-for="o in f.values" :key="f.key + o.v">
+              <label class="dc-facet__opt">
+                <input type="checkbox" :value="o.v" :checked="isSel(f.key, o.v)" @change="toggle(f.key, o.v)">
+                <span x-text="o.v"></span>
+                <small x-text="o.count"></small>
+              </label>
+            </template>
+          </fieldset>
+        </template>
+
+        {%- endif %}
+
+        {%- if wd.show_price_filter != false %}
+        <fieldset class="dc-price-filter">
+          <legend>{{ t('collection.price') }}</legend>
+          <label><span>{{ t('collection.from') }}</span><input class="field" inputmode="decimal" type="number" min="0" x-model="min" @change="applyPrice()" placeholder="0"></label>
+          <label><span>{{ t('collection.to') }}</span><input class="field" inputmode="decimal" type="number" min="0" x-model="max" @change="applyPrice()" placeholder="—"></label>
+          <p class="dc-price-filter__note" x-show="priceNote" x-text="priceNote" role="status" x-cloak></p>
+        </fieldset>
+        {%- endif %}
+
+        {#- FLT-11: «عرض النتائج» keeps the picks, «إلغاء» / ✕ / scrim / Esc restore what was there when the drawer opened -#}
+        <div class="dc-filter-actions">
+          <button type="button" class="btn btn-dark dc-filter-apply" @click="applyFilters()">{{ t('collection.show_results') }}</button>
+          <button type="button" class="btn btn-outline dc-filter-apply" @click="cancelFilters()">{{ t('collection.cancel') }}</button>
+        </div>
+      </aside>
+
+      <div class="dc-collection-results">
+        {%- if products.length %}
+        <div class="dc-product-grid dc-cols-{{ cols }}" x-show="shown !== 0">
+          {%- for p in products %}{% ui "product-card.njk", product=p %}{%- endfor %}
+        </div>
+        <div class="dc-empty-note dc-no-match" x-show="shown === 0 && total > 0" role="status" x-cloak>
+          <p>{{ t('collection.no_match') }}</p>
+          <button type="button" class="btn btn-outline btn-sm" @click="clearAll()">{{ t('collection.clear_all') }}</button>
+        </div>
+        {% ui "pagination.njk", pagination=pg %}
+        {%- else %}
+        {#- empty collection: a message and a way back, never other products. Demo catalogue only when allowed (demoProducts setting / preview) -#}
+        {#- server-filtered to zero (FLT-08): say so and offer to clear — not the empty-collection state -#}
+        <div class="dc-empty-note dc-no-match" x-show="activeCount" x-cloak role="status">
+          <p>{{ t('collection.no_match') }}</p>
+          <button type="button" class="btn btn-outline btn-sm" @click="clearAll()">{{ t('collection.clear_all') }}</button>
+        </div>
+        <div x-data="dcProducts({source: 'none', limit: 12, collectionId: '', kind: ''})" x-show="!activeCount">
+          <div class="dc-product-grid dc-cols-{{ cols }}" x-show="items.length" x-cloak>
+            <template x-for="p in items" :key="p._id">{% ui "card-js.njk" %}</template>
+          </div>
+          <p class="dc-preview-note" x-show="demo" x-cloak>{{ t('common.preview_hint') }}</p>
+        <div class="dc-empty-state" x-show="!loading && !items.length">
+          <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+          <h2>{{ t('collection.no_products') }}</h2>
+          <a href="/shop" class="btn btn-dark">{{ t('cart.continue_shopping') }}</a>
+        </div>
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+</section>

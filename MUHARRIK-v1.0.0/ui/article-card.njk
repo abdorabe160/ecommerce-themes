@@ -1,0 +1,93 @@
+{# ============================================================================
+   ARTICLE CARD — MUHARRIK: a hairline tile (mono meta · display title · excerpt)
+   ----------------------------------------------------------------------------
+   Built on the `.hy-post-*` classes (assets/style.css → "15.18 ARTICLE CARD"),
+   re-voiced in assets/mh-content.css. No MUHARRIK widget renders this partial
+   today (blog-grid / blog-posts draw their own .hx-bg-card / .hx-bp-card), but
+   HxPosts (assets/hx.js) still scrapes `a.hy-post[href*="/articles/"]`, so the
+   hooks it reads stay in place: .hy-post-media img · .hy-post-title ·
+   .hy-post-excerpt · time[datetime].
+
+   Locals:
+     article       (required) the article, or a blog when `kind` is 'blog'
+     show_date     default true
+     show_excerpt  default true
+     kind          'blog' renders a BLOG (links to /blogs/<handle>, shows its
+                   article count); anything else is an article (/articles/<handle>)
+
+   ⚠️  `kind` is a STRING, not a boolean flag. Qalab's `{% ui %}` is a custom tag
+   and a bare `true` did not survive the trip. Strings pass reliably.
+
+   No <style> block: this repeats, so all styling lives in the stylesheets.
+   ========================================================================= #}
+
+{% set a = data.article %}
+
+{% if a %}
+  {% set img = a.image.fileUrl if a.image and a.image.fileUrl and not a.image.notFound else (a.imageUrl or '') %}
+  {# 'on' / 'off' strings — a bare boolean does not survive `{% ui %}`. A real
+     boolean from a variable is accepted too; only 'off'/'false' turns it off. #}
+  {% set showDate = (data.show_date | string) != 'false' and (data.show_date | string) != 'off' if data.show_date is defined else true %}
+  {% set showExcerpt = (data.show_excerpt | string) != 'false' and (data.show_excerpt | string) != 'off' if data.show_excerpt is defined else true %}
+  {% set isBlog = (data.kind | default('article', true)) == 'blog' %}
+  {# ⚠️  /articles/<handle>, PLURAL. The singular answers with a 302 on the live
+     store, so every card would cost the reader a redirect. #}
+  {% set url = ('/blogs/' if isBlog else '/articles/') ~ (a.handle | default(a.slug, true) | default(a._id, true)) %}
+  {% set body = a.description if isBlog else a.excerpt %}
+
+  {# ⚠️  `category` is NOT a string — the API returns the whole BlogCategory
+     document. The name lives in `.title`; the `or` chain keeps the card working
+     if an endpoint ever hands back a bare string instead. #}
+  {% set cat = a.category %}
+  {% set catName = '' %}
+  {% if cat %}
+    {% set catName = cat.title | default(cat.name, true) | default('', true) %}
+    {% if not catName and (cat | string) != '[object Object]' %}
+      {% set catName = cat | string %}
+    {% endif %}
+  {% endif %}
+
+<a href="{{ url }}" class="hy-post hy-post--stacked mh-hud">
+
+  <div class="hy-post-media">
+    {% if img %}
+      <img src="{{ img }}" alt="{{ a.title }}" loading="lazy"/>
+    {% else %}
+      <span class="hy-post-noimg">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/>
+          <path d="M12 4h6.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H12"/>
+        </svg>
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="hy-post-body">
+    {% if isBlog %}
+      {% if a.articlesCount %}
+        <div class="hy-post-meta mh-mono">
+          <span><bdi>{{ a.articlesCount }}</bdi> {{ t('pages.blog.articles_count') }}</span>
+        </div>
+      {% endif %}
+    {% elif (showDate and a.createdAt) or catName %}
+      <div class="hy-post-meta mh-mono">
+        {% if catName %}<span class="hy-post-cat">{{ catName }}</span>{% endif %}
+        {% if catName and showDate and a.createdAt %}<span class="hy-post-sep" aria-hidden="true">/</span>{% endif %}
+        {% if showDate and a.createdAt %}
+          {# Nunjucks has no date filter, so the ISO value stays in `datetime`
+             for machines and main.js localises the visible text — the same
+             `data-hy-date` hook the post grid uses. #}
+          <time datetime="{{ a.createdAt }}" data-hy-date>{{ a.createdAt | truncate(10, '') }}</time>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <h3 class="hy-post-title hy-clamp-2">{{ a.title }}</h3>
+
+    {% if showExcerpt and body %}
+      <p class="hy-post-excerpt hy-clamp-2">{{ body | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}</p>
+    {% endif %}
+  </div>
+</a>
+{% endif %}

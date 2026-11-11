@@ -1,0 +1,259 @@
+{
+  "name": "روابط المجموعة",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير فوق القائمة",
+        "en": "The small line above the list"
+      },
+      "default": "إطلالة لـ"
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة",
+        "en": "Which side the photo sits on"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "جهة البداية",
+            "en": "Start side"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "جهة النهاية",
+            "en": "End side"
+          }
+        }
+      ]
+    },
+    "panel_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون لوحة القائمة",
+        "en": "The list panel colour"
+      },
+      "default": ""
+    },
+    "media_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية لوحة الصورة — يظهر حول الصورة إذا عُرضت كاملة",
+        "en": "The photo panel ground — shows around the picture when it is not cropped"
+      },
+      "default": ""
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة عرض الصورة",
+        "en": "How the picture sits"
+      },
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة بدون قصّ — يظهر لون الخلفية حولها",
+            "en": "Whole, never cropped — the ground shows around it"
+          }
+        },
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ اللوحة (تُقصّ عند اللزوم)",
+            "en": "Fills the panel — cropped as needed"
+          }
+        }
+      ]
+    },
+    "image_focus": {
+      "type": "select",
+      "label": {
+        "ar": "تركيز القصّ — الجزء الذي يبقى عند اختيار «تملأ اللوحة»",
+        "en": "Crop focus — what survives when the picture fills the panel"
+      },
+      "default": "top",
+      "options": [
+        {
+          "value": "top",
+          "label": {
+            "ar": "الأعلى — للوجوه (موصى به)",
+            "en": "Top — for faces (recommended)"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "bottom",
+          "label": {
+            "ar": "الأسفل",
+            "en": "Bottom"
+          }
+        }
+      ]
+    },
+    "min_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع اللوحتين",
+        "en": "Panel height"
+      },
+      "default": 640,
+      "min": 440,
+      "max": 820,
+      "step": 10,
+      "unit": "px"
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر فوق الصورة",
+        "en": "Button label on the photo"
+      },
+      "default": "تسوّقي الآن"
+    },
+    "show_wave": {
+      "type": "boolean",
+      "label": {
+        "ar": "خط متموّج تحت الكلمة النشطة",
+        "en": "A wavy rule under the active word"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "link": {
+      "name": "رابط",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الكلمة في القائمة",
+            "en": "The word in the list"
+          },
+          "default": ""
+        },
+        "icon": {
+          "type": "media",
+          "label": {
+            "ar": "أيقونة صغيرة تظهر بجانب الكلمة عند اختيارها",
+            "en": "A small icon that appears beside the word when it is picked"
+          }
+        },
+        "icon_bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون الدائرة خلف الأيقونة",
+            "en": "The circle behind the icon"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "▸ صورة اللوحة",
+            "en": "▸ Panel photo"
+          }
+        },
+        "image_eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير فوق العنوان",
+            "en": "The small line above the title"
+          },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان على الصورة",
+            "en": "The title on the photo"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف أسفل القائمة",
+            "en": "The description under the list"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — /shop/اسم-التصنيف",
+            "en": "Link — /shop/collection-handle"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "روابط المجموعة"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{# ============================================================================
+   LOCAL · SCROLLING TEXT — شريط نص متحرك
+   ----------------------------------------------------------------------------
+     ◦ Free delivery over 500  •  Baked fresh every morning  •  Organic …  ◦
+
+   A slim band of short messages drifting along the reading direction, with a
+   separator between them. Each message may carry an icon from ui/lc-icon.njk
+   and a link.
+
+   ── A loop with no gap, and no dependence on measuring ──
+   The messages are printed server-side into TWO identical halves, each one
+   the list repeated `reps` times — long enough to be wider than any screen.
+   The track slides by exactly 50% (one half) and restarts, and because both
+   halves are the same the restart is invisible: text leaving one edge is
+   already entering from the other. This used to rely on JS measuring the
+   group and cloning it; when that measurement came back 0 (the section not
+   yet laid out, e.g. in the editor) nothing was cloned and the single line
+   slid off and left a gap. The script below now only tunes the duration so
+   the speed is the same px/s whatever the text length. Reduced motion → one
+   still, centred copy.
+
+   Styling: assets/style.css → "15.6 SCROLLING TEXT · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set msgs = widget.blocks | default([], true) %}
+{% set speed = d.speed | default('normal') %}
+{% set pxs = 30 if speed == 'slow' else (80 if speed == 'fast' else 50) %}
+{% set count = msgs | length %}
+{# at least ~12 messages per half → a half is wider than a 2560px screen #}
+{% set reps = ((12 / count) | round(0, 'ceil')) if count > 0 else 1 %}
+{% set reps = 2 if reps < 2 else reps %}
+{# dot | star | none — an older setting saved as 'leaf' falls back to dot #}
+{% set sep = d.separator | default('dot') %}
+{% set sep = 'dot' if sep == 'leaf' else sep %}
+
+{% macro separator(kind) %}
+  {% if kind == 'star' %}
+    <svg class="lc-mq-sep" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/></svg>
+  {% elif kind == 'dot' %}
+    <span class="lc-mq-sep lc-mq-sep--dot" aria-hidden="true"></span>
+  {% endif %}
+{% endmacro %}
+
+{% if (msgs | length) > 0 %}
+<section id="lc-mq-{{ id }}"
+         class="lc-mq lc-mq--{{ d.size | default('small') }} {{ 'lc-mq--pause' if (d.pause_on_hover | default(true)) }}"
+         style="--lc-mq-bg: {{ d.background_color | default('var(--color-accent)', true) }};
+                --lc-mq-fg: {{ d.text_color | default('var(--color-text-on-accent)', true) }};
+                --lc-mq-pad: {{ d.padding | default(12) }}px;"
+         aria-label="{{ (msgs[0].data.text) | default('', true) }}">
+  <div class="lc-mq-strip" id="lc-mqStrip-{{ id }}">
+    <div class="lc-mq-track" id="lc-mqTrack-{{ id }}"
+         style="--mq-dur: {{ reps * count * (7 if speed == 'slow' else (2.8 if speed == 'fast' else 4.5)) }}s;">
+      {% for half in [0, 1] %}
+        <div class="lc-mq-group"{% if half == 1 %} aria-hidden="true"{% endif %}>
+          {% for r in range(reps) %}
+            {% for block in msgs %}
+              {% set b = block.data %}
+              {% if b.text %}
+                {% set tag = 'a' if b.url else 'span' %}
+                <{{ tag }} class="lc-mq-item"{% if b.url %} href="{{ b.url }}"{% if half == 1 or r > 0 %} tabindex="-1"{% endif %}{% endif %}>
+                  {% if b.icon and b.icon != 'none' %}{% ui "lc-icon.njk", name=b.icon, size=18, stroke=1.5 %}{% endif %}
+                  <span>{{ b.text }}</span>
+                </{{ tag }}>
+                {{ separator(sep) }}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    /* Only the SPEED is tuned here — the loop itself needs no JS. One half's
+       width ÷ px-per-second = the time to travel it. A zero width (not laid out
+       yet) simply keeps the server's estimate. */
+    var track = document.getElementById('lc-mqTrack-{{ id }}');
+    if (!track) return;
+    var tune = function () {
+      var half = track.firstElementChild;
+      var w = half ? half.getBoundingClientRect().width : 0;
+      if (w > 0) track.style.setProperty('--mq-dur', (w / {{ pxs }}).toFixed(2) + 's');
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tune); else tune();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(tune);
+  })();
+</script>
+{% endif %}

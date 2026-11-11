@@ -1,0 +1,200 @@
+{# ===== ATTAR CTA BANNER — Luxe promo · gold glow ===== #}
+{% set id = widget.id %}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set title = widget.data.title | safe %}
+{% set subtitle = widget.data.subtitle | safe %}
+{% set image = widget.data.image %}
+{% set imageUrl = image.fileUrl if (image and image.fileUrl) else '' %}
+{# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+{% if not imageUrl %}{% set imageUrl = 'demo-cta.jpg' | assets %}{% endif %}
+{% set hasImage = imageUrl != '' %}
+{% set scrim = widget.data.scrim | default('medium') %}
+{% set bg = widget.data.background | default('charcoal') %}
+{% set showCountdown = widget.data.show_countdown %}
+{% set countdownDate = widget.data.countdown_date | default('2026-12-31 23:59') %}
+{% set cdDaysLabel = widget.data.countdown_days_label | default('يوم') %}
+{% set cdHoursLabel = widget.data.countdown_hours_label | default('ساعة') %}
+{% set cdMinutesLabel = widget.data.countdown_minutes_label | default('دقيقة') %}
+{% set cdSecondsLabel = widget.data.countdown_seconds_label | default('ثانية') %}
+{% set hideOnExpire = widget.data.hide_on_expire if widget.data.hide_on_expire is defined else false %}
+{% set btnText = widget.data.button_text %}
+{% set btnLink = widget.data.button_link | default('/collections') %}
+{% set align = widget.data.text_alignment | default('center') %}
+{% set fullWidth = widget.data.full_width | default(true) %}
+{% set height = widget.data.height | default('medium') %}
+
+{# Dark theme — text is always light on dark #}
+{% if hasImage %}
+  {% set bannerStyle = 'background: var(--color-bg-secondary);' %}
+{% elif bg == 'ivory' %}
+  {% set bannerStyle = 'background: var(--color-bg-primary);' %}
+{% elif bg == 'sand' %}
+  {% set bannerStyle = 'background: var(--color-bg-secondary);' %}
+{% else %}
+  {# charcoal → luxe dark panel with a gold glow #}
+  {% set bannerStyle = 'background: radial-gradient(120% 150% at 50% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, var(--color-bg-tertiary) 34%, var(--color-bg-primary) 100%); border-block: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);' %}
+{% endif %}
+
+{% if align == 'start' %}
+  {% set alignClass = 'items-start text-start' %}
+{% else %}
+  {% set alignClass = 'items-center text-center' %}
+{% endif %}
+
+{% if height == 'small' %}{% set pyClass = 'py-16 max-sm:py-12' %}
+{% elif height == 'large' %}{% set pyClass = 'py-36 max-lg:py-28 max-sm:py-16' %}
+{% else %}{% set pyClass = 'py-24 max-lg:py-20 max-sm:py-14' %}{% endif %}
+
+<style>
+  /* Countdown unit — gold-framed panel */
+  .attar-cta-{{ id }} .attar-cd-box {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    min-width: 74px; padding: 14px 10px;
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+  .attar-cta-{{ id }} .attar-cd-num {
+    font-family: var(--font-heading-en);
+    font-size: clamp(1.9rem, 4vw, 2.9rem); line-height: 1;
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .attar-cta-{{ id }} .attar-cd-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+  html[dir="rtl"] .attar-cta-{{ id }} .attar-cd-label { letter-spacing: 0; text-transform: none; font-size: 12px; }
+  .attar-cta-{{ id }} .attar-cd-sep { align-self: center; color: var(--color-accent); opacity: 0.5; font-size: 1.6rem; line-height: 1; padding-top: 6px; }
+  @media (max-width: 639px) {
+    .attar-cta-{{ id }} .attar-cd-box { min-width: 58px; padding: 11px 6px; }
+    .attar-cta-{{ id }} .attar-cd-sep { display: none; }
+  }
+
+  /* Gold solid CTA button */
+  .attar-cta-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 16px 46px; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; line-height: 1;
+    color: var(--color-bg-primary); background: var(--color-accent);
+    border: 1px solid var(--color-accent); cursor: pointer; text-decoration: none;
+    transition: background 0.35s ease, color 0.35s ease, box-shadow 0.4s ease;
+  }
+  html[dir="rtl"] .attar-cta-btn { letter-spacing: 0.02em; text-transform: none; font-size: 14px; }
+  .attar-cta-btn:hover { background: var(--color-accent-hover); box-shadow: 0 14px 34px -14px color-mix(in srgb, var(--color-accent) 60%, transparent); }
+</style>
+
+<section id="{{ id }}" class="attar-cta-{{ id }}" x-data="ctaBanner_{{ id }}({{ 'true' if showCountdown else 'false' }})" x-show="!hidden" x-cloak>
+  {% if not fullWidth %}<div class="container mx-auto px-6 max-sm:px-4">{% endif %}
+
+  <div class="relative overflow-hidden" style="{{ bannerStyle }} color: var(--color-text-primary);">
+
+    {# ——— Background image + scrim ——— #}
+    {% if hasImage %}
+      <img src="{{ imageUrl }}" alt="{{ title }}" loading="lazy"
+           class="absolute inset-0 w-full h-full object-cover" style="filter: saturate(1.02);"/>
+      {% if scrim == 'soft' %}
+        <div class="absolute inset-0" style="background: linear-gradient(to top, color-mix(in srgb, var(--color-footer) 72%, transparent), color-mix(in srgb, var(--color-footer) 34%, transparent));"></div>
+      {% elif scrim == 'strong' %}
+        <div class="absolute inset-0" style="background: color-mix(in srgb, var(--color-footer) 80%, transparent);"></div>
+      {% elif scrim == 'medium' %}
+        <div class="absolute inset-0" style="background: color-mix(in srgb, var(--color-footer) 62%, transparent);"></div>
+      {% endif %}
+    {% endif %}
+
+    {# ——— Content ——— #}
+    <div class="relative z-10 flex flex-col justify-center gap-6 max-sm:gap-5 {{ alignClass }} {{ pyClass }} px-6 max-sm:px-5 {% if fullWidth %}container mx-auto{% endif %}">
+
+      {% if eyebrow %}
+        <span class="editorial-label">{{ eyebrow }}</span>
+      {% endif %}
+
+      {% if title %}
+        <h2 class="font-heading-ar" style="font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1.12; font-weight: 500; letter-spacing: -0.015em; color: currentColor; max-width: 20ch;">
+          {{ title }}
+        </h2>
+      {% endif %}
+
+      {% if subtitle %}
+        <div class="font-body-ar text-[16px] max-sm:text-[14px] leading-[1.9]"
+             style="color: var(--color-text-secondary); max-width: 52ch; overflow-wrap: break-word;">
+          {{ subtitle }}
+        </div>
+      {% endif %}
+
+      {# ——— Countdown — gold-framed boxes ——— #}
+      {% if showCountdown and countdownDate %}
+        <div class="mt-3">
+          <div x-show="!expired" class="flex items-start gap-3 max-sm:gap-2 {% if align == 'center' %}justify-center{% endif %}">
+            <div class="attar-cd-box">
+              <span class="attar-cd-num" x-text="String(days).padStart(2,'0')">00</span>
+              <span class="attar-cd-label">{{ cdDaysLabel }}</span>
+            </div>
+            <span class="attar-cd-sep">:</span>
+            <div class="attar-cd-box">
+              <span class="attar-cd-num" x-text="String(hours).padStart(2,'0')">00</span>
+              <span class="attar-cd-label">{{ cdHoursLabel }}</span>
+            </div>
+            <span class="attar-cd-sep">:</span>
+            <div class="attar-cd-box">
+              <span class="attar-cd-num" x-text="String(minutes).padStart(2,'0')">00</span>
+              <span class="attar-cd-label">{{ cdMinutesLabel }}</span>
+            </div>
+            <span class="attar-cd-sep">:</span>
+            <div class="attar-cd-box">
+              <span class="attar-cd-num" x-text="String(seconds).padStart(2,'0')">00</span>
+              <span class="attar-cd-label">{{ cdSecondsLabel }}</span>
+            </div>
+          </div>
+          <div x-show="expired" x-cloak class="font-body-ar text-[15px] {% if align == 'center' %}text-center{% endif %}" style="color: var(--color-text-secondary);">
+            {{ t('cta.expired') | default('انتهى العرض') }}
+          </div>
+        </div>
+      {% endif %}
+
+      {# ——— Button ——— #}
+      {% if btnText %}
+        <a href="{{ btnLink }}" class="attar-cta-btn font-body-ar mt-2">
+          {{ btnText }}
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {% if not fullWidth %}</div>{% endif %}
+</section>
+
+{# ——— Countdown Script ——— #}
+<script>
+  function ctaBanner_{{ id }}(enableCountdown) {
+    return {
+      days: 0, hours: 0, minutes: 0, seconds: 0,
+      expired: false,
+      hidden: false,
+      timer: null,
+      init() {
+        if (!enableCountdown) return;
+        var endStr = '{{ countdownDate }}';
+        var target = new Date(String(endStr).replace(' ', 'T')).getTime();
+        if (isNaN(target)) { this.expired = true; return; }
+        var self = this;
+        function tick() {
+          var diff = target - Date.now();
+          if (diff <= 0) {
+            self.days = self.hours = self.minutes = self.seconds = 0;
+            self.expired = true;
+            if ({{ 'true' if hideOnExpire else 'false' }}) self.hidden = true;
+            if (self.timer) clearInterval(self.timer);
+            return;
+          }
+          self.days = Math.floor(diff / 86400000);
+          self.hours = Math.floor((diff % 86400000) / 3600000);
+          self.minutes = Math.floor((diff % 3600000) / 60000);
+          self.seconds = Math.floor((diff % 60000) / 1000);
+        }
+        tick();
+        this.timer = setInterval(tick, 1000);
+      }
+    };
+  }
+</script>

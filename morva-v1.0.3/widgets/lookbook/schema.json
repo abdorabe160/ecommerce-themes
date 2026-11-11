@@ -1,0 +1,68 @@
+{
+  "name": "اللوك بوك (معرض الصور)",
+  "settings": {
+    "index": {
+      "type": "string",
+      "label": { "ar": "رقم القسم", "en": "Section index" },
+      "default": "03"
+    },
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "العنوان الصغير", "en": "Kicker" },
+      "default": "المعرض"
+    },
+    "heading": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Heading" },
+      "default": "من الشارع"
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص زر عرض الكل", "en": "View-all label" },
+      "default": "عرض الكل"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط زر عرض الكل (فارغ لإخفائه)", "en": "View-all link (empty hides it)" },
+      "default": "/shop"
+    },
+    "height": {
+      "type": "range",
+      "label": { "ar": "ارتفاع الشبكة (كمبيوتر)", "en": "Grid height (desktop)" },
+      "default": 520,
+      "min": 380,
+      "max": 760,
+      "step": 10,
+      "unit": "px"
+    },
+    "anchor": {
+      "type": "string",
+      "label": { "ar": "معرّف القسم للروابط (#look)", "en": "Section anchor id (#look)" },
+      "default": "look"
+    }
+  },
+  "blocks": {
+    "look": {
+      "name": "صورة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": { "ar": "الصورة", "en": "Image" }
+        },
+        "caption": {
+          "type": "string",
+          "label": { "ar": "التعليق", "en": "Caption" },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "رابط (اختياري)", "en": "Link (optional)" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الصور", "name": "اللوك بوك (معرض الصور)" }
+  ]
+}

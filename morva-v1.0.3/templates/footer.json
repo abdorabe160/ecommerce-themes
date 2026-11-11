@@ -1,0 +1,45 @@
+{
+  "title": "Footer Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر",
+      "widget": "footer",
+      "settings": {
+        "slogan_1": "طاقة خام",
+        "slogan_2": "مساحة للشغب",
+        "slogan_3": "ارتدِ الضجيج",
+        "slogan_4": "أنت ابن الحي",
+        "logo_mono": true,
+        "brand_text": "قطع خام بطاقة الشارع.",
+        "help_title": "مساعدة",
+        "help_menu": "footer-menu",
+        "brand_title": "تسوّق",
+        "brand_menu": "header-menu",
+        "follow_title": "تابعنا",
+        "social_instagram": "",
+        "social_tiktok": "",
+        "social_youtube": "",
+        "social_snapchat": "",
+        "social_facebook": "",
+        "social_x": "",
+        "social_whatsapp": "",
+        "domain_text": "",
+        "domain_url": "/",
+        "copyright": ""
+      }
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {}
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{# ============================================================================
+   NAKHA 404
+   A dead end is a chance to send the shopper somewhere useful, so this page
+   offers search + the store + optional quick links instead of just an apology.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set links = widget.blocks | default([]) %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default(t('pages.404.title'), true) %}
+{% set message = d.message | default(t('pages.404.message'), true) %}
+{% set showSearch = d.show_search | default(true) %}
+{% set homeUrl = d.home_url | default('/', true) %}
+{% set shopUrl = d.shop_url | default('/shop', true) %}
+
+
+<style>
+  #nakha-404-{{ id }} {
+    background: var(--color-bg-primary);
+    min-height: 68vh;
+    display: flex;
+    align-items: center;
+  }
+
+  .nakha-404-{{ id }}-num {
+    font-family: var(--font-display-en);
+    font-size: clamp(5rem, 18vw, 11rem);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: normal;
+    color: var(--color-appetite-line);
+    user-select: none;
+  }
+
+  .nakha-404-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.28;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-404-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .nakha-404-{{ id }}-title { line-height: 1.4; }
+</style>
+
+
+<section id="nakha-404-{{ id }}" class="nakha-section nakha-glow">
+  <div class="nakha-container">
+    <div class="flex flex-col items-center text-center gap-5 max-w-xl mx-auto">
+
+      <span class="nakha-404-{{ id }}-num" aria-hidden="true">404</span>
+
+      {% if eyebrow %}
+        <span class="nakha-eyebrow">{{ eyebrow }}</span>
+      {% endif %}
+
+      <h1 class="nakha-404-{{ id }}-title">{{ title }}</h1>
+
+      {% if message %}
+        <p class="nakha-lead m-0" style="max-width: 46ch;">{{ message }}</p>
+      {% endif %}
+
+      {# ---- search: the fastest way out of a dead end ---- #}
+      {% if showSearch %}
+        {# Same search bar as the header (.nakha-searchbar) — the old
+           .nakha-search classes had no styles, so the lens sat on its own line. #}
+        <form action="/shop" method="get" class="nakha-searchbar w-full max-w-sm mt-1" role="search">
+          <span class="nakha-searchbar-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7.25"/><path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/>
+            </svg>
+          </span>
+          <input type="search" name="q" class="nakha-searchbar-input"
+                 placeholder="{{ t('pages.shop.search_placeholder') }}"
+                 aria-label="{{ t('pages.search.title') }}" autocomplete="off"/>
+          <button type="submit" class="nakha-searchbar-submit">{{ t('pages.search.title') }}</button>
+        </form>
+      {% endif %}
+
+      <div class="flex items-center gap-3 flex-wrap justify-center mt-1">
+        <a href="{{ shopUrl }}" class="nakha-btn nakha-btn--primary">
+          {{ t('pages.404.browse_shop') }}
+        </a>
+        <a href="{{ homeUrl }}" class="nakha-btn nakha-btn--outline">
+          {{ t('pages.404.back_home') }}
+        </a>
+      </div>
+
+      {# ---- optional quick links ---- #}
+      {% if (links | length) > 0 %}
+        <div class="flex flex-col gap-3 w-full mt-6">
+          <span class="nakha-caption">{{ t('pages.404.try_these') }}</span>
+          <div class="flex items-center gap-2 flex-wrap justify-center">
+            {% for block in links %}
+              {% if block.data.label %}
+                <a href="{{ block.data.url | default('/shop') }}" class="nakha-chip">
+                  {{ block.data.label }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-404-' ~ id, c=d %}

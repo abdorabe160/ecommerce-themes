@@ -1,0 +1,156 @@
+{#
+  ============================================================================
+  MORVA · HERO SLIDER
+  ----------------------------------------------------------------------------
+     ┌─────────────────────────────────────────────────────────────┐
+     │ full-bleed image · gradient from the text side          01  │
+     │                                                  (outline)  │
+     │ — 01 / NEW DROP                                             │
+     │ WEAR THE NOISE                                              │
+     │ text                                                        │
+     │ [ SHOP NOW ]  [ LOOKBOOK ]                                  │
+     ├─────────────────────────────────────────────────────────────┤
+     │ 01 / 03   ==== ---- ----                       ||   <-  ->   │
+     └─────────────────────────────────────────────────────────────┘
+       MOVE FAST  MOVE FAST  MOVE FAST          (optional kinetic strip)
+
+  One block = one slide. Slides are stacked; the next one is revealed with
+  a clip-path wipe in the reading direction (main.js · mvHeroSlider), and
+  the progress bars run off requestAnimationFrame so hover / focus / a
+  hidden tab pause the timer and the bar together.
+  Layout lives in style.css → "12b. HERO SLIDER".
+
+  Demo: with no blocks the three bundled demo slides render (localised);
+  a block with no image borrows a demo image — while settings.demoContent
+  is on — so a fresh store never shows an empty hero.
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+{% set showDemo = settings.demoContent | default(true) %}
+{% set DEMO_IMG = ['demo-banner.jpg', 'demo-look3.jpg', 'demo-video.jpg'] %}
+
+{% set slides = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings) | default({}) %}
+  {% set img = bd.image.fileUrl if bd.image and bd.image.fileUrl else '' %}
+  {% set imgM = bd.image_mobile.fileUrl if bd.image_mobile and bd.image_mobile.fileUrl else '' %}
+  {% if not img and showDemo %}{% set img = DEMO_IMG[loop.index0 % 3] | assets %}{% endif %}
+  {% set _ = slides.push({
+    img: img, imgM: imgM | default(img, true), pos: bd.image_position | default('center'),
+    overlay: bd.overlay if bd.overlay is defined and bd.overlay !== '' else 55,
+    kicker: bd.kicker | default(''), title: bd.title | default(''), text: bd.text | default(''),
+    b1: bd.button_text | default(''), u1: bd.button_url | default('/shop', true),
+    b2: bd.button2_text | default(''), u2: bd.button2_url | default(''),
+    align: bd.align | default('start')
+  }) %}
+{% endfor %}
+{% if (slides | length) == 0 and showDemo %}
+  {% for i in range(1, 4) %}
+    {% set _ = slides.push({
+      img: DEMO_IMG[i - 1] | assets, imgM: DEMO_IMG[i - 1] | assets, pos: 'right' if i == 2 else 'center', overlay: 55,
+      kicker: t('hero.demo_kicker_' ~ i), title: t('hero.demo_title_' ~ i), text: t('hero.demo_text_' ~ i),
+      b1: t('morva.shop_all'), u1: '/shop',
+      b2: t('morva.lookbook') if i == 1 else '', u2: '#look', align: 'start'
+    }) %}
+  {% endfor %}
+{% endif %}
+{% set n = slides | length %}
+{% set autoplay = d.autoplay | default(true) %}
+{% set interval = d.interval | default(6, true) %}
+
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{% if n > 0 %}
+<section id="mv-hs-{{ id }}" class="mv-hs mv-hs--{{ d.height | default('full') }}"
+         aria-roledescription="carousel" aria-label="{{ t('hero.label') }}"
+         x-data="mvHeroSlider({ autoplay: {{ 'true' if autoplay else 'false' }}, interval: {{ interval }} })"
+         @keydown.left="dirKey(-1)" @keydown.right="dirKey(1)"
+         @mouseenter="hold = true" @mouseleave="hold = false"
+         @focusin="hold = true" @focusout="hold = false">
+
+  {#- The first slide's title is the page's H1. Without one the page still needs an H1:
+      a later slide's title sits in an inert slide, so use the store's name, for readers only. -#}
+  {% if not slides[0].title %}<h1 class="mv-sr">{{ store.name | default(t('common.home'), true) }}</h1>{% endif %}
+
+  <div class="mv-hs-stage" x-ref="stage">
+    {% for s in slides %}
+      {% set i = loop.index0 %}
+      <div class="mv-hs-slide mv-hs-slide--{{ s.align }}{{ ' is-active' if i == 0 }}" data-hs-slide
+           role="group" aria-roledescription="slide" aria-label="{{ pad(i + 1) }} / {{ pad(n) }}"
+           {% if i > 0 %}aria-hidden="true" inert{% endif %}
+           style="--hs-ov: {{ s.overlay / 100 }}; --hs-pos: {{ s.pos }};">
+
+        <div class="mv-hs-media">
+          {% if s.img %}
+            <picture>
+              {% if s.imgM != s.img %}<source media="(max-width: 880px)" srcset="{{ s.imgM }}"/>{% endif %}
+              <img src="{{ s.img }}" alt="{{ s.title | replace('<br', ' <br') | striptags }}" decoding="async"
+                   {% if i == 0 %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+            </picture>
+          {% else %}
+            {% ui "topo.njk" %}
+          {% endif %}
+        </div>
+
+        {% if d.show_index | default(true) %}
+          <span class="mv-hs-num" aria-hidden="true">{{ pad(i + 1) }}</span>
+        {% endif %}
+
+        <div class="mv-hs-content">
+          {% if s.kicker %}<div class="mv-kicker mv-hs-kicker" style="--d: 0">— {{ pad(i + 1) }} / {{ s.kicker }}</div>{% endif %}
+          {% if s.title %}
+            {% if i == 0 %}<h1 class="mv-hs-title" style="--d: 1">{{ s.title }}</h1>
+            {% else %}<h2 class="mv-hs-title" style="--d: 1">{{ s.title }}</h2>{% endif %}
+          {% endif %}
+          {% if s.text %}<p class="mv-hs-text" style="--d: 2">{{ s.text }}</p>{% endif %}
+          {% if s.b1 or s.b2 %}
+            <div class="mv-hs-ctas" style="--d: 3">
+              {% if s.b1 %}<a href="{{ s.u1 }}" class="mv-btn">{{ s.b1 }} <span class="mv-arrow" aria-hidden="true">→</span></a>{% endif %}
+              {% if s.b2 and s.u2 %}<a href="{{ s.u2 }}" class="mv-btn mv-btn--ghost mv-hs-ghost">{{ s.b2 }}</a>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if n > 1 %}
+    <div class="mv-hs-bar">
+      <div class="mv-hs-count" aria-hidden="true">
+        <span class="mv-hs-cur" x-text="pad(idx + 1)">01</span><span class="sep">/</span><span class="tot">{{ pad(n) }}</span>
+      </div>
+
+      <div class="mv-hs-progress">
+        {% for s in slides %}
+          <button type="button" class="mv-hs-seg{{ ' is-active' if loop.first }}" data-hs-seg
+                  @click="go({{ loop.index0 }})" aria-label="{{ pad(loop.index) }} / {{ pad(n) }}{% if s.title %} — {{ s.title | replace('<br', ' <br') | striptags }}{% endif %}">
+            <span class="mv-hs-seg-fill"></span>
+          </button>
+        {% endfor %}
+      </div>
+
+      <div class="mv-hs-nav">
+        {% if autoplay %}
+          <button type="button" class="mv-hs-btn" @click="toggle()" :aria-label="playing ? {{ t('hero.pause') | dump }} : {{ t('hero.play') | dump }}"
+                  aria-label="{{ t('hero.pause') }}">
+            <svg x-show="playing" width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><rect width="3" height="12"/><rect x="7" width="3" height="12"/></svg>
+            <svg x-show="!playing" x-cloak width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true" class="mv-hs-play"><path d="M0 0l10 6-10 6z"/></svg>
+          </button>
+        {% endif %}
+        {# DOM order is always [prev, next]; RTL flex flips them visually and
+           .mv-arrow mirrors the glyphs — same rule as the rest of the theme. #}
+        <button type="button" class="mv-hs-btn" @click="prev()" aria-label="{{ t('common.prev') }}"><span class="mv-arrow">←</span></button>
+        <button type="button" class="mv-hs-btn" @click="next()" aria-label="{{ t('common.next') }}"><span class="mv-arrow">→</span></button>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+{% set stripText = d.strip_text | default('') | trim %}
+{% if stripText %}
+  {% set stripSpeed = d.strip_speed | default(28) %}
+  <div class="mv-hs-strip">{% ui "kinetic.njk", text=stripText, speed=stripSpeed %}</div>
+{% endif %}
+{% endif %}

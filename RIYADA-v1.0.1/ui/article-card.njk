@@ -1,0 +1,64 @@
+{# ============================================================================
+   RIYADA ARTICLE CARD — shared by blogs-page, blog-page and article-page
+   Locals: article (required) · show_date · show_excerpt · compact
+   No <style> block: it repeats, so all styling lives in style.css.
+   ========================================================================= #}
+
+{% set a = data.article %}
+
+{% if a %}
+  {# the cover arrives as { fileUrl }, as imageUrl, or as a plain string #}
+  {% if a.image and a.image.fileUrl %}{% set img = a.image.fileUrl %}
+  {% elif a.imageUrl %}{% set img = a.imageUrl %}
+  {% elif a.image and a.image is string %}{% set img = a.image %}
+  {% else %}{% set img = '' %}{% endif %}
+  {% set excerpt = a.excerpt or a.description %}
+  {# {% ui %} locals can arrive as strings — "false" is truthy, so compare explicitly #}
+  {% set showDate = true if data.show_date is not defined else (data.show_date != false and data.show_date != 'false') %}
+  {% set showExcerpt = true if data.show_excerpt is not defined else (data.show_excerpt != false and data.show_excerpt != 'false') %}
+  {% set compact = data.compact | default(false) %}
+  {% set _h = a.handle or a.slug %}
+  {% set url = ('/articles/' ~ _h) if _h else '/blogs' %}
+
+<a href="{{ url }}" data-date="{{ a.publishedAt or a.createdAt or '' }}" class="riyada-acard{{ ' riyada-acard--compact' if compact }}">
+
+  <div class="riyada-acard-media">
+    {% if img %}
+      <img src="{{ img }}" alt="{{ a.title }}" loading="lazy"/>
+    {% else %}
+      <span class="riyada-noimg-art" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/>
+        </svg>
+      </span>
+    {% endif %}
+
+    {% if a.category and a.category is string %}
+      <span class="riyada-acard-cat">{{ a.category }}</span>
+    {% endif %}
+  </div>
+
+  <div class="riyada-acard-body">
+    {% if showDate and a.createdAt %}
+      {# formatted client-side: Nunjucks has no date filter #}
+      <time class="riyada-caption riyada-num" x-data x-init="$el.textContent =
+              new Date('{{ a.createdAt }}').toLocaleDateString('{{ localization.language | default('ar', true) }}',
+                { year: 'numeric', month: 'long', day: 'numeric' })">{{ a.createdAt }}</time>
+    {% endif %}
+
+    <h3 class="riyada-acard-title line-clamp-2">{{ a.title }}</h3>
+
+    {% if showExcerpt and excerpt %}
+      <p class="riyada-acard-excerpt line-clamp-2">{{ excerpt | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('<br>', ' ') | striptags }}</p>
+    {% endif %}
+
+    <span class="riyada-link mt-auto pt-1">
+      {{ t('pages.blog.read_more') }}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+    </span>
+  </div>
+</a>
+{% endif %}

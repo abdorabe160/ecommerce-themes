@@ -1,0 +1,26 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# البلوك بلا عنوان لا يُعرض #}
+{% set blocks = [] %}
+{% for b in widget.blocks | default([]) %}{% if b.settings and (b.settings['title' + L] or b.settings.title) and blocks.push(b) %}{% endif %}{% endfor %}
+{% if blocks | length %}
+<section class="lg-section !pb-0">
+  <div class="lg-container">
+    <div class="lg-feat-grid grid grid-cols-2 gap-3 md:gap-4 {% if wd.columns == '3' %}lg:grid-cols-3{% else %}lg:grid-cols-4{% endif %}">
+      {% for block in blocks %}
+        <div class="glass flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 md:p-5">
+          <span class="shrink-0 w-11 h-11 rounded-2xl grid place-items-center text-primary bg-primary/10 border border-primary/20">
+            {% ui "icon.njk", name=block.settings.icon | default('bolt'), cls="w-5 h-5" %}
+          </span>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm md:text-base">{{ (block.settings['title' + L] or block.settings.title) }}</p>
+            {% if (block.settings['text' + L] or block.settings.text) %}<p class="text-xs md:text-sm text-muted mt-0.5">{{ (block.settings['text' + L] or block.settings.text) }}</p>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

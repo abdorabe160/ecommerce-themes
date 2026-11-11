@@ -1,0 +1,455 @@
+<!-- =========================================================
+     QMRA THEME (NUNJUCKS) - FEATURED PRODUCTS GRID WIDGET
+     شبكة منتجات مميزة: ظهور متتابع مع السكرول + منتج بارز + فلترة بالتصنيف
+     الكروت من ui/blk-product-card.njk، والسلة شغالة من main.js
+     ========================================================= -->
+{% set s = widget.data or widget.settings or {} %}
+{% set products = s.products %}
+{% set limit = (s.products_limit | default(8)) | int %}
+{% set cols = s.columns_desktop | default('4') %}
+{% set isSpotlight = (s.layout | default('spotlight')) == 'spotlight' %}
+{% set hasProducts = products and (products | length) > 0 %}
+{# الإعدادات الـ boolean بتبدأ true، فبنخفي بس لو اتقفلت صراحةً #}
+{% set hideQuickView = s.show_quick_view === false %}
+{% set hideRating = s.show_rating === false %}
+{% set hideStock = s.show_stock_urgency === false %}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المتجر مكان التجريبية #}
+{# الافتراضي: المنتجات الافتراضية بتاعة الثيم من غير أي طلب للسيرفر. منتجات المتجر بتتجاب بس لو التاجر فعّل "اعرض منتجات المتجر" (use_store_products؛ الاسم القديم load_store_products اتساب عشان القيمة المحفوظة منه ماترجّعش منتجات المتجر) #}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المتجر مكان التجريبية دايمًا. التجريبية بتفضل بس في معاينة البيلدر أو لو التاجر فعّل «منتجات تجريبية» (HOME-11)، وغير كده السكشن بيختفي لو المتجر فاضي #}
+{% set fetchStore = not hasProducts %}
+
+{# المنتجات التجريبية بنفس شكل منتج المنصة (الأسعار بأصغر وحدة)، بتظهر في المحرر لحد ما تختار منتجات #}
+{% if not hasProducts %}
+  {% set products = [
+    { _id: 'demo-1', title: t('demo.prod_pro_fit_compression_tee'), slug: "demo-t1", pricing: { price: 450, compareAtPrice: 600 }, category: { title: t('demo.cat_clothing') }, quantity: 3, tags: ['hot'], reviewsCount: 24, averageRating: 5, images: [{ fileUrl: "https://images.pexels.com/photos/30451501/pexels-photo-30451501.jpeg?auto=compress&cs=tinysrgb&w=900" }, { fileUrl: "https://images.pexels.com/photos/4325446/pexels-photo-4325446.jpeg?auto=compress&cs=tinysrgb&w=900" }] },
+    { _id: 'demo-2', title: t('demo.prod_heavy_duty_training_shoe'), slug: "demo-s1", pricing: { price: 1290, compareAtPrice: 1550 }, category: { title: t('demo.cat_shoes') }, quantity: 12, reviewsCount: 11, averageRating: 4, images: [{ fileUrl: "https://images.pexels.com/photos/9501459/pexels-photo-9501459.jpeg?auto=compress&cs=tinysrgb&w=600" }, { fileUrl: "https://images.pexels.com/photos/2385477/pexels-photo-2385477.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-3', title: t('demo.prod_flex_jogger_pants'), slug: "demo-p1", pricing: { price: 550 }, category: { title: t('demo.cat_clothing') }, quantity: 8, images: [{ fileUrl: "https://images.pexels.com/photos/11327771/pexels-photo-11327771.jpeg?auto=compress&cs=tinysrgb&w=600" }, { fileUrl: "https://images.pexels.com/photos/5602654/pexels-photo-5602654.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-4', title: t('demo.prod_waterproof_backpack'), slug: "demo-a1", pricing: { price: 380, compareAtPrice: 480 }, category: { title: t('demo.cat_accessories') }, quantity: 2, images: [{ fileUrl: "https://images.pexels.com/photos/12738154/pexels-photo-12738154.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-5', title: t('demo.prod_pro_boxing_gloves'), slug: "demo-a2", pricing: { price: 220 }, category: { title: t('demo.cat_accessories') }, quantity: 20, reviewsCount: 7, averageRating: 5, images: [{ fileUrl: "https://images.pexels.com/photos/4790424/pexels-photo-4790424.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-6', title: t('demo.prod_blood_oversized_hoodie'), slug: "demo-h1", pricing: { price: 690, compareAtPrice: 850 }, category: { title: t('demo.cat_clothing') }, quantity: 5, images: [{ fileUrl: "https://images.pexels.com/photos/17883716/pexels-photo-17883716.jpeg?auto=compress&cs=tinysrgb&w=600" }, { fileUrl: "https://images.pexels.com/photos/5899204/pexels-photo-5899204.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-7', title: t('demo.prod_air_light_running_sneaker'), slug: "demo-s2", pricing: { price: 990 }, category: { title: t('demo.cat_shoes') }, quantity: 9, images: [{ fileUrl: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=600" }] }
+  ] %}
+{% endif %}
+
+<section
+  class="blk-section blk-fg{% if isSpotlight %} blk-fg--spotlight{% endif %}"
+  id="blkFg-{{ widget.id }}"
+  {% if not hasProducts %}data-fg-demo{% endif %}>
+  <div class="blk-container">
+
+    <div class="blk-fg-head">
+      <div class="blk-fg-title-wrap">
+        {% if s.badge_text %}
+          <span class="blk-badge-glow blk-fg-reveal" style="--d: 0;">
+            <span class="blk-badge-dot"></span>
+            {% ui "blk-t.njk", text=s.badge_text %}
+          </span>
+        {% endif %}
+        <h2 class="blk-section-title blk-fg-reveal" style="--d: 1;">{% ui "blk-t.njk", text=s.title, key="defaults.featured_title" %}</h2>
+        {% if s.subtitle %}
+          <p class="blk-fg-sub blk-fg-reveal" style="--d: 2;">{% ui "blk-t.njk", text=s.subtitle, html=true %}</p>
+        {% endif %}
+      </div>
+
+      {# التابات بتتبني بالـ JS من تصنيفات الكروت، ولو أقل من تصنيفين بتختفي #}
+      {% if s.enable_tabs !== false %}
+        <div class="blk-tabs-wrapper blk-fg-reveal" style="--d: 3;" hidden>
+          <div class="blk-tabs" role="tablist" aria-label="{{t('collection.filter_products')}}" data-all-label="{{t('common.all')}}">
+            <div class="blk-tab-indicator"></div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="blk-fg-grid{% if fetchStore %} blk-store-loading{% endif %}" style="--fg-cols: {{ cols }};"
+      {% if fetchStore %}
+        data-blk-store-products data-limit="{{ limit }}" data-sort="{{ s.store_sort | default('rating-desc') }}"
+        data-item-class="blk-fg-item" {% if isSpotlight %}data-first-class="blk-fg-spot"{% endif %}
+        {% if hideQuickView %}data-hide-quickview{% endif %} {% if hideRating %}data-hide-rating{% endif %} {% if hideStock %}data-hide-stock{% endif %}
+      {% endif %}>
+      {% for product in products %}
+        {% if loop.index <= limit %}
+          <div
+            class="blk-fg-item{% if isSpotlight and loop.first %} blk-fg-spot{% endif %}"
+            data-category="{{ product.category.title | default('') }}"
+            style="--i: {{ loop.index0 }};">
+            {% ui "blk-product-card.njk", product=product, hide_quick_view=hideQuickView, hide_rating=hideRating, hide_stock=hideStock %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if s.view_all_text | default('عرض كل المنتجات') %}
+      <div class="blk-fg-more blk-fg-reveal" style="--d: 4;">
+        <a href="{{ s.view_all_url | default('/collections') }}" class="blk-btn blk-btn-outline blk-btn-pulse">
+          {% ui "blk-t.njk", text=s.view_all_text, key="defaults.featured_view_all" %}
+          <svg class="blk-btn-icon blk-fg-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<style>
+  .blk-fg {
+    --fg-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    background: var(--blk-bg);
+  }
+
+  /* توهج أحمر خفيف ورا الشبكة */
+  .blk-fg::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    inset-inline-end: -10%;
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--blk-accent) 14%, transparent), transparent 65%);
+    filter: blur(20px);
+    pointer-events: none;
+    animation: blkOrbFloat 14s ease-in-out infinite;
+  }
+
+  .blk-fg > .blk-container { position: relative; }
+
+  /* ---------- Header ---------- */
+  .blk-fg-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .blk-fg-title-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .blk-fg-sub {
+    margin: 0;
+    max-width: 460px;
+  }
+
+  /* ---------- Grid ---------- */
+  .blk-fg-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--fg-cols, 4), minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .blk-fg-item {
+    position: relative;
+    min-width: 0;
+  }
+
+  .blk-fg-item[hidden] { display: none; }
+
+  /* الكارت هنا مش flex item زي السلايدر */
+  .blk-fg .blk-prod-card {
+    flex: none;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blk-fg .blk-prod-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blk-fg .blk-prod-footer { margin-top: auto; }
+
+  /* ---------- Spotlight: أول منتج بياخد 2×2 ---------- */
+  .blk-fg--spotlight .blk-fg-spot {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .blk-fg-spot .blk-prod-media {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 380px;
+  }
+
+  .blk-fg-spot .blk-prod-title { font-size: clamp(18px, 2vw, 24px); }
+  .blk-fg-spot .blk-price-current { font-size: 22px; }
+
+  /* إطار نيون بيلف حوالين المنتج البارز */
+  .blk-fg-spot .blk-prod-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent 30%, var(--blk-accent-light) 50%, transparent 70%) 0 0 / 300% 300%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: blkFgBorder 4s linear infinite;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  @keyframes blkFgBorder {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* وقت الفلترة كل الكروت بنفس الحجم */
+  .blk-fg-grid.is-filtered .blk-fg-item {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .blk-fg-grid.is-filtered .blk-fg-spot .blk-prod-media {
+    flex: none;
+    aspect-ratio: 1 / 1.15;
+    min-height: 0;
+  }
+
+  /* ---------- View all ---------- */
+  .blk-fg-more {
+    display: flex;
+    justify-content: center;
+    margin-top: 44px;
+  }
+
+  .blk-fg-more .blk-btn:hover .blk-fg-arrow { transform: translateX(-4px); }
+  [dir="ltr"] .blk-fg-arrow { transform: scaleX(-1); }
+  [dir="ltr"] .blk-fg-more .blk-btn:hover .blk-fg-arrow { transform: scaleX(-1) translateX(-4px); }
+
+  /* ---------- Scroll reveal ----------
+     المحتوى ظاهر دايمًا (مفيش opacity: 0): طلعة خفيفة بس، بتبدأ قبل ما السكشن يوصل */
+  .blk-fg.is-armed .blk-fg-reveal,
+  .blk-fg.is-armed .blk-fg-item {
+    transform: translateY(24px);
+  }
+
+  .blk-fg.is-visible .blk-fg-reveal,
+  .blk-fg.is-visible .blk-fg-item {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s var(--fg-ease), transform 0.8s var(--fg-ease);
+  }
+
+  .blk-fg.is-visible .blk-fg-reveal { transition-delay: calc(var(--d, 0) * 0.12s); }
+  .blk-fg.is-visible .blk-fg-item   { transition-delay: calc(0.25s + min(var(--i, 0), 8) * 0.09s); }
+
+  /* مسحة نيون على كل كارت أول ما يظهر */
+  .blk-fg .blk-prod-card::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    inset-inline: 0;
+    height: 100%;
+    background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--blk-accent) 28%, transparent) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  .blk-fg.is-visible .blk-prod-card::after {
+    animation: blkScanline 1.2s var(--fg-ease) forwards;
+    animation-delay: calc(0.45s + min(var(--i, 0), 8) * 0.09s);
+  }
+
+  /* ---------- Filter animations ---------- */
+  .blk-fg .blk-fg-item.is-out {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    transition-delay: 0s;
+  }
+
+  .blk-fg .blk-fg-item.is-pop {
+    animation: blkFgPop 0.55s var(--fg-ease) backwards;
+    animation-delay: calc(var(--o, 0) * 0.06s);
+  }
+
+  @keyframes blkFgPop {
+    from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1100px) {
+    .blk-fg-grid { --fg-cols: 3 !important; }
+  }
+
+  @media (max-width: 768px) {
+    .blk-fg-head { flex-direction: column; align-items: stretch; margin-bottom: 24px; }
+    .blk-fg-grid { --fg-cols: 2 !important; gap: 14px; }
+    .blk-fg .blk-prod-details { padding: 12px; }
+    .blk-fg .blk-price-current { font-size: 15px; }
+    .blk-fg .blk-prod-actions .blk-btn-quickview { display: none; }
+
+    .blk-fg--spotlight .blk-fg-spot { grid-row: auto; }
+    /* المنتج البارز بياخد الصف كله، فلو الباقي عدد فردي آخر كارت بياخد الصف كله كمان بدل ما يفضل لوحده */
+    .blk-fg--spotlight .blk-fg-grid:not(.is-filtered) .blk-fg-item:last-child:nth-child(even) { grid-column: 1 / -1; }
+    .blk-fg--spotlight .blk-fg-grid:not(.is-filtered) .blk-fg-item:last-child:nth-child(even) .blk-prod-media { aspect-ratio: 16 / 10; }
+    .blk-fg-spot .blk-prod-media { flex: none; aspect-ratio: 4 / 3; min-height: 0; }
+    .blk-fg .blk-fg-spot .blk-price-current { font-size: 18px; }
+    .blk-fg-more { margin-top: 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blk-fg.is-armed .blk-fg-reveal,
+    .blk-fg.is-armed .blk-fg-item { opacity: 1; transform: none; }
+    .blk-fg .blk-prod-card::after,
+    .blk-fg-spot .blk-prod-card::before { animation: none; }
+  }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('blkFg-{{ widget.id }}');
+  if (!root || root.hasAttribute('data-fg-ready')) return;
+  root.setAttribute('data-fg-ready', '');
+
+  var grid = root.querySelector('.blk-fg-grid');
+  
+  /* المنتجات التجريبية: main.js بيعرض رسالة بدل ما يكلّم السيرفر */
+  if (root.hasAttribute('data-fg-demo')) {
+    root.querySelectorAll('.blk-prod-card').forEach(function (card) {
+      card.setAttribute('data-dummy', '');
+      card.removeAttribute('data-url');
+      // اللينك بيفتح صفحة المنتج التجريبي للمعاينة (pages.js بيعرضه من الكتالوج التجريبي)
+      // اللينك /shop?product=demo-xx: صفحة الشوب بتعرف إنه منتج تجريبي وبتعرضه من الكتالوج
+    });
+    root.addEventListener('click', function (e) {
+      if (e.target.closest('.blk-prod-card a[href="#"]')) e.preventDefault();
+    });
+  }
+
+  /* ===== 1) Scroll reveal ===== */
+  if ('IntersectionObserver' in window) {
+    root.classList.add('is-armed');
+    var io = new IntersectionObserver(function (entries) {
+      if (!entries.some(function (e) { return e.isIntersecting; })) return;
+      root.classList.add('is-visible');
+      io.disconnect();
+    }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
+    io.observe(root);
+  }
+
+  /* ===== 2) Category tabs ===== */
+  // بتتبني من تصنيفات الكروت، وبتتعاد لما منتجات المتجر توصل (blk:products-loaded)
+  var tabsWrap = root.querySelector('.blk-tabs-wrapper');
+  var tabs = tabsWrap && tabsWrap.querySelector('.blk-tabs');
+  var indicator = tabs && tabs.querySelector('.blk-tab-indicator');
+  var active = null;
+  var hideTimer;
+
+  function getItems() {
+    return Array.prototype.slice.call(grid.querySelectorAll('.blk-fg-item'));
+  }
+
+  // offsetLeft محسوب من شمال .blk-tabs في RTL و LTR زي السلايدر
+  function moveIndicator(tab) {
+    if (!tab) return;
+    indicator.style.width = tab.offsetWidth + 'px';
+    indicator.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+  }
+
+  function buildTabs() {
+    if (!tabsWrap) return;
+    tabs.querySelectorAll('.blk-tab-btn').forEach(function (b) { b.remove(); });
+    grid.classList.remove('is-filtered');
+    getItems().forEach(function (item) { item.hidden = false; item.classList.remove('is-out', 'is-pop'); });
+
+    var cats = [];
+    getItems().forEach(function (item) {
+      var c = item.getAttribute('data-category');
+      if (c && cats.indexOf(c) === -1) cats.push(c);
+    });
+
+    if (cats.length < 2) {
+      tabsWrap.hidden = true;
+      active = null;
+      return;
+    }
+
+    ['all'].concat(cats).forEach(function (cat, idx) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'blk-tab-btn' + (idx === 0 ? ' is-active' : '');
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+      btn.setAttribute('data-tab', cat);
+      btn.textContent = idx === 0 ? (tabs.getAttribute('data-all-label') || 'All') : cat;
+      tabs.insertBefore(btn, indicator);
+    });
+    tabsWrap.hidden = false;
+    active = tabs.querySelector('.blk-tab-btn.is-active');
+    requestAnimationFrame(function () { moveIndicator(active); });
+  }
+
+  if (tabsWrap) {
+    buildTabs();
+    window.addEventListener('resize', function () { moveIndicator(active); });
+
+    tabs.addEventListener('click', function (e) {
+      var tab = e.target.closest('.blk-tab-btn');
+      if (!tab || tab === active) return;
+
+      active.classList.remove('is-active');
+      active.setAttribute('aria-selected', 'false');
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+      active = tab;
+      moveIndicator(tab);
+
+      var filter = tab.getAttribute('data-tab');
+      var matches = function (item) {
+        return filter === 'all' || item.getAttribute('data-category') === filter;
+      };
+      var items = getItems();
+
+      // الكروت اللي مش هتفضل بتختفي بفيد، وبعدها الشبكة بتتعاد ترتيبها
+      items.forEach(function (item) {
+        if (!matches(item) && !item.hidden) item.classList.add('is-out');
+      });
+
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        grid.classList.toggle('is-filtered', filter !== 'all');
+        var order = 0;
+        items.forEach(function (item) {
+          item.classList.remove('is-out', 'is-pop');
+          if (matches(item)) {
+            item.hidden = false;
+            item.style.setProperty('--o', order++);
+            void item.offsetWidth; // عشان الأنيميشن يتعاد
+            item.classList.add('is-pop');
+          } else {
+            item.hidden = true;
+          }
+        });
+        markLone();
+      }, 220);
+    });
+  }
+
+  /* وقت الفلترة العدد بيتغير: آخر كارت ظاهر لوحده في سطره بياخد السطر */
+  function markLone() {
+    var shown = getItems().filter(function (item) { item.classList.remove('is-lone'); return !item.hidden; });
+    if (!grid.classList.contains('is-filtered') || shown.length < 2) return;
+    var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+    if (cols > 1 && shown.length % cols === 1) shown[shown.length - 1].classList.add('is-lone');
+  }
+  window.addEventListener('resize', markLone);
+
+  /* ===== 3) منتجات المتجر وصلت (pages.js بدّل المنتجات التجريبية) ===== */
+  grid.addEventListener('blk:products-loaded', function () {
+    root.removeAttribute('data-fg-demo');
+    buildTabs();
+  });
+})();
+</script>

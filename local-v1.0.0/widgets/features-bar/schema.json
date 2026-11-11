@@ -1,0 +1,353 @@
+{
+  "name": "شريط المزايا",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان (اختياري)",
+        "en": "Heading (optional)"
+      },
+      "default": ""
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "شكل العنصر",
+        "en": "Item layout"
+      },
+      "default": "inline",
+      "options": [
+        {
+          "value": "inline",
+          "label": {
+            "ar": "الأيقونة بجانب النص",
+            "en": "Icon beside the text"
+          }
+        },
+        {
+          "value": "stacked",
+          "label": {
+            "ar": "الأيقونة فوق النص — في المنتصف",
+            "en": "Icon above the text — centred"
+          }
+        }
+      ]
+    },
+    "dividers": {
+      "type": "boolean",
+      "label": {
+        "ar": "خطوط فاصلة رفيعة أعلى وأسفل وبين العناصر",
+        "en": "Hairlines above, below and between items"
+      },
+      "default": true
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "none",
+      "options": [
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "لون دافئ فاتح",
+            "en": "Soft warm tint"
+          }
+        }
+      ]
+    },
+    "icon_size": {
+      "type": "range",
+      "label": {
+        "ar": "حجم الأيقونة",
+        "en": "Icon size"
+      },
+      "min": 20,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين والأيقونات",
+        "en": "Headings and icons"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخطوط",
+        "en": "Lines colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "truck",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون أيقونة",
+                "en": "No icon"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة نبات — نباتي",
+                "en": "Leaf — vegan"
+              }
+            },
+            {
+              "value": "no-gluten",
+              "label": {
+                "ar": "خالٍ من الجلوتين",
+                "en": "Gluten-free"
+              }
+            },
+            {
+              "value": "corn",
+              "label": {
+                "ar": "ذرة",
+                "en": "Corn"
+              }
+            },
+            {
+              "value": "meat",
+              "label": {
+                "ar": "لحم — كيتو",
+                "en": "Meat — keto"
+              }
+            },
+            {
+              "value": "grain",
+              "label": {
+                "ar": "حبوب",
+                "en": "Grain"
+              }
+            },
+            {
+              "value": "fish",
+              "label": {
+                "ar": "سمك",
+                "en": "Fish"
+              }
+            },
+            {
+              "value": "milk",
+              "label": {
+                "ar": "حليب",
+                "en": "Milk"
+              }
+            },
+            {
+              "value": "egg",
+              "label": {
+                "ar": "بيض",
+                "en": "Egg"
+              }
+            },
+            {
+              "value": "apple",
+              "label": {
+                "ar": "تفاح — فواكه",
+                "en": "Apple — fruit"
+              }
+            },
+            {
+              "value": "carrot",
+              "label": {
+                "ar": "جزر — خضار",
+                "en": "Carrot — vegetables"
+              }
+            },
+            {
+              "value": "bread",
+              "label": {
+                "ar": "خبز",
+                "en": "Bread"
+              }
+            },
+            {
+              "value": "coffee",
+              "label": {
+                "ar": "قهوة",
+                "en": "Coffee"
+              }
+            },
+            {
+              "value": "cheese",
+              "label": {
+                "ar": "جبن",
+                "en": "Cheese"
+              }
+            },
+            {
+              "value": "leaf-circle",
+              "label": {
+                "ar": "عضوي",
+                "en": "Organic"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "توصيل",
+                "en": "Delivery"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "ضمان",
+                "en": "Guarantee"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب",
+                "en": "Heart"
+              }
+            },
+            {
+              "value": "recycle",
+              "label": {
+                "ar": "إعادة تدوير",
+                "en": "Recycle"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            }
+          ]
+        },
+        "custom_icon": {
+          "type": "media",
+          "label": {
+            "ar": "أو أيقونتك (SVG/PNG) — تحل محل الأيقونة أعلاه",
+            "en": "Or your own icon (SVG/PNG) — replaces the one above"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "سطر وصفي",
+            "en": "Description line"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري)",
+            "en": "Link (optional)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "شريط المزايا"
+    }
+  ]
+}

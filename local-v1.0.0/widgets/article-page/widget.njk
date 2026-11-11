@@ -1,0 +1,164 @@
+{# ============================================================================
+   LOCAL · ARTICLE PAGE — /articles/<handle>
+   ----------------------------------------------------------------------------
+   One post: title, meta, hero, prose body, tags, share, then related articles.
+
+   The measure is deliberately narrow (~68ch). An article set to the shop's
+   full 1440px would run 200 characters a line and become unreadable — this is
+   the one place in the theme that does not use the wide container.
+
+   Related cards are ui/article-card.njk, the same `.lc-post-*` object used
+   everywhere else. Styling: style.css → "15.27 BLOG".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set a = context.article | default({}) %}
+{% set related = context.related_articles or context.related or a.relatedArticles or a.related or [] %}
+
+{% set showHero = d.show_hero | default(true) %}
+{% set showMeta = d.show_meta | default(true) %}
+{% set showShare = d.show_share | default(true) %}
+{% set showTags = d.show_tags | default(true) %}
+{% set showRelated = d.show_related | default(true) %}
+{% set relatedTitle = d.related_title if (d.related_title | default('', true) | trim | length) > 0 else t('pages.blog.related_articles') %}
+{% set relatedLimit = d.related_limit | default(3) %}
+
+{% set heroImg = a.image.fileUrl or a.image.url or a.imageUrl if (a.image or a.imageUrl) else '' %}
+{% if a.image is string %}{% set heroImg = a.image %}{% endif %}
+{% set articleBody = a.content or a.description %}
+{% set blogHandle = a.blog.handle | default(a.blog.slug, true) if a.blog else '' %}
+{% set backUrl = ('/blogs/' ~ blogHandle) if blogHandle else '/blogs' %}
+
+
+<article id="lc-article-{{ id }}" class="lc-article"
+         x-data="{ copied: false,
+                   async share() {
+                     var url = window.location.href;
+                     if (navigator.share) {
+                       try { await navigator.share({ title: document.title, url: url }); return; }
+                       catch (e) { /* dismissed — fall through to copy */ }
+                     }
+                     try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+                     this.copied = true;
+                     setTimeout(() => { this.copied = false; }, 2000);
+                   } }">
+
+  <div class="lc-container lc-container--narrow">
+
+    <nav class="lc-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <a href="{{ backUrl }}">{{ a.blog.title | default(t('pages.blog.title'), true) }}</a>
+    </nav>
+
+    <header class="lc-article-head">
+      {# `category` is the whole BlogCategory document, not a string — see the
+         same note in ui/article-card.njk. Its name is `.title`. #}
+      {% set cat = a.category %}
+      {% set catName = '' %}
+      {% if cat %}
+        {% set catName = cat.title | default(cat.name) | default('', true) %}
+        {% if not catName and (cat | string) != '[object Object]' %}
+          {% set catName = cat | string %}
+        {% endif %}
+      {% endif %}
+      {% if catName %}<span class="lc-blog-eyebrow">{{ catName }}</span>{% endif %}
+
+      <h1 class="lc-article-title">{{ a.title | default(t('pages.blog.title'), true) }}</h1>
+
+      {% if showMeta and (a.createdAt or a.views) %}
+        <div class="lc-article-meta">
+          {% if a.createdAt %}
+            {# ISO stays in `datetime` for machines; localiseDates() in main.js
+               rewrites the visible text with the storefront's language. #}
+            <time datetime="{{ a.createdAt }}" data-lc-date>{{ (a.createdAt | string).slice(0, 10) }}</time>
+          {% endif %}
+          {% if a.createdAt and a.views %}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/>
+            </svg>
+          {% endif %}
+          {% if a.views %}
+            <span><bdi>{{ a.views }}</bdi> {{ t('pages.blog.views') }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </header>
+  </div>
+
+  {# The hero breaks the measure on purpose — the photograph gets the page
+     width while the words keep their column. #}
+  {% if showHero and heroImg %}
+    <div class="lc-container">
+      <div class="lc-article-hero">
+        <img src="{{ heroImg }}" alt="{{ a.title }}" fetchpriority="high"/>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="lc-container lc-container--narrow">
+
+    {% if articleBody %}
+      <div class="lcb-prose lc-article-body">{{ articleBody | safe }}</div>
+    {% endif %}
+
+    {% if showTags and a.tags and (a.tags | length) > 0 %}
+      <div class="lc-article-tags">
+        {% for tag in a.tags %}
+          {%- if tag is string -%}{% set tagName = tag %}
+          {%- elif tag and tag.displayName -%}{% set tagName = tag.displayName %}
+          {%- elif tag and tag.name -%}{% set tagName = tag.name %}
+          {%- elif tag and tag.title -%}{% set tagName = tag.title %}
+          {%- elif tag and tag.label -%}{% set tagName = tag.label %}
+          {%- elif tag and tag.value -%}{% set tagName = tag.value %}
+          {%- else -%}{% set tagName = '' %}{%- endif -%}
+          {% if tagName %}<span class="lc-article-tag">{{ tagName }}</span>{% endif %}
+        {%- endfor %}
+      </div>
+    {% endif %}
+
+    {% if showShare %}
+      <div class="lc-article-share">
+        <span class="lc-blog-eyebrow" style="margin: 0;">{{ t('pages.blog.share_article') }}</span>
+        <button type="button" @click="share()" class="lc-btn lc-btn--outline lc-btn--sm">
+          <span x-text="copied ? '{{ t('pages.blog.copied') }}' : '{{ t('common.share') }}'">{{ t('common.share') }}</span>
+        </button>
+      </div>
+    {% endif %}
+
+    <div class="lc-article-back">
+      <a href="{{ backUrl }}" class="lc-cart-back">
+        <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+        </svg>
+        {{ t('pages.blog.back_to_articles') }}
+      </a>
+    </div>
+
+  </div>
+
+  {# ═════════════ related ═════════════ #}
+  {% if showRelated and (related | length) > 0 %}
+    <div class="lc-article-related">
+      <div class="lc-container">
+        <div class="lc-blog-head lc-blog-head--row">
+          <h2 class="lc-blog-title lc-blog-title--sm">{{ relatedTitle }}</h2>
+        </div>
+        {% set relN = relatedLimit if (related | length) > relatedLimit else (related | length) %}
+        <div class="lc-blog-grid" data-lc-bc="{{ 2 if relN == 2 or relN == 4 else 3 }}" style="--blog-cols: {{ 2 if relN == 2 or relN == 4 else 3 }};">
+          {% for ra in related %}
+            {% if loop.index <= relatedLimit %}
+              {% ui "article-card.njk", article=ra, show_date='on', show_excerpt='off' %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</article>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#lc-article-' ~ id, c=d %}

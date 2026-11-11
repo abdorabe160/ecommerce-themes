@@ -1,0 +1,123 @@
+{
+  "name": "نموذج التواصل",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "تواصل معنا"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Get in touch"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Text"
+      },
+      "default": "سؤال عن طلب، توصية لحبّة، أو تعاون؟ اكتب لنا."
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "النص (إنجليزي)",
+        "en": "Text (English)"
+      },
+      "default": "A question about an order, a bean recommendation, or a collaboration? Write to us."
+    },
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط خدمة النموذج (Formspree / Getform / Google Forms…) — يُرسل النموذج إليه",
+        "en": "Form endpoint URL (Formspree / Getform / Google Forms…)"
+      },
+      "default": ""
+    },
+    "field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد لدى المزوّد",
+        "en": "Email field name used by the provider"
+      },
+      "default": "email"
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الإرسال",
+        "en": "Send button text"
+      }
+    },
+    "button_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الإرسال (إنجليزي)",
+        "en": "Send button text (English)"
+      }
+    },
+    "surface": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Surface"
+      },
+      "default": "cream",
+      "options": [
+        {
+          "value": "cream",
+          "label": "فاتحة"
+        },
+        {
+          "value": "dark",
+          "label": "داكنة"
+        },
+        {
+          "value": "sand",
+          "label": "رمليّة"
+        },
+        {
+          "value": "white",
+          "label": "بيضاء"
+        }
+      ]
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "مستوى العنوان (H1 لو السكشن هو عنوان الصفحة)",
+        "en": "Heading level (H1 when this section is the page title)"
+      },
+      "options": [
+        {
+          "value": "h2",
+          "label": {
+            "ar": "H2 — سكشن داخل صفحة",
+            "en": "H2 — section in a page"
+          }
+        },
+        {
+          "value": "h1",
+          "label": {
+            "ar": "H1 — عنوان الصفحة",
+            "en": "H1 — page title"
+          }
+        }
+      ],
+      "default": "h2"
+    }
+  },
+  "presets": [
+    {
+      "category": "أقسام الصفحة",
+      "name": "نموذج التواصل"
+    }
+  ]
+}

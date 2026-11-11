@@ -1,0 +1,9 @@
+{#- Back-to-top button (theme-standard feature): appears after one screen of scrolling, opposite corner to WhatsApp. -#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- if wd.enabled != false %}
+<button type="button" class="dc-fab dc-fab--top" x-data="{ on: false }" x-init="const f = () => on = window.scrollY > window.innerHeight; f(); window.addEventListener('scroll', f, { passive: true })"
+        x-show="on" x-cloak x-transition.opacity @click="window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })"
+        aria-label="{{ t('common.back_to_top') }}">
+  {% ui "icon.njk", name="chevron-down", size=22, cls="dc-fab__up" %}
+</button>
+{%- endif %}

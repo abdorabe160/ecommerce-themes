@@ -1,0 +1,116 @@
+{
+  "name": "شريط نص متحرك",
+  "settings": {
+    "text": {
+      "type": "string",
+      "label": { "ar": "▸ الكلمات — افصل بينها بـ | (فارغ = كلمات الثيم بلغة الزائر)", "en": "▸ Words — separate with | (empty = theme words in the visitor's language)" },
+      "default": ""
+    },
+    "tone": {
+      "type": "select",
+      "label": { "ar": "شكل الكلمات", "en": "Word style" },
+      "default": "alternate",
+      "options": [
+        { "value": "alternate", "label": { "ar": "بالتناوب: ممتلئة / مفرّغة", "en": "Alternate solid / hollow" } },
+        { "value": "solid", "label": { "ar": "كلها ممتلئة", "en": "All solid" } },
+        { "value": "outline", "label": { "ar": "كلها مفرّغة", "en": "All hollow" } },
+        { "value": "accent", "label": { "ar": "كلها بلون الهوية", "en": "All in the accent colour" } }
+      ]
+    },
+    "separator": {
+      "type": "select",
+      "label": { "ar": "الفاصل بين الكلمات", "en": "Separator between words" },
+      "default": "star",
+      "options": [
+        { "value": "star", "label": { "ar": "نجمة", "en": "Star" } },
+        { "value": "bar", "label": { "ar": "شريط بلون الهوية", "en": "Accent bar" } },
+        { "value": "dot", "label": { "ar": "نقطة ●", "en": "Dot ●" } },
+        { "value": "slash", "label": { "ar": "خطّان //", "en": "Slashes //" } }
+      ]
+    },
+    "size": {
+      "type": "select",
+      "label": { "ar": "حجم الخط", "en": "Type size" },
+      "default": "large",
+      "options": [
+        { "value": "large", "label": { "ar": "كبير", "en": "Large" } },
+        { "value": "medium", "label": { "ar": "متوسط", "en": "Medium" } },
+        { "value": "small", "label": { "ar": "صغير", "en": "Small" } }
+      ]
+    },
+    "speed": {
+      "type": "range",
+      "label": { "ar": "السرعة — ثوانٍ لكل دورة (أقل = أسرع)", "en": "Speed — seconds per loop (lower is faster)" },
+      "default": 30,
+      "min": 10,
+      "max": 80,
+      "step": 2,
+      "unit": "s"
+    },
+    "direction": {
+      "type": "select",
+      "label": { "ar": "اتجاه الحركة", "en": "Direction" },
+      "default": "forward",
+      "options": [
+        { "value": "forward", "label": { "ar": "مع اتجاه القراءة", "en": "With the reading direction" } },
+        { "value": "reverse", "label": { "ar": "عكس اتجاه القراءة", "en": "Against the reading direction" } }
+      ]
+    },
+    "show_rules": {
+      "type": "boolean",
+      "label": { "ar": "خطّان فاصلان أعلى وأسفل الشريط", "en": "Hairlines above and below the strip" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون الكلمات الممتلئة", "en": "Solid word colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون الكلمات المفرّغة (الخط الخارجي)", "en": "Hollow word colour (the outline)" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الفاصل", "en": "Separator colour" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطّين الفاصلين", "en": "Hairline colour" },
+      "default": ""
+    }
+  },
+  "presets": [
+    { "category": "الواجهة", "name": "شريط نص متحرك" }
+  ]
+}

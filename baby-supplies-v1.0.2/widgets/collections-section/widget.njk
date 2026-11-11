@@ -1,0 +1,181 @@
+{#
+  ============================================================================
+  HYPER · COLLECTIONS RAIL
+  ----------------------------------------------------------------------------
+  A centred headline over an endlessly drifting rail of collection cards in two
+  alternating sizes. Styled in assets/style.css → "15.11.1 COLLECTIONS RAIL".
+
+  ── Measured off the reference at a 1440 viewport ──
+    cards       366×494 and 260×352 — ONE aspect (0.74), the small at 71%
+    centres     all four share y = 518.5 · the cards are NOT staggered, they
+                alternate in SIZE on a single centre line
+    gap         52px      radius 12px      count pill 40px tall, inset 16px
+    headline    36px / 1.39, two centred lines, inline icons at 33×33
+    drift       36px/s, with the page held still — an autoplay marquee, not a
+                scroll-driven track and not a Swiper
+
+  ── The icons inside the sentence ──
+  The reference puts line-art icons mid-headline ("For over ☺ 25 years…"). A
+  merchant cannot author that with a plain text field and a separate icon
+  picker, because the POSITION is the point. So the title takes tokens —
+  [smile] [heart] [star] [spark] [bloom] — and they are swapped for inline SVG
+  here.
+
+  ⚠️  The title is ESCAPED first and the tokens substituted after. The output
+  needs `| safe` to render the SVGs, and without the escape that `| safe` would
+  hand a merchant's stray `<script>` straight to the page. The tokens survive
+  escaping because they contain no HTML-special characters.
+  ============================================================================
+#}
+
+{% set d = widget.data %}
+{% set id = widget.id %}
+
+{% set eyebrow    = d.eyebrow | default('', true) %}
+{% set title      = d.title | default('', true) %}
+{% set cols       = d.collections | default([], true) %}
+{% set showCount  = d.show_count | default(true) %}
+{% set showName   = d.show_name | default(false, true) %}
+{% set speed      = d.speed | default(36, true) %}
+{% set cardW      = d.card_width | default(366, true) %}
+{% set bg         = d.bg_color | default('var(--color-section-b)', true) %}
+
+{# ---- the inline icons ----
+   One stroke weight and one 24-box for all five, so they sit on the same
+   optical line as the letters whichever the merchant reaches for. #}
+{% macro ico(k) %}<svg class="hy-cr-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{% if k == 'smile' %}<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>{% elif k == 'heart' %}<path d="M12 20.5S3.5 15.2 3.5 9.4A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.5 2.1c0 5.8-8.5 11.1-8.5 11.1Z"/>{% elif k == 'star' %}<path d="M12 3.5c.6 4.4 4.1 7.9 8.5 8.5-4.4.6-7.9 4.1-8.5 8.5-.6-4.4-4.1-7.9-8.5-8.5 4.4-.6 7.9-4.1 8.5-8.5Z"/>{% elif k == 'spark' %}<path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/>{% elif k == 'bloom' %}<circle cx="12" cy="12" r="2.6"/><path d="M12 9.4c0-3 1.3-4.6 3.2-4.1 1.9.5 2 2.7.6 4.4M12 14.6c0 3-1.3 4.6-3.2 4.1-1.9-.5-2-2.7-.6-4.4M14.6 12c3 0 4.6 1.3 4.1 3.2-.5 1.9-2.7 2-4.4.6M9.4 12c-3 0-4.6-1.3-4.1-3.2.5-1.9 2.7-2 4.4-.6"/>{% endif %}</svg>{% endmacro %}
+
+{% set titleHtml = title | escape
+   | replace('[smile]', ico('smile'))
+   | replace('[heart]', ico('heart'))
+   | replace('[star]',  ico('star'))
+   | replace('[spark]', ico('spark'))
+   | replace('[bloom]', ico('bloom')) %}
+
+{# The little tag glyph in the count pill. #}
+{% macro tagIcon() %}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V4a1 1 0 0 1 1-1h7l9 9-8 8-9-9Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>{% endmacro %}
+
+<section id="hy-cr-{{ id }}" class="hy-cr" style="background: var(--hy-sec-bg, {{ bg }});">
+
+  {% if eyebrow or title %}
+    <div class="hy-cr-head">
+      {% if eyebrow %}<p class="hy-cr-eyebrow">{{ eyebrow }}</p>{% endif %}
+      {% if title %}<h2 class="hy-cr-title">{{ titleHtml | safe }}</h2>{% endif %}
+    </div>
+  {% endif %}
+
+  {# `.hy-cr-track` holds ONE group; HayatMarquee() clones it until the strip
+     is covered and writes --mq-shift / --mq-dur. Anything added here has to
+     stay inside the group or it will not repeat. #}
+  <div class="hy-cr-strip" id="hy-crStrip-{{ id }}">
+    <div class="hy-cr-track" id="hy-crTrack-{{ id }}">
+      <div class="hy-cr-group">
+
+        {% if (cols | length) > 0 %}
+          {% for c in cols %}
+            {# Large first, then small — the reference's rhythm starts big. #}
+            <a href="/shop/{{ c.handle | default(c._id) }}"
+               class="hy-cr-card {{ 'hy-cr-card--sm' if loop.index0 % 2 == 1 }}">
+              <span class="hy-cr-media">
+                {% if c.image and c.image.fileUrl and not c.image.notFound %}
+                  <img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy"/>
+                {% endif %}
+                {% if showCount and c.productsCount %}
+                  <span class="hy-cr-count">
+                    {{ tagIcon() }}
+                    <span>{{ t('collections.items_count') | replace('{count}', c.productsCount) }}</span>
+                  </span>
+                {% endif %}
+              </span>
+              {% if showName %}<span class="hy-cr-name">{{ c.title }}</span>{% endif %}
+            </a>
+          {% endfor %}
+
+        {% else %}
+          {# Placeholders, on the same terms as ui/placeholder.njk: the REAL
+             classes so the merchant sees the true layout, and inert — no href
+             that can 404, hidden from screen readers, and tagged so no script
+             mistakes them for stock. Six, because the rail needs enough to
+             read as a rail rather than as a gap. #}
+          {% for i in range(0, 6) %}
+            <a href="#" @click.prevent
+               class="hy-cr-card {{ 'hy-cr-card--sm' if i % 2 == 1 }}"
+               data-hy-placeholder aria-hidden="true" tabindex="-1">
+              <span class="hy-cr-media"></span>
+              {% if showName %}<span class="hy-cr-name">{{ t('common.placeholder_collection') }}</span>{% endif %}
+            </a>
+          {% endfor %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* All the measuring lives in HayatMarquee() in assets/main.js — it clones the
+     group until the strip is covered and writes --mq-shift / --mq-dur.
+
+     NOTE: Waits for DOMContentLoaded, and that is load-bearing. main.js is the
+     LAST script in <body>, so at the moment this inline script runs during
+     parse `window.HayatMarquee` does not exist yet. Calling it straight away
+     silently does nothing and the track falls back to the stylesheet's
+     `--mq-shift: 50%`, which leaves a marching gap between the groups. */
+  (function () {
+    var strip = document.getElementById('hy-crStrip-{{ id }}');
+    var track = document.getElementById('hy-crTrack-{{ id }}');
+    if (!strip || !track) return;
+
+    var start = function () {
+      if (window.HayatMarquee) window.HayatMarquee(strip, track, {{ speed | int }});
+    };
+
+    /* Nothing picked: the skeleton cards borrow the store's collections from
+       HayatAuto (main.js) FIRST, and the marquee starts after. It clones the
+       group when it boots, so filling afterwards would change one copy of six
+       and leave the rest grey. Same card as the server loop above. */
+    var showCount = {{ 'true' if showCount else 'false' }};
+    var showName = {{ 'true' if showName else 'false' }};
+    var countTpl = {{ t('collections.items_count') | dump | safe }};
+    /* `tagIcon()` written out — a macro's SafeString does not survive `| dump`. */
+    var tagIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11V4a1 1 0 0 1 1-1h7l9 9-8 8-9-9Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>';
+
+    var boot = function () {
+      var group = track.querySelector('.hy-cr-group');
+      var ph = group ? group.querySelectorAll('[data-hy-placeholder]') : [];
+      if (!ph.length || !window.HayatAuto) return start();
+      HayatAuto.takeCollections(ph.length).then(function (list) {
+        if (list.length) {
+          var esc = HayatCard.esc;
+          group.innerHTML = list.map(function (c, i) {
+            return '<a href="' + esc(c.url) + '" class="hy-cr-card' + (i % 2 === 1 ? ' hy-cr-card--sm' : '') + '">' +
+              '<span class="hy-cr-media">' +
+                (c.image ? '<img src="' + esc(c.image) + '" alt="' + esc(c.title) + '" loading="lazy"/>' : '') +
+                (showCount && c.count ? '<span class="hy-cr-count">' + tagIcon + '<span>' + esc(countTpl.replace('{count}', c.count)) + '</span></span>' : '') +
+              '</span>' +
+              (showName ? '<span class="hy-cr-name">' + esc(c.title) + '</span>' : '') +
+            '</a>';
+          }).join('');
+        }
+        start();
+      });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  })();
+</script>
+
+{# Shape knobs. The `-set` suffix is load-bearing: this block is an ID selector,
+   so a plain `--hy-cr-w` here would beat the stylesheet's own responsive rules
+   and a merchant's desktop card width would survive into a 390px viewport. The
+   stylesheet reads these as the DESKTOP value and decides the rest. #}
+<style>
+  #hy-cr-{{ id }} { --hy-cr-w-set: {{ cardW }}px; }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-cr-' ~ id, c=d %}

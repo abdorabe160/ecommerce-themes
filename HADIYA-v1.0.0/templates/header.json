@@ -1,0 +1,95 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "floating": true,
+        "float_width": 1200,
+        "float_gap": 24,
+        "float_radius": 8,
+        "sticky": true,
+        "logo_height": 30,
+        "topbar_enabled": false,
+        "topbar_message": "هدايا رمضان والعيد وصلت — اكتشفها",
+        "topbar_message_url": "/shop",
+        "topbar_bg": "#0F3D33",
+        "topbar_text": "#F8EEEA",
+        "topbar_show_locale": true,
+        "show_search": true,
+        "search_style": "inline",
+        "search_placeholder": "",
+        "action_link_url": "",
+        "action_link_icon": "heart",
+        "action_link_label": "",
+        "show_cart": true,
+        "nav_enabled": true,
+        "nav_extra_menu": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "cart_free_shipping": 0
+      },
+      "blocks": [
+        {
+          "block": "nav_item",
+          "name": "المناسبات",
+          "settings": {
+            "nav_label": "المناسبات",
+            "nav_url": "/collections",
+            "nav_menu": "header-menu",
+            "nav_columns": "3"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "بوكسات هدايا",
+          "settings": {
+            "nav_label": "بوكسات هدايا",
+            "nav_url": "/shop",
+            "nav_menu": "",
+            "nav_columns": "1"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "ورد",
+          "settings": {
+            "nav_label": "ورد",
+            "nav_url": "/shop",
+            "nav_menu": "",
+            "nav_columns": "1"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "المدونة",
+          "settings": {
+            "nav_label": "المدونة",
+            "nav_url": "/blogs",
+            "nav_menu": "",
+            "nav_columns": "1"
+          }
+        },
+        {
+          "block": "nav_item",
+          "name": "عروض",
+          "settings": {
+            "nav_label": "عروض",
+            "nav_url": "/shop",
+            "nav_menu": "",
+            "nav_columns": "1",
+            "nav_highlight": true
+          }
+        }
+      ]
+    }
+  ]
+}

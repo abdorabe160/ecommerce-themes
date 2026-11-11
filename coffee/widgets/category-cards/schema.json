@@ -1,0 +1,152 @@
+{
+  "name": "بطاقات الفئات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اكتب \\n لسطر جديد",
+        "en": "Title — type \\n for a line break"
+      },
+      "default": "اكتشف العالم\\nفي كل كوب"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اكتب \\n لسطر جديد (إنجليزي)",
+        "en": "Title — type \\n for a line break (English)"
+      },
+      "default": "Discover the world\\nin every cup"
+    },
+    "text": {
+      "type": "string",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": "اختر من مجموعاتنا المميزة واكتشف نكهات جديدة تناسب ذوقك."
+    },
+    "text_en": {
+      "type": "string",
+      "label": {
+        "ar": "الوصف (إنجليزي)",
+        "en": "Description (English)"
+      },
+      "default": "Choose from our curated collections and discover new flavours made for you."
+    },
+    "link_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط",
+        "en": "Link text"
+      },
+      "default": "تصفح جميع الأنواع"
+    },
+    "link_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط (إنجليزي)",
+        "en": "Link text (English)"
+      },
+      "default": "Browse all types"
+    },
+    "link_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط التصفح",
+        "en": "Link URL"
+      },
+      "default": "/collections"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "المجموعات — تُعرض كبطاقات (عند تركها فارغة تُستخدم البطاقات المضافة يدويًا)",
+        "en": "Collections — shown as cards (leave empty to use the manual cards below)"
+      }
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "مستوى العنوان (H1 لو السكشن هو عنوان الصفحة)",
+        "en": "Heading level (H1 when this section is the page title)"
+      },
+      "options": [
+        {
+          "value": "h2",
+          "label": {
+            "ar": "H2 — سكشن داخل صفحة",
+            "en": "H2 — section in a page"
+          }
+        },
+        {
+          "value": "h1",
+          "label": {
+            "ar": "H1 — عنوان الصفحة",
+            "en": "H1 — page title"
+          }
+        }
+      ],
+      "default": "h2"
+    }
+  },
+  "blocks": {
+    "category": {
+      "name": "بطاقة فئة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة (طولية 4:5)",
+            "en": "Image (portrait 4:5)"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "حبوب القهوة"
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": "Coffee beans"
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "وصف قصير",
+            "en": "Short text"
+          },
+          "default": "من مختلف أنحاء العالم"
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "وصف قصير (إنجليزي)",
+            "en": "Short text (English)"
+          },
+          "default": "From origins around the world"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "Link"
+          },
+          "default": "/collections"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "اكتشف العالم في كل كوب — بطاقات الفئات"
+    }
+  ]
+}

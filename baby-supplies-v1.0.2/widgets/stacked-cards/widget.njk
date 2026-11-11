@@ -1,0 +1,294 @@
+{# ============================================================================
+   PEBBLE STACKED CARDS — a deck that deals itself as you scroll
+   ----------------------------------------------------------------------------
+        ┌──────────────────┐  ← card 1, docked highest and smallest
+       ┌┴──────────────────┴┐ ← card 2, 18px lower, a little bigger
+      ┌┴────────────────────┴┐
+      │  (Fancy Set)         │ ← card 3, the front one, full size
+      │                      │
+      │      photograph      │
+      │                      │
+      │  NEW IN              │
+      │  Winter Season       │
+      │  ( Shop Now ▸ )      │
+      └──────────────────────┘
+
+   Each card is `position: sticky` at its OWN top — 18px lower than the card
+   before it — so a card stops, the next one slides up over it and leaves an
+   18px strip of it showing, and the strip behind grows into a staircase. As a
+   card is covered it also shrinks, which is what turns the staircase into
+   depth rather than a pile of ledges.
+
+   Measured off the reference at 1440px:
+     card       396 × 485, rounded 20, the photo full-bleed
+     staircase  the tops 18px apart — 269 / 287 / 306 with three cards docked
+     shrink     widths at rest 398 / 344 / 291 — EQUAL steps of ~53.5px, which
+                is 13.5% of the front card's width per level behind
+     inset      29px from every edge, badge 74 × 29, title 40px, button 133 × 45
+
+   ── The shrink is linear in DEPTH, not a ratio ──
+   Equal pixel steps is the whole finding. A `scale(s)` applied again per level
+   gives 398 → 340 → 291; the reference gives 398 → 344 → 291. The second
+   number is what separates them, and it says the scale is `1 − k × depth` with
+   depth counted continuously as the stack advances — not `sⁿ`.
+
+   ── What JavaScript is and is not for here ──
+   The stacking is pure CSS. With no JS the cards still dock, still leave their
+   strips and still read as a deck; only the shrink is missing. So the script
+   below writes ONE custom property per card and nothing else — no layout, no
+   classes, no measuring of anything it did not measure on load.
+
+   All styling lives in assets/style.css → "15.13.6 STACKED CARDS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# ── The cap, and why it is SIX ──
+   The deck is a flex column of full-height cards plus the hold, so its height
+   is `n × card height + tail` and each card costs roughly a screen of scroll
+   to dock. At the default 396×495 card that is ~2.4 screens for four cards,
+   ~3.3 for six and ~5.7 for ten. A sticky stack the shopper has to scroll six
+   screens through is not a stack any more, so the extras are not rendered. #}
+{% set SK_MAX = 6 %}
+{% set cards = (widget.blocks | default([])).slice(0, SK_MAX) %}
+{% set count = cards | length %}
+
+{% set cardW = d.card_width | default(396) %}
+{% set ratio = d.card_ratio | default('4x5') %}
+{% set ratioMap = { '4x5': '4 / 5', '3x4': '3 / 4', '1x1': '1 / 1' } %}
+{# The card's height as a length. The card itself is shaped by `aspect-ratio`,
+   but the scroll runway under it has to MULTIPLY the height, and a ratio cannot
+   be multiplied — so it is computed here from the same two settings. #}
+{% set ratioH = { '4x5': 1.25, '3x4': 1.3333, '1x1': 1.0 } %}
+{% set cardH = (cardW * (ratioH[ratio] | default(1.25))) | round %}
+{% set step = d.stack_step | default(18) %}
+{% set shrink = d.shrink | default(13.5) %}
+{% set topOff = d.top_offset | default(20) %}
+{% set hold = d.hold | default(45) %}
+{% set gap = d.gap | default(0) %}
+{% set radius = d.radius | default(20) %}
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+
+{# A `media` setting arrives as an object once the merchant uploads through the
+   Theme Editor, but a plain URL string is what a hand-written page JSON (and
+   every preview/seed value) can express. Accept both, plus `url` as well as
+   `fileUrl`, so neither source silently renders nothing. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+<section id="hy-sk-{{ id }}" class="hy-sk">
+  <style>
+    /* NOTE: The `-set` suffix is load-bearing. This is an ID selector, so anything
+       it writes outranks every class rule in the stylesheet — the responsive
+       ones included. The stylesheet reads these as the DESKTOP values and
+       decides what the narrower breakpoints do with them. */
+    #hy-sk-{{ id }} {
+      --hy-sk-w-set: {{ cardW }}px;
+      --hy-sk-ratio: {{ ratioMap[ratio] | default('4 / 5') }};
+      --hy-sk-h-set: {{ cardH }}px;
+      --hy-sk-step-set: {{ step }}px;
+      --hy-sk-top-set: {{ topOff }}px;
+      --hy-sk-radius: {{ radius }}px;
+      /* Scroll runway. The gap is what separates one card's dock from the
+         next's, and the hold is how long the last one stays before the whole
+         stack moves on — both as a share of the card's own height, so the
+         pacing survives a merchant changing the card size. */
+      --hy-sk-gap: {{ gap / 100 }};
+      --hy-sk-hold: {{ hold / 100 }};
+    }
+    {% for b in cards %}
+    #hy-sk-{{ id }} [data-hy-sk-card="{{ loop.index0 }}"] {
+      --i: {{ loop.index0 }};
+      --hy-sk-card-bg: {{ b.data.bg_color | default('var(--color-section-b)', true) }};
+      --hy-sk-focus: {{ b.data.image_focus | default('center') }};
+    }
+    {% endfor %}
+  </style>
+
+  {% if eyebrow or title %}
+    <div class="hy-container">
+      <div class="hy-sk-head">
+        {% if eyebrow %}<p class="hy-sk-eyebrow">{{ eyebrow }}</p>{% endif %}
+        {% if title %}<h2 class="hy-sk-title">{{ title }}</h2>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="hy-container">
+    {# The deck. Its HEIGHT is the scroll runway: every card sits in normal flow
+       and sticks on the way past, so the distance between two docks is simply
+       the distance between two cards in the flow. Nothing here is a magic
+       scroll number. #}
+    <div class="hy-sk-stack" data-hy-sk-stack style="--n: {{ count }};">
+      {% for b in cards %}
+        {% set img = mediaUrl(b.data.image) | trim %}
+        {# Demo picture while empty — see assets/demo-*.jpg. #}
+        {% set img = img if (img | length) else (('demo-stack-' ~ (loop.index0 % 3 + 1) ~ '.jpg') | assets) %}
+        {% set url = b.data.url | default('/shop') %}
+        {% set cta = b.data.cta_text | default('') %}
+
+        <article class="hy-sk-card" data-hy-sk-card="{{ loop.index0 }}">
+          {# ⚠️  Test a macro's result with `| length`, never for truthiness. A
+             macro returns a SafeString OBJECT, and an object is truthy even
+             when it holds an empty string — so a bare `if img` reads as true
+             for every card and an empty src renders as a broken box. #}
+          {% if (img | length) > 0 %}
+            <img class="hy-sk-img" src="{{ img }}" alt="{{ b.data.title | default('') }}"
+                 {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+          {% endif %}
+
+          {# A wash under the copy only. The badge sits on the top corner where
+             the photograph is usually its own subject, so darkening the whole
+             card would cost contrast for no reading gain. #}
+          <span class="hy-sk-scrim" aria-hidden="true"></span>
+
+          {% if b.data.badge %}
+            <span class="hy-sk-badge">{{ b.data.badge }}</span>
+          {% endif %}
+
+          <div class="hy-sk-copy">
+            {% if b.data.eyebrow %}<p class="hy-sk-card-eyebrow">{{ b.data.eyebrow }}</p>{% endif %}
+            {% if b.data.title %}<p class="hy-sk-card-title">{{ b.data.title }}</p>{% endif %}
+
+            {# One anchor for the whole card. `.hy-sk-cta::after` covers the card,
+               so the photograph is clickable without nesting a second link
+               inside it — a card wrapped in an <a> could not hold a button at
+               all, and two links to one place is one link too many for anyone
+               reading with a screen reader. #}
+            {% if cta %}
+              <a href="{{ url }}" class="hy-sk-cta">
+                <span>{{ cta }}</span>
+                <i class="hy-sk-cta-arrow" aria-hidden="true">
+                  <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                       stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                </i>
+              </a>
+            {% else %}
+              <a href="{{ url }}" class="hy-sk-bare" aria-label="{{ b.data.title | default(b.data.badge) | default('') }}"></a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+
+      {% if count == 0 %}
+        {# Nothing added yet. Two cards are drawn at their real size and their
+           real offsets, so the merchant sees the deck they are filling rather
+           than a gap where one should be. #}
+        {% for i in range(0, 2) %}
+          <article class="hy-sk-card hy-sk-card--ph" data-hy-placeholder aria-hidden="true"
+                   style="--i: {{ i }};">
+            <span class="hy-sk-scrim"></span>
+            <div class="hy-sk-copy">
+              <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 34%;"></span>
+              <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 68%;"></span>
+            </div>
+          </article>
+        {% endfor %}
+      {% endif %}
+
+      {# The runway the last card stays stuck across. It has to be IN here — a
+         sticky card is constrained by its containing block's content box, and
+         padding on the deck sits outside that. See 15.13.6. #}
+      <div class="hy-sk-tail" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('hy-sk-{{ id }}');
+    if (!root) return;
+    var stack = root.querySelector('[data-hy-sk-stack]');
+    var cards = root.querySelectorAll('[data-hy-sk-card]');
+    if (!stack || cards.length < 2) return;
+
+    /* The stacking itself is CSS. Honour the setting by leaving it at that —
+       a deck that docks without shrinking is the whole effect minus its depth,
+       which is exactly what someone asking for less motion wants. */
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if ((still && still.matches) || document.documentElement.classList.contains('hy-no-motion')) return;
+
+    var K = {{ shrink }} / 100;
+    var N = cards.length;
+
+    /* ── The one formula ──
+       `progress` counts how many cards the deck has dealt, continuously: 0 the
+       instant the first card docks, 1 when the second does, and so on. A card's
+       DEPTH is how far the count has moved past it, and its scale falls off
+       linearly with that depth — see the note at the top of this file for why
+       linearly and not as a ratio.
+
+       The clamp at `N - 1 - i` is not tidiness: it is what stops the cards
+       shrinking further while the finished deck scrolls away, which is what the
+       reference does and what keeps the stack looking like one object on the
+       way out. */
+    function scaleAt(progress, i) {
+      var depth = progress - i;
+      if (depth < 0) depth = 0;
+      var max = N - 1 - i;
+      if (depth > max) depth = max;
+      return 1 - K * depth;
+    }
+
+    /* Read once per resize, not per scroll: these force layout, and reading them
+       on every scroll event is the difference between a handler that composites
+       and one that reflows the page sixty times a second.
+
+       NOTE: NOT `cards[1].offsetTop - cards[0].offsetTop`, which is the obvious
+       way to get the stride and is wrong here. `offsetTop` reports the USED
+       position, and a stuck card's used position is where it is stuck — so once
+       the deck has docked, every card reports roughly the same offsetTop and
+       the stride collapses to nothing. Measured: 495 before the first dock, 0
+       after. `offsetHeight` is layout, untouched by both sticking and the scale
+       this script writes, and `rowGap` resolves the percentage gap to pixels.
+       The same trap is why the card's own offset inside the deck is read from
+       the deck's padding rather than from the card. */
+    var stride = 1, dockTop = 0, lead = 0;
+    function measure() {
+      var ss = getComputedStyle(stack);
+      stride = cards[0].offsetHeight + (parseFloat(ss.rowGap) || 0);
+      if (stride < 1) stride = 1;
+      lead = parseFloat(ss.paddingTop) || 0;
+      /* Where the first card comes to rest, in viewport coordinates. A sticky
+         element's computed `top` is the offset it was given, not where it
+         currently sits, so this one IS safe to read from the card — and reading
+         it there keeps the sticky offset and this one number even after a
+         breakpoint changes it. */
+      dockTop = parseFloat(getComputedStyle(cards[0]).top) || 0;
+    }
+
+    var queued = false;
+    function frame() {
+      queued = false;
+      /* The deck itself is never sticky, so its rect is honest. */
+      var progress = (dockTop - stack.getBoundingClientRect().top - lead) / stride;
+      for (var i = 0; i < N; i++) {
+        cards[i].style.setProperty('--s', scaleAt(progress, i).toFixed(4));
+      }
+    }
+    function onScroll() {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(frame);
+    }
+
+    measure();
+    frame();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { measure(); frame(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); frame(); });
+
+    /* Exposed for the test harness. A scroll handler gated on rAF cannot be
+       driven under a headless virtual clock, where rAF fires about once for a
+       whole run — so the two things worth testing are reachable without it:
+       the formula, and one synchronous pass of what the scroll writes. */
+    root.__hySkScaleAt = scaleAt;
+    root.__hySkFrame = function () { measure(); frame(); };
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-sk-' ~ id, c=d %}

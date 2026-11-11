@@ -1,0 +1,78 @@
+{
+  "name": "tabbed-products",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "MEN"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": { "ar": "محاذاة العنوان", "en": "Heading alignment" },
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "يسار / Left" },
+        { "value": "start", "label": "بداية السطر / Start" },
+        { "value": "center", "label": "وسط / Center" }
+      ]
+    },
+    "limit": {
+      "type": "number",
+      "label": { "ar": "أقصى عدد منتجات لكل تبويب", "en": "Max products per tab" },
+      "default": 10,
+      "min": 2,
+      "max": 24,
+      "step": 1
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": { "ar": "إظهار رابط عرض الكل", "en": "Show view all" },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص رابط عرض الكل", "en": "View all text" },
+      "default": "View all"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط عرض الكل الافتراضي", "en": "Default view all URL" },
+      "default": "/collections"
+    }
+  },
+  "blocks": {
+    "tab": {
+      "name": "تبويب",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": { "ar": "اسم التبويب", "en": "Tab label" },
+          "default": "Tops"
+        },
+        "products": {
+          "type": "products",
+          "label": { "ar": "المنتجات", "en": "Products" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "رابط عرض الكل لهذا التبويب", "en": "View all URL for this tab" },
+          "default": "/collections"
+        },
+        "demo_set": {
+          "type": "select",
+          "label": { "ar": "منتجات المعاينة", "en": "Preview demo set" },
+          "default": "tops",
+          "options": [
+            { "value": "tops", "label": "Tops" },
+            { "value": "compressions", "label": "Compressions" },
+            { "value": "tanks", "label": "Tanks" },
+            { "value": "bottoms", "label": "Bottoms" }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "home", "name": "tabbed-products" }
+  ]
+}

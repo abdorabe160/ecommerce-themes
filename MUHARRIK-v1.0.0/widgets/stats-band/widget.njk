@@ -1,0 +1,115 @@
+{#
+  ============================================================================
+  MUHARRIK · STATS BAND · بالأرقام
+  ----------------------------------------------------------------------------
+   ─────────────────────────────────────────────────────────────────────────
+     M U H A R R I K  ·  م ح ر ّ ك  ·  M U H A R R I K   (hollow, drifting)
+      12,000+     │     48       │     4.9      │     350+
+      CUSTOMERS   │  HOURS SHIP  │   RATING     │   PRODUCTS
+   ─────────────────────────────────────────────────────────────────────────
+
+  A wide carbon band: 3–5 huge counters in the display face, mono labels
+  under them, hairlines between them, and behind everything one slow hollow
+  wordmark on the .mh-marquee primitive (two tracks = a seamless loop;
+  data-mh-velocity lets the motion script speed it up with scroll velocity).
+
+  Counting is the motion contract's job: each number carries
+  data-mh-count="<numeric>" (+ data-mh-decimals) and mh-motion.js counts it
+  up once when it enters. Its initial TEXT is the final, formatted value, so
+  with no script the numbers simply stand. Prefix and suffix are separate
+  spans so they can be styled (the suffix "+" reads yellow) and the script
+  only ever touches the digits.
+
+  Blocks: value, prefix, suffix, decimals, label. No blocks → four defaults
+  for a car-accessories store in the visitor's language.
+
+  Styles: assets/mh-w-b.css → "03. STATS BAND".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{# thousands grouping for the integer part: 12000 → 12,000. Decimals > 0 are
+   shown as typed. `-` trims the template whitespace inside the loop. #}
+{% macro fmt(v, dec) -%}
+  {%- set s = (v ~ '') | trim | replace(',', '') -%}
+  {%- if dec > 0 or (s | length) < 4 -%}{{ s }}{%- else -%}
+    {%- set L = s | length -%}
+    {%- for i in range(0, L) -%}{%- if i > 0 and (L - i) % 3 == 0 -%},{%- endif -%}{{ s[i] }}{%- endfor -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{% if isAr %}
+  {% set D = {
+    word: 'محرّك · MUHARRIK',
+    stats: [
+      { value: '12000', prefix: '', suffix: '+', decimals: 0, label: 'عميل' },
+      { value: '48', prefix: '', suffix: '', decimals: 0, label: 'ساعة توصيل' },
+      { value: '4.9', prefix: '', suffix: '', decimals: 1, label: 'تقييم' },
+      { value: '350', prefix: '', suffix: '+', decimals: 0, label: 'منتج' }
+    ]
+  } %}
+{% else %}
+  {% set D = {
+    word: 'MUHARRIK · محرّك',
+    stats: [
+      { value: '12000', prefix: '', suffix: '+', decimals: 0, label: 'Customers' },
+      { value: '48', prefix: '', suffix: 'h', decimals: 0, label: 'Delivery' },
+      { value: '4.9', prefix: '', suffix: '', decimals: 1, label: 'Rating' },
+      { value: '350', prefix: '', suffix: '+', decimals: 0, label: 'Products' }
+    ]
+  } %}
+{% endif %}
+
+{% set stats = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set v = (bd.value ~ '') | trim %}
+  {% if v and v != 'undefined' %}
+    {% set _ = stats.push({
+      value: v,
+      prefix: bd.prefix | default('', true),
+      suffix: bd.suffix | default('', true),
+      decimals: bd.decimals if bd.decimals is defined and bd.decimals !== '' else 0,
+      label: bd.label | default('', true)
+    }) %}
+  {% endif %}
+{% endfor %}
+{% if (stats | length) == 0 %}{% set stats = D.stats %}{% endif %}
+{% set n = stats | length %}
+{% set word = d.word | default(D.word, true) %}
+
+<section id="mh-sb-{{ id }}"{% if (blocks | length) == 0 %} data-hy-empty{% endif %}
+         class="mh-sb mh-carbon{{ ' has-rules' if d.show_rules != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 64 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 64 }}px; --sb-n: {{ n }}; --mh-marquee-speed: {{ d.speed | default(40, true) }}s;">
+
+  {% if d.show_word != false and word %}
+    <div class="mh-sb-kinetic mh-marquee" data-mh-velocity aria-hidden="true">
+      {% for t in range(0, 2) %}
+        <div class="mh-marquee-track mh-sb-track">
+          {% for r in range(0, 4) %}<span class="mh-sb-word mh-outline">{{ word | safe }}</span>{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="mh-sb-wrap">
+    <ul class="mh-sb-grid" role="list" data-mh-stagger>
+      {% for s in stats %}
+        {% set numeric = (s.value ~ '') | replace(',', '') | trim %}
+        <li class="mh-sb-stat" data-mh-item>
+          <p class="mh-sb-val" dir="ltr">
+            {%- if s.prefix %}<span class="mh-sb-prefix">{{ s.prefix | safe }}</span>{% endif -%}
+            <span class="mh-sb-num" data-mh-count="{{ numeric }}" data-mh-decimals="{{ s.decimals }}">{{ fmt(s.value, s.decimals) }}</span>
+            {%- if s.suffix %}<span class="mh-sb-suffix">{{ s.suffix | safe }}</span>{% endif -%}
+          </p>
+          {% if s.label %}<p class="mh-sb-lbl mh-mono">{{ s.label | safe }}</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#mh-sb-' ~ id, c=d %}

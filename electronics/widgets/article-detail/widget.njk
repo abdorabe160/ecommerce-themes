@@ -1,0 +1,56 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# بيانات الصفحة تصل للويدجت داخل context.article (المقال غير الموجود يصل {} فنتحقق من العنوان). المدونات على /blogs #}
+{% set ctx = context or {} %}
+{% set a = article or ctx.article or wd.article %}
+{% set showShare = wd.show_share != false %}
+{# الغلاف بيوصل بأشكال مختلفة: image.fileUrl أو imageUrl أو image كنص #}
+{% set cover = '' %}
+{% if a %}
+  {% set imgStr = (a.image | string) if a.image else '' %}
+  {% set cover = (a.image.fileUrl if (a.image and a.image.fileUrl) else '') or a.imageUrl or (imgStr if (imgStr.indexOf('http') == 0 or imgStr.indexOf('/') == 0) else '') %}
+{% endif %}
+{% set postDate = a and (a.publishedAt or a.createdAt) %}
+<section class="lg-section !pt-6">
+  <div class="lg-container max-w-3xl">
+    {% if a and a.title %}
+      <nav aria-label="{{t('common.breadcrumb')}}" class="lg-breadcrumb mb-4 text-sm text-muted">
+        <ol class="flex flex-wrap items-center gap-1.5">
+          <li><a href="/" class="hover:text-primary">{{t('common.home')}}</a></li>
+          <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+          <li><a href="/blogs" class="hover:text-primary">{{t('blog.title')}}</a></li>
+        </ol>
+      </nav>
+      <article class="glass overflow-hidden">
+        {% if cover %}
+          <img src="{{ cover }}" alt="{{ a.title }}" width="900" height="500" class="w-full aspect-[16/9] object-cover" fetchpriority="high">
+        {% else %}
+          <div class="lg-post-cover-wide"><span class="lg-post-cover" aria-hidden="true">{% ui "icon.njk", name="device", cls="w-12 h-12" %}</span></div>
+        {% endif %}
+        <div class="p-5 md:p-10 space-y-4">
+          <h1 class="text-2xl md:text-4xl font-bold leading-tight">{{ a.title }}</h1>
+          <div class="flex flex-wrap items-center gap-4 text-sm text-muted">
+            {% if postDate %}<span class="inline-flex items-center gap-1.5">{% ui "icon.njk", name="calendar", cls="w-4 h-4" %}<time datetime="{{ postDate }}">{{ (postDate | string).slice(0, 10) }}</time></span>{% endif %}
+            {% if a.views %}<span class="inline-flex items-center gap-1.5">{% ui "icon.njk", name="eye", cls="w-4 h-4" %}{{ a.views }} {{t('blog.views')}}</span>{% endif %}
+          </div>
+          <div class="lg-prose">{{ a.content | safe }}</div>
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-[color:var(--color-hairline)]">
+            <a href="/blogs" class="btn btn-glass">{% ui "icon.njk", name="prev", cls="w-4 h-4 lg-flip-rtl" %}{{t('blog.back')}}</a>
+            {% if showShare %}
+              <div class="flex gap-2" x-data>
+                <a class="btn btn-glass btn-icon" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+                   :href="'https://wa.me/?text=' + encodeURIComponent(document.title + ' ' + location.href)">{% ui "icon.njk", name="whatsapp", cls="w-5 h-5" %}</a>
+                <a class="btn btn-glass btn-icon" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
+                   :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href)">{% ui "icon.njk", name="facebook", cls="w-5 h-5" %}</a>
+                <a class="btn btn-glass btn-icon" target="_blank" rel="noopener noreferrer" aria-label="X"
+                   :href="'https://twitter.com/intent/tweet?url=' + encodeURIComponent(location.href)">{% ui "icon.njk", name="x", cls="w-5 h-5" %}</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    {% else %}
+      {% ui "empty.njk", icon="calendar", title=t('not_found.title'), text=t('not_found.text'), url="/blogs", button=t('blog.back') %}
+    {% endif %}
+  </div>
+</section>

@@ -1,0 +1,20 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونات",
+      "widget": "blogs-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "يوميات",
+        "title": "",
+        "subtitle": "نصائح عن المقاسات والخامات والعناية بملابس الأطفال.",
+        "columns": "3",
+        "colors_enabled": false
+      }
+    }
+  ]
+}

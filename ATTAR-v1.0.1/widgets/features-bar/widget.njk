@@ -1,0 +1,136 @@
+{# ===== ATTAR FEATURES BAR — Ritual row · gold badges ===== #}
+{% set bgStyle = widget.data.background_style | default('transparent') %}
+{% set layout = widget.data.display_layout | default('horizontal') %}
+{% set showDividers = widget.data.show_dividers if widget.data.show_dividers is defined else true %}
+{% set features = widget.blocks | default([]) %}
+{% set n = features | length %}
+{% set isDark = bgStyle == 'dark' %}
+
+{# ——— Icon Macro (line icons) ——— #}
+{% macro featureIcon(icon, sizeClass) %}
+  {% if icon == 'shipping' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M12 9.75h6.75M12 9.75L9.75 12m2.25-2.25L9.75 7.5m8.25 3.375v5.25c0 .621-.504 1.125-1.125 1.125h-.872"/></svg>
+  {% elif icon == 'shield' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+  {% elif icon == 'refresh' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+  {% elif icon == 'clock' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  {% elif icon == 'heart' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+  {% elif icon == 'star' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+  {% elif icon == 'tag' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+  {% elif icon == 'headphones' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+  {% elif icon == 'gift' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+  {% elif icon == 'check' %}
+    <svg class="{{ sizeClass }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+  {% endif %}
+{% endmacro %}
+
+{% set id = widget.id %}
+{% if bgStyle == 'dark' %}
+  {% set sectionStyle = 'background: var(--color-footer); color: var(--color-text-primary);' %}
+{% elif bgStyle == 'light' %}
+  {% set sectionStyle = 'background: var(--color-bg-secondary); color: var(--color-text-primary);' %}
+{% else %}
+  {% set sectionStyle = 'background: var(--color-bg-primary); color: var(--color-text-primary);' %}
+{% endif %}
+{% set cols = n if n <= 4 else 4 %}
+
+<style>
+  .attar-fb-{{ id }} .attar-fb-badge {
+    position: relative;
+    width: 62px; height: 62px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 999px;
+    color: var(--color-accent);
+    background: radial-gradient(120% 120% at 50% 25%, var(--color-accent-light) 0%, transparent 72%);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
+    transition: border-color 0.4s ease, box-shadow 0.5s ease, transform 0.5s ease;
+  }
+  .attar-fb-{{ id }} .attar-fb-badge::after {
+    content: ''; position: absolute; inset: 5px;
+    border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent);
+    transition: border-color 0.4s ease;
+  }
+  .attar-fb-{{ id }} .attar-fb-item:hover .attar-fb-badge {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-light), 0 12px 30px -14px color-mix(in srgb, var(--color-accent) 55%, transparent);
+    transform: translateY(-3px);
+  }
+  .attar-fb-{{ id }} .attar-fb-item:hover .attar-fb-badge::after { border-color: color-mix(in srgb, var(--color-accent) 40%, transparent); }
+
+  .attar-fb-{{ id }} .attar-fb-title {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--color-text-primary);
+  }
+  html[dir="rtl"] .attar-fb-{{ id }} .attar-fb-title { letter-spacing: 0; text-transform: none; font-size: 15px; }
+  .attar-fb-{{ id }} .attar-fb-desc { font-size: 12px; line-height: 1.6; color: var(--color-text-secondary); }
+
+  /* Gold gradient divider */
+  .attar-fb-{{ id }} .attar-fb-div {
+    display: block; width: 1px; align-self: stretch; min-height: 84px;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-accent) 34%, transparent) 45%, transparent);
+  }
+
+  /* Framing hairlines top & bottom */
+  .attar-fb-{{ id }} .attar-fb-frame {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  @media (max-width: 1023px) {
+    .attar-fb-{{ id }} .attar-fb-div { display: none; }
+  }
+</style>
+
+<section id="{{ id }}" class="attar-fb-{{ id }} py-16 max-sm:py-12" style="{{ sectionStyle }}">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {% if layout == 'grid' %}
+    {# ——— Grid — bordered cells with badges ——— #}
+    <div class="grid grid-cols-2 lg:grid-cols-{{ cols }} gap-5 max-sm:gap-3.5 attar-fit-span attar-fit-span-sm">
+      {% for block in features %}
+        {% set icon = block.data.icon | default('shipping') %}
+        {% set title = block.data.title %}
+        {% set desc = block.data.description %}
+        <div class="attar-fb-item flex flex-col items-center text-center gap-4 px-4 py-9 max-sm:py-7"
+             style="border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-accent) 1.5%, transparent);">
+          <span class="attar-fb-badge">{{ featureIcon(icon, 'w-6 h-6') }}</span>
+          {% if title %}<span class="attar-fb-title font-body-ar">{{ title }}</span>{% endif %}
+          {% if desc %}<span class="attar-fb-desc font-body-ar" style="max-width: 22ch;">{{ desc }}</span>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    {# ——— Horizontal — framed ritual row with gold badges & dividers ——— #}
+    <div class="attar-fb-frame py-11 max-sm:py-0 max-sm:border-0">
+      {# Mobile: a 2-column grid (every feature visible — no hidden scroll strip); an odd last one spans the row #}
+      <div class="flex items-stretch justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-3 attar-fit-span-sm">
+        {% for block in features %}
+          {% set icon = block.data.icon | default('shipping') %}
+          {% set title = block.data.title %}
+          {% set desc = block.data.description %}
+
+          {% if showDividers and not loop.first %}
+            <span class="attar-fb-div mx-2 max-sm:hidden" aria-hidden="true"></span>
+          {% endif %}
+
+          <div class="attar-fb-item flex flex-col items-center text-center gap-3.5 flex-1 px-4 shrink-0 max-sm:px-2 max-sm:py-6"
+               style="min-width: 0;">
+            <span class="attar-fb-badge">{{ featureIcon(icon, 'w-6 h-6') }}</span>
+            {% if title %}<span class="attar-fb-title font-body-ar">{{ title }}</span>{% endif %}
+            {% if desc %}<span class="attar-fb-desc font-body-ar">{{ desc }}</span>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>

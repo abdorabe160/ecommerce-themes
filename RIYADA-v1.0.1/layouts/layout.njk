@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+{#
+  ============================================================================
+  RIYADA · رياضة — Root layout
+  Sports & gym · "Athletic Performance" design language — قوي · سريع · تحفيزي
+  ----------------------------------------------------------------------------
+  Order matters here:
+    1. Fonts (preconnect early)      2. {% seo %} + {% qumra_head %}
+    3. style.css (the design system) 4. :root overrides from Theme Editor
+    5. Tailwind CDN + config mapped onto the CSS vars
+    6. Swiper / GLightbox CSS + JS
+  Body:
+    header template → {% content %} → footer template → global overlays
+    → __QUMRA_CONFIG__ → {% qumra_scripts %} → main.js → Alpine
+  NOTE: {% qumra_head %} / {% qumra_scripts %} do NOT ship Tailwind, fonts,
+        Alpine, Swiper or GLightbox — they are all loaded manually below.
+  ============================================================================
+#}
+{% set lang = localization.language | default('ar', true) %}
+{% set isRtl = lang != 'en' %}
+
+{# ---- Fonts: display + body per script ---- #}
+{% set fontDisplayAr = settings.fontDisplayArabic | default('Changa', true) %}
+{% set fontDisplayEn = settings.fontDisplayLatin  | default('Anton', true) %}
+{% set fontBodyAr    = settings.fontBodyArabic    | default('Cairo', true) %}
+{% set fontBodyEn    = settings.fontBodyLatin     | default('Cairo', true) %}
+
+{#
+  ---- Per-family weight axes ------------------------------------------------
+  Google Fonts v2 rejects the WHOLE request with a 400 if any family is asked
+  for a weight it does not publish — and Anton, Bebas Neue and Archivo Black
+  each ship exactly one weight. One combined `family=…&family=…` URL would
+  therefore take every font on the site down with it, so each family gets its
+  own <link> and its own axis list. Identical URLs dedupe in the browser, so
+  picking the same face twice still costs one request.
+
+  Keep this map in sync with the font `options` in settings/settings-schema.json.
+#}
+{% set fontWeights = {
+  'Anton': '400',
+  'Bebas Neue': '400',
+  'Archivo Black': '400',
+  'Oswald': '300;400;500;600;700',
+  'Teko': '300;400;500;600;700',
+  'Barlow Condensed': '300;400;500;600;700;800',
+  'Barlow': '300;400;500;600;700;800',
+  'Archivo': '300;400;500;600;700;800',
+  'Roboto Condensed': '300;400;500;600;700',
+  'Inter': '300;400;500;600;700;800',
+  'Manrope': '300;400;500;600;700;800',
+  'Changa': '300;400;500;600;700;800',
+  'Cairo': '300;400;500;600;700;800;900',
+  'Almarai': '300;400;700;800',
+  'Tajawal': '300;400;500;700;800;900',
+  'Readex Pro': '300;400;500;600;700',
+  'Alexandria': '300;400;500;600;700',
+  'IBM Plex Sans Arabic': '300;400;500;600;700',
+  'Noto Kufi Arabic': '300;400;500;600;700;800'
+} %}
+{% set wDisplayAr = fontWeights[fontDisplayAr] | default('400;700', true) %}
+{% set wDisplayEn = fontWeights[fontDisplayEn] | default('400;700', true) %}
+{% set wBodyAr    = fontWeights[fontBodyAr]    | default('400;700', true) %}
+{% set wBodyEn    = fontWeights[fontBodyEn]    | default('400;700', true) %}
+
+{# Latin display case — "PUSH HARDER" by default. Arabic is unaffected either
+   way (no case in the script); this only governs Latin runs. #}
+{% set displayCase = 'uppercase' if (settings.latinHeadingCase | default('uppercase', true)) == 'uppercase' else 'none' %}
+
+{# ---- Shape knobs: corner style → card / input / media radii ---- #}
+{% set cornerStyle = settings.cornerStyle | default('sharp', true) %}
+{% if cornerStyle == 'tight' %}
+  {% set rCard = '4px' %}{% set rInput = '4px' %}{% set rMedia = '4px' %}
+{% elif cornerStyle == 'soft' %}
+  {% set rCard = '8px' %}{% set rInput = '6px' %}{% set rMedia = '6px' %}
+{% elif cornerStyle == 'rounded' %}
+  {% set rCard = '16px' %}{% set rInput = '12px' %}{% set rMedia = '12px' %}
+{% else %}
+  {% set rCard = '2px' %}{% set rInput = '2px' %}{% set rMedia = '2px' %}
+{% endif %}
+
+{% set buttonStyle = settings.buttonStyle | default('square', true) %}
+{% if buttonStyle == 'tight' %}{% set rBtn = '4px' %}
+{% elif buttonStyle == 'soft' %}{% set rBtn = '8px' %}
+{% elif buttonStyle == 'pill' %}{% set rBtn = '999px' %}
+{% else %}{% set rBtn = '2px' %}{% endif %}
+
+{#
+  ---- Card style ------------------------------------------------------------
+  On a #111 ground a drop shadow is close to invisible, so "elevation" here is
+  really three different answers to *what happens on hover*: the border wakes
+  up, the surface lifts, or the card catches flame.
+#}
+{% set cardStyle = settings.cardStyle | default('outline', true) %}
+{% if cardStyle == 'raised' %}
+  {% set shCard = 'var(--shadow-sm)' %}{% set shCardHover = 'var(--shadow-md)' %}{% set cardHoverBorder = 'var(--color-border-hover)' %}
+{% elif cardStyle == 'glow' %}
+  {% set shCard = 'none' %}{% set shCardHover = 'var(--shadow-flame)' %}{% set cardHoverBorder = 'var(--color-flame)' %}
+{% else %}
+  {% set shCard = 'none' %}{% set shCardHover = 'none' %}{% set cardHoverBorder = 'var(--color-flame)' %}
+{% endif %}
+
+{# ---- Motion ---- #}
+{% set motionSpeed = settings.motionSpeed | default('snappy', true) %}
+{% if motionSpeed == 'relaxed' %}
+  {% set tFast = '180ms' %}{% set tBase = '280ms' %}{% set tSlow = '440ms' %}
+{% else %}
+  {% set tFast = '120ms' %}{% set tBase = '180ms' %}{% set tSlow = '300ms' %}
+{% endif %}
+
+{# ---- Section rhythm ---- #}
+{% set spacing = settings.sectionSpacing | default('normal', true) %}
+{% if spacing == 'compact' %}{% set secPy = '56px' %}{% set secPySm = '36px' %}
+{% elif spacing == 'roomy' %}{% set secPy = '112px' %}{% set secPySm = '72px' %}
+{% else %}{% set secPy = '80px' %}{% set secPySm = '52px' %}{% endif %}
+
+{% set containerWidth = settings.containerWidth | default('1360', true) %}
+
+<html lang="{{ lang }}" dir="{{ 'rtl' if isRtl else 'ltr' }}"{% if settings.enableAnimations == false %} class="riyada-no-motion"{% endif %}>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="theme-color" content="{{ settings.headerColor | default('#111111', true) }}"/>
+    <meta name="color-scheme" content="dark light"/>
+
+    {# ===== Editor preview flag =====
+       Merchant-only content (setup hints, empty bundle slots, demo category tiles,
+       demo products on an empty store) carries [data-editor-only]. It shows inside
+       the Theme Editor (iframe / ?preview / ?theme) and is removed for shoppers.
+       ?live=1 forces the shopper view (QA). #}
+    <script>(function(){var d=document.documentElement,q=location.search,p;try{p=window.self!==window.top}catch(e){p=true}if(/[?&](preview|theme|theme_id|design|editor)=/.test(q)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))p=true;if(/[?&]live=1/.test(q))p=false;if(p)d.classList.add('riyada-preview');else document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-editor-only]').forEach(function(el){el.remove()})})})();</script>
+
+    {# ===== Google Fonts — one <link> per family, see the note above ===== #}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayAr | replace(' ', '+') }}:wght@{{ wDisplayAr }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayEn | replace(' ', '+') }}:wght@{{ wDisplayEn }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyAr | replace(' ', '+') }}:wght@{{ wBodyAr }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyEn | replace(' ', '+') }}:wght@{{ wBodyEn }}&display=swap"/>
+
+    {% seo %}
+    {% qumra_head %}
+
+    {% if settings.favicon and settings.favicon.fileUrl %}
+      <link rel="icon" href="{{ settings.favicon.fileUrl }}"/>
+    {% endif %}
+
+    {# Google Search Console: the whole <meta> tag or just its content value #}
+    {% set gsv = (settings.googleVerification or '') | trim %}
+    {% if gsv.indexOf('content=') != -1 %}
+      {% set gsv = (gsv.split('content=')[1] | replace('"', '') | replace("'", '') | replace('/>', '') | replace('>', '') | trim).split(' ')[0] %}
+    {% endif %}
+    {% if gsv %}
+      <meta name="google-site-verification" content="{{ gsv }}"/>
+    {% endif %}
+
+    {# ===== RIYADA design system ===== #}
+    {% set assetv = 'c7376736' %}
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+    {# ===== Theme Editor overrides — always applied, no gate ===== #}
+    <style>
+      :root {
+        /* Flame · the accent — action and earned numbers */
+        --color-flame:       {{ settings.primaryColor | default('#FF4D2E', true) }};
+        --color-flame-hover: {{ settings.primaryColorHover | default('#FF6B4F', true) }};
+        --color-flame-dark:  {{ settings.primaryColorDark | default('#D93A1D', true) }};
+        --color-flame-wash:  {{ settings.primaryColorWash | default('#2A1310', true) }};
+        --color-flame-line:  {{ settings.primaryColorLine | default('#6B2517', true) }};
+
+        /* Surfaces · the dark ladder */
+        --color-bg-primary:   {{ settings.backgroundColor | default('#111111', true) }};
+        --color-bg-secondary: {{ settings.surfaceColor | default('#1A1A1A', true) }};
+        --color-bg-tertiary:  {{ settings.wellColor | default('#0A0A0A', true) }};
+        --color-surface:      {{ settings.surfaceColor | default('#1A1A1A', true) }};
+        --color-surface-alt:  {{ settings.surfaceAltColor | default('#222222', true) }};
+        --color-media:        {{ settings.mediaColor | default('#000000', true) }};
+        --color-light:        {{ settings.lightColor | default('#F2F2F2', true) }};
+        --color-chalk:        {{ settings.lightColor | default('#F2F2F2', true) }};
+        --color-section-a:    {{ settings.backgroundColor | default('#111111', true) }};
+        --color-section-b:    {{ settings.sectionAltColor | default('#171717', true) }};
+
+        /* Text */
+        --color-text-primary:   {{ settings.textColor | default('#F2F2F2', true) }};
+        --color-text-secondary: {{ settings.textSecondaryColor | default('#A3A3A3', true) }};
+        --color-text-tertiary:  {{ settings.textTertiaryColor | default('#8A8A8A', true) }};
+
+        /* Lines */
+        --color-border:        {{ settings.borderColor | default('#2A2A2A', true) }};
+        --color-border-strong: {{ settings.borderStrongColor | default('#3D3D3D', true) }};
+        --color-border-hover:  {{ settings.borderHoverColor | default('#575757', true) }};
+        --color-border-focus:  {{ settings.primaryColor | default('#FF4D2E', true) }};
+
+        /* Header */
+        --color-header:            {{ settings.headerColor | default('#111111', true) }};
+        --color-header-text:       {{ settings.headerTextColor | default('#F2F2F2', true) }};
+        --color-header-border:     {{ settings.headerBorderColor | default('#2A2A2A', true) }};
+        --color-announcement:      {{ settings.announcementColor | default('#D13F26', true) }};
+        --color-announcement-text: {{ settings.announcementTextColor | default('#FFFFFF', true) }};
+
+        /* Footer */
+        --color-footer:            {{ settings.footerColor | default('#0A0A0A', true) }};
+        --color-footer-text:       {{ settings.footerTextColor | default('#A3A3A3', true) }};
+        --color-footer-text-muted: {{ settings.footerMutedColor | default('#8A8A8A', true) }};
+        --color-footer-heading:    {{ settings.footerHeadingColor | default('#F2F2F2', true) }};
+        --color-footer-border:     {{ settings.footerBorderColor | default('#262626', true) }};
+
+        /* Typography */
+        --font-display-ar: '{{ fontDisplayAr }}', '{{ fontBodyAr }}', system-ui, sans-serif;
+        --font-display-en: '{{ fontDisplayEn }}', '{{ fontBodyEn }}', system-ui, -apple-system, sans-serif;
+        --font-body-ar:    '{{ fontBodyAr }}', system-ui, -apple-system, sans-serif;
+        --font-body-en:    '{{ fontBodyEn }}', system-ui, -apple-system, sans-serif;
+        --font-num:        '{{ fontBodyAr }}', '{{ fontBodyEn }}', system-ui, sans-serif;
+        --font-stat:       '{{ fontDisplayEn }}', '{{ fontDisplayAr }}', system-ui, sans-serif;
+        --font-size-base:  {{ settings.baseFontSize | default(16, true) }}px;
+        --display-case:    {{ displayCase }};
+
+        /* Shape */
+        --radius-card:  {{ rCard }};
+        --radius-input: {{ rInput }};
+        --radius-media: {{ rMedia }};
+        --radius-btn:   {{ rBtn }};
+        --cut:          {{ settings.cutDepth | default(12, true) }}px;
+
+        /* Elevation */
+        --shadow-card:       {{ shCard }};
+        --shadow-card-hover: {{ shCardHover }};
+        --card-hover-border: {{ cardHoverBorder }};
+
+        /* Motion */
+        --t-fast: {{ tFast }};
+        --t-base: {{ tBase }};
+        --t-slow: {{ tSlow }};
+
+        /* Rhythm */
+        --section-py:    {{ secPy }};
+        --section-py-sm: {{ secPySm }};
+        --container-max: {{ containerWidth }}px;
+
+        /* Optional colours: nothing is printed while they are empty, so style.css keeps its own */
+        {% if settings.successColor %}--color-success: {{ settings.successColor }};{% endif %}
+        {% if settings.warningColor %}--color-warning: {{ settings.warningColor }};{% endif %}
+        {# Sale price text sits on dark cards, so it is lifted toward white; the badge keeps the exact colour #}
+        {% if settings.saleColor %}--color-sale: {{ settings.saleColor }}; --color-sale-text: color-mix(in srgb, {{ settings.saleColor }} 70%, #fff);{% endif %}
+        {# One colour re-skins every flame token; empty keeps the primary colours above.
+           --color-flame is also text on the dark ground, hence the small lift (buttons derive a darker fill from it). #}
+        {% if settings.brandColor %}
+        --color-flame:       color-mix(in srgb, {{ settings.brandColor }} 85%, #fff);
+        --color-flame-hover: color-mix(in srgb, {{ settings.brandColor }} 82%, #fff);
+        --color-flame-dark:  color-mix(in srgb, {{ settings.brandColor }} 82%, #000);
+        --color-flame-wash:  color-mix(in srgb, {{ settings.brandColor }} 16%, var(--color-bg-primary));
+        --color-flame-line:  color-mix(in srgb, {{ settings.brandColor }} 42%, var(--color-bg-primary));
+        --color-border-focus: {{ settings.brandColor }};
+        --shadow-flame: 0 0 0 1px color-mix(in srgb, {{ settings.brandColor }} 50%, transparent), 0 12px 32px -12px color-mix(in srgb, {{ settings.brandColor }} 55%, transparent);
+        --shadow-focus: 0 0 0 3px color-mix(in srgb, {{ settings.brandColor }} 35%, transparent);
+        {% if (settings.announcementColor | default('#D13F26', true)) == '#D13F26' %}--color-announcement: var(--color-flame-fill);{% endif %}
+        {% endif %}
+      }
+    </style>
+
+    {# ===== Tailwind CDN — config maps utilities onto the CSS vars ===== #}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          container: {
+            center: true,
+            padding: { DEFAULT: '20px', sm: '16px', lg: '20px' },
+            screens: { '2xl': '{{ containerWidth }}px' },
+          },
+          extend: {
+            colors: {
+              flame: {
+                DEFAULT: 'var(--color-flame)',
+                hover: 'var(--color-flame-hover)',
+                dark: 'var(--color-flame-dark)',
+                wash: 'var(--color-flame-wash)',
+                line: 'var(--color-flame-line)',
+              },
+              chalk: {
+                DEFAULT: 'var(--color-chalk)',
+                hover: 'var(--color-chalk-hover)',
+              },
+              void: 'var(--color-media)',
+              carbon: {
+                DEFAULT: 'var(--color-surface)',
+                alt: 'var(--color-surface-alt)',
+                well: 'var(--color-bg-tertiary)',
+              },
+              success: 'var(--color-success)',
+              error: 'var(--color-error)',
+              warning: 'var(--color-warning)',
+              info: 'var(--color-info)',
+              header: 'var(--color-header)',
+              footer: {
+                DEFAULT: 'var(--color-footer)',
+                text: 'var(--color-footer-text)',
+                muted: 'var(--color-footer-text-muted)',
+                heading: 'var(--color-footer-heading)',
+                border: 'var(--color-footer-border)',
+              },
+            },
+            backgroundColor: {
+              primary: 'var(--color-bg-primary)',
+              secondary: 'var(--color-bg-secondary)',
+              tertiary: 'var(--color-bg-tertiary)',
+              canvas: 'var(--color-bg-primary)',
+              well: 'var(--color-bg-tertiary)',
+              media: 'var(--color-media)',
+              'section-a': 'var(--color-section-a)',
+              'section-b': 'var(--color-section-b)',
+            },
+            textColor: {
+              primary: 'var(--color-text-primary)',
+              secondary: 'var(--color-text-secondary)',
+              tertiary: 'var(--color-text-tertiary)',
+              'on-flame': 'var(--color-text-on-flame)',
+              'on-light': 'var(--color-text-on-light)',
+            },
+            borderColor: {
+              DEFAULT: 'var(--color-border)',
+              soft: 'var(--color-border)',
+              strong: 'var(--color-border-strong)',
+              hover: 'var(--color-border-hover)',
+              focus: 'var(--color-border-focus)',
+            },
+            fontFamily: {
+              display: ['{{ fontDisplayAr }}', '{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              'display-en': ['{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              body: ['{{ fontBodyAr }}', 'system-ui', 'sans-serif'],
+              'body-en': ['{{ fontBodyEn }}', 'system-ui', 'sans-serif'],
+              num: ['{{ fontBodyAr }}', '{{ fontBodyEn }}', 'system-ui', 'sans-serif'],
+              stat: ['{{ fontDisplayEn }}', '{{ fontDisplayAr }}', 'system-ui', 'sans-serif'],
+            },
+            borderRadius: {
+              none: '0px',
+              xs: 'var(--radius-xs)',
+              sm: 'var(--radius-sm)',
+              DEFAULT: 'var(--radius-md)',
+              md: 'var(--radius-md)',
+              lg: 'var(--radius-lg)',
+              xl: 'var(--radius-xl)',
+              '2xl': 'var(--radius-2xl)',
+              '3xl': 'var(--radius-2xl)',
+              card: 'var(--radius-card)',
+              btn: 'var(--radius-btn)',
+              input: 'var(--radius-input)',
+              media: 'var(--radius-media)',
+              full: '9999px',
+            },
+            boxShadow: {
+              xs: 'var(--shadow-xs)',
+              sm: 'var(--shadow-sm)',
+              DEFAULT: 'var(--shadow-sm)',
+              md: 'var(--shadow-md)',
+              lg: 'var(--shadow-lg)',
+              xl: 'var(--shadow-xl)',
+              flame: 'var(--shadow-flame)',
+              card: 'var(--shadow-card)',
+              focus: 'var(--shadow-focus)',
+              none: 'none',
+            },
+            transitionTimingFunction: {
+              out: 'cubic-bezier(0.16, 0.84, 0.32, 1)',
+              soft: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            },
+            fontSize: {
+              display: ['clamp(2.4rem, 6.4vw, 4.75rem)', { lineHeight: '0.98', letterSpacing: '-0.015em' }],
+              headline: ['clamp(1.6rem, 3.4vw, 2.4rem)', { lineHeight: '1.1', letterSpacing: '-0.01em' }],
+              stat: ['clamp(2.25rem, 5.5vw, 3.5rem)', { lineHeight: '0.92' }],
+            },
+            spacing: {
+              section: 'var(--section-py)',
+              'section-sm': 'var(--section-py-sm)',
+            },
+          },
+        },
+      }
+    </script>
+
+    {# ===== Swiper.js CSS ===== #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css"/>
+
+    {# ===== Swiper.js =====
+       MUST load in <head>, synchronously. Widgets init their sliders from an
+       inline <script> that runs while the body is parsed — i.e. BEFORE the end
+       of <body>. If Swiper were loaded at the bottom, `typeof Swiper` would be
+       'undefined' at that moment and every slider would silently skip init. #}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+
+    {# ===== GLightbox CSS + JS ===== (same reason as Swiper: inline widget init) #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+
+    {% if settings.customCSS %}
+      <style>{{ settings.customCSS | safe }}</style>
+    {% endif %}
+  </head>
+
+  <body>
+    {# ===== Header ===== #}
+    {% template "header" %}
+
+    {# ===== Page content ===== #}
+    <main id="riyada-main">{% content %}</main>
+
+    {# ===== Footer ===== #}
+    {% template "footer" %}
+
+    {# A page with no H1 (home without a hero, or a hero with no title) gets the store
+       name as a visually hidden one. It only runs when none exists, so never two. #}
+    <script>
+      (function () {
+        if (document.querySelector('h1')) return;
+        var name = {{ (store.name | default('', true)) | dump | safe }} || document.title, main = document.getElementById('riyada-main');
+        if (!name || !main) return;
+        var h = document.createElement('h1');
+        h.className = 'riyada-sr-only';
+        h.textContent = name;
+        main.insertBefore(h, main.firstChild);
+      })();
+    </script>
+
+    {# =====================================================================
+       Quick View modal — content is fetched and injected by main.js
+       (Alpine `quickView()` + #quick-view-content-dynamic are contractual)
+       ===================================================================== #}
+    <div x-data="quickView()" @quick-view.window="openQuickView($event.detail.slug)" x-cloak>
+      <div x-show="$store.modal.current === 'quick-view'"
+           @click="$store.modal.close()"
+           class="riyada-overlay"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"></div>
+
+      <div x-show="$store.modal.current === 'quick-view'"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-[0.98]"
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="riyada-modal">
+        <div class="riyada-modal-panel" @click.outside="$store.modal.close()">
+          <button @click="$store.modal.close()"
+                  type="button"
+                  aria-label="{{ t('common.close') }}"
+                  class="riyada-btn-icon riyada-btn-icon--filled riyada-btn-icon--sm riyada-modal-close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          <div class="p-6 max-sm:p-4">
+            {# Loading #}
+            <div x-show="loading" class="flex items-center justify-center py-24">
+              <span class="riyada-spinner" style="width: 28px; height: 28px;"></span>
+            </div>
+
+            {# Error #}
+            <div x-show="error && !loading" class="riyada-empty">
+              <span class="riyada-empty-icon">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+              </span>
+              <p class="riyada-text-sm">{{t('common.error')}}</p>
+            </div>
+
+            {# Injected product markup — Alpine.initTree() runs on it #}
+            <div x-show="!loading && !error" id="quick-view-content-dynamic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ===== Toast host (id is contractual with main.js) ===== #}
+    <div id="toast-container"
+         class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+
+    {# ===== Alpine.js =====
+       Stays at the bottom and deferred: main.js registers the stores and
+       components on `alpine:init`, so Alpine must boot after main.js is parsed.
+       Swiper/GLightbox are in <head> instead — see the note there.
+       Alpine plugins MUST be deferred before the Alpine core script. #}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.17.5/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
+
+    {# ===== Runtime config consumed by main.js ===== #}
+    <script>
+      window.__QUMRA_CONFIG__ = {
+        currency: '{{ localization.currency.currencyCode | default("SAR", true) }}',
+        currencySymbol: '{{ localization.currency.currencySymbol | default("ر.س", true) }}',
+        language: '{{ lang }}',
+        exchangeRate: {{ localization.market.exchangeRate | default(1, true) }},
+        moneyFormatSample: '{{ 123456789 | money }}',   {# measured probe — main.js reads scale, decimals, separators #}
+        lowStockAt: {{ settings.lowStockThreshold | default(3, true) | int }},   {# the ONE "only N left" threshold (a product widget set to other than 3 keeps its own) #}
+        demoImages: [{% for i in range(1, 9) %}'{{ ('demo-product-' ~ i ~ '.jpg') | assets }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        cartTotalQuantity: {{ cart.totalQuantity | default(0, true) }},
+        wishlistIds: [{% for p in (wishlist.products or []) %}'{{ p._id }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        messages: {
+          addedToCart: '{{t("pages.product.added_to_cart")}}',
+          addError: '{{t("common.error")}}',
+          outOfStock: '{{t("cart.out_of_stock")}}',
+          stock: {
+            soldOut: {{ t('pages.product.out_of_stock') | dump | safe }},
+            allInCart: {{ t('pages.product.max_in_cart') | dump | safe }},
+            low: {{ t('pages.product.low_stock') | dump | safe }},
+            inStock: {{ t('pages.product.in_stock') | dump | safe }},
+            inStockCount: {{ t('pages.product.in_stock_count') | dump | safe }},
+            onlyAvailable: {{ t('pages.cart.only_available') | dump | safe }},
+            needsVariant: {{ t('pages.cart.needs_variant') | dump | safe }},
+            checkoutBlocked: {{ t('pages.cart.stock_blocked') | dump | safe }}
+          }
+        },
+        {# Single source of truth for the AJAX card renderer — widgets must NOT
+           dump their own copies of these strings. #}
+        card: {
+          addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+          added: {{ t('pages.product.added') | dump | safe }},
+          chooseOptions: {{ t('pages.product.choose_options') | dump | safe }},
+          viewProduct: {{ t('pages.product.view_product') | dump | safe }},
+          chooseSize: {{ t('pages.product.choose_size') | dump | safe }},
+          outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+          quickView: {{ t('pages.product.quick_view') | dump | safe }},
+          compare: {{ t('pages.product.compare') | dump | safe }},
+          inStock: {{ t('pages.product.in_stock') | dump | safe }},
+          lowStock: {{ t('pages.product.low_stock') | dump | safe }},
+          noProducts: {{ t('products.no_products') | dump | safe }},
+          noResults: {{ t('pages.search.no_results') | dump | safe }},
+          tryDifferent: {{ t('pages.search.try_different') | dump | safe }},
+          products: {{ t('pages.search.products') | dump | safe }},
+          resultsFor: {{ t('pages.search.results_for') | dump | safe }},
+          home: {{ t('common.home') | dump | safe }},
+          prev: {{ t('common.prev') | dump | safe }},
+          next: {{ t('common.next') | dump | safe }}
+        },
+        {# Twin of ui/count.njk for counts that change in the browser #}
+        counts: {
+          one: {{ t('counts.product_one') | dump | safe }},
+          two: {{ t('counts.product_two') | dump | safe }},
+          few: {{ t('counts.product_few') | dump | safe }},
+          many: {{ t('counts.product_many') | dump | safe }}
+        },
+        {# Strings for the AJAX cart-line renderer — same single-source rule. #}
+        cart: {
+          remove: {{ t('pages.cart.remove_item') | dump | safe }},
+          unitPrice: {{ t('pages.cart.unit_price') | dump | safe }}
+        },
+        {# Product-card defaults, mirrored from the theme settings so the AJAX
+           renderer matches the SSR partial without extra plumbing. #}
+        cardDefaults: {
+          imageRatio: '{{ settings.cardImageRatio | default("1x1", true) }}',
+          mediaBg: '{{ settings.cardMediaBg | default("void", true) }}',
+          showBrand: {{ 'true' if settings.cardShowBrand | default(true) else 'false' }},
+          showSizes: {{ 'true' if settings.cardShowSizes | default(true) else 'false' }},
+          showGoal: {{ 'true' if settings.cardShowGoal | default(true) else 'false' }},
+          showSpecs: {{ 'true' if settings.cardShowSpecs | default(true) else 'false' }},
+          showRating: {{ 'true' if settings.cardShowRating | default(true) else 'false' }},
+          showStock: {{ 'true' if settings.cardShowStock | default(true) else 'false' }},
+          showSecondImage: {{ 'true' if settings.cardShowSecondImage | default(true) else 'false' }},
+          showQuickView: {{ 'true' if settings.cardShowQuickView | default(true) else 'false' }},
+          showCompare: {{ 'true' if settings.cardShowCompare | default(false, true) else 'false' }},
+          atcStyle: '{{ settings.cardAddToCartStyle | default("always", true) }}'
+        }
+      };
+    </script>
+
+    {% qumra_scripts %}
+
+    {# main.js registers the Alpine stores/components — must run before Alpine boots #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+
+    {% if settings.customJS %}
+      <script>{{ settings.customJS | safe }}</script>
+    {% endif %}
+  </body>
+</html>

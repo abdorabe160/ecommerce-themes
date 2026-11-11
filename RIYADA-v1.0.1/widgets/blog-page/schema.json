@@ -1,0 +1,146 @@
+{
+  "name": "صفحة المدونة",
+  "settings": {
+    "show_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار صورة المدونة أعلى الصفحة",
+        "en": "Show the blog's cover image"
+      },
+      "default": true
+    },
+    "feature_first": {
+      "type": "boolean",
+      "label": {
+        "ar": "إبراز أحدث مقال بعرض كامل",
+        "en": "Feature the newest article full-width"
+      },
+      "default": true
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        }
+      ]
+    },
+    "show_date": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التاريخ",
+        "en": "Show the date"
+      },
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار المقتطف",
+        "en": "Show the excerpt"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "صفحة المدونة"
+    }
+  ]
+}

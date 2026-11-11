@@ -1,0 +1,98 @@
+{
+  "name": "تفاصيل المنتج",
+  "description": "صفحة المنتج كاملة: معرض صور بزووم وملء الشاشة، ألوان ومقاسات ودليل مقاسات، السلة و\"اشتري دلوقتي\"، ميعاد التوصيل، مشاركة، تابات الوصف والمواصفات والشحن والتقييمات، و\"شفتها قبل كده\"",
+  "settings": {
+    "preview_product": {
+      "type": "products",
+      "label": "منتج للمعاينة في المحرر (بيظهر لما الصفحة تتفتح من غير منتج، ولو فاضي بيظهر منتج تجريبي)",
+      "limit": 1
+    },
+    "show_buy_now": {
+      "type": "boolean",
+      "label": "إظهار زرار \"اشتري دلوقتي\" (بيضيف للسلة ويروح لصفحة السلة)",
+      "default": true
+    },
+    "show_delivery": {
+      "type": "boolean",
+      "label": "إظهار ميعاد التوصيل المتوقع",
+      "default": false
+    },
+    "delivery_min_days": {
+      "type": "number",
+      "label": "أقل عدد أيام للتوصيل",
+      "default": 2,
+      "min": 0,
+      "max": 30,
+      "step": 1
+    },
+    "delivery_max_days": {
+      "type": "number",
+      "label": "أكتر عدد أيام للتوصيل",
+      "default": 5,
+      "min": 1,
+      "max": 60,
+      "step": 1
+    },
+    "show_trust": {
+      "type": "boolean",
+      "label": "إظهار مميزات الشراء (الشحن، الاسترجاع، الدفع الآمن)",
+      "default": true
+    },
+    "shipping_text": {
+      "type": "string",
+      "label": "نص الشحن",
+      "default": "مصاريف الشحن بتظهر قبل الدفع"
+    },
+    "returns_text": {
+      "type": "string",
+      "label": "نص الاسترجاع",
+      "default": "الاستبدال والاسترجاع حسب سياسة المتجر"
+    },
+    "secure_text": {
+      "type": "string",
+      "label": "نص الدفع الآمن",
+      "default": "طرق الدفع بتظهر في صفحة الدفع"
+    },
+    "specs": {
+      "type": "text",
+      "label": "مواصفات إضافية تظهر في تاب المواصفات (كل سطر: الاسم: القيمة)",
+      "default": ""
+    },
+    "shipping_details": {
+      "type": "text",
+      "label": "تفاصيل الشحن والاسترجاع (تاب الشحن)",
+      "default": "مصاريف الشحن بتتحسب في صفحة الدفع حسب عنوانك.\nالاستبدال والاسترجاع حسب سياسة المتجر.\nطرق الدفع المتاحة بتظهر في صفحة الدفع."
+    },
+    "show_size_guide": {
+      "type": "boolean",
+      "label": "إظهار \"دليل المقاسات\" جنب اختيار المقاس",
+      "default": true
+    },
+    "size_guide": {
+      "type": "text",
+      "label": "دليل المقاسات (كل سطر: المقاس | الصدر | الطول) - أول سطر هو العناوين",
+      "default": ""
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": "إظهار أزرار المشاركة",
+      "default": true
+    },
+    "show_recently_viewed": {
+      "type": "boolean",
+      "label": "إظهار \"شفتها قبل كده\" (المنتجات اللي العميل فتحها قبل كده)",
+      "default": true
+    },
+    "show_sticky_bar": {
+      "type": "boolean",
+      "label": "شريط \"أضف إلى السلة\" ثابت تحت الشاشة على الموبايل",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "name": "تفاصيل المنتج (Dark Blood)",
+      "category": "المنتج"
+    }
+  ]
+}

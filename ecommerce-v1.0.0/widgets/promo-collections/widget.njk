@@ -1,0 +1,204 @@
+{#
+  ============================================================================
+  PROMOTIONAL COLLECTIONS · تشكيلات ترويجية
+  ----------------------------------------------------------------------------
+  A centred title, up to four tabs (a small picture + a name), and under them
+  a product rail per tab built from ui/hx-card.njk. Switching tabs cascades
+  the cards in.
+
+  Where each tab's products come from, in order:
+    1. tabN_products picked in the editor  → rendered on the server;
+    2. else tabN_collection                → fetched (/ajax/search/products);
+    3. else the newest in the store        → HayatAuto, a different run per tab.
+  A tab with nothing at all keeps six demo products (assets/hx-demo-*.jpg and
+  hx-cg-*.webp, CC0) so the section is never blank; they link to /shop and
+  carry no buy buttons. Fetching is lazy: a tab fills the first time it opens.
+
+  Styles: assets/sections.css → "PROMOTIONAL COLLECTIONS" (+ card, rail).
+  Scripts: assets/hx.js → HxCard, HxRail, HxFill.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro onoff(v) %}{{ 'off' if v == false else 'on' }}{% endmacro %}
+
+{# ---- tabs: fixed slots, no blocks (a products picker inside a block breaks
+   the editor). `colId` is the first picked collection's id. ---- #}
+{% set set2 = d.text_set == '2' %}
+{% set tk = 'promo.s2.' if set2 else 'promo.' %}
+{% set tabs = [] %}
+{% set tabIcons = [5, 1, 6, 4] %}
+{# with no products or collection picked, each tab orders the store differently #}
+{% set sorts = ['created-desc', 'price-asc', 'rating-desc', 'price-desc'] %}
+{% for n in [1, 2, 3, 4] %}
+  {% set on = d['tab' ~ n ~ '_enabled'] != false %}
+  {% if on %}
+    {% set cols = d['tab' ~ n ~ '_collection'] | default([]) %}
+    {% set c0 = cols[0] if (cols | length) > 0 else null %}
+    {% set colId = (c0 if c0 is string else (c0._id | default(''))) if c0 else '' %}
+    {% set colHandle = (c0.handle | default(c0.slug) | default('')) if (c0 and not (c0 is string)) else '' %}
+    {% set icon = mediaUrl(d['tab' ~ n ~ '_icon']) | trim %}
+    {% set _ = tabs.push({
+      n: n,
+      label: d['tab' ~ n ~ '_label'] or t(tk ~ 'tab' ~ n),
+      icon: icon if (icon | length) > 0 else (('hx-cg-' ~ tabIcons[n - 1] ~ '.webp') | assets),
+      products: d['tab' ~ n ~ '_products'] | default([]),
+      colId: colId,
+      url: ('/shop/' ~ colHandle) if colHandle else '/shop'
+    }) %}
+  {% endif %}
+{% endfor %}
+
+{% set title = (d.title or t(tk ~ 'title')) if d.show_title != false else '' %}
+{% set viewText = (d.view_all_text or t('promo.view_all')) if d.show_view_all != false else '' %}
+{% set per = d.columns_desktop | default(6) %}
+{% set perM = d.columns_mobile | default('2.2') %}
+{% set limit = d.limit | default(12) %}
+
+{% set fRating = onoff(d.show_rating) | trim %}
+{% set fThumbs = onoff(d.show_thumbs) | trim %}
+{% set fStock  = onoff(d.show_stock) | trim %}
+{% set fQuick  = onoff(d.show_quick_view) | trim %}
+{% set fAtc    = onoff(d.show_atc) | trim %}
+{% set fHover  = onoff(d.hover_images) | trim %}
+{% set saleBadge = (d.sale_badge or t('featured.sale_badge')) if d.show_sale_badge != false else '' %}
+{% set lowBadge  = (d.low_badge or t('featured.low_badge')) if d.show_low_badge != false else '' %}
+{% set note      = (d.card_note or t('featured.note')) if d.show_note == true else '' %}
+
+{# ---- demo stand-ins: twelve products, each tab starts at a different one ---- #}
+{% set demos = [
+  { _id: 'd1', title: t('featured.demo.p1'), slug: 'demo', pricing: { price: 890, compareAtPrice: 1190 }, averageRating: 4.5, reviewsCount: 12, quantity: 20, images: [{ fileUrl: 'hx-demo-1.jpg' | assets }] },
+  { _id: 'd2', title: t('featured.demo.p2'), slug: 'demo', pricing: { price: 1490, compareAtPrice: 0 }, averageRating: 5, reviewsCount: 31, quantity: 20, images: [{ fileUrl: 'hx-demo-2.jpg' | assets }] },
+  { _id: 'd3', title: t('promo.demo.p1'), slug: 'demo', pricing: { price: 21990, compareAtPrice: 25990 }, averageRating: 4.5, reviewsCount: 18, quantity: 20, images: [{ fileUrl: 'hx-cg-1.webp' | assets }] },
+  { _id: 'd4', title: t('promo.demo.p2'), slug: 'demo', pricing: { price: 9490, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 7, quantity: 3, images: [{ fileUrl: 'hx-cg-2.webp' | assets }] },
+  { _id: 'd5', title: t('featured.demo.p5'), slug: 'demo', pricing: { price: 690, compareAtPrice: 990 }, averageRating: 5, reviewsCount: 44, quantity: 20, images: [{ fileUrl: 'hx-demo-5.jpg' | assets }] },
+  { _id: 'd6', title: t('promo.demo.p3'), slug: 'demo', pricing: { price: 6990, compareAtPrice: 8490 }, averageRating: 4.5, reviewsCount: 22, quantity: 20, images: [{ fileUrl: 'hx-cg-3.webp' | assets }] },
+  { _id: 'd7', title: t('promo.demo.p4'), slug: 'demo', pricing: { price: 15990, compareAtPrice: 0 }, averageRating: 5, reviewsCount: 63, quantity: 20, images: [{ fileUrl: 'hx-cg-4.webp' | assets }] },
+  { _id: 'd8', title: t('featured.demo.p3'), slug: 'demo', pricing: { price: 12990, compareAtPrice: 15990 }, averageRating: 4, reviewsCount: 8, quantity: 4, images: [{ fileUrl: 'hx-demo-3.jpg' | assets }] },
+  { _id: 'd9', title: t('promo.demo.p5'), slug: 'demo', pricing: { price: 1890, compareAtPrice: 2390 }, averageRating: 4.5, reviewsCount: 27, quantity: 20, images: [{ fileUrl: 'hx-cg-5.webp' | assets }] },
+  { _id: 'd10', title: t('featured.demo.p4'), slug: 'demo', pricing: { price: 24990, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 19, quantity: 20, images: [{ fileUrl: 'hx-demo-4.jpg' | assets }] },
+  { _id: 'd11', title: t('promo.demo.p6'), slug: 'demo', pricing: { price: 390, compareAtPrice: 590 }, averageRating: 4, reviewsCount: 15, quantity: 20, images: [{ fileUrl: 'hx-cg-6.webp' | assets }] },
+  { _id: 'd12', title: t('featured.demo.p6'), slug: 'demo', pricing: { price: 290, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 6, quantity: 3, images: [{ fileUrl: 'hx-demo-6.jpg' | assets }] }
+] %}
+
+<section id="hx-pc-{{ id }}"
+         class="hx-pc hx-fc is-fit-{{ d.image_fit | default('contain') }} {{ 'is-anim' if d.animate != false }}"
+         style="--fc-per: {{ per }}; --fc-per-m: {{ perM }}; --hx-card-bg: {{ d.image_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 5%, white)', true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --fc-accent: {{ d.color_accent }};{% endif %}"
+         x-data="{ tab: 0 }">
+  <div class="hx-fc-wrap {{ 'is-full' if d.full_width | default(true) }}">
+
+    {% if title %}<h2 class="hx-pc-title">{{ title | safe }}</h2>{% endif %}
+
+    {% if (tabs | length) > 1 %}
+      <div class="hx-pc-tabs" role="tablist" aria-label="{{ title | replace('<', ' <') | striptags }}">
+        {% for tb in tabs %}
+          <button type="button" class="hx-pc-tab" role="tab"
+                  id="hx-pc-tab-{{ id }}-{{ loop.index0 }}"
+                  aria-controls="hx-pc-panel-{{ id }}-{{ loop.index0 }}"
+                  :class="{ 'is-active': tab === {{ loop.index0 }} }"
+                  :aria-selected="tab === {{ loop.index0 }}"
+                  @click="tab = {{ loop.index0 }}; $dispatch('hx-pc-tab', { root: $root, i: {{ loop.index0 }} })"
+                  {% if loop.first %}aria-selected="true"{% endif %}>
+            {% if tb.icon %}<img class="hx-pc-tab-ico" src="{{ tb.icon }}" alt="" loading="lazy"/>{% endif %}
+            <span>{{ tb.label | safe }}</span>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% for tb in tabs %}
+      {% set ti = loop.index0 %}
+      {% set hasPicked = (tb.products | length) > 0 %}
+      <div class="hx-pc-panel" role="tabpanel"
+           id="hx-pc-panel-{{ id }}-{{ ti }}"
+           aria-labelledby="hx-pc-tab-{{ id }}-{{ ti }}"
+           x-show="tab === {{ ti }}" {% if not loop.first %}x-cloak{% endif %}
+           data-hx-panel="{{ ti }}">
+        <div class="hx-fc-rail" data-hx-rail>
+          <div class="hx-fc-track" data-hx-track
+               {% if not hasPicked %}data-hx-fill data-col="{{ tb.colId }}" data-sort="{{ sorts[(ti + (2 if set2 else 0)) % 4] }}" data-limit="{{ limit }}"{% endif %}>
+            {% if hasPicked %}
+              {% for p in tb.products %}
+                {% ui "hx-card.njk", product=p, sale_badge=saleBadge, low_badge=lowBadge, note=note, rating=fRating, thumbs=fThumbs, stock=fStock, quick=fQuick, atc=fAtc, hover=fHover %}
+              {% endfor %}
+            {% else %}
+              {% for k in range(0, 6) %}
+                {% set dp = demos[(ti * 3 + k + (6 if set2 else 0)) % 12] %}
+                {% ui "hx-card.njk", product=dp, demo='on', sale_badge=saleBadge, low_badge=lowBadge, note=note, rating=fRating, thumbs='off', stock=fStock, quick='off', atc='off', hover='off' %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          {% if d.show_arrows != false %}
+            <button type="button" class="hx-fc-arrow is-prev" data-hx-prev aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/></svg>
+            </button>
+            <button type="button" class="hx-fc-arrow is-next" data-hx-next aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>
+            </button>
+          {% endif %}
+        </div>
+        {% if viewText %}
+          {# The label is printed twice, stacked; hover rolls the second copy up
+             into place — the reference's link animation. #}
+          <div class="hx-pc-more">
+            <a href="{{ tb.url }}" class="hx-pc-all">
+              <span class="hx-pc-roll"><span>{{ viewText | safe }}</span><span aria-hidden="true">{{ viewText | safe }}</span></span>
+              <svg class="hx-pc-all-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 7 5 5-5 5M13 7l5 5-5 5"/></svg>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('hx-pc-{{ id }}');
+    if (!root) return;
+    var cardOpts = {
+      saleBadge: {{ saleBadge | dump | safe }}, lowBadge: {{ lowBadge | dump | safe }}, note: {{ note | dump | safe }},
+      rating: {{ 'false' if fRating == 'off' else 'true' }}, thumbs: {{ 'false' if fThumbs == 'off' else 'true' }},
+      stock: {{ 'false' if fStock == 'off' else 'true' }}, quickView: {{ 'false' if fQuick == 'off' else 'true' }},
+      atc: {{ 'false' if fAtc == 'off' else 'true' }}, hoverImages: {{ 'false' if fHover == 'off' else 'true' }},
+      t: {
+        quickView: {{ t('pages.product.quick_view') | dump | safe }}, addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+        image: {{ t('common.image') | dump | safe }}, inStock: {{ t('common.in_stock') | dump | safe }},
+        outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+        close: {{ t('common.close') | dump | safe }}, fullDetails: {{ t('pages.product.view_full_details') | dump | safe }}
+      }
+    };
+
+    function open(i) {
+      var panel = root.querySelector('[data-hx-panel="' + i + '"]');
+      if (!panel || !window.HxRail) return;
+      var rail = panel.querySelector('[data-hx-rail]');
+      /* measured only once the panel is visible — a hidden rail is 0 wide */
+      requestAnimationFrame(function () {
+        HxRail.init(rail);
+        HxRail.refresh(rail);
+        var track = panel.querySelector('[data-hx-fill]');
+        if (track) HxFill.run(track, cardOpts, function () { HxRail.refresh(rail); });
+      });
+    }
+    function boot() {
+      if (!window.HxFill) return;
+      open(0);
+      /* the other tabs load in the background, so switching is instant */
+      root.querySelectorAll('[data-hx-fill]').forEach(function (track) {
+        HxFill.run(track, cardOpts, function () {
+          var rail = track.closest('[data-hx-rail]');
+          if (rail && rail.offsetParent) HxRail.refresh(rail);
+        });
+      });
+      root.addEventListener('hx-pc-tab', function (e) { open(e.detail.i); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-pc-' ~ id, c=d %}

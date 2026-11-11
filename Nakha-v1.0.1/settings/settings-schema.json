@@ -1,0 +1,531 @@
+[
+  {
+    "label": { "ar": "ألوان الهوية", "en": "Brand Colors" },
+    "settings": {
+      "brandColor": {
+        "type": "color",
+        "label": { "ar": "اللون العام للمتجر: لون واحد يغيّر الأزرار والروابط والشارات. فارغ = الألوان الرئيسية تحت. يفضّل لون متوسط أو غامق مع نص أبيض", "en": "Global brand colour: one colour for buttons, links and badges. Empty uses the primary colours below. A mid or dark colour suits the white button text" },
+        "default": ""
+      },
+      "primaryColor": {
+        "type": "color",
+        "label": { "ar": "اللون الرئيسي — أحمر شهي", "en": "Primary — Appetite Red" },
+        "info": { "ar": "لون زر الطلب والإضافة. استخدمه للأفعال فقط، مش للزينة.", "en": "The colour of Add and Order. Actions only — never decoration." },
+        "default": "#D7392F"
+      },
+      "primaryColorHover": {
+        "type": "color",
+        "label": { "ar": "الرئيسي عند المرور (أغمق على الخلفية الفاتحة)", "en": "Primary Hover (darker on light)" },
+        "info": { "ar": "على خلفية فاتحة، لون المرور لازم يكون أغمق مش أفتح.", "en": "On a light ground hover goes darker, not lighter." },
+        "default": "#BE2E25"
+      },
+      "primaryColorDark": {
+        "type": "color",
+        "label": { "ar": "الرئيسي الغامق (عند الضغط وعلى الأقسام الداكنة)", "en": "Primary Dark (pressed & on dark bands)" },
+        "default": "#A02019"
+      },
+      "primaryColorWash": {
+        "type": "color",
+        "label": { "ar": "خلفية الوسوم والخيارات المختارة", "en": "Chip & Selected-Option Background" },
+        "default": "#FDECE9"
+      },
+      "primaryColorLine": {
+        "type": "color",
+        "label": { "ar": "حدود الوسوم", "en": "Chip Border" },
+        "default": "#F6C9C4"
+      },
+      "saleColor": {
+        "type": "color",
+        "label": { "ar": "لون الخصم (الشارة والسعر). فارغ = الشكل الحالي", "en": "Sale colour (badge and price). Empty keeps the current look" },
+        "default": ""
+      },
+      "successColor": {
+        "type": "color",
+        "label": { "ar": "لون «متوفر». فارغ = الأخضر الحالي", "en": "In-stock colour. Empty keeps the current green" },
+        "default": ""
+      },
+      "warningColor": {
+        "type": "color",
+        "label": { "ar": "لون «أوشك على النفاد». فارغ = اللون الحالي", "en": "Low-stock colour. Empty keeps the current colour" },
+        "default": ""
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "الخلفيات والنصوص", "en": "Surfaces & Text" },
+    "settings": {
+      "backgroundColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الموقع — كريمي دافئ", "en": "Page Background — Warm Cream" },
+        "info": { "ar": "الكريمي مقصود. الأبيض الصافي بيخلّي صور الأكل باردة.", "en": "The cream is deliberate — pure white makes food photography look clinical." },
+        "default": "#FFF7EF"
+      },
+      "sectionAltColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الأقسام المتبادلة", "en": "Alternating Section Background" },
+        "default": "#FBEFE2"
+      },
+      "surfaceColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الكروت والهيدر", "en": "Card & Header Surface" },
+        "default": "#FFFFFF"
+      },
+      "surfaceAltColor": {
+        "type": "color",
+        "label": { "ar": "خلفية ثانوية (تنبيهات، عروض الطقم)", "en": "Secondary Surface (notices, combos)" },
+        "default": "#FDF3E8"
+      },
+      "wellColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الحقول الغائرة", "en": "Sunken / Input Background" },
+        "info": { "ar": "الحقول بتغور عن الصفحة عشان تبان إنها حقول.", "en": "Inputs sink below the page so they read as fields." },
+        "default": "#F7EADC"
+      },
+      "mediaColor": {
+        "type": "color",
+        "label": { "ar": "خلفية صور الأطباق", "en": "Dish Photo Background" },
+        "info": { "ar": "أبيض عشان حافة الطبق تفضل واضحة. متغيّرهاش للكريمي.", "en": "White, so the plate rim stays defined. Do not swap it for the cream." },
+        "default": "#FFFFFF"
+      },
+      "charColor": {
+        "type": "color",
+        "label": { "ar": "اللون الفحمي — الأقسام الداكنة والفوتر", "en": "Charcoal — Dark Bands & Footer" },
+        "default": "#2C2A28"
+      },
+      "textColor": {
+        "type": "color",
+        "label": { "ar": "لون النص الأساسي", "en": "Primary Text" },
+        "default": "#2C2A28"
+      },
+      "textSecondaryColor": {
+        "type": "color",
+        "label": { "ar": "لون النص الثانوي (وصف الطبق)", "en": "Secondary Text (dish description)" },
+        "default": "#6B635C"
+      },
+      "textTertiaryColor": {
+        "type": "color",
+        "label": { "ar": "لون النص الخافت (السعرات، الملاحظات)", "en": "Muted Text (calories, notes)" },
+        "default": "#6E655E"
+      },
+      "borderColor": {
+        "type": "color",
+        "label": { "ar": "لون الحدود", "en": "Border" },
+        "default": "#EEE1D2"
+      },
+      "borderStrongColor": {
+        "type": "color",
+        "label": { "ar": "لون الحدود القوية", "en": "Strong Border" },
+        "default": "#DFCCB6"
+      },
+      "borderHoverColor": {
+        "type": "color",
+        "label": { "ar": "لون الحدود عند المرور", "en": "Border on Hover" },
+        "default": "#C9B29A"
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "الهيدر والفوتر", "en": "Header & Footer" },
+    "settings": {
+      "headerColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الهيدر", "en": "Header Background" },
+        "default": "#FFFFFF"
+      },
+      "headerTextColor": {
+        "type": "color",
+        "label": { "ar": "لون نص الهيدر", "en": "Header Text" },
+        "default": "#2C2A28"
+      },
+      "headerBorderColor": {
+        "type": "color",
+        "label": { "ar": "لون حد الهيدر", "en": "Header Border" },
+        "default": "#EEE1D2"
+      },
+      "announcementColor": {
+        "type": "color",
+        "label": { "ar": "خلفية شريط الإعلان", "en": "Announcement Bar Background" },
+        "default": "#D7392F"
+      },
+      "announcementTextColor": {
+        "type": "color",
+        "label": { "ar": "لون نص شريط الإعلان", "en": "Announcement Bar Text" },
+        "default": "#FFFFFF"
+      },
+      "footerColor": {
+        "type": "color",
+        "label": { "ar": "خلفية الفوتر", "en": "Footer Background" },
+        "info": { "ar": "الفوتر الفحمي تحت صفحة كريمية بيقفل الصفحة زي شريط المطعم.", "en": "A charcoal footer under a cream page closes the page like a restaurant band." },
+        "default": "#2C2A28"
+      },
+      "footerHeadingColor": {
+        "type": "color",
+        "label": { "ar": "لون عناوين الفوتر", "en": "Footer Headings" },
+        "default": "#FFF7EF"
+      },
+      "footerTextColor": {
+        "type": "color",
+        "label": { "ar": "لون نص الفوتر", "en": "Footer Text" },
+        "default": "#B5ABA1"
+      },
+      "footerMutedColor": {
+        "type": "color",
+        "label": { "ar": "لون نص الفوتر الخافت", "en": "Footer Muted Text" },
+        "default": "#A39A91"
+      },
+      "footerBorderColor": {
+        "type": "color",
+        "label": { "ar": "لون حدود الفوتر", "en": "Footer Border" },
+        "default": "#443F3A"
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "الخطوط", "en": "Typography" },
+    "settings": {
+      "fontDisplayArabic": {
+        "type": "select",
+        "label": { "ar": "خط العناوين — عربي", "en": "Display Font — Arabic" },
+        "default": "Baloo Bhaijaan 2",
+        "options": [
+          { "value": "Baloo Bhaijaan 2", "label": { "ar": "Baloo Bhaijaan 2 — دافئ ومستدير (موصى به)", "en": "Baloo Bhaijaan 2 — warm & rounded (recommended)" } },
+          { "value": "Changa", "label": { "ar": "Changa — عريض وواضح", "en": "Changa — bold & clear" } },
+          { "value": "Marhey", "label": { "ar": "Marhey — مرح", "en": "Marhey — playful" } },
+          { "value": "Lalezar", "label": { "ar": "Lalezar — عريض جداً (وزن واحد)", "en": "Lalezar — very bold (single weight)" } },
+          { "value": "Cairo", "label": { "ar": "Cairo", "en": "Cairo" } },
+          { "value": "Tajawal", "label": { "ar": "Tajawal", "en": "Tajawal" } },
+          { "value": "Almarai", "label": { "ar": "Almarai", "en": "Almarai" } },
+          { "value": "Alexandria", "label": { "ar": "Alexandria", "en": "Alexandria" } }
+        ]
+      },
+      "fontDisplayLatin": {
+        "type": "select",
+        "label": { "ar": "خط العناوين — لاتيني", "en": "Display Font — Latin" },
+        "default": "Nunito",
+        "options": [
+          { "value": "Nunito", "label": { "ar": "Nunito — دافئ ومستدير (موصى به)", "en": "Nunito — warm & rounded (recommended)" } },
+          { "value": "Fredoka", "label": { "ar": "Fredoka — مرح وسميك", "en": "Fredoka — playful & chunky" } },
+          { "value": "Quicksand", "label": { "ar": "Quicksand — خفيف ومستدير", "en": "Quicksand — light & rounded" } },
+          { "value": "Poppins", "label": { "ar": "Poppins — هندسي", "en": "Poppins — geometric" } },
+          { "value": "Plus Jakarta Sans", "label": { "ar": "Plus Jakarta Sans — عصري", "en": "Plus Jakarta Sans — modern" } },
+          { "value": "Rubik", "label": { "ar": "Rubik", "en": "Rubik" } }
+        ]
+      },
+      "fontBodyArabic": {
+        "type": "select",
+        "label": { "ar": "خط النص — عربي", "en": "Body Font — Arabic" },
+        "default": "Cairo",
+        "options": [
+          { "value": "Cairo", "label": { "ar": "Cairo (موصى به)", "en": "Cairo (recommended)" } },
+          { "value": "Tajawal", "label": { "ar": "Tajawal", "en": "Tajawal" } },
+          { "value": "Almarai", "label": { "ar": "Almarai", "en": "Almarai" } },
+          { "value": "IBM Plex Sans Arabic", "label": { "ar": "IBM Plex Sans Arabic", "en": "IBM Plex Sans Arabic" } },
+          { "value": "Readex Pro", "label": { "ar": "Readex Pro", "en": "Readex Pro" } },
+          { "value": "Alexandria", "label": { "ar": "Alexandria", "en": "Alexandria" } }
+        ]
+      },
+      "fontBodyLatin": {
+        "type": "select",
+        "label": { "ar": "خط النص — لاتيني", "en": "Body Font — Latin" },
+        "default": "Cairo",
+        "options": [
+          { "value": "Cairo", "label": { "ar": "Cairo — يطابق العربي (موصى به)", "en": "Cairo — matches the Arabic (recommended)" } },
+          { "value": "Nunito", "label": { "ar": "Nunito", "en": "Nunito" } },
+          { "value": "DM Sans", "label": { "ar": "DM Sans", "en": "DM Sans" } },
+          { "value": "Inter", "label": { "ar": "Inter", "en": "Inter" } },
+          { "value": "Manrope", "label": { "ar": "Manrope", "en": "Manrope" } },
+          { "value": "Plus Jakarta Sans", "label": { "ar": "Plus Jakarta Sans", "en": "Plus Jakarta Sans" } }
+        ]
+      },
+      "baseFontSize": {
+        "type": "range",
+        "label": { "ar": "حجم النص الأساسي", "en": "Base Font Size" },
+        "default": 16,
+        "min": 14,
+        "max": 19,
+        "step": 1,
+        "unit": "px"
+      },
+      "latinHeadingCase": {
+        "type": "select",
+        "label": { "ar": "حالة العناوين اللاتينية", "en": "Latin Heading Case" },
+        "info": { "ar": "الافتراضي عادي — الدفء هو هوية الثيم، والكابيتال صياح.", "en": "Title Case by default — warmth is the brand read, and all-caps is a shout." },
+        "default": "normal",
+        "options": [
+          { "value": "normal", "label": { "ar": "عادي — Order Now (موصى به)", "en": "Title Case — Order Now (recommended)" } },
+          { "value": "uppercase", "label": { "ar": "كابيتال — ORDER NOW", "en": "Uppercase — ORDER NOW" } }
+        ]
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "الشكل والحركة", "en": "Shape & Motion" },
+    "settings": {
+      "cornerStyle": {
+        "type": "select",
+        "label": { "ar": "شكل الزوايا", "en": "Corner Style" },
+        "default": "rounded",
+        "options": [
+          { "value": "rounded", "label": { "ar": "مستدير — ١٨ بكسل (موصى به)", "en": "Rounded — 18px (recommended)" } },
+          { "value": "plush", "label": { "ar": "مستدير جداً — ٢٦ بكسل", "en": "Plush — 26px" } },
+          { "value": "soft", "label": { "ar": "ناعم — ١٤ بكسل", "en": "Soft — 14px" } },
+          { "value": "tight", "label": { "ar": "ضيق — ٨ بكسل", "en": "Tight — 8px" } }
+        ]
+      },
+      "buttonStyle": {
+        "type": "select",
+        "label": { "ar": "شكل الأزرار", "en": "Button Style" },
+        "default": "pill",
+        "options": [
+          { "value": "pill", "label": { "ar": "كبسولة — دائري بالكامل (موصى به)", "en": "Pill — fully round (recommended)" } },
+          { "value": "rounded", "label": { "ar": "مستدير — ١٤ بكسل", "en": "Rounded — 14px" } },
+          { "value": "soft", "label": { "ar": "ناعم — ١٠ بكسل", "en": "Soft — 10px" } },
+          { "value": "square", "label": { "ar": "شبه مربع — ٦ بكسل", "en": "Square — 6px" } }
+        ]
+      },
+      "cardStyle": {
+        "type": "select",
+        "label": { "ar": "شكل الكروت", "en": "Card Style" },
+        "info": { "ar": "على خلفية فاتحة الظل بيبان فعلاً — فالكارت المرفوع بيقول «دوس عليّ».", "en": "On a light ground a shadow actually reads — a raised card says \"tap me\"." },
+        "default": "raised",
+        "options": [
+          { "value": "raised", "label": { "ar": "مرفوع بظل دافئ (موصى به)", "en": "Raised — warm shadow (recommended)" } },
+          { "value": "outline", "label": { "ar": "بحدود فقط — للصور المزدحمة", "en": "Outline only — for busy photography" } },
+          { "value": "flat", "label": { "ar": "مسطّح", "en": "Flat" } }
+        ]
+      },
+      "motionSpeed": {
+        "type": "select",
+        "label": { "ar": "سرعة الحركة", "en": "Motion Speed" },
+        "info": { "ar": "طلب الأكل اندفاع — الواجهة لازم ترد قبل ما الشهية تبرد.", "en": "Ordering food is an impulse — the UI should answer before the appetite cools." },
+        "default": "brisk",
+        "options": [
+          { "value": "brisk", "label": { "ar": "سريعة (موصى به)", "en": "Brisk (recommended)" } },
+          { "value": "relaxed", "label": { "ar": "هادئة", "en": "Relaxed" } }
+        ]
+      },
+      "enableAnimations": {
+        "type": "boolean",
+        "label": { "ar": "تفعيل الحركة (إيقافها يوقف الشريط المتحرك والتقليب التلقائي وحركات المرور)", "en": "Enable motion (off stops the marquee, auto-sliding and hover movement)" },
+        "default": true
+      },
+      "sectionSpacing": {
+        "type": "select",
+        "label": { "ar": "المسافات بين الأقسام", "en": "Section Spacing" },
+        "default": "normal",
+        "options": [
+          { "value": "normal", "label": { "ar": "عادية — ٧٢ بكسل (موصى به)", "en": "Normal — 72px (recommended)" } },
+          { "value": "compact", "label": { "ar": "متقاربة — ٥٢ بكسل، منيو أطول في شاشة واحدة", "en": "Compact — 52px, more menu per screen" } },
+          { "value": "roomy", "label": { "ar": "واسعة — ٩٦ بكسل", "en": "Roomy — 96px" } }
+        ]
+      },
+      "containerWidth": {
+        "type": "select",
+        "label": { "ar": "عرض المحتوى", "en": "Content Width" },
+        "default": "1280",
+        "options": [
+          { "value": "1120", "label": { "ar": "١١٢٠ بكسل", "en": "1120px" } },
+          { "value": "1200", "label": { "ar": "١٢٠٠ بكسل", "en": "1200px" } },
+          { "value": "1280", "label": { "ar": "١٢٨٠ بكسل (موصى به)", "en": "1280px (recommended)" } },
+          { "value": "1360", "label": { "ar": "١٣٦٠ بكسل", "en": "1360px" } },
+          { "value": "1440", "label": { "ar": "١٤٤٠ بكسل", "en": "1440px" } }
+        ]
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "الطلب والخدمة", "en": "Ordering & Service" },
+    "settings": {
+      "defaultServiceMode": {
+        "type": "select",
+        "label": { "ar": "نوع الخدمة الافتراضي", "en": "Default Service Mode" },
+        "default": "delivery",
+        "options": [
+          { "value": "delivery", "label": { "ar": "توصيل", "en": "Delivery" } },
+          { "value": "pickup", "label": { "ar": "استلام من الفرع", "en": "Pickup" } }
+        ]
+      },
+      "showServiceToggle": {
+        "type": "boolean",
+        "label": { "ar": "إظهار مفتاح «توصيل / استلام»", "en": "Show the Delivery / Pickup Toggle" },
+        "info": { "ar": "اقفله لو المطعم بيقدّم نوع واحد بس.", "en": "Switch off if the restaurant offers only one." },
+        "default": true
+      },
+      "showPrepTime": {
+        "type": "boolean",
+        "label": { "ar": "إظهار وقت التحضير", "en": "Show Prep Time" },
+        "info": { "ar": "أهم رقم في المتجر. بيظهر في الهيدر والبانر وكارت الطبق.", "en": "The most valuable number on the storefront — header, hero and dish card." },
+        "default": true
+      },
+      "prepTimeLabel": {
+        "type": "string",
+        "label": { "ar": "وقت التحضير — الرقم", "en": "Prep Time — the Number" },
+        "info": { "ar": "مدى صادق أحسن من رقم متفائل. وعد بـ ٢٠ دقيقة بيبقى ٥٠ بيكلّف أكتر مما يكسب.", "en": "An honest range beats an optimistic number. A 20-minute promise that becomes 50 costs more than it earns." },
+        "default": ""
+      },
+      "showBranch": {
+        "type": "boolean",
+        "label": { "ar": "إظهار اختيار الفرع في الهيدر", "en": "Show the Branch Picker in the Header" },
+        "default": true
+      },
+      "showOpenState": {
+        "type": "boolean",
+        "label": { "ar": "إظهار حالة «مفتوح الآن / مغلق»", "en": "Show the Open / Closed Indicator" },
+        "default": true
+      },
+      "floatingCart": {
+        "type": "select",
+        "label": { "ar": "السلة العائمة", "en": "Floating Cart" },
+        "info": { "ar": "بتظهر بس لما يكون في حاجة في السلة، وبتختفي في صفحة السلة والدفع.", "en": "Only appears when the cart has something in it; hidden on the cart and checkout pages." },
+        "default": "bar",
+        "options": [
+          { "value": "bar", "label": { "ar": "شريط بالعدد والإجمالي (موصى به)", "en": "Bar — count & total (recommended)" } },
+          { "value": "bubble", "label": { "ar": "زر دائري في الركن", "en": "Bubble — corner button" } },
+          { "value": "off", "label": { "ar": "بدون", "en": "Off" } }
+        ]
+      },
+      "minOrderNote": {
+        "type": "string",
+        "label": { "ar": "ملاحظة الحد الأدنى للطلب", "en": "Minimum Order Note" },
+        "info": { "ar": "اتركها فاضية لو مفيش حد أدنى.", "en": "Leave empty if there is no minimum." },
+        "default": ""
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "بطاقة الطبق", "en": "Dish Card" },
+    "settings": {
+      "dishCardLayout": {
+        "type": "select",
+        "label": { "ar": "شكل البطاقة", "en": "Card Layout" },
+        "info": { "ar": "المنيو بيتقرا كقائمة أسماء وأسعار، مش كشبكة صور — عشان كده الأفقي هو الافتراضي.", "en": "A menu is scanned as a list of names and prices, not a grid of images — hence horizontal." },
+        "default": "horizontal",
+        "options": [
+          { "value": "horizontal", "label": { "ar": "أفقي — صورة بجانب النص (موصى به)", "en": "Horizontal — image beside text (recommended)" } },
+          { "value": "vertical", "label": { "ar": "رأسي — صورة فوق النص", "en": "Vertical — image above text" } }
+        ]
+      },
+      "dishImageRatio": {
+        "type": "select",
+        "label": { "ar": "نسبة صورة الطبق", "en": "Dish Image Ratio" },
+        "default": "1x1",
+        "options": [
+          { "value": "1x1", "label": { "ar": "مربع ١:١ (موصى به للأفقي)", "en": "Square 1:1 (recommended for horizontal)" } },
+          { "value": "4x3", "label": { "ar": "٤:٣", "en": "4:3" } },
+          { "value": "3x2", "label": { "ar": "٣:٢", "en": "3:2" } },
+          { "value": "4x5", "label": { "ar": "٤:٥ — طولي", "en": "4:5 — portrait" } }
+        ]
+      },
+      "dishAddStyle": {
+        "type": "select",
+        "label": { "ar": "شكل زر الإضافة", "en": "Add Button Style" },
+        "default": "circle",
+        "options": [
+          { "value": "circle", "label": { "ar": "دائري بعلامة + (موصى به)", "en": "Circle with + (recommended)" } },
+          { "value": "wide", "label": { "ar": "عريض بكلمة «أضف»", "en": "Wide — with a label" } }
+        ]
+      },
+      "lowStockThreshold": {
+        "type": "range",
+        "label": { "ar": "تنبيه «أوشك على النفاد» عند كمية", "en": "Low-stock notice at quantity" },
+        "default": 3,
+        "min": 1,
+        "max": 20,
+        "step": 1
+      },
+      "dishShowDesc": {
+        "type": "boolean",
+        "label": { "ar": "إظهار وصف الطبق", "en": "Show the Description" },
+        "default": true
+      },
+      "dishDescLines": {
+        "type": "range",
+        "label": { "ar": "عدد أسطر الوصف", "en": "Description Lines" },
+        "default": 2,
+        "min": 1,
+        "max": 4,
+        "step": 1
+      },
+      "dishShowTags": {
+        "type": "boolean",
+        "label": { "ar": "إظهار وسوم النظام الغذائي (نباتي · حلال · خالٍ من الجلوتين)", "en": "Show Diet Tags (veg · halal · gluten-free)" },
+        "default": true
+      },
+      "dishShowSpice": {
+        "type": "boolean",
+        "label": { "ar": "إظهار درجة الحرارة (الشطة)", "en": "Show the Spice Level" },
+        "default": true
+      },
+      "dishShowCalories": {
+        "type": "boolean",
+        "label": { "ar": "إظهار السعرات الحرارية", "en": "Show Calories" },
+        "default": false
+      },
+      "dishShowRating": {
+        "type": "boolean",
+        "label": { "ar": "إظهار التقييم", "en": "Show the Rating" },
+        "default": true
+      },
+      "dishShowSecondImage": {
+        "type": "boolean",
+        "label": { "ar": "تبديل الصورة عند المرور (سطح المكتب فقط)", "en": "Swap Image on Hover (desktop only)" },
+        "info": { "ar": "تحميل صورة تانية لكل طبق على الجوال بيكلّف بيانات فعلاً.", "en": "Preloading a second photo per dish on a phone connection is real money." },
+        "default": false
+      },
+      "dishShowQuickView": {
+        "type": "boolean",
+        "label": { "ar": "إظهار زر العرض السريع", "en": "Show the Quick View Button" },
+        "default": true
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "التواصل ومحركات البحث", "en": "Contact & Search Engines" },
+    "settings": {
+      "whatsappNumber": {
+        "type": "text",
+        "label": { "ar": "رقم واتساب (للزر العائم)", "en": "WhatsApp Number (floating button)" },
+        "info": { "ar": "بالصيغة الدولية، مثال 2010xxxxxxxx. فاضي = الزر مخفي.", "en": "International format, e.g. 2010xxxxxxxx. Empty = button hidden." },
+        "default": ""
+      },
+      "googleVerification": {
+        "type": "text",
+        "label": { "ar": "كود التحقق من Google Search Console", "en": "Google Search Console Verification" },
+        "info": { "ar": "الصق وسم meta كامل أو قيمة content بس.", "en": "Paste the full meta tag or just its content value." },
+        "default": ""
+      }
+    }
+  },
+
+  {
+    "label": { "ar": "أيقونة المتجر", "en": "Favicon" },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": { "ar": "أيقونة المتجر (Favicon)", "en": "Favicon" }
+      }
+    }
+  },
+  {
+    "label": { "ar": "كود مخصص", "en": "Custom Code" },
+    "settings": {
+      "customCSS": {
+        "type": "css",
+        "label": { "ar": "CSS مخصص", "en": "Custom CSS" },
+        "default": ""
+      },
+      "customJS": {
+        "type": "javascript",
+        "label": { "ar": "JavaScript مخصص", "en": "Custom JavaScript" },
+        "default": ""
+      }
+    }
+  }
+]

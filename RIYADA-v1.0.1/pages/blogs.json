@@ -1,0 +1,19 @@
+{
+  "name": "المدونات",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونات",
+      "widget": "blogs-page",
+      "settings": {
+        "eyebrow": "المدوّنة",
+        "title": "تمرين أفضل، مش أطول",
+        "subtitle": "مقالات عن التدريب والتغذية والمعدّات.",
+        "columns": "3"
+      }
+    }
+  ]
+}

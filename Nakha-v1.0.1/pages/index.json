@@ -1,0 +1,543 @@
+{
+  "name": "الصفحة الرئيسية",
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "layout": "full",
+        "height": "full",
+        "height_mobile": "large",
+        "text_align": "start",
+        "scrim": "medium",
+        "show_speed_motif": true,
+        "video_on_mobile": false,
+        "show_stats": true,
+        "stat1_number": "",
+        "stat1_label": "دقيقة متوسط التحضير",
+        "stat2_number": "",
+        "stat2_label": "صنف في المنيو",
+        "stat3_number": "",
+        "stat3_label": "تقييم العملاء من ٥",
+        "section_background": "void",
+        "autoplay": true,
+        "autoplay_speed": 7,
+        "show_dots": true,
+        "show_arrows": true
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "slide1",
+          "settings": {
+            "slide_focal": "center",
+            "slide_video_url": "",
+            "slide_eyebrow": "المنيو",
+            "slide_badge": "اطلب أونلاين",
+            "slide_title": "أكلك على بُعد <em>ضغطة</em>",
+            "slide_description": "منيو كامل من المخبوزات للحلويات للوجبات، كله في مكان واحد.",
+            "slide_button_text": "اطلب دلوقتي",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "شوف الأقسام",
+            "slide_button2_url": "/collections"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide2",
+          "settings": {
+            "slide_focal": "top",
+            "slide_video_url": "",
+            "slide_eyebrow": "المخبوزات",
+            "slide_badge": "",
+            "slide_title": "خبز و<em>معجنات</em>",
+            "slide_description": "خبز ومعجنات وفطائر للفطار والعزومات.",
+            "slide_button_text": "شوف المخبوزات",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "",
+            "slide_button2_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide3",
+          "settings": {
+            "slide_focal": "center",
+            "slide_video_url": "",
+            "slide_eyebrow": "الحلويات",
+            "slide_badge": "جديد",
+            "slide_title": "الحلو اللي <em>يستاهل</em> آخر لقمة",
+            "slide_description": "كيك وتشيز كيك وحلو شرقي، للمناسبات ولآخر السهرة.",
+            "slide_button_text": "تصفّح الحلويات",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "",
+            "slide_button2_url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأكثر طلباً",
+      "widget": "collection-products",
+      "settings": {
+        "eyebrow": "الأكثر طلباً",
+        "title": "اللي الناس <em>بتعيد</em> طلبه",
+        "description": "",
+        "featuredCollection": [],
+        "layout": "slider",
+        "header_align": "split",
+        "background": "canvas",
+        "card_surface": true,
+        "limit": 10,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "4x5",
+        "view_all_url": "/shop",
+        "view_all_text": "المنيو كامل",
+        "show_arrows": true,
+        "show_progress": true
+      }
+    },
+    {
+      "name": "شريط الخدمات",
+      "widget": "features-bar",
+      "settings": {
+        "style": "trust",
+        "background": "alt",
+        "icon_tone": "appetite",
+        "icon_shape": "square",
+        "columns": "4",
+        "align": "start",
+        "show_dividers": true,
+        "boxed": false,
+        "border_top": true,
+        "border_bottom": true,
+        "compact": false
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "مخبوزات",
+          "settings": {
+            "icon": "oven",
+            "title": "مخبوزات",
+            "description": "خبز ومعجنات وفطائر"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "حلويات",
+          "settings": {
+            "icon": "star",
+            "title": "حلويات",
+            "description": "كيك وتشيز كيك وحلو شرقي"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "وجبات",
+          "settings": {
+            "icon": "chef",
+            "title": "وجبات",
+            "description": "سندوتشات وأطباق للغدا والعشا"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "اطلب أونلاين",
+          "settings": {
+            "icon": "bag",
+            "title": "اطلب أونلاين",
+            "description": "تصفّح المنيو وضيف للسلة في خطوات"
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط متحرّك",
+      "widget": "features-bar",
+      "settings": {
+        "style": "marquee",
+        "background": "appetite",
+        "icon_tone": "appetite",
+        "border_top": false,
+        "border_bottom": true,
+        "compact": true,
+        "marquee_speed": 26
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "خبز ومعجنات",
+          "settings": {
+            "icon": "oven",
+            "title": "خبز ومعجنات",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "كيك وتشيز كيك",
+          "settings": {
+            "icon": "star",
+            "title": "كيك وتشيز كيك",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "حلو شرقي",
+          "settings": {
+            "icon": "box",
+            "title": "حلو شرقي",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "سندوتشات ووجبات",
+          "settings": {
+            "icon": "chef",
+            "title": "سندوتشات ووجبات",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "فطار",
+          "settings": {
+            "icon": "coffee",
+            "title": "فطار",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "اطلب أونلاين",
+          "settings": {
+            "icon": "bolt",
+            "title": "اطلب أونلاين",
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "الوجبة الكاملة",
+      "widget": "bundle-builder",
+      "settings": {
+        "eyebrow": "اختار وجبتك",
+        "title": "الوجبة <em>الكاملة</em>",
+        "description": "طبق رئيسي ومقبلات ومشروب وحلو — مختارين مع بعض.",
+        "layout": "row",
+        "background": "canvas",
+        "show_prices": true,
+        "show_notes": true,
+        "show_bundle_bar": true,
+        "bundle_price": 0,
+        "bundle_note": "",
+        "cta_text": "أضف الوجبة كاملة"
+      },
+      "blocks": [
+        {
+          "block": "item",
+          "name": "الطبق الرئيسي",
+          "settings": {
+            "product": [],
+            "role_label": "الطبق الرئيسي",
+            "note": "نجم الوجبة — اختر حجمك ودرجة الحرارة",
+            "tag": "essential"
+          }
+        },
+        {
+          "block": "item",
+          "name": "المقبلات",
+          "settings": {
+            "product": [],
+            "role_label": "المقبلات",
+            "note": "اللي بيتاكل قبل ما الطبق يوصل",
+            "tag": "recommended"
+          }
+        },
+        {
+          "block": "item",
+          "name": "المشروب",
+          "settings": {
+            "product": [],
+            "role_label": "المشروب",
+            "note": "بارد أو سخن — على مزاجك",
+            "tag": "recommended"
+          }
+        },
+        {
+          "block": "item",
+          "name": "الحلو",
+          "settings": {
+            "product": [],
+            "role_label": "الحلو",
+            "note": "آخر لقمة لازم تبقى حلوة",
+            "tag": "optional"
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب المزاج",
+      "widget": "use-case-finder",
+      "settings": {
+        "eyebrow": "ابدأ من هنا",
+        "title": "نفسك في <em>إيه</em> النهارده؟",
+        "description": "اختر مزاجك أو وقت الأكل، ونعرض لك اللي يناسبه من المنيو.",
+        "layout": "goals",
+        "card_ratio": "4x5",
+        "background": "canvas",
+        "columns": "4",
+        "header_align": "split",
+        "show_descriptions": true,
+        "view_all_url": "/shop",
+        "view_all_text": "المنيو كامل"
+      },
+      "blocks": [
+        {
+          "block": "usecase",
+          "name": "فطار",
+          "settings": {
+            "icon": "breakfast",
+            "label": "فطار",
+            "description": "بيض وفول وسندوتشات الصبح",
+            "url": "/shop",
+            "tint": "appetite"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "غدا",
+          "settings": {
+            "icon": "lunch",
+            "label": "غدا",
+            "description": "أطباق رئيسية ووجبات العيلة",
+            "url": "/shop",
+            "tint": "cream"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "مخبوزات",
+          "settings": {
+            "icon": "bakery",
+            "label": "مخبوزات",
+            "description": "خبز ومعجنات وفطائر",
+            "url": "/shop",
+            "tint": "neutral"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "حلويات",
+          "settings": {
+            "icon": "dessert",
+            "label": "حلويات",
+            "description": "كيك وتشيز كيك وحلو شرقي",
+            "url": "/shop",
+            "tint": "appetite"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "مشروبات",
+          "settings": {
+            "icon": "drinks",
+            "label": "مشروبات",
+            "description": "قهوة وعصائر وبارد",
+            "url": "/shop",
+            "tint": "cream"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "حار",
+          "settings": {
+            "icon": "spicy",
+            "label": "حار",
+            "description": "لو بتحب الشطة",
+            "url": "/shop",
+            "tint": "neutral"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "خفيف وصحي",
+          "settings": {
+            "icon": "healthy",
+            "label": "خفيف وصحي",
+            "description": "سلطات وخيارات نباتية",
+            "url": "/shop",
+            "tint": "appetite"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "سريع",
+          "settings": {
+            "icon": "fast",
+            "label": "سريع",
+            "description": "خفيف وسريع",
+            "url": "/shop",
+            "tint": "cream"
+          }
+        }
+      ]
+    },
+    {
+      "name": "أقسام المنيو",
+      "widget": "collections-section",
+      "settings": {
+        "eyebrow": "المنيو",
+        "title": "تصفّح <em>الأقسام</em>",
+        "description": "",
+        "collections": [],
+        "layout": "grid",
+        "label_style": "below",
+        "image_fit": "cover",
+        "card_ratio": "1x1",
+        "background": "alt",
+        "columns_desktop": "5",
+        "columns_mobile": "2",
+        "header_align": "split",
+        "show_count": false,
+        "view_all_url": "/collections",
+        "view_all_text": "كل الأقسام",
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5
+      }
+    },
+    {
+      "name": "ليه نكهة؟",
+      "widget": "image-with-text",
+      "settings": {
+        "layout": "split",
+        "image_position": "start",
+        "image_ratio": "4x5",
+        "image_fit": "cover",
+        "eyebrow": "عن مطبخنا",
+        "title": "بنطبخ زي ما <em>بنحب ناكل</em>",
+        "text": "<p>منيو بيجمع المخبوزات والحلويات والوجبات في مكان واحد — اختار اللي على مزاجك واطلبه في خطوات.</p>",
+        "signature": "",
+        "button_text": "تعرّف علينا",
+        "button_url": "",
+        "button2_text": "أسئلة شائعة",
+        "button2_url": "",
+        "blocks_style": "checklist",
+        "background": "canvas"
+      },
+      "blocks": [
+        {
+          "block": "point",
+          "name": "مخبوزات",
+          "settings": {
+            "number": "",
+            "label": "مخبوزات"
+          }
+        },
+        {
+          "block": "point",
+          "name": "حلويات",
+          "settings": {
+            "number": "",
+            "label": "حلويات"
+          }
+        },
+        {
+          "block": "point",
+          "name": "وجبات",
+          "settings": {
+            "number": "",
+            "label": "وجبات"
+          }
+        },
+        {
+          "block": "point",
+          "name": "طلب أونلاين في خطوات",
+          "settings": {
+            "number": "",
+            "label": "طلب أونلاين في خطوات"
+          }
+        }
+      ]
+    },
+    {
+      "name": "عرض اليوم",
+      "widget": "cta-banner",
+      "settings": {
+        "layout": "card",
+        "background": "appetite",
+        "scrim": "medium",
+        "eyebrow": "عرض اليوم",
+        "title": "عروض <em>اليوم</em>",
+        "subtitle": "",
+        "text_alignment": "center",
+        "height": "medium",
+        "show_speed_motif": true,
+        "show_countdown": false,
+        "countdown_date": "",
+        "countdown_time": "23:59",
+        "hide_on_expire": false,
+        "coupon_code": "",
+        "button_text": "اطلب دلوقتي",
+        "button_link": "/shop",
+        "button2_text": "",
+        "button2_link": ""
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials-reviews",
+      "settings": {
+        "eyebrow": "آراء العملاء",
+        "title": "رأيهم <em>بعد أول لقمة</em>",
+        "description": "",
+        "layout": "slider",
+        "background": "canvas",
+        "columns": "3",
+        "show_summary": true,
+        "summary_rating": "",
+        "summary_count": "",
+        "show_distribution": false,
+        "dist_5": 0,
+        "dist_4": 0,
+        "dist_3": 0,
+        "dist_2": 0,
+        "dist_1": 0,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 6,
+        "sample_content": true
+      },
+      "blocks": []
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "action_url": "",
+        "email_field_name": "EMAIL",
+        "open_in_new_tab": true,
+        "layout": "card",
+        "background": "void",
+        "show_speed_motif": true,
+        "eyebrow": "ابقى على اطلاع",
+        "title": "اعرف بالجديد <em>قبل ما يخلص</em>",
+        "subtitle": "أصناف جديدة وعروض، توصلك أول ما تنزل.",
+        "placeholder": "بريدك الإلكتروني",
+        "button_text": "اشترك",
+        "success_message": "تم — تحقّق من بريدك لتأكيد الاشتراك.",
+        "show_consent": false,
+        "show_note": false,
+        "note_text": "",
+        "text_alignment": "center"
+      }
+    }
+  ]
+}

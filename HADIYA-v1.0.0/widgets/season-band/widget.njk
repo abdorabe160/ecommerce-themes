@@ -1,0 +1,116 @@
+{# ============================================================================
+   HADIYA · قسم الموسم  (season-band) — engine E4 · القصة والمناسبة
+   ----------------------------------------------------------------------------
+   ┌──────────────────────────────────────────────────────────┐
+   │ الموسم                                  [00][00][00]      │
+   │ هدايا رمضان والعيد                        يوم ساعة دقيقة   │
+   │ ┌────────┐ ┌────────┐ ┌────────┐                          │
+   │ │ card   │ │ card   │ │ card   │          [ كل الهدايا ]   │
+   └──────────────────────────────────────────────────────────┘
+
+   One section the merchant re-points every season (Ramadan → Eid → back to
+   school → Mother's Day) instead of a widget per season — that is what the
+   MAWSIM theme will push further.
+
+   ── The countdown ──
+   `end_date` is typed as 2027-02-08 (a plain string: Qumra has no date field).
+   It is read as the END of that day in the shopper's own clock, ticks once a
+   minute (seconds would be a moving thing in the corner of every eye, for no
+   decision it helps), and stops when the section is off-screen. Past the date
+   the counter disappears; `hide_after_end` hides the whole band, so a
+   forgotten Ramadan section does not run into June.
+
+   ── Products ──
+   A products picker on the WIDGET (never inside a block). Empty, the grid
+   carries `data-hy-auto-cards` and HayatAuto fills it with the newest
+   products — the same card either way.
+
+   Styling: assets/theme.css → "season-band".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set products = d.products | default([], true) %}
+{% set n = d.count | default('3', true) | int %}
+{% set ratio = d.card_ratio | default('4x5', true) %}
+{% set endDate = d.end_date | default('', true) | trim %}
+
+<section id="hd-season-{{ id }}" class="hd-season" aria-labelledby="hd-season-t-{{ id }}"
+         {% if endDate %}data-hd-end="{{ endDate }}"{% endif %}
+         {% if d.hide_after_end %}data-hd-hide-after{% endif %}>
+  <div class="hd-season-in">
+    <div class="hd-head">
+      <div>
+        {% if d.eyebrow %}<p class="hd-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+        <h2 id="hd-season-t-{{ id }}" class="hd-title">{{ d.title | default(t('gifts.season_title'), true) }}</h2>
+        {% if d.text %}<div class="hd-season-text">{{ d.text | safe }}</div>{% endif %}
+      </div>
+      {% if endDate %}
+        {# Rendered empty and hidden; the script fills it, so a wrong or past
+           date never prints "[00]" to a shopper. #}
+        <div class="hd-count" role="timer" aria-live="off" data-hd-count hidden>
+          <span class="hd-count-cell"><b data-hd-d>0</b><span>{{ t('gifts.days') }}</span></span>
+          <span class="hd-count-cell"><b data-hd-h>0</b><span>{{ t('gifts.hours') }}</span></span>
+          <span class="hd-count-cell"><b data-hd-m>0</b><span>{{ t('gifts.minutes') }}</span></span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="hd-season-grid" style="--hd-n: {{ n }}; --hy-card-ratio: {{ '1 / 1' if ratio == '1x1' else ('3 / 4' if ratio == '3x4' else '4 / 5') }};"
+         {% if not (products | length) %}data-hy-auto-cards="{{ n }}" data-hy-auto-ratio="{{ ratio }}"{% endif %}>
+      {% for p in products %}{% if loop.index <= n %}
+        {% ui "product-card.njk", product=p, image_ratio=ratio, variant='catalog', show_eyebrow='off' %}
+      {% endif %}{% else %}
+        {% ui "placeholder.njk", kind='product', count=n, image_ratio=ratio, variant='catalog' %}
+      {% endfor %}
+    </div>
+
+    {% if d.cta_text %}
+      <div><a class="hy-btn hy-btn--light" href="{{ d.cta_url | default('/shop', true) }}">{{ d.cta_text }}</a></div>
+    {% endif %}
+  </div>
+</section>
+
+{% if endDate %}
+<script>
+  (function () {
+    var root = document.getElementById('hd-season-{{ id }}');
+    if (!root) return;
+    var raw = root.getAttribute('data-hd-end') || '';
+    var m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    var box = root.querySelector('[data-hd-count]');
+    if (!m || !box) return;                                   /* bad date: no counter, no "[00]" */
+    var end = new Date(+m[1], +m[2] - 1, +m[3], 23, 59, 59);  /* end of that day, shopper's clock */
+    var el = { d: box.querySelector('[data-hd-d]'), h: box.querySelector('[data-hd-h]'), m: box.querySelector('[data-hd-m]') };
+    var timer = null;
+
+    function tick() {
+      var left = end - new Date();
+      if (left <= 0) {
+        box.hidden = true;
+        if (root.hasAttribute('data-hd-hide-after')) root.hidden = true;
+        stop();
+        return;
+      }
+      var mins = Math.floor(left / 60000);
+      el.d.textContent = Math.floor(mins / 1440);
+      el.h.textContent = Math.floor((mins % 1440) / 60);
+      el.m.textContent = mins % 60;
+      box.hidden = false;
+    }
+    function start() { if (!timer) { tick(); timer = setInterval(tick, 60000); } }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+    tick();
+    /* Off-screen, nothing ticks — `document.hidden` alone only covers a
+       backgrounded tab (lesson 17). */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { es[0].isIntersecting ? start() : stop(); }).observe(root);
+    } else {
+      start();
+    }
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#hd-season-' ~ id, c=d %}

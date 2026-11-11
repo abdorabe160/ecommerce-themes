@@ -1,0 +1,13 @@
+{# إشعارات Toast — أخضر للنجاح، أحمر للخطأ (GEN-16) #}
+<div class="lg-toasts" aria-live="polite">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="lg-toast glass glass-strong glass-pill" :class="'lg-toast--' + toast.type" role="status"
+         x-transition:enter="lg-win-enter" x-transition:enter-start="lg-win-from lg-win-from--bottom" x-transition:enter-end="lg-win-to">
+      <span class="lg-toast__icon">
+        <template x-if="toast.type === 'error'">{% ui "icon.njk", name="alert", cls="w-4 h-4" %}</template>
+        <template x-if="toast.type !== 'error'">{% ui "icon.njk", name="check", cls="w-4 h-4" %}</template>
+      </span>
+      <span x-text="toast.message"></span>
+    </div>
+  </template>
+</div>

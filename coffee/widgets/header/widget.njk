@@ -1,0 +1,139 @@
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set menu = wd.header_menu or [] -%}
+{#- currency switcher: merchant list (comma codes) + whatever the platform exposes; buttons mount in main.js -#}
+{%- set curCode = '' -%}
+{%- if localization and localization.currency and localization.currency.currencyCode -%}
+  {%- set curCode = localization.currency.currencyCode -%}
+{%- elif localization and localization.market and localization.market.targetCurrencyCode -%}
+  {%- set curCode = localization.market.targetCurrencyCode -%}
+{%- endif -%}
+{%- set platCurs = (localization.availableCurrencies if (localization and localization.availableCurrencies) else []) or [] -%}
+{%- set pcodes = [] -%}
+{%- for c in platCurs -%}
+  {%- set code = (c if (c is string) else (c.currencyCode or c.code or c.currency or '')) | upper -%}
+  {%- if code and pcodes.push(code) -%}{%- endif -%}
+{%- endfor -%}
+{#- GEN-09: up to three menu levels (Qumra menu items nest as children / items / subItems).
+    GEN-12: links leaving the store open in a new tab with rel=noopener. -#}
+{%- macro navAttrs(url) -%}
+  {%- set u = (url or '') | string -%}
+  href="{{ u or '#' }}"{% if u.indexOf('http') == 0 and (not store or not store.url or u.indexOf(store.url) != 0) %} target="_blank" rel="noopener noreferrer"{% endif %}
+{%- endmacro -%}
+{%- set announcement = wd['announcement_text' + L] or wd.announcement_text or t('header.announcement') -%}
+<div class="dc-header-wrap{{ ' dc-header-wrap--static' if wd.sticky_header == false }}" :class="scrolled && 'is-scrolled'">
+  {%- if wd.show_announcement == true %}
+  {#- HOME-09: closable; stays closed for the browsing session (storage may be blocked → just shows again) -#}
+  <div class="dc-announcement" x-data="{ shut: (() => { try { return sessionStorage.getItem('dc-ann-closed') === '1'; } catch (e) { return false; } })() }" x-show="!shut">
+    <span>{{ announcement }}</span><a href="/shop">{{ t('common.explore') }} {% ui "icon.njk", name="arrow", size=14 %}</a>
+    <button type="button" class="dc-announcement__close" @click="shut = true; try { sessionStorage.setItem('dc-ann-closed', '1'); } catch (e) {}" aria-label="{{ t('common.close') }}">{% ui "icon.njk", name="close", size=14 %}</button>
+  </div>
+  {%- endif %}
+  <header class="dc-header">
+    <div class="dc-header__inner shell">
+      <button type="button" class="dc-header__menu icon-btn" @click="openModal('nav')" aria-label="{{ t('a11y.open_menu') }}">{% ui "icon.njk", name="menu", size=22 %}</button>
+      {% ui "brand-logo.njk", size="md", cls="dc-header__brand" %}
+
+      <nav class="dc-header__nav" aria-label="{{ t('header.primary_navigation') }}">
+        {%- if menu.length %}
+          {%- for item in menu %}
+          {%- set kids = item.children or item.items or item.subItems or [] -%}
+          {%- if kids.length %}
+          <div class="dc-nav-item" x-data="{ o: false }" @mouseenter="o = true; $nextTick(() => fitDropdown($refs.d))" @mouseleave="o = false"
+               @focusin="o = true; $nextTick(() => fitDropdown($refs.d))" @focusout="$el.contains($event.relatedTarget) || (o = false)" @keydown.escape="o = false">
+            <a {{ navAttrs(item.url) }} aria-haspopup="true" :aria-expanded="o.toString()">{{ item.title }}{% ui "icon.njk", name="chevron-down", size=14 %}</a>
+            <div class="dc-nav-drop" x-ref="d" x-show="o" x-cloak x-transition.opacity.duration.200ms>
+              <ul role="list">
+                {%- for k in kids %}
+                {%- set gk = k.children or k.items or k.subItems or [] -%}
+                <li{% if gk.length %} class="dc-nav-drop__group"{% endif %}>
+                  <a {{ navAttrs(k.url) }}>{{ k.title }}</a>
+                  {%- if gk.length %}
+                  <ul role="list">{%- for g in gk %}<li><a {{ navAttrs(g.url) }}>{{ g.title }}</a></li>{%- endfor %}</ul>
+                  {%- endif %}
+                </li>
+                {%- endfor %}
+              </ul>
+            </div>
+          </div>
+          {%- else %}<a {{ navAttrs(item.url) }}>{{ item.title }}</a>{%- endif %}
+          {%- endfor %}
+        {%- else %}
+          <a href="/">{{ t('nav.home') }}</a>
+          <a href="/shop">{{ t('nav.shop') }}</a>
+          <a href="/collections">{{ t('nav.coffee_types') }}</a>
+          <a href="/latest">{{ t('nav.latest') }}</a>
+          <a href="/blogs">{{ t('nav.journal') }}</a>
+        {%- endif %}
+      </nav>
+
+      <div class="dc-header__actions">
+        {%- if wd.show_search != false %}
+        <button type="button" class="icon-btn" @click="openModal('search')" aria-label="{{ t('a11y.open_search') }}">{% ui "icon.njk", name="search", size=20 %}</button>
+        {%- endif %}
+        {%- if wd.show_wishlist == true and settings.showWishlist != false %}
+        <a href="/wishlist" class="icon-btn dc-header__wishlist" aria-label="{{ t('header.wishlist') }}">
+          {% ui "icon.njk", name="heart", size=20 %}
+          <span class="dc-count" x-show="wishCount" x-text="wishCount" x-cloak></span>
+        </a>
+        {%- endif %}
+        {%- if wd.show_cart != false %}
+        <button type="button" class="icon-btn dc-header__cart" @click="openModal('cart')" aria-label="{{ t('a11y.open_cart') }}">
+          {% ui "icon.njk", name="cart", size=20 %}
+          <span class="dc-count" x-show="cartCount" x-text="cartCount" x-cloak></span>
+        </button>
+        {%- endif %}
+        {%- if wd.show_currency != false %}
+        <div class="dc-currency-host dc-header__currency" data-currency-host hidden
+             data-currencies="{{ (wd.currencies or '') | trim }}"
+             data-platform="{{ pcodes | join(',') }}"
+             data-current="{{ curCode }}" aria-label="{{ t('currency.label') }}"></div>
+        {%- endif %}
+        <div class="dc-header__language">{% ui "lang-switch.njk", style="text" %}</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dc-mobile-nav" x-show="isOpen('nav')" x-cloak x-transition.opacity @click.self="closeModal()">
+    <aside class="dc-mobile-nav__panel" data-modal="nav" @keydown="trapFocus($event)" role="dialog" aria-modal="true" aria-label="{{ t('header.navigation') }}">
+      <div class="dc-mobile-nav__head">{% ui "brand-logo.njk", size="sm", cls="dc-mobile-nav__brand" %}<button type="button" class="icon-btn" @click="closeModal()" aria-label="{{ t('a11y.close_menu') }}">{% ui "icon.njk", name="close", size=20 %}</button></div>
+      <nav>
+        {%- if menu.length %}
+          {%- for item in menu %}
+          {%- set kids = item.children or item.items or item.subItems or [] -%}
+          {%- if kids.length %}
+          <details class="dc-mobile-nav__group">
+            <summary>{{ item.title }}{% ui "icon.njk", name="chevron-down", size=16 %}</summary>
+            <div class="dc-mobile-nav__sub">
+              {%- if item.url %}<a {{ navAttrs(item.url) }} @click="closeModal()">{{ item.title }}</a>{%- endif %}
+              {%- for k in kids %}
+              <a {{ navAttrs(k.url) }} @click="closeModal()">{{ k.title }}</a>
+              {%- for g in (k.children or k.items or k.subItems or []) %}<a class="is-deep" {{ navAttrs(g.url) }} @click="closeModal()">{{ g.title }}</a>{%- endfor %}
+              {%- endfor %}
+            </div>
+          </details>
+          {%- else %}<a {{ navAttrs(item.url) }} @click="closeModal()">{{ item.title }}{% ui "icon.njk", name="arrow", size=16 %}</a>{%- endif %}
+          {%- endfor %}          {%- else %}
+          <a href="/" @click="closeModal()">{{ t('nav.home') }}{% ui "icon.njk", name="arrow", size=16 %}</a>
+          <a href="/shop" @click="closeModal()">{{ t('nav.shop') }}{% ui "icon.njk", name="arrow", size=16 %}</a>
+          <a href="/collections" @click="closeModal()">{{ t('nav.coffee_types') }}{% ui "icon.njk", name="arrow", size=16 %}</a>
+          <a href="/latest" @click="closeModal()">{{ t('nav.latest') }}{% ui "icon.njk", name="arrow", size=16 %}</a>
+          <a href="/blogs" @click="closeModal()">{{ t('nav.journal') }}{% ui "icon.njk", name="arrow", size=16 %}</a>
+          {%- endif %}
+      </nav>
+      {#- wishlist + language are hidden from the compact header bar, so they live here on mobile/tablet -#}
+      <div class="dc-mobile-nav__foot">
+        {%- if wd.show_wishlist == true and settings.showWishlist != false %}
+        <a href="/wishlist" @click="closeModal()">{% ui "icon.njk", name="heart", size=18 %}<span>{{ t('header.wishlist') }}</span><span class="dc-count" x-show="wishCount" x-text="wishCount" x-cloak></span></a>
+        {%- endif %}
+        {%- if wd.show_currency != false %}
+        <div class="dc-currency-host dc-currency-host--pill" data-currency-host hidden
+             data-currencies="{{ (wd.currencies or '') | trim }}"
+             data-platform="{{ pcodes | join(',') }}"
+             data-current="{{ curCode }}" aria-label="{{ t('currency.label') }}"></div>
+        {%- endif %}
+        {% ui "lang-switch.njk", style="pill" %}
+      </div>
+    </aside>
+  </div>
+</div>

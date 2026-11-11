@@ -1,0 +1,19 @@
+{# Floating WhatsApp button. Nothing renders without a number, so a store that adds
+   the widget and leaves it empty shows no dead button. Sits above the product
+   page's sticky buy bar (sections.css). #}
+{% set d = widget.data %}
+{% set L = '_en' if (localization and localization.language and localization.language != 'ar') else '' %}
+{% set raw = (d.phone_number or '') | string | trim %}
+{% set num = raw | replace('https://', '') | replace('http://', '') | replace('wa.me/', '') | replace('api.whatsapp.com/send?phone=', '') | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') %}
+{% set num = (num.split('?')[0]).split('&')[0] %}
+{% set msg = (d['message' + L] or d.message or '') | trim %}
+{% set label = (d['label' + L] or d.label or '') | trim %}
+{% if (num | length) >= 6 and d.enabled != false %}
+<a href="https://wa.me/{{ num }}{% if msg %}?text={{ msg | urlencode }}{% endif %}" target="_blank" rel="noopener noreferrer"
+   class="hx-fab hx-fab--wa {{ 'is-end' if d.position == 'end' }} {{ 'is-desktop-only' if d.mobile == false }} {{ 'has-label' if label }}"
+   style="--fab-bg: {{ d.color | default('#0F8043', true) }}; --fab-fg: {{ d.icon_color | default('#FFFFFF', true) }};"
+   aria-label="{{ t('common.chat_whatsapp') }}">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.6-.1 1.2z"/></svg>
+  {% if label %}<span class="hx-fab-label">{{ label }}</span>{% endif %}
+</a>
+{% endif %}

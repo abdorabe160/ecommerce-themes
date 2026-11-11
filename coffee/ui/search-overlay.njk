@@ -1,0 +1,33 @@
+<div class="dc-search-shell" x-show="isOpen('search')" x-cloak x-transition.opacity @click.self="closeModal()">
+  <section class="dc-search-panel" data-modal="search" @keydown="trapFocus($event)" role="dialog" aria-modal="true" aria-label="{{ t('search.title') }}">
+    <div class="dc-search-panel__top shell">
+      <form class="dc-search-panel__form" @submit.prevent="submitSearch()">
+        <span>{% ui "icon.njk", name="search", size=22 %}</span>
+        <input type="search" x-model="search.q" @input.debounce.300ms="loadSuggestions()" @keydown="searchKey($event)" placeholder="{{ t('search.placeholder') }}" aria-label="{{ t('search.placeholder') }}" data-autofocus>
+        <button type="submit" class="dc-search-panel__submit">{{ t('search.submit') }}</button>
+      </form>
+      <button type="button" class="icon-btn" @click="closeModal()" aria-label="{{ t('a11y.close_dialog') }}">{% ui "icon.njk", name="close", size=22 %}</button>
+    </div>
+    <div class="dc-search-panel__results shell">
+      <p class="dc-search-hint" x-show="search.q.trim().length < 2">{{ t('search.type_more') }}</p>
+      <p class="dc-search-hint" x-show="search.loading">{{ t('common.loading') }}</p>
+      <div x-show="search.products.length" x-cloak>
+        <h2>{{ t('search.products') }}</h2>
+        <ul class="dc-search-results" role="list">
+          <template x-for="(p, index) in search.products" :key="p._id">
+            <li><a :href="productUrl(p)" :class="search.active === index && 'is-active'">
+              <img :src="productImage(p)" :alt="p.title" width="64" height="64" loading="lazy" decoding="async">
+              <span><b x-text="p.title"></b><small x-text="formatMoney(productPrice(p))"></small></span>
+            </a></li>
+          </template>
+        </ul>
+      </div>
+      <div x-show="search.collections.length" x-cloak>
+        <h2>{{ t('search.collections') }}</h2>
+        <ul class="dc-search-collections" role="list"><template x-for="c in search.collections" :key="c._id"><li><a :href="collectionUrl(c)" x-text="c.title"></a></li></template></ul>
+      </div>
+      <p class="dc-search-hint" x-show="search.done && !search.loading && !search.products.length && !search.collections.length">{{ t('search.no_results') }}</p>
+      <a href="#" class="dc-search-all" x-show="search.q.trim().length > 1" :href="searchUrl(search.q)" @click="closeModal()">{{ t('search.view_all_results') }} {% ui "icon.njk", name="arrow", size=16 %}</a>
+    </div>
+  </section>
+</div>

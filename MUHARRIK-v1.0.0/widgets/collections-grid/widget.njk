@@ -1,0 +1,137 @@
+{#
+  ============================================================================
+  COLLECTIONS GRID · شبكة التصنيفات  — /collections
+  ----------------------------------------------------------------------------
+  Same frame as the shop page: banner band, breadcrumb, title, a bar with the
+  count and a sort, then a full-width grid of collection cards (tinted tile,
+  picture, name, products count, "shop").
+
+  ⚠️ `data-hy-coll*` on every card is read by HayatAuto.collections()
+  (main.js): Qumra has no collections endpoint, so this page IS the list the
+  home page's empty collection pickers borrow from. Keep those attributes.
+
+  No collections → six demo cards (theme pictures) so it never looks empty.
+  Styles: assets/sections.css → "COLLECTIONS GRID" (+ .hx-shop-banner, .hx-crumbs).
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{#- Same filter everywhere that reads /collections (HayatAuto.collections):
+    hidden, deleted or titleless collections and the platform's own «Home Page» stay out. -#}
+{% set cols = [] %}
+{% for c in context.collections | default([], true) %}
+  {% if c and c.title and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) and c.handle != 'home-page' and c.slug != 'home-page' %}{% set _ = cols.push(c) %}{% endif %}
+{% endfor %}
+{% set count = cols | length %}
+{% set title = d.title or t('clx.title') %}
+{% set desc = d.description or t('clx.sub') %}
+{% set showCount = d.show_count != false %}
+
+{% macro mUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="hx-cx-{{ id }}"
+         class="hx-cx {{ 'is-zoom' if d.hover_zoom != false }} is-r-{{ d.image_ratio | default('square', true) }} is-fit-{{ d.image_fit | default('cover', true) }}"
+         data-cl-cols="{{ d.columns_desktop | default(5, true) }}" data-cl-cols-m="{{ d.columns_mobile | default('2', true) }}"
+         style="--cl-cols: {{ d.columns_desktop | default(5, true) }}; --cl-cols-m: {{ d.columns_mobile | default('2', true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 8 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 48 }}px;"
+         x-data="{ sort: 'def', open: false,
+                   apply() { var g = this.$refs.grid; var items = [].slice.call(g.children);
+                     items.sort((a, b) => this.sort === 'az' ? a.dataset.hyCollTitle.localeCompare(b.dataset.hyCollTitle)
+                       : this.sort === 'many' ? (+b.dataset.hyCollCount) - (+a.dataset.hyCollCount)
+                       : (+a.dataset.i) - (+b.dataset.i));
+                     items.forEach(function (el) { g.appendChild(el); }); } }">
+  <div class="hx-cx-wrap">
+    {% if d.show_banner != false %}
+      {% set bnImg = mUrl(d.banner_image) | trim %}
+      {# MUHARRIK: the shared dark band (.mh-band, assets/mh-commerce.css §01)
+         — carbon strip, mono kicker, display title, square arrow, HUD ticks.
+         Same strip as the shop page, so /shop and /collections match. #}
+      <a href="{{ d.banner_url | default('/shop', true) }}" class="hx-shop-banner mh-band mh-hud">
+        <img src="{{ bnImg if (bnImg | length) else ('mh-hero-2.jpg' | assets) }}" alt="" fetchpriority="high"/>
+        <span class="hx-shop-banner-txt">
+          <b>{{ (d.banner_title or t('clx.banner_title')) | safe }}</b>
+          <span>{{ (d.banner_text or t('clx.banner_text')) | safe }}</span>
+        </span>
+        <span class="mh-band-arrow mh-arrow" aria-hidden="true">→</span>
+      </a>
+    {% endif %}
+
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-crumbs mh-crumb" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+        <span aria-current="page">{{ title | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}</span>
+      </nav>
+    {% endif %}
+
+    {% if d.show_heading != false %}
+      <header class="hx-cx-head mh-head mh-reveal">
+        <div class="mh-head-main">
+          {% set nShown = count if count > 0 else 6 %}
+          <p class="hx-cx-kicker mh-kicker"><span class="mh-kicker-num" dir="ltr">{{ ('0' ~ nShown) if nShown < 10 else nShown }}</span><span aria-hidden="true">/</span>{{ t('common.categories') }}</p>
+          <h1 class="hx-cx-h mh-h">{{ title | safe }}</h1>
+        </div>
+        {% if desc %}<div class="hx-cx-sub mh-sub">{{ desc | safe }}</div>{% endif %}
+      </header>
+    {% endif %}
+
+    {% if d.show_toolbar != false %}
+      <div class="hx-cx-bar">
+        <span class="hx-cx-count mh-mono{{ ' hy-editor-only' if count == 0 }}">{% ui "count.njk", n=(count or 6), kind='collection' %}</span>
+        {% if count > 1 %}
+          <div class="hy-sort hx-cx-sort" @click.outside="open = false" @keydown.escape="open = false">
+            <button type="button" class="hy-shop-btn" @click="open = !open" aria-label="{{ t('clx.sort') }}" :aria-expanded="open ? 'true' : 'false'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/></svg>
+              <span data-l-def="{{ t('clx.sort') }}" data-l-az="{{ t('clx.s_az') }}" data-l-many="{{ t('clx.s_many') }}" x-text="sort === 'def' ? $el.dataset.lDef : (sort === 'az' ? $el.dataset.lAz : $el.dataset.lMany)">{{ t('clx.sort') }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="hy-sort-menu" x-show="open" x-cloak
+                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
+              {% for o in [['def', t('clx.s_def')], ['az', t('clx.s_az')], ['many', t('clx.s_many')]] %}
+                <button type="button" :class="sort === '{{ o[0] }}' && 'is-active'" @click="sort = '{{ o[0] }}'; open = false; apply()">
+                  <span>{{ o[1] }}</span>
+                  <svg x-show="sort === '{{ o[0] }}'" x-cloak width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="hx-cx-grid" x-ref="grid">
+      {% if count > 0 %}
+        {% for c in cols %}
+          {% set url = '/shop/' ~ (c.slug | default(c.handle, true) | default(c._id, true)) %}
+          {# The payload's field is `productCount` (measured on the dev store);
+             `productsCount` is kept first for stores that send that spelling.
+             Reading only the latter printed no count on any tile and made the
+             "most products" sort a no-op. #}
+          {% set nProd = c.productsCount | default(c.productCount, true) | default(0, true) %}
+          {#- notFound = the platform's grey stand-in: use the theme's picture instead -#}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+          <a href="{{ url }}" class="hx-cx-card mh-hud" data-i="{{ loop.index }}"
+             data-hy-coll data-hy-coll-title="{{ c.title }}" data-hy-coll-url="{{ url }}"
+             data-hy-coll-img="{{ img }}" data-hy-coll-count="{{ nProd }}">
+            <span class="hx-cx-media">
+              <img src="{{ img if img else (['mh-cat-lighting.jpg', 'mh-cat-electronics.jpg', 'mh-cat-care.jpg', 'mh-cat-interior.jpg', 'mh-cat-exterior.jpg', 'mh-cat-tyres.jpg'][loop.index0 % 6] | assets) }}" alt="" loading="lazy" {% if not img %}class="is-demo"{% endif %}/>
+            </span>
+            <span class="hx-cx-name" dir="auto">{{ c.title }}</span>
+            <span class="hx-cx-meta">
+              {% if showCount and nProd %}<span>{% ui "count.njk", n=nProd, kind='product' %}</span>{% endif %}
+              <span class="hx-cx-go">{{ t('clx.shop') }} <svg class="rtl-flip" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span>
+            </span>
+          </a>
+        {% endfor %}
+      {% else %}
+        {% for n in [1, 2, 3, 4, 5, 6] %}
+          <a href="/shop" class="hx-cx-card mh-hud hy-editor-only" data-i="{{ n }}" data-hy-coll-title="{{ t('clx.demo.c' ~ n) }}" data-hy-coll-count="0">
+            <span class="hx-cx-media"><img class="is-demo" src="{{ ['mh-cat-lighting.jpg', 'mh-cat-electronics.jpg', 'mh-cat-care.jpg', 'mh-cat-interior.jpg', 'mh-cat-exterior.jpg', 'mh-cat-tyres.jpg'][n - 1] | assets }}" alt="" loading="lazy"/></span>
+            <span class="hx-cx-name">{{ t('clx.demo.c' ~ n) }}</span>
+            <span class="hx-cx-meta"><span class="hx-cx-go">{{ t('clx.shop') }} <svg class="rtl-flip" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span></span>
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% if count == 0 %}<p class="hx-bg-empty hx-cx-empty">{{ t('clx.empty') }} <a href="/shop">{{ t('pages.shop.all_products') }}</a></p>{% endif %}
+  </div>
+</section>

@@ -1,0 +1,40 @@
+{
+  "name": "المدونات",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونات",
+      "widget": "blogs-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "من مطبخنا",
+        "title": "",
+        "subtitle": "وصفات موسمية، نصائح للطبخ والحفظ، وأخبار المتجر.",
+        "columns": "3",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "title": "",
+        "layout": "inline",
+        "dividers": true,
+        "background": "none",
+        "icon_size": 30,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

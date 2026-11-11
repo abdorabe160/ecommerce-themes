@@ -1,0 +1,54 @@
+{#-
+  Benefits strip — 4 short promises (icon · title · text). Blocks "benefit" { icon, title(+_en), text(+_en) };
+  no blocks yet → the 4 default promises from locale keys. Desktop: a rounded espresso bar that laps over the
+  bottom of the hero (overlap_hero) with hairline separators; mobile: compact 2×2 grid, no overlap.
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set overlap = wd.overlap_hero != false -%}
+{%- set surface = wd.surface or 'espresso' -%}
+{%- set icons = ['leaf', 'flame', 'truck', 'headset', 'bean', 'shield', 'refresh', 'gift', 'clock', 'cup', 'star', 'check'] -%}
+
+{%- set items = [] -%}
+{%- for b in widget.blocks | default([]) -%}
+  {%- set s = b.data or b.settings or {} -%}
+  {%- set title = s['title' + L] or s.title -%}
+  {%- if title -%}
+    {%- if items.push({ 'icon': s.icon if s.icon in icons else 'check', 'title': title, 'text': s['text' + L] or s.text }) -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if not items.length -%}
+  {%- set items = [
+    { 'icon': 'leaf', 'title': t('benefits.beans_title'), 'text': t('benefits.beans_text') },
+    { 'icon': 'flame', 'title': t('benefits.roast_title'), 'text': t('benefits.roast_text') },
+    { 'icon': 'truck', 'title': t('benefits.shipping_title'), 'text': t('benefits.shipping_text') },
+    { 'icon': 'headset', 'title': t('benefits.support_title'), 'text': t('benefits.support_text') }
+  ] -%}
+{%- endif -%}
+
+{%- set bar = {
+  'espresso': 'bg-espresso text-cream',
+  'dark': 'bg-ink text-cream ring-1 ring-inset ring-cream/10',
+  'cream': 'bg-[color:var(--c-surface)] text-espresso ring-1 ring-inset ring-espresso/10'
+}[surface] or 'bg-espresso text-cream' -%}
+{%- set isLight = surface == 'cream' -%}
+{%- set cols = {1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4', 5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6'}[items.length if items.length < 6 else 6] -%}
+
+<section class="relative z-10 {{ 'bg-ink pb-8 pt-1 lg:-mt-14 lg:bg-transparent lg:pb-0 lg:pt-0' if overlap else 'py-8 lg:py-10' }}"
+         aria-label="{{ t('benefits.aria_label') }}">
+  <div class="shell">
+    <ul role="list" class="grid grid-cols-2 gap-x-4 gap-y-6 rounded-card px-5 py-6 sm:px-7 lg:gap-0 lg:px-2 lg:py-7 {{ cols }} {{ bar }}">
+      {%- for it in items %}
+      <li class="flex items-start gap-3 max-lg:last:odd:col-span-2 lg:items-center lg:justify-center lg:gap-4 lg:px-6 {{ ('lg:border-s ' ~ ('lg:border-espresso/10' if isLight else 'lg:border-cream/10')) if not loop.first }}">
+        <span class="mt-0.5 shrink-0 text-caramel lg:mt-0">{% ui "icon.njk", name=it.icon, size=28, cls="h-6 w-6 lg:h-7 lg:w-7" %}</span>
+        <div class="min-w-0 leading-snug">
+          <p class="font-display text-sm font-medium lg:text-[0.95rem]">{{ it.title }}</p>
+          {%- if it.text %}
+          <p class="mt-1 text-[0.8rem] leading-relaxed lg:text-xs {{ 'text-muted-ink' if isLight else 'text-muted' }}">{{ it.text }}</p>
+          {%- endif %}
+        </div>
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>

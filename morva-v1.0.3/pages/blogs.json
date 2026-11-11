@@ -1,0 +1,17 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونات",
+      "widget": "blogs-page",
+      "settings": {
+        "kicker": "اليوميات",
+        "title": "المدونة",
+        "subtitle": ""
+      }
+    }
+  ]
+}

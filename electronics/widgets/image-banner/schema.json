@@ -1,0 +1,75 @@
+{
+  "name": "صورة",
+  "settings": {
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة",
+        "en": "Image"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الموبايل (اختياري — تظهر على الشاشات الصغيرة بدل الصورة الأساسية)",
+        "en": "Mobile image (optional — replaces the main image on small screens)"
+      }
+    },
+    "alt": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الصورة (لمحركات البحث وقارئ الشاشة)",
+        "en": "Image description (for SEO and screen readers)"
+      },
+      "default": ""
+    },
+    "alt_en": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الصورة (إنجليزي)",
+        "en": "Image description (English)"
+      },
+      "default": ""
+    },
+    "url": {
+      "type": "string",
+      "label": {
+        "ar": "الرابط عند الضغط على الصورة (اختياري)",
+        "en": "Link when the image is clicked (optional)"
+      },
+      "default": ""
+    },
+    "width": {
+      "type": "select",
+      "label": {
+        "ar": "عرض الصورة",
+        "en": "Image width"
+      },
+      "default": "container",
+      "options": [
+        {
+          "value": "container",
+          "label": "بعرض المحتوى / Contained"
+        },
+        {
+          "value": "full",
+          "label": "بعرض الشاشة / Full width"
+        }
+      ]
+    },
+    "rounded": {
+      "type": "boolean",
+      "label": {
+        "ar": "حواف دائرية (بعرض المحتوى فقط)",
+        "en": "Rounded corners (contained width only)"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "صورة"
+    }
+  ]
+}

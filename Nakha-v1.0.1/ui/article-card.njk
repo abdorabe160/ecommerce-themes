@@ -1,0 +1,64 @@
+{# ============================================================================
+   NAKHA ARTICLE CARD — shared by blogs-page, blog-page and article-page
+   Locals: article (required) · show_date · show_excerpt · compact
+   No <style> block: it repeats, so all styling lives in style.css.
+   ========================================================================= #}
+
+{% set a = data.article %}
+
+{% if a %}
+  {# the cover arrives as { fileUrl }, as imageUrl, or as a plain string #}
+  {% if a.image and a.image.fileUrl %}{% set img = a.image.fileUrl %}
+  {% elif a.imageUrl %}{% set img = a.imageUrl %}
+  {% elif a.image and a.image is string %}{% set img = a.image %}
+  {% else %}{% set img = '' %}{% endif %}
+  {% set excerpt = a.excerpt or a.description %}
+  {# {% ui %} locals can arrive as strings — "false" is truthy, so compare explicitly #}
+  {% set showDate = true if data.show_date is not defined else (data.show_date != false and data.show_date != 'false') %}
+  {% set showExcerpt = true if data.show_excerpt is not defined else (data.show_excerpt != false and data.show_excerpt != 'false') %}
+  {% set compact = data.compact | default(false) %}
+  {% set _h = a.handle or a.slug %}
+  {% set url = ('/articles/' ~ _h) if _h else '/blogs' %}
+
+<a href="{{ url }}" data-date="{{ a.publishedAt or a.createdAt or '' }}" class="nakha-acard{{ ' nakha-acard--compact' if compact }}">
+
+  <div class="nakha-acard-media">
+    {% if img %}
+      <img src="{{ img }}" alt="{{ a.title }}" loading="lazy"/>
+    {% else %}
+      <span class="nakha-noimg-art" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5.5"/><path d="M3.5 3v5.2a2 2 0 0 0 2 2V21M5.5 3v4M7.5 3v5.2a2 2 0 0 1-2 2M20.5 21v-7c-1.6 0-2.5-1.4-2.5-4.4 0-3.3 1-6.6 2.5-6.6Z"/>
+        </svg>
+      </span>
+    {% endif %}
+
+    {% if a.category and a.category is string %}
+      <span class="nakha-acard-cat">{{ a.category }}</span>
+    {% endif %}
+  </div>
+
+  <div class="nakha-acard-body">
+    {% if showDate and a.createdAt %}
+      {# formatted client-side: Nunjucks has no date filter #}
+      <time class="nakha-caption nakha-num" x-data x-init="$el.textContent =
+              new Date('{{ a.createdAt }}').toLocaleDateString('{{ localization.language | default('ar') }}',
+                { year: 'numeric', month: 'long', day: 'numeric' })">{{ a.createdAt }}</time>
+    {% endif %}
+
+    <h3 class="nakha-acard-title line-clamp-2">{{ a.title }}</h3>
+
+    {% if showExcerpt and excerpt %}
+      <p class="nakha-acard-excerpt line-clamp-2">{{ excerpt | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('<br>', ' ') | striptags }}</p>
+    {% endif %}
+
+    <span class="nakha-link mt-auto pt-1">
+      {{ t('pages.blog.read_more') }}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+    </span>
+  </div>
+</a>
+{% endif %}

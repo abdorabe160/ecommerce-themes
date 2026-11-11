@@ -1,0 +1,122 @@
+{
+  "name": "مرشّح الهدايا",
+  "settings": {
+    "lead": {
+      "type": "string",
+      "label": {
+        "ar": "بداية الجملة",
+        "en": "Sentence start"
+      },
+      "default": "أدوّر على هدية"
+    },
+    "join": {
+      "type": "string",
+      "label": {
+        "ar": "الكلمة بين القائمتين",
+        "en": "Word between the two lists"
+      },
+      "default": "في حدود"
+    },
+    "any_label": {
+      "type": "string",
+      "label": {
+        "ar": "خيار «أي حاجة» في القائمة الأولى",
+        "en": "The \"anything\" option in the first list"
+      },
+      "default": "لأي مناسبة"
+    },
+    "budget_steps": {
+      "type": "string",
+      "label": {
+        "ar": "حدود الميزانية بنفس وحدة الأسعار الظاهرة، مفصولة بفاصلة",
+        "en": "Budget limits in the displayed price unit, comma-separated"
+      },
+      "default": "300، 700، 1500"
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": "اعرض الهدايا"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "option": {
+      "name": "خيار",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الاسم كما يظهر في الجملة — مثلاً «لعيد ميلاد» أو «ليها»",
+            "en": "Name as it reads in the sentence — e.g. \"for a birthday\""
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — صفحة التصنيف، مثلاً /shop/birthday",
+            "en": "Link — the collection page, e.g. /shop/birthday"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "مرشّح الهدايا"
+    }
+  ]
+}

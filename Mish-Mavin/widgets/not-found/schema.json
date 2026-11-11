@@ -1,0 +1,35 @@
+{
+  "name": "الصفحة غير موجودة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (فارغ = الافتراضي)",
+        "en": "Title (empty = default)"
+      },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص (فارغ = الافتراضي)",
+        "en": "Text (empty = default)"
+      },
+      "default": ""
+    },
+    "show_products": {
+      "type": "boolean",
+      "label": {
+        "ar": "اقتراح منتجات",
+        "en": "Suggest products"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "الصفحة غير موجودة"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "صفحة المقال",
+  "settings": {
+    "show_share": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أزرار المشاركة",
+        "en": "Show share buttons"
+      },
+      "default": true
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مقالات ذات صلة",
+        "en": "Show related articles"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "Blog",
+      "name": "صفحة المقال"
+    }
+  ]
+}

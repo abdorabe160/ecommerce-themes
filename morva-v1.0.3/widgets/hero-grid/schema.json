@@ -1,0 +1,89 @@
+{
+  "name": "الواجهة الرئيسية (Hero)",
+  "settings": {
+    "featured_label": {
+      "type": "string",
+      "label": { "ar": "عنوان بطاقة المنتج المميز", "en": "Featured card label" },
+      "default": "المميز الآن"
+    },
+    "featured_product": {
+      "type": "products",
+      "label": { "ar": "المنتج المميز (الأول فقط) — فارغ = أول منتج من السلايدر", "en": "Featured product (first only) — empty = the slider's first product" }
+    },
+    "banner_image": {
+      "type": "media",
+      "label": { "ar": "صورة البانر (أعلى المنتصف)", "en": "Banner image (top middle)" }
+    },
+    "banner_image_mobile": {
+      "type": "media",
+      "label": { "ar": "صورة البانر للموبايل (اختيارية)", "en": "Mobile banner image (optional)" }
+    },
+    "banner_link": {
+      "type": "string",
+      "label": { "ar": "رابط البانر", "en": "Banner link" },
+      "default": "/shop"
+    },
+    "banner_alt": {
+      "type": "string",
+      "label": { "ar": "وصف البانر (لقارئات الشاشة)", "en": "Banner alt text" },
+      "default": ""
+    },
+    "video_file": {
+      "type": "media",
+      "label": { "ar": "فيديو (أسفل المنتصف) — ملف MP4", "en": "Video (bottom middle) — MP4 file" }
+    },
+    "video_url": {
+      "type": "string",
+      "label": { "ar": "أو رابط فيديو MP4 مباشر", "en": "Or a direct MP4 link" },
+      "default": ""
+    },
+    "video_poster": {
+      "type": "media",
+      "label": { "ar": "صورة الفيديو (تظهر قبل التشغيل أو بدلاً منه)", "en": "Video poster (shown before playback or instead of it)" }
+    },
+    "slider_index": {
+      "type": "string",
+      "label": { "ar": "رقم القسم في السلايدر", "en": "Slider index" },
+      "default": "01"
+    },
+    "slider_label": {
+      "type": "string",
+      "label": { "ar": "عنوان السلايدر", "en": "Slider label" },
+      "default": "المميز الآن"
+    },
+    "products": {
+      "type": "products",
+      "label": { "ar": "منتجات السلايدر", "en": "Slider products" }
+    },
+    "auto_fill": {
+      "type": "boolean",
+      "label": { "ar": "إن كانت المنتجات فارغة: اعرض أحدث منتجات المتجر تلقائياً", "en": "When empty, show the store's newest products automatically" },
+      "default": true
+    },
+    "auto_count": {
+      "type": "range",
+      "label": { "ar": "عدد المنتجات التلقائية", "en": "Automatic products count" },
+      "default": 8,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    },
+    "strip_text": {
+      "type": "string",
+      "label": { "ar": "نص الشريط المتحرك", "en": "Kinetic strip text" },
+      "default": "تحرّك بسرعة"
+    },
+    "strip_speed": {
+      "type": "range",
+      "label": { "ar": "سرعة الشريط (ثوانٍ لكل دورة — أقل = أسرع)", "en": "Strip speed (seconds per loop — lower is faster)" },
+      "default": 28,
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "s"
+    }
+  },
+  "presets": [
+    { "category": "الواجهة", "name": "الواجهة الرئيسية (Hero)" }
+  ]
+}

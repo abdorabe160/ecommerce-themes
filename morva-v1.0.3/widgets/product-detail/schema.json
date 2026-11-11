@@ -1,0 +1,176 @@
+{
+  "name": "صفحة المنتج",
+  "settings": {
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة صور المنتج",
+        "en": "Product image ratio"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربعة ١:١ (الافتراضي)",
+            "en": "Square 1:1 (default)"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولية ٤:٥",
+            "en": "Portrait 4:5"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولية ٣:٤",
+            "en": "Portrait 3:4"
+          }
+        },
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "طولية ٢:٣",
+            "en": "Portrait 2:3"
+          }
+        }
+      ]
+    },
+    "show_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند الضغط",
+        "en": "Tap to zoom"
+      },
+      "default": true
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "النص الصغير فوق الاسم (يظهر اسم التصنيف إن وُجد)",
+        "en": "Kicker above the name (the collection name wins when there is one)"
+      },
+      "default": ""
+    },
+    "show_description": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض وصف المنتج (التفاصيل)",
+        "en": "Show the product description (details)"
+      },
+      "default": true
+    },
+    "oos_note": {
+      "type": "text",
+      "label": {
+        "ar": "ملاحظة تظهر عند نفاد المنتج",
+        "en": "Note shown when the product is sold out"
+      },
+      "default": "هذا المنتج غير متوفر حالياً. تابعنا ليصلك إشعار الإصدار القادم."
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": {
+        "ar": "منتجات مشابهة",
+        "en": "Related products"
+      },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان المنتجات المشابهة",
+        "en": "Related products heading"
+      },
+      "default": "قطع مشابهة"
+    },
+    "related_limit": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات المشابهة",
+        "en": "Related products count"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 8,
+      "step": 1
+    }
+  },
+  "blocks": {
+    "panel": {
+      "name": "لوحة معلومات قابلة للطي",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "الشحن والإرجاع"
+        },
+        "source": {
+          "type": "select",
+          "label": {
+            "ar": "المحتوى",
+            "en": "Content"
+          },
+          "default": "custom",
+          "options": [
+            {
+              "value": "custom",
+              "label": {
+                "ar": "نص مخصص",
+                "en": "Custom text"
+              }
+            },
+            {
+              "value": "description",
+              "label": {
+                "ar": "وصف المنتج",
+                "en": "Product description"
+              }
+            }
+          ]
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "open_by_default": {
+          "type": "boolean",
+          "label": {
+            "ar": "مفتوحة تلقائياً",
+            "en": "Open by default"
+          },
+          "default": false
+        }
+      }
+    },
+    "perk": {
+      "name": "ميزة (سطر بمربع أحمر)",
+      "settings": {
+        "perk": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "صفحة المنتج"
+    }
+  ]
+}

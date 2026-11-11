@@ -1,0 +1,96 @@
+{# ===== ATTAR NEWSLETTER — Underline form · gold accents ===== #}
+{% set id = widget.id %}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set bg = widget.data.background | default('charcoal') %}
+{% set showNote = widget.data.show_note %}
+
+{% if bg == 'ivory' %}{% set sectionStyle = 'background: var(--color-bg-primary); color: var(--color-text-primary);' %}
+{% elif bg == 'sand' %}{% set sectionStyle = 'background: var(--color-bg-secondary); color: var(--color-text-primary);' %}
+{% else %}{% set sectionStyle = 'background: radial-gradient(120% 150% at 50% 0%, color-mix(in srgb, var(--color-accent) 12%, transparent) 0%, var(--color-bg-tertiary) 32%, var(--color-bg-primary) 100%); color: var(--color-text-primary); border-block: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);' %}{% endif %}
+
+{% set line = 'color-mix(in srgb, var(--color-accent) 45%, transparent)' %}
+{% set muted = 'var(--color-text-secondary)' %}
+{% set faint = 'var(--color-text-tertiary)' %}
+
+<style>
+  .anaqa-nl-{{ id }} .anaqa-nl-input {
+    flex: 1; min-width: 0;
+    background: transparent;
+    border: none !important;
+    border-radius: 0;
+    outline: none;
+    padding: 12px 2px;
+    font-size: 15px;
+    color: currentColor;
+    box-shadow: none !important;
+  }
+  .anaqa-nl-{{ id }} .anaqa-nl-input::placeholder { color: {{ faint }}; }
+  .anaqa-nl-{{ id }} .anaqa-nl-input:focus { box-shadow: none !important; border: none !important; }
+
+  .anaqa-nl-{{ id }} .anaqa-nl-submit {
+    flex-shrink: 0;
+    background: none; border: none; cursor: pointer;
+    color: var(--color-accent);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 12px 2px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: opacity 0.3s ease;
+  }
+  html[dir="rtl"] .anaqa-nl-{{ id }} .anaqa-nl-submit { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-nl-{{ id }} .anaqa-nl-submit:hover { opacity: 0.6; }
+  .anaqa-nl-{{ id }} .anaqa-nl-submit:disabled { opacity: 0.5; cursor: default; }
+</style>
+
+{# The platform has no newsletter route (GET /ajax/newsletter/subscribe answers like any unknown path;
+   real POST routes answer from the API). So the form posts natively to the merchant's own provider,
+   in a new tab where that provider confirms. No link: customers don't see the section. #}
+{% set formAction = (widget.data.form_action or '') | trim %}
+{% set fieldName = (widget.data.field_name or 'email') | trim %}
+
+<section id="{{ id }}" class="anaqa-nl-{{ id }} py-28 max-sm:py-16{{ ' attar-demo-only' if not formAction }}" style="{{ sectionStyle }}">
+  <div class="container mx-auto px-6 max-sm:px-4">
+    <div class="max-w-xl mx-auto text-center">
+
+      <div>
+        {% if eyebrow %}
+          <div class="flex items-center justify-center gap-3 mb-5">
+            <span class="attar-kicker-line"></span>
+            <span class="editorial-label">{{ eyebrow }}</span>
+            <span class="attar-kicker-line"></span>
+          </div>
+        {% endif %}
+
+        {% if widget.data.title %}
+          <h2 class="font-heading-ar mb-4" style="font-weight: 500; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; letter-spacing: -0.015em; color: currentColor;">{{ widget.data.title | safe }}</h2>
+        {% endif %}
+
+        {% if widget.data.subtitle %}
+          <div class="font-body-ar text-[15px] leading-[1.9] mb-10 mx-auto" style="max-width: 44ch; color: {{ muted }};">{{ widget.data.subtitle | safe }}</div>
+        {% endif %}
+
+        {% if formAction %}
+        <form action="{{ formAction }}" method="post" target="_blank" rel="noopener noreferrer">
+          <div class="flex items-center gap-3" style="border-bottom: 1px solid {{ line }};">
+            <input type="email" name="{{ fieldName }}" required
+                   aria-label="{{ widget.data.placeholder | default(t('newsletter.placeholder'), true) }}"
+                   placeholder="{{ widget.data.placeholder | default(t('newsletter.placeholder'), true) }}"
+                   class="anaqa-nl-input font-body-ar"/>
+            <button type="submit" class="anaqa-nl-submit font-body-ar">
+              <span>{{ widget.data.button_text | default(t('newsletter.button'), true) }}</span>
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </button>
+          </div>
+        </form>
+        {% else %}
+        <p class="text-[13px] font-body-ar" style="color: currentColor;">{{ t('newsletter.setup_hint') }}</p>
+        {% endif %}
+
+        {% if showNote and widget.data.note_text %}
+          <p class="text-[12px] font-body-ar mt-5" style="color: {{ faint }};">{{ widget.data.note_text }}</p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>

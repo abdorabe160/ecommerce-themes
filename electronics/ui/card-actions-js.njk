@@ -1,0 +1,40 @@
+{# نفس أزرار ui/card-actions.njk للبطاقات المرسومة بالـ JS (card-js / mini-js) — داخل x-for بمتغير p.
+   cardState(p): out | options | check | buy — نفس الحالات، والتأكد من watchCard.
+   الاستخدام: {% ui "card-actions-js.njk", cls="" %} #}
+{% set extra = data.cls | default('') %}
+<div class="lg-card__actions {{ extra }}">
+  <div class="lg-card__btns" x-init="watchCard(p._id, p.slug || p.handle, $el, p)">
+    <template x-if="cardState(p) === 'out'">
+      <div class="contents">
+        <button type="button" class="btn btn-soft" disabled aria-disabled="true"><span class="lg-btn-label" x-text="i18n.out"></span></button>
+        <button type="button" class="btn btn-primary" disabled aria-disabled="true"><span class="lg-btn-label" x-text="i18n.buy"></span></button>
+      </div>
+    </template>
+    <template x-if="cardState(p) === 'options'">
+      <a :href="productUrl(p)" class="btn btn-primary lg-card__btn--full"><span class="lg-btn-label" x-text="i18n.choose"></span></a>
+    </template>
+    <template x-if="cardState(p) === 'check'">
+      <a :href="productUrl(p)" class="btn btn-soft lg-card__btn--full"><span class="lg-btn-label" x-text="i18n.viewProduct"></span></a>
+    </template>
+    <template x-if="cardState(p) === 'buy'">
+      <div class="contents">
+        <button type="button"
+                class="btn btn-soft"
+                @click="addToCart(p._id, 1, cardOpts(p))"
+                :disabled="isBusy('add:' + p._id)">
+          <span x-show="!isBusy('add:' + p._id) || isBusy('buy:' + p._id)" class="lg-btn-in">
+            {% ui "icon.njk", name="cart", cls="w-4 h-4 shrink-0" %}<span class="lg-btn-label" x-text="i18n.add"></span>
+          </span>
+          <span x-show="isBusy('add:' + p._id) && !isBusy('buy:' + p._id)" x-cloak class="lg-spinner" role="status"></span>
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                @click="buyNow(p._id, 1, cardOpts(p))"
+                :disabled="isBusy('add:' + p._id) || isBusy('buy:' + p._id)">
+          <span x-show="!isBusy('buy:' + p._id)" class="lg-btn-label" x-text="i18n.buy"></span>
+          <span x-show="isBusy('buy:' + p._id)" x-cloak class="lg-spinner" role="status"></span>
+        </button>
+      </div>
+    </template>
+  </div>
+</div>

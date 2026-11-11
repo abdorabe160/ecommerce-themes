@@ -1,0 +1,72 @@
+{
+  "title": "Footer Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر الرئيسي",
+      "widget": "footer",
+      "settings": {
+        "footer_description": "ملابس وأحذية ومعدّات ومكمّلات لكل رياضة.",
+        "contact_heading": "تواصل معنا",
+        "contact_phone": "",
+        "contact_whatsapp": "",
+        "contact_email": "",
+        "contact_hours": "",
+        "social_heading": "تابعنا",
+        "footer_social_instagram": "",
+        "footer_social_x": "",
+        "footer_social_tiktok": "",
+        "footer_social_youtube": "",
+        "footer_social_snapchat": "",
+        "footer_social_linkedin": "",
+        "footer_social_facebook": "",
+        "payment_heading": "طرق الدفع",
+        "bottom_menu": "footer-menu",
+        "tax_number": "",
+        "commercial_reg": "",
+        "show_back_to_top": true,
+        "footer_logo_height": 30
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "c1",
+          "settings": {
+            "title": "تسوّق",
+            "menu": "footer-menu"
+          }
+        },
+        {
+          "block": "column",
+          "name": "c2",
+          "settings": {
+            "title": "خدمة العملاء",
+            "menu": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "c3",
+          "settings": {
+            "title": "عن المتجر",
+            "menu": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {
+        "phone_number": ""
+      }
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

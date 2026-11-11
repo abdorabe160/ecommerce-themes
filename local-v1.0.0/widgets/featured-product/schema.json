@@ -1,0 +1,173 @@
+{
+  "name": "منتج مميز",
+  "settings": {
+    "product": {
+      "type": "product",
+      "label": {
+        "ar": "▸ المنتج",
+        "en": "▸ Product"
+      }
+    },
+    "image_position": {
+      "type": "select",
+      "label": {
+        "ar": "مكان الصور",
+        "en": "Gallery side"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية السطر",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "show_top_price": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار سعر صغير فوق الاسم",
+        "en": "Show a small price above the name"
+      },
+      "default": true
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التقييم (إن وُجدت مراجعات)",
+        "en": "Show the rating (when there are reviews)"
+      },
+      "default": true
+    },
+    "show_description": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وصف المنتج",
+        "en": "Show the product description"
+      },
+      "default": true
+    },
+    "description_lines": {
+      "type": "range",
+      "label": {
+        "ar": "أقصى عدد أسطر للوصف",
+        "en": "Description line limit"
+      },
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    "show_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر تكبير الصورة",
+        "en": "Show the image zoom button"
+      },
+      "default": true
+    },
+    "show_buy_now": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر «اشتري الآن»",
+        "en": "Show the “Buy now” button"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية إطار الصور",
+        "en": "Gallery frame background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الاسم والسعر",
+        "en": "Name and price colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون زر الإضافة",
+        "en": "Add-to-cart colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "منتج مميز"
+    }
+  ]
+}

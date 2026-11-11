@@ -1,0 +1,58 @@
+{# بيانات توضيحية تظهر في وضع المعاينة فقط (qumra theme dev / المحرر / ?theme=) عندما لا توجد بيانات حقيقية.
+   لا تظهر للعملاء على المتجر الحي إطلاقاً — راجع isPreview() في main.js.
+   الاستخدام: {% ui "demo-data.njk", kind="featured" %}  —  kind: featured | best | all | collections
+   (all = كل المنتجات التوضيحية، لصفحات المنتج والتصنيف التوضيحية في ui/demo-pages.njk)
+   cat = معرّف التصنيف التوضيحي للمنتج (demo-c-*)، stock = المخزون التوضيحي (حد الكمية في السلة). الأسعار بالوحدة الكبرى وتُحوّل في JS (Money.fromMajor).
+   حالات الاختبار: تصنيف ضخم (الإكسسوارات = 1000 منتج: "bulk" يكمّله main.js في المتصفح من "bulk_items" حتى لا يتضخم HTML)،
+   تصنيف فارغ (demo-c-empty)، منتج أوشك على النفاد (demo-x6: مخزون 1)، ومنتج نفد من المخزون (demo-x7: مخزون 0). #}
+{# الصور في جذر assets/ (بادئة demo-): الـ CLI يرفع الأصول باسم الملف فقط ويتجاهل المجلدات الفرعية #}
+{% set img = 'demo-' %}
+{% macro featured(img) %}
+  { "_id": "demo-f1", "stock": 12, "cat": "demo-c-phones", "title": "iPhone 15 Pro", "subtitle": "256GB · Titanium", "image": {{ (img + 'phone.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 999, "compare": 0, "reviews": 124, "rating": 4.8, "tags": ["best-seller"] },
+  { "_id": "demo-f2", "stock": 5, "cat": "demo-c-laptops", "title": "MacBook Air M2", "subtitle": "13\" · 8GB · 256GB", "image": {{ (img + 'laptop.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 899, "compare": 0, "reviews": 98, "rating": 4.6, "tags": ["new"] },
+  { "_id": "demo-f3", "stock": 8, "cat": "demo-c-headphones", "title": "Sony WH-1000XM5", "subtitle": "Wireless Headphones", "image": {{ (img + 'headphones.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 279, "compare": 349, "reviews": 203, "rating": 4.7, "tags": [] },
+  { "_id": "demo-f4", "stock": 3, "cat": "demo-c-watches", "title": "Apple Watch Series 9", "subtitle": "GPS · 45mm", "image": {{ (img + 'watch.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 399, "compare": 0, "reviews": 176, "rating": 4.9, "tags": ["hot"] }
+{% endmacro %}
+{% macro best(img) %}
+  { "_id": "demo-b1", "stock": 20, "cat": "demo-c-headphones", "title": "AirPods Pro (2nd Gen)", "image": {{ (img + 'earbuds.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 249, "compare": 0, "reviews": 312, "rating": 4.8, "tags": [] },
+  { "_id": "demo-b2", "stock": 7, "cat": "demo-c-phones", "title": "Samsung Galaxy S24", "image": {{ (img + 'phone.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 799, "compare": 0, "reviews": 245, "rating": 4.7, "tags": [] },
+  { "_id": "demo-b3", "stock": 4, "cat": "demo-c-laptops", "title": "Dell XPS 13", "image": {{ (img + 'laptop.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 1099, "compare": 0, "reviews": 188, "rating": 4.6, "tags": [] },
+  { "_id": "demo-b4", "stock": 15, "cat": "demo-c-accessories", "title": "Logitech MX Master 3S", "image": {{ (img + 'mouse.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 99, "compare": 0, "reviews": 142, "rating": 4.7, "tags": [] }
+{% endmacro %}
+{% macro extra(img) %}
+  { "_id": "demo-x1", "stock": 10, "cat": "demo-c-gaming", "title": "DualSense Wireless Controller", "subtitle": "PS5 · Midnight", "image": {{ (img + 'gamepad.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 69, "compare": 79, "reviews": 156, "rating": 4.8, "tags": [] },
+  { "_id": "demo-x2", "stock": 6, "cat": "demo-c-accessories", "title": "Keychron K2 Mechanical Keyboard", "subtitle": "Wireless · RGB", "image": {{ (img + 'keyboard.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 89, "compare": 0, "reviews": 87, "rating": 4.6, "tags": ["new"] },
+  { "_id": "demo-x3", "stock": 9, "cat": "demo-c-home", "title": "Echo Smart Speaker", "subtitle": "4th Gen · Charcoal", "image": {{ (img + 'speaker.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 99, "compare": 129, "reviews": 264, "rating": 4.7, "tags": [] },
+  { "_id": "demo-x4", "stock": 2, "cat": "demo-c-watches", "title": "Galaxy Watch 6", "subtitle": "Bluetooth · 44mm", "image": {{ (img + 'watch2.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 299, "compare": 0, "reviews": 91, "rating": 4.5, "tags": [] },
+  { "_id": "demo-x5", "stock": 11, "cat": "demo-c-gaming", "title": "Logitech G502 Gaming Mouse", "subtitle": "25K DPI · Wired", "image": {{ (img + 'mouse.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 59, "compare": 0, "reviews": 133, "rating": 4.7, "tags": ["hot"] },
+  { "_id": "demo-x6", "stock": 1, "cat": "demo-c-headphones", "title": "Beats Studio Buds +", "subtitle": "Noise Cancelling · Transparent", "image": {{ (img + 'earbuds.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 169, "compare": 199, "reviews": 64, "rating": 4.4, "tags": [] },
+  { "_id": "demo-x7", "stock": 0, "cat": "demo-c-gaming", "title": "Xbox Wireless Controller", "subtitle": "Carbon Black", "image": {{ (img + 'gamepad.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 59, "compare": 0, "reviews": 210, "rating": 4.7, "tags": [] }
+{% endmacro %}
+<script type="application/json" class="lg-demo-json" data-kind="{{ data.kind | default('featured') }}">
+{% if data.kind == 'collections' %}
+[
+  { "_id": "demo-c-phones", "title": {{ t('preview.cat_phones') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'phone.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-laptops", "title": {{ t('preview.cat_laptops') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'laptop.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-headphones", "title": {{ t('preview.cat_headphones') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'headphones.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-watches", "title": {{ t('preview.cat_watches') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'watch.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-accessories", "title": {{ t('preview.cat_accessories') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'keyboard.webp') | assets | dump | replace('</', '<\\/') | safe }}, "bulk": 1000,
+    "bulk_items": [
+      { "title": "Wireless Mouse", "image": {{ (img + 'mouse.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 39 },
+      { "title": "Mechanical Keyboard", "image": {{ (img + 'keyboard.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 89 },
+      { "title": "Gaming Mouse", "image": {{ (img + 'mouse.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 59 },
+      { "title": "Wireless Keyboard", "image": {{ (img + 'keyboard.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 49 },
+      { "title": "Wireless Earbuds", "image": {{ (img + 'earbuds.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 69 },
+      { "title": "Game Controller", "image": {{ (img + 'gamepad.webp') | assets | dump | replace('</', '<\\/') | safe }}, "price": 55 }
+    ] },
+  { "_id": "demo-c-gaming", "title": {{ t('preview.cat_gaming') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'gamepad.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-home", "title": {{ t('preview.cat_home') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'speaker.webp') | assets | dump | replace('</', '<\\/') | safe }} },
+  { "_id": "demo-c-empty", "title": {{ t('preview.cat_empty') | dump | replace('</', '<\\/') | safe }}, "image": {{ (img + 'watch2.webp') | assets | dump | replace('</', '<\\/') | safe }} }
+]
+{% elif data.kind == 'best' %}
+[{{ best(img) }}]
+{% elif data.kind == 'all' %}
+[{{ featured(img) }},{{ best(img) }},{{ extra(img) }}]
+{% else %}
+[{{ featured(img) }}]
+{% endif %}
+</script>

@@ -1,0 +1,75 @@
+{
+  "name": "زر واتساب العائم",
+  "settings": {
+    "number": {
+      "type": "string",
+      "label": {
+        "ar": "رقم واتساب (فارغ = رقم إعدادات الثيم)",
+        "en": "WhatsApp number (empty = theme settings number)"
+      },
+      "default": ""
+    },
+    "message": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة جاهزة (عربي)",
+        "en": "Prefilled message (Arabic)"
+      },
+      "default": ""
+    },
+    "message_en": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة جاهزة (إنجليزي)",
+        "en": "Prefilled message (English)"
+      },
+      "default": ""
+    },
+    "label": {
+      "type": "string",
+      "label": {
+        "ar": "نص بجانب الزر على الكمبيوتر (اختياري)",
+        "en": "Desktop label (optional)"
+      },
+      "default": ""
+    },
+    "position": {
+      "type": "select",
+      "label": {
+        "ar": "المكان",
+        "en": "Position"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية الصفحة",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية الصفحة",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "show_mobile": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار على الموبايل",
+        "en": "Show on mobile"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "زر واتساب العائم"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "name": "رأس الصفحة",
+  "settings": {
+    "show_announcement": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الشريط العلوي",
+        "en": "Show announcement bar"
+      },
+      "default": false
+    },
+    "sticky_header": {
+      "type": "boolean",
+      "label": {
+        "ar": "هيدر ثابت أثناء التمرير",
+        "en": "Sticky header while scrolling"
+      },
+      "default": true
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة الشريط",
+        "en": "Announcement text"
+      },
+      "default": "قهوة مختصة، اختيرت بعناية"
+    },
+    "announcement_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة الشريط (إنجليزي)",
+        "en": "Announcement text (English)"
+      },
+      "default": "Specialty coffee, chosen with care"
+    },
+    "header_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الرئيسية",
+        "en": "Main menu"
+      },
+      "default": "header-menu"
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار البحث",
+        "en": "Show search"
+      },
+      "default": true
+    },
+    "show_wishlist": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار المفضلة",
+        "en": "Show wishlist"
+      },
+      "default": false
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السلة",
+        "en": "Show cart"
+      },
+      "default": true
+    },
+    "show_currency": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار بدّال العملة (يظهر فقط عند توفر عملتين فأكثر)",
+        "en": "Show currency switcher (appears only with 2+ currencies)"
+      },
+      "default": true
+    },
+    "currencies": {
+      "type": "string",
+      "label": {
+        "ar": "العملات المتاحة — كودات ISO مفصولة بفواصل (مثال: SAR,AED,USD)",
+        "en": "Available currencies — ISO codes, comma separated (e.g. SAR,AED,USD)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "رأس الصفحة",
+      "name": "رأس DECAFE"
+    }
+  ]
+}

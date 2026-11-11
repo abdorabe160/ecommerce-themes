@@ -1,0 +1,131 @@
+{# ============================================================================
+   HYPER BLOG PAGE — /blogs/<handle>
+   ----------------------------------------------------------------------------
+   The article list for one blog.
+
+   Cards come from ui/article-card.njk, which is the same `.hy-post-*` object
+   the homepage post grid uses. The optional lead article is that card at a
+   larger size — not a second design, just the first cell spanning the grid.
+
+   Styling: style.css → "15.18 POST GRID" for the card, "15.27 BLOG" for the
+   page around it.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}, true) %}
+{% set articles = context.articles or blog.articles or [] %}
+{% set count = articles | length %}
+{# /blogs/<handle> sends pagination as { total, page, limit, pages }; the other
+   list pages send { totalItems, currentPage, totalPages }. Both are read. #}
+{% set _pg = context.pagination or {} %}
+{% set pgItems = _pg.totalItems or _pg.total or 0 %}
+{% set pgCurrent = _pg.currentPage or _pg.page or 1 %}
+{% set pgTotal = _pg.totalPages or _pg.pages or 1 %}
+
+{% set showHero = d.show_hero | default(true) %}
+{# strings, not booleans: see the note in ui/product-card.njk — `{% ui %}` does
+   not carry boolean literals, so every on/off local in this theme travels as
+   'on' / 'off'. #}
+{% set showDate = 'on' if (d.show_date | default(true)) else 'off' %}
+{% set showExcerpt = 'on' if (d.show_excerpt | default(true)) else 'off' %}
+{% set featureFirst = d.feature_first | default(true) %}
+{% set cols = d.columns | default('3') %}
+{% set bg = d.background | default('white') %}
+
+{% set heroImg = blog.image.fileUrl if blog.image and blog.image.fileUrl and not blog.image.notFound else '' %}
+{% set blogTitle = blog.title | default(t('pages.blog.title'), true) %}
+
+<section id="hy-blog-{{ id }}"
+         data-pages="{{ pgTotal }}"
+         data-blog-cols="{{ cols }}"
+         class="hy-blogpage {{ 'hy-blogpage--well' if bg == 'well' }}"
+         style="--blog-cols: {{ cols }};">
+  <div class="hy-container">
+
+    <nav class="hy-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <a href="/blogs">{{ t('pages.blog.title') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <span aria-current="page">{{ blogTitle }}</span>
+    </nav>
+
+    {% if showHero and heroImg %}
+      <div class="hy-blog-hero">
+        <img src="{{ heroImg }}" alt="{{ blogTitle }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    <div class="hy-blog-head">
+      <span class="hy-blog-eyebrow">{{ t('pages.blog.title') }}</span>
+      <h1 class="hy-blog-title">{{ blogTitle }}</h1>
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+           HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+           the outer one and the content becomes a SIBLING, so every style on
+           this class stops reaching the text. Inner margins are reset in the CSS. #}
+      {% if blog.description %}<div class="hy-blog-desc">{{ blog.description | safe }}</div>{% endif %}
+      {% if pgItems %}
+        <span class="hy-blog-count">{% ui "count.njk", n=pgItems, kind='article' %}</span>
+      {% endif %}
+    </div>
+
+    {# ═════════════ articles ═════════════ #}
+    {% if count > 0 %}
+      <div class="hy-blog-grid {{ 'hy-blog-grid--lead' if featureFirst and count > 1 }}">
+        {% for article in articles %}
+          {% ui "article-card.njk", article=article, show_date=showDate, show_excerpt=showExcerpt %}
+        {% endfor %}
+      </div>
+
+      {# plain links: this page is server-paginated, so a link is the whole
+         feature. Same .hy-pager as the shop and collections pages. #}
+      {% if pgTotal > 1 %}
+        <nav class="hy-pager" aria-label="{{ t('common.next') }}">
+          {% if pgCurrent > 1 %}
+            <a href="?page={{ pgCurrent - 1 }}" class="hy-pager-btn" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pgTotal + 1) %}
+            {% if n == pgCurrent %}
+              <span class="hy-pager-btn is-active" aria-current="page">{{ n }}</span>
+            {% elif n == 1 or n == pgTotal or (n >= pgCurrent - 1 and n <= pgCurrent + 1) %}
+              <a href="?page={{ n }}" class="hy-pager-btn">{{ n }}</a>
+            {% elif n == pgCurrent - 2 or n == pgCurrent + 2 %}
+              <span class="hy-pager-gap">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pgCurrent < pgTotal %}
+            <a href="?page={{ pgCurrent + 1 }}" class="hy-pager-btn" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      {# The sentence and the way on are for the shopper; the skeleton cards are
+         for the merchant in the builder only. #}
+      <div class="hy-empty">
+        <span class="hy-empty-title">{{ t('pages.blog.no_articles_desc') }}</span>
+        <a href="/shop" class="hy-btn hy-btn--outline hy-btn--sm" style="margin-block-start: var(--space-4);">{{ t('pages.cart.continue_shopping') }}</a>
+      </div>
+      <div class="hy-blog-grid hy-editor-only">
+        {% ui "placeholder.njk", kind='article', count=cols %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-blog-' ~ id, c=d %}

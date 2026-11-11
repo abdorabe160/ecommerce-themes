@@ -1,0 +1,308 @@
+{# ===== ATTAR Article Page ===== #}
+{% set article = context.article | default({}) %}
+{% set showShare = widget.data.show_share | default(true) %}
+{% set showRelated = widget.data.show_related | default(true) %}
+{# the platform sends the related list next to the article, as context.related_articles #}
+{% set relatedArticles = context.related_articles or article.relatedArticles or article.related or [] %}
+{% set articleBody = article.content or article.description or '' %}
+{% if article.image and article.image.fileUrl %}{% set coverUrl = article.image.fileUrl %}
+{% elif article.imageUrl %}{% set coverUrl = article.imageUrl %}
+{% elif article.image and article.image is string %}{% set coverUrl = article.image %}
+{% else %}{% set coverUrl = '' %}{% endif %}
+{% set shareUrl = (context.seo and context.seo.canonical) or '' %}
+{% set blogRef = article.blog | default(article.category | default(null)) %}
+
+<style>
+  /* ── Editorial article body ── */
+  .anaqa-article-content {
+    color: var(--color-text-primary);
+    font-size: 17px;
+    line-height: 1.95;
+  }
+  html[dir="rtl"] .anaqa-article-content { line-height: 2.05; }
+
+  .anaqa-article-content h1,
+  .anaqa-article-content h2,
+  .anaqa-article-content h3,
+  .anaqa-article-content h4 {
+    font-family: var(--font-heading-ar), serif;
+    font-weight: 600;
+    margin-top: 1.8em;
+    margin-bottom: 0.6em;
+    line-height: 1.3;
+    color: var(--color-text-primary);
+  }
+  .anaqa-article-content h2 { font-size: 1.55em; }
+  .anaqa-article-content h3 { font-size: 1.3em; }
+  .anaqa-article-content h4 { font-size: 1.12em; }
+
+  .anaqa-article-content p { margin-bottom: 1.3em; color: var(--color-text-secondary); }
+  .anaqa-article-content img { margin: 2em 0; max-width: 100%; height: auto; }
+  .anaqa-article-content ul,
+  .anaqa-article-content ol {
+    padding-inline-start: 1.4em;
+    margin-bottom: 1.3em;
+    color: var(--color-text-secondary);
+  }
+  .anaqa-article-content ul { list-style-type: disc; }
+  .anaqa-article-content ol { list-style-type: decimal; }
+  .anaqa-article-content li { margin-bottom: 0.5em; }
+
+  .anaqa-article-content blockquote {
+    border-inline-start: 2px solid var(--color-accent);
+    padding-inline-start: 1.5em;
+    margin: 2em 0;
+    font-family: var(--font-heading-ar), serif;
+    font-size: 1.25em;
+    line-height: 1.6;
+    font-weight: 500;
+    font-style: normal;
+    color: var(--color-text-primary);
+  }
+  .anaqa-article-content a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .anaqa-article-content a:hover { opacity: 0.75; }
+
+  .anaqa-article-content pre {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 1.25em;
+    overflow-x: auto;
+    margin: 1.75em 0;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  .anaqa-article-content code {
+    background: var(--color-bg-secondary);
+    padding: 2px 6px;
+    font-size: 0.9em;
+  }
+  .anaqa-article-content pre code { background: none; padding: 0; }
+  .anaqa-article-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75em 0;
+  }
+  .anaqa-article-content th,
+  .anaqa-article-content td {
+    padding: 0.75em 1em;
+    border: 1px solid var(--color-border);
+    text-align: start;
+  }
+  .anaqa-article-content th { background: var(--color-bg-secondary); font-weight: 600; }
+  .anaqa-article-content hr { border: none; border-top: 1px solid var(--color-border); margin: 2.5em 0; }
+  .anaqa-article-content figure { margin: 2em 0; }
+  .anaqa-article-content figcaption {
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--color-text-tertiary);
+    margin-top: 0.75em;
+  }
+  .anaqa-article-content video,
+  .anaqa-article-content iframe { max-width: 100%; margin: 2em 0; }
+
+  /* ── Share / tag ── */
+  .anaqa-art-share-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    text-decoration: none;
+  }
+  .anaqa-art-share-btn:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg-primary);
+  }
+  .anaqa-art-tag {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    padding: 5px 14px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .anaqa-art-tag:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+  /* ── Back / breadcrumb links ── */
+  .anaqa-art-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--color-border);
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-art-back:hover { color: var(--color-accent); border-color: var(--color-accent); }
+</style>
+
+<section id="{{ widget.id }}" class="py-12 md:py-20" style="background: var(--color-bg-primary);">
+
+  {# ══════════════════════ HEADER ══════════════════════ #}
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 reveal">
+
+    {# Breadcrumbs #}
+    <nav class="flex items-center flex-wrap gap-2 text-[13px] mb-8 font-body-ar" style="color: var(--color-text-tertiary);">
+      <a href="/" style="text-decoration: none;" class="transition-colors duration-200 [color:var(--color-text-tertiary)] hover:[color:var(--color-accent)]">{{ t('common.home') }}</a>
+      <svg class="w-3 h-3 opacity-40 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <a href="/blogs" style="text-decoration: none;" class="transition-colors duration-200 [color:var(--color-text-tertiary)] hover:[color:var(--color-accent)]">{{ t('pages.blog.title') | default('المدونة') }}</a>
+      {% if blogRef %}
+        <svg class="w-3 h-3 opacity-40 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <a href="/blogs/{{ blogRef.handle | default(blogRef.slug) }}" style="text-decoration: none;" class="transition-colors duration-200 [color:var(--color-text-tertiary)] hover:[color:var(--color-accent)]">{{ blogRef.title }}</a>
+      {% endif %}
+    </nav>
+
+    {# Category eyebrow #}
+    {% if blogRef and blogRef.title %}
+      <a href="/blogs/{{ blogRef.handle | default(blogRef.slug) }}" class="editorial-label inline-block mb-5" style="text-decoration: none;">{{ blogRef.title }}</a>
+    {% endif %}
+
+    {# Title #}
+    <h1 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.9rem, 4.6vw, 3.1rem); line-height: 1.18; color: var(--color-text-primary);">
+      {{ article.title or t('pages.blog.article_not_found') }}
+    </h1>
+
+    {# Meta line #}
+    <div class="flex items-center flex-wrap gap-x-5 gap-y-3 mt-8 pt-6 pb-6 font-body-ar" style="border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+      {% if article.author %}
+        <div class="flex items-center gap-3">
+          {% if article.author.avatar and article.author.avatar.fileUrl %}
+            <img src="{{ article.author.avatar.fileUrl }}" alt="{{ article.author.name }}" class="w-11 h-11 rounded-full object-cover" style="border: 1px solid var(--color-border);">
+          {% else %}
+            <div class="w-11 h-11 rounded-full flex items-center justify-center" style="background: var(--color-bg-secondary);">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="color: var(--color-text-tertiary);">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+              </svg>
+            </div>
+          {% endif %}
+          <div class="flex flex-col">
+            <span class="text-sm font-medium" style="color: var(--color-text-primary);">{{ article.author.name }}</span>
+            <span class="text-[11px]" style="color: var(--color-text-tertiary);">{{ t('pages.blog.author') | default('كاتبة المقال') }}</span>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="flex items-center gap-5 text-[13px] {% if article.author %}ms-auto{% endif %}" style="color: var(--color-text-tertiary);">
+        {% if article.createdAt %}
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+            </svg>
+            <span class="tabular-nums">{{ article.createdAt | date('yyyy-MM-dd') }}</span>
+          </span>
+        {% endif %}
+        {% if article.views is defined and article.views > 0 %}
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.007-9.963-7.178z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            {{ article.views }} {{ t('pages.blog.views') | default('مشاهدة') }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ══════════════════════ LEAD IMAGE ══════════════════════ #}
+  {% if coverUrl %}
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 mt-10 reveal">
+      <div class="overflow-hidden" style="background: var(--color-bg-secondary);">
+        <img src="{{ coverUrl }}" alt="{{ article.title }}"
+             class="w-full h-auto object-cover"
+             style="filter: saturate(1.03) contrast(1.02);" loading="eager">
+      </div>
+    </div>
+  {% endif %}
+
+  {# ══════════════════════ BODY ══════════════════════ #}
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 mt-12 reveal">
+    <article class="anaqa-article-content font-body-ar" style="max-width: 68ch; margin-inline: auto;">
+      {{ articleBody | safe }}
+    </article>
+
+    {# ── Tags ── #}
+    {% if article.tags and (article.tags | length) %}
+      <div class="mt-12 pt-8 flex items-center flex-wrap gap-2.5" style="border-top: 1px solid var(--color-border);">
+        {% for tag in article.tags %}
+          {% if tag is string %}{% set tagText = tag %}
+          {% elif tag %}{% set tagText = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}
+          {% else %}{% set tagText = '' %}{% endif %}
+          {% if tagText %}<span class="anaqa-art-tag font-body-ar">{{ tagText }}</span>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ── Share + Back ── #}
+    <div class="mt-10 pt-8 flex items-center justify-between flex-wrap gap-5" style="border-top: 1px solid var(--color-border);">
+      <a href="{% if blogRef %}/blogs/{{ blogRef.handle | default(blogRef.slug) }}{% else %}/blogs{% endif %}" class="anaqa-art-back font-body-ar">
+        <svg class="w-4 h-4 ltr:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+        {{ t('pages.blog.back_to_articles') | default('العودة للمقالات') }}
+      </a>
+
+      {% if showShare %}
+        <div class="flex items-center gap-2.5" x-data="{ copied: false }">
+          <span class="text-[13px] me-1 hidden sm:inline font-body-ar" style="color: var(--color-text-tertiary);">{{ t('pages.blog.share_article') | default('شاركي المقال') }}</span>
+
+          {# Twitter/X #}
+          <a href="https://twitter.com/intent/tweet?url={{ shareUrl | urlencode }}&text={{ (article.title or '') | urlencode }}"
+             target="_blank" rel="noopener noreferrer" aria-label="X" class="anaqa-art-share-btn">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+
+          {# WhatsApp #}
+          <a href="https://wa.me/?text={{ (article.title or '') | urlencode }}%20{{ shareUrl | urlencode }}"
+             target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="anaqa-art-share-btn">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+
+          {# Copy Link #}
+          <button @click="navigator.clipboard.writeText(window.location.href); copied = true; setTimeout(() => copied = false, 2000)"
+                  aria-label="{{ t('pages.blog.copied') }}" class="anaqa-art-share-btn relative">
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+            </svg>
+            <svg x-show="copied" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ══════════════════════ RELATED ══════════════════════ #}
+  {% if showRelated and relatedArticles and (relatedArticles | length) %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-20 reveal">
+      <div class="pt-14" style="border-top: 1px solid var(--color-border);">
+        <div class="text-center mb-12">
+          <h2 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.4rem, 3vw, 2rem); line-height: 1.2; color: var(--color-text-primary);">{{ t('pages.blog.related_articles') | default('مقالات ذات صلة') }}</h2>
+          <span class="editorial-rule block max-w-[64px] mx-auto mt-5"></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12 attar-fit-3 attar-fit-span">
+          {% for related in relatedArticles %}
+            {% if loop.index <= 3 %}
+              {% set article = related %}
+              {% set showDate = true %}
+              {% set showExcerpt = true %}
+              <div class="reveal" style="transition-delay: {{ loop.index0 * 80 }}ms;">
+                {% include "ui/article-card.njk" %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</section>

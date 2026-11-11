@@ -1,0 +1,57 @@
+{# ===== LOCAL · Pagination ===== #}
+{% set current = context.pagination.currentPage|default(1) %}
+{% set total = context.pagination.totalPages|default(1) %}
+
+<div dir="rtl" class="py-10 flex justify-center">
+  <nav class="inline-flex items-center gap-6 md:gap-8 font-body-ar px-6 md:px-10"
+       style="border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+
+    {# السابق #}
+    {% if current > 1 %}
+    <a href="?page={{ current - 1 }}" rel="prev" aria-label="الصفحة السابقة"
+       class="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center transition-colors duration-200"
+       style="color: var(--color-text-secondary);"
+       onmouseenter="this.style.color='var(--color-accent)'"
+       onmouseleave="this.style.color='var(--color-text-secondary)'">
+      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+      </svg>
+    </a>
+    {% else %}
+    <span aria-disabled="true" class="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center cursor-not-allowed"
+          style="color: var(--color-border);">
+      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+      </svg>
+    </span>
+    {% endif %}
+
+    {# الوسط: current / total #}
+    <span class="select-none text-lg md:text-xl font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">
+      <span class="tabular-nums" style="color: var(--color-accent);">{{ current }}</span>
+      <span class="mx-2" style="color: var(--color-border);">/</span>
+      <span class="tabular-nums">{{ total }}</span>
+    </span>
+
+    {# التالي #}
+    {% if current < total %}
+    <a href="?page={{ current + 1 }}" rel="next" aria-label="الصفحة التالية"
+       class="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center transition-colors duration-200"
+       style="color: var(--color-text-secondary);"
+       onmouseenter="this.style.color='var(--color-accent)'"
+       onmouseleave="this.style.color='var(--color-text-secondary)'">
+      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    {% else %}
+    <span aria-disabled="true" class="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center cursor-not-allowed"
+          style="color: var(--color-border);">
+      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11 7L6 12l5 5m7-10l-5 5 5 5"/>
+      </svg>
+    </span>
+    {% endif %}
+
+  </nav>
+</div>

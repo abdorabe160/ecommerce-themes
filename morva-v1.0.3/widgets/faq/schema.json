@@ -1,0 +1,35 @@
+{
+  "name": "الأسئلة الشائعة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "الأسئلة الشائعة"
+    },
+    "first_open": {
+      "type": "boolean",
+      "label": { "ar": "فتح السؤال الأول تلقائياً", "en": "Open the first question" },
+      "default": false
+    }
+  },
+  "blocks": {
+    "question": {
+      "name": "سؤال",
+      "settings": {
+        "question": {
+          "type": "string",
+          "label": { "ar": "السؤال", "en": "Question" },
+          "default": ""
+        },
+        "answer": {
+          "type": "text",
+          "label": { "ar": "الإجابة", "en": "Answer" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "نصوص", "name": "الأسئلة الشائعة" }
+  ]
+}

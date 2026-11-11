@@ -1,0 +1,322 @@
+{# ============================================================================
+   LAMSA FEATURES BAR — the trust strip
+   Three styles:
+     trust    icon box + title + description   (shipping / returns / secure…)
+     claims   round icon + short label only    (paraben-free / cruelty-free…)
+     marquee  infinite scrolling ticker        (icon · label · icon · label…)
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([]) %}
+{% set count = items | length %}
+
+{% set style = d.style | default('trust') %}
+{% set isClaims = style == 'claims' %}
+{% set isMarquee = style == 'marquee' %}
+
+{% set bg = d.background | default('white') %}
+{% set tone = d.icon_tone | default('rose') %}
+{% set shape = d.icon_shape | default('rounded') %}
+{% set cols = d.columns | default('4') %}
+{% set align = d.align | default('center') %}
+{% set isCenter = align == 'center' %}
+{% set dividers = d.show_dividers | default(false) %}
+{% set borderTop = d.border_top | default(false) %}
+{% set borderBottom = d.border_bottom | default(false) %}
+{% set compact = d.compact | default(false) %}
+{% set mqSpeed = d.marquee_speed | default(26) %}
+
+{# ---- background ---- #}
+{% if bg == 'white' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'blush' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% elif bg == 'ink' %}{% set bgVal = 'var(--color-text-primary)' %}
+{% else %}{% set bgVal = 'transparent' %}{% endif %}
+{% set onDark = bg == 'ink' %}
+
+{# ---- icon colours ---- #}
+{% if tone == 'sage' %}
+  {% set iconFg = 'var(--color-sage-hover)' %}
+  {% set iconBg = 'var(--color-sage-light)' %}
+{% else %}
+  {% set iconFg = 'var(--color-accent)' %}
+  {% set iconBg = 'var(--color-accent-light)' %}
+{% endif %}
+
+{# ---- responsive column count for the mid breakpoint ---- #}
+{% set colsInt = cols | int %}
+{% set colsMid = 3 if colsInt > 3 else colsInt %}
+
+
+{# ============================ ICON LIBRARY ============================
+   Line icons on a 24×24 grid, 1.7 stroke — matches the rest of the theme.
+   `refresh` is kept as an alias so old page JSON keeps working.
+   ==================================================================== #}
+{% macro icon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true">
+  {% if name == 'shipping' %}
+    <path d="M2.5 6h11v9.5h-11z"/><path d="M13.5 9.5h3.3l3.2 3v3h-6.5z"/>
+    <circle cx="6.5" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>
+  {% elif name == 'returns' or name == 'refresh' %}
+    <path d="M3 12a9 9 0 1 0 9-9 9.7 9.7 0 0 0-6.7 2.7L3 8"/><path d="M3 3v5h5"/>
+  {% elif name == 'shield' %}
+    <path d="M12 3l7.5 3v5.6c0 4.5-3.1 7.3-7.5 8.9-4.4-1.6-7.5-4.4-7.5-8.9V6z"/>
+    <path d="M9 12.2l2.2 2.2 4.3-4.4"/>
+  {% elif name == 'card' %}
+    <rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/>
+    <path d="M6 14.5h3.5"/>
+  {% elif name == 'gift' %}
+    <path d="M3.5 8.5h17v3.5h-17z"/><path d="M5.2 12h13.6v8.5H5.2z"/><path d="M12 8.5v12"/>
+    <path d="M12 8.5S10.9 5 8.9 5a2.2 2.2 0 0 0 0 3.5"/>
+    <path d="M12 8.5S13.1 5 15.1 5a2.2 2.2 0 0 1 0 3.5"/>
+  {% elif name == 'support' %}
+    <path d="M4 13.5v-1.5a8 8 0 0 1 16 0v1.5"/>
+    <rect x="2.5" y="12.5" width="4" height="6" rx="1.8"/>
+    <rect x="17.5" y="12.5" width="4" height="6" rx="1.8"/>
+    <path d="M20 18.5v.6a2.4 2.4 0 0 1-2.4 2.4H13"/>
+  {% elif name == 'clock' %}
+    <circle cx="12" cy="12" r="8.75"/><path d="M12 7.2V12l3.4 2"/>
+  {% elif name == 'badge' %}
+    <path d="M12 2.8l2.2 1.6 2.7-.3 1 2.5 2.3 1.4-.7 2.6.7 2.6-2.3 1.4-1 2.5-2.7-.3L12 19.4l-2.2-1.6-2.7.3-1-2.5-2.3-1.4.7-2.6-.7-2.6 2.3-1.4 1-2.5 2.7.3z"/>
+    <path d="M9.2 11.9l2 2 3.6-3.7"/>
+  {% elif name == 'leaf' %}
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/>
+    <path d="M2 21c0-3 1.9-5.4 3-7"/>
+  {% elif name == 'flask' %}
+    <path d="M9.5 3v5.6L5.4 17.2A2 2 0 0 0 7.2 20.2h9.6a2 2 0 0 0 1.8-3L14.5 8.6V3"/>
+    <path d="M8.4 3h7.2"/><path d="M7.6 15h8.8"/>
+  {% elif name == 'droplet' %}
+    <path d="M12 21c4 0 7-3 7-7 0-4.5-4-8-7-11C9 6 5 9.5 5 14c0 4 3 7 7 7Z"/>
+    <path d="M12 17.6c1.9 0 3.4-1.5 3.4-3.4"/>
+  {% elif name == 'ban' %}
+    <circle cx="12" cy="12" r="8.75"/><path d="M6 18 18 6"/>
+  {% elif name == 'heart' %}
+    <path d="M12 20.3s-7.5-4.4-7.5-9.6a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.2-7.5 9.6-7.5 9.6Z"/>
+  {% elif name == 'sparkle' %}
+    <path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/>
+    <path d="M18.2 16.2l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z"/>
+  {% elif name == 'star' %}
+    <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+  {% else %}
+    <circle cx="12" cy="12" r="8.75"/><path d="m8.2 12.3 2.6 2.6 5-5.2"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+
+<style>
+  /* ================= shell ================= */
+  #lamsa-fb-{{ id }} {
+    background: {{ bgVal }};
+    {% if borderTop %}border-top: 1px solid {{ 'rgba(255,255,255,0.14)' if onDark else 'var(--color-border)' }};{% endif %}
+    {% if borderBottom %}border-bottom: 1px solid {{ 'rgba(255,255,255,0.14)' if onDark else 'var(--color-border)' }};{% endif %}
+    overflow: hidden;
+    {% if isMarquee %}
+    padding-block: {{ '14px' if compact else '22px' }};
+    {% else %}
+    padding-block: {{ '34px' if compact else '60px' }};
+    {% endif %}
+  }
+  @media (max-width: 767px) {
+    #lamsa-fb-{{ id }} {
+      {% if isMarquee %}
+      padding-block: {{ '12px' if compact else '18px' }};
+      {% else %}
+      padding-block: {{ '26px' if compact else '40px' }};
+      {% endif %}
+    }
+  }
+
+  /* ================= grid ================= */
+  .lamsa-fb-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 18px;
+  }
+  @media (min-width: 768px) {
+    .lamsa-fb-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 32px 24px; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-fb-{{ id }}-grid { grid-template-columns: repeat({{ cols }}, minmax(0, 1fr)); gap: 36px 28px; }
+  }
+
+  /* ================= item ================= */
+  .lamsa-fb-{{ id }}-item {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    {% if isClaims or isCenter %}
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    {% else %}
+    align-items: flex-start;
+    gap: 14px;
+    {% endif %}
+  }
+
+  {% if dividers %}
+  @media (min-width: 1024px) {
+    .lamsa-fb-{{ id }}-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      inset-inline-end: -14px;
+      top: 8%;
+      bottom: 8%;
+      width: 1px;
+      background: {{ 'rgba(255,255,255,0.16)' if onDark else 'var(--color-border)' }};
+    }
+  }
+  {% endif %}
+
+  /* ================= icon ================= */
+  .lamsa-fb-{{ id }}-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: {{ '#FFF' if onDark else iconFg }};
+    {% if isClaims %}
+    width: 58px; height: 58px;
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.12)' if onDark else iconBg }};
+    {% elif shape == 'bare' %}
+    background: none;
+    {% elif shape == 'circle' %}
+    width: 48px; height: 48px;
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.12)' if onDark else iconBg }};
+    {% else %}
+    width: 48px; height: 48px;
+    border-radius: var(--radius-md);
+    background: {{ 'rgba(255,255,255,0.12)' if onDark else iconBg }};
+    {% endif %}
+  }
+  @media (max-width: 640px) {
+    {% if isClaims %}
+    .lamsa-fb-{{ id }}-icon { width: 50px; height: 50px; }
+    {% elif shape != 'bare' %}
+    .lamsa-fb-{{ id }}-icon { width: 42px; height: 42px; }
+    {% endif %}
+  }
+
+  /* ================= text ================= */
+  .lamsa-fb-{{ id }}-title {
+    font-size: {{ '0.8125rem' if isClaims else '0.9375rem' }};
+    font-weight: 600;
+    line-height: 1.45;
+    color: {{ 'var(--color-footer-heading)' if onDark else 'var(--color-text-primary)' }};
+  }
+  .lamsa-fb-{{ id }}-desc {
+    margin: 0;
+    max-width: 30ch;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: {{ 'var(--color-footer-text)' if onDark else 'var(--color-text-secondary)' }};
+  }
+  @media (max-width: 640px) {
+    .lamsa-fb-{{ id }}-title { font-size: {{ '0.75rem' if isClaims else '0.875rem' }}; }
+    .lamsa-fb-{{ id }}-desc { font-size: 0.75rem; }
+  }
+
+  /* ================= marquee ================= */
+  {% if isMarquee %}
+  .lamsa-fb-{{ id }}-mq { display: flex; width: max-content; }
+  .lamsa-fb-{{ id }}-track {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    animation: lamsaMq-{{ id }} {{ mqSpeed }}s linear infinite;
+  }
+  #lamsa-fb-{{ id }}:hover .lamsa-fb-{{ id }}-track { animation-play-state: paused; }
+
+  @keyframes lamsaMq-{{ id }} {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
+  html[dir="rtl"] .lamsa-fb-{{ id }}-track { animation-name: lamsaMqRtl-{{ id }}; }
+  @keyframes lamsaMqRtl-{{ id }} {
+    from { transform: translateX(0); }
+    to   { transform: translateX(100%); }
+  }
+
+  .lamsa-fb-{{ id }}-mqitem {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-inline: 26px;
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: {{ 'var(--color-footer-heading)' if onDark else 'var(--color-text-primary)' }};
+  }
+  .lamsa-fb-{{ id }}-mqitem svg { color: {{ '#FFF' if onDark else iconFg }}; }
+
+  .lamsa-fb-{{ id }}-dot {
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: {{ 'rgba(255,255,255,0.4)' if onDark else 'var(--color-accent-soft)' }};
+  }
+  @media (max-width: 640px) {
+    .lamsa-fb-{{ id }}-mqitem { font-size: 0.8125rem; padding-inline: 18px; gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lamsa-fb-{{ id }}-track { animation: none; }
+  }
+  {% endif %}
+</style>
+
+
+{% if count > 0 %}
+<section id="lamsa-fb-{{ id }}">
+
+  {# ══════════════════ MARQUEE ══════════════════ #}
+  {% if isMarquee %}
+    {# The track is duplicated so translateX(±100%) loops seamlessly.
+       The clone is aria-hidden so assistive tech reads the list once. #}
+    <div class="lamsa-fb-{{ id }}-mq">
+      {% for pass in [1, 2] %}
+        <div class="lamsa-fb-{{ id }}-track" {% if pass == 2 %}aria-hidden="true"{% endif %}>
+          {% for block in items %}{% if block.data.title %}
+            <span class="lamsa-fb-{{ id }}-mqitem">
+              {{ icon(block.data.icon | default('check'), 17) }}
+              <span>{{ block.data.title }}</span>
+            </span>
+            <span class="lamsa-fb-{{ id }}-dot"></span>
+          {% endif %}{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+  {# ══════════════════ TRUST / CLAIMS ══════════════════ #}
+  {% else %}
+    <div class="lamsa-container">
+      <div class="lamsa-fb-{{ id }}-grid reveal reveal-stagger">
+        {% for block in items %}
+          {% set f = block.data %}
+          <div class="lamsa-fb-{{ id }}-item">
+            <span class="lamsa-fb-{{ id }}-icon">
+              {{ icon(f.icon | default('check'), 22 if isClaims else 21) }}
+            </span>
+            <span class="flex flex-col gap-1 min-w-0">
+              {% if f.title %}<span class="lamsa-fb-{{ id }}-title">{{ f.title }}</span>{% endif %}
+              {% if f.description and not isClaims %}
+                <p class="lamsa-fb-{{ id }}-desc">{{ f.description }}</p>
+              {% endif %}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</section>
+{% endif %}

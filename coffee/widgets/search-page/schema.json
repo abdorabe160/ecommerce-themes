@@ -1,0 +1,22 @@
+{
+  "name": "صفحة نتائج البحث",
+  "settings": {
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد النتائج",
+        "en": "Results per page"
+      },
+      "default": 24,
+      "min": 8,
+      "max": 48,
+      "step": 8
+    }
+  },
+  "presets": [
+    {
+      "category": "المتجر",
+      "name": "نتائج البحث"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "name": "صفحة المنتج",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "gallery_layout": "thumbs-side",
+        "image_ratio": "1x1",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "show_brand": true,
+        "show_rating": true,
+        "show_variant_labels": true,
+        "size_guide_url": "",
+        "show_savings": true,
+        "show_stock_status": true,
+        "low_stock_threshold": 3,
+        "show_installment": false,
+        "installment_months": 4,
+        "installment_text": "أو {months} دفعات بدون فوائد بقيمة {amount}",
+        "show_warranty": true,
+        "warranty_text": "",
+        "show_specs": true,
+        "spec1_label": "المكوّنات",
+        "spec1_value": "",
+        "spec2_label": "الحجم",
+        "spec2_value": "",
+        "spec3_label": "الإضافات المتاحة",
+        "spec3_value": "",
+        "spec4_label": "مناسب لـ",
+        "spec4_value": "",
+        "spec5_label": "يُقدَّم",
+        "spec5_value": "",
+        "spec6_label": "مسببات الحساسية",
+        "spec6_value": "",
+        "show_tips": true,
+        "tips_title": "قبل ما تطلب",
+        "tip1_title": "اعرف طبقك",
+        "tip1_text": "المكوّنات والحجم مكتوبين في التفاصيل تحت — اقراهم قبل ما تضيف للسلة.",
+        "tip2_title": "ظبّط الإضافات",
+        "tip2_text": "الحجم والصوص ودرجة الحرارة كلهم اختياري — اظبطهم قبل ما تضيف للسلة.",
+        "tip3_title": "قول لو في حساسية",
+        "tip3_text": "لو عندك حساسية من أي مكوّن، اكتبها في ملاحظات الطلب.",
+        "show_qty": true,
+        "show_buy_now": true,
+        "show_sku": true,
+        "show_share": true,
+        "show_sticky_bar": true,
+        "show_related": true,
+        "related_title": "يتاكل معاه",
+        "related_limit": 5
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "p1",
+          "settings": {
+            "title": "التفاصيل والمكوّنات",
+            "source": "description",
+            "text": "",
+            "icon": "info",
+            "open_by_default": true
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p2",
+          "settings": {
+            "title": "الإضافات والأحجام",
+            "source": "text",
+            "text": "<p>كل طبق ليه أحجام وإضافات مختلفة. الحجم بيغيّر السعر، والإضافات بتتحسب فوقه — والإجمالي بيتحدّث قدامك وانت بتختار.</p><p>لو محتاج حاجة مش موجودة في الاختيارات، اكتبها في ملاحظات الطلب.</p>",
+            "icon": "ruler",
+            "open_by_default": false
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p3",
+          "settings": {
+            "title": "التوصيل والاستلام",
+            "source": "text",
+            "text": "<p>تفاصيل التوصيل ومدته حسب منطقتك، وبتظهر قبل ما تأكّد الطلب.</p>",
+            "icon": "shipping",
+            "open_by_default": false
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p4",
+          "settings": {
+            "title": "لو في مشكلة",
+            "source": "text",
+            "text": "<p>لو في مشكلة في طلبك، تواصل معانا وهنساعدك.</p>",
+            "icon": "returns",
+            "open_by_default": false
+          }
+        }
+      ]
+    }
+  ]
+}

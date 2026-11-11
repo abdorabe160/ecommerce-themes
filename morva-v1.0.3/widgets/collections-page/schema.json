@@ -1,0 +1,34 @@
+{
+  "name": "صفحة التصنيفات",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "العنوان الصغير", "en": "Kicker" },
+      "default": "التصنيفات"
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "كل التصنيفات"
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": { "ar": "نسبة الصورة", "en": "Image ratio" },
+      "default": "5x6",
+      "options": [
+        { "value": "5x6", "label": { "ar": "طولية ٥:٦ (الافتراضي)", "en": "Portrait 5:6 (default)" } },
+        { "value": "4x5", "label": { "ar": "طولية ٤:٥", "en": "Portrait 4:5" } },
+        { "value": "3x4", "label": { "ar": "طولية ٣:٤", "en": "Portrait 3:4" } },
+        { "value": "1x1", "label": { "ar": "مربعة", "en": "Square" } }
+      ]
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": { "ar": "عدد المنتجات", "en": "Product count" },
+      "default": true
+    }
+  },
+  "presets": [
+    { "category": "صفحة التصنيفات", "name": "صفحة التصنيفات" }
+  ]
+}

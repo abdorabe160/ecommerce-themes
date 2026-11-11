@@ -1,0 +1,78 @@
+{# ============================================================================
+   LOCAL · 404
+   ----------------------------------------------------------------------------
+   A dead end is a chance to send the shopper somewhere useful, so this offers a
+   search box and the store instead of only an apology.
+
+   The search posts to /shop?q= — a route this theme has. There is no dedicated
+   search page in Qumra, and inventing one here would 404 a second time.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set links = widget.blocks | default([], true) %}
+
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.404.title') %}
+{% set message = d.message if (d.message | default('', true) | trim | length) > 0 else t('pages.404.message') %}
+{% set showSearch = d.show_search | default(true) %}
+{% set homeUrl = d.home_url | default('/') %}
+{% set shopUrl = d.shop_url | default('/shop') %}
+
+
+<section id="lc-404-{{ id }}" class="lc-404">
+  <div class="lc-container">
+    <div class="lc-404-inner">
+
+      <span class="lc-404-num" aria-hidden="true">404</span>
+
+      {% if eyebrow %}<span class="lc-404-eyebrow">{{ eyebrow }}</span>{% endif %}
+
+      <h1 class="lc-404-title">{{ title }}</h1>
+
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+           HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+           the outer one and the content becomes a SIBLING, so every style on
+           this class stops reaching the text. Inner margins are reset in the CSS. #}
+      {% if message %}<div class="lc-404-text">{{ message | safe }}</div>{% endif %}
+
+      {# ---- search: the fastest way out of a dead end ---- #}
+      {% if showSearch %}
+        <form action="/shop" method="get" class="lc-404-search" role="search">
+          <input type="search" name="q"
+                 placeholder="{{ t('pages.shop.search_placeholder') }}"
+                 aria-label="{{ t('pages.search.title') }}"/>
+          <button type="submit" aria-label="{{ t('pages.search.title') }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="11" cy="11" r="7.25"/><path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/>
+            </svg>
+          </button>
+        </form>
+      {% endif %}
+
+      <div class="lc-404-acts">
+        <a href="{{ shopUrl }}" class="lc-btn lc-btn--solid">{{ t('pages.404.browse_shop') }}</a>
+        <a href="{{ homeUrl }}" class="lc-btn lc-btn--outline">{{ t('pages.404.back_home') }}</a>
+      </div>
+
+      {# ---- optional quick links ---- #}
+      {% if (links | length) > 0 %}
+        <div class="lc-404-links">
+          <span class="lc-404-links-label">{{ t('pages.404.try_these') }}</span>
+          <div class="lc-404-chips">
+            {% for block in links %}
+              {% set b = block.data %}
+              {% if b.label %}
+                <a href="{{ b.url | default('/shop') }}" class="lc-404-chip">{{ b.label }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#lc-404-' ~ id, c=d %}

@@ -1,0 +1,89 @@
+{
+  "name": "صفحة المقال",
+  "settings": {
+    "show_hero": {
+      "type": "boolean",
+      "label": { "ar": "إظهار صورة المقال", "en": "Show the cover image" },
+      "default": true
+    },
+    "show_meta": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الكاتب والتاريخ والمشاهدات", "en": "Show author, date and views" },
+      "default": true
+    },
+    "show_tags": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الوسوم", "en": "Show tags" },
+      "default": true
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": { "ar": "إظهار زر المشاركة", "en": "Show the share button" },
+      "default": true
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مقالات ذات صلة", "en": "Show related articles" },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": { "ar": "عنوان قسم المقالات ذات الصلة", "en": "Related section title" },
+      "default": ""
+    },
+    "related_limit": {
+      "type": "number",
+      "label": { "ar": "عدد المقالات ذات الصلة", "en": "Related articles limit" },
+      "default": 3,
+      "min": 2,
+      "max": 8,
+      "step": 1
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم", "en": "Custom colours for this section — switch off to restore the theme palette" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "لون الخلفية", "en": "Background colour" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص والوصف", "en": "Body & description colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط", "en": "Accent — highlighted word, icons, links" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الحدود والفواصل", "en": "Borders & dividers" },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": { "ar": "لون خلفية البطاقات", "en": "Card background" },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": { "ar": "لون خلفية الزر", "en": "Button background" },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": { "ar": "لون نص الزر", "en": "Button text" },
+      "default": ""
+    }
+  },
+  "presets": [{ "category": "المدونة", "name": "صفحة المقال" }]
+}

@@ -1,0 +1,233 @@
+{# ============================================================================
+   PEBBLE COLLECTION TABS — a heading, two tabs, and a rail that runs off the edge
+   ----------------------------------------------------------------------------
+     استكشفي التصنيفات                                   [ أولاد ] [ بنات ]
+
+     ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌───
+     │      │ │      │ │      │ │      │ │      │ │      ← runs past the edge
+     └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └───
+     سويترات ²⁵  أطقم ³⁰  جاكيتات ¹⁸  قمصان ³⁵  تيشيرت ²¹
+
+     ▬▬▬▬──────────                                    ( ‹ ) ( › )
+
+   Measured off the reference at 1440px: a 1200 container, five cards across it
+   with a 12px gap — which is where the card's 230px comes from, not the other
+   way round — a 3:4 tile, the name 16px under it, and a progress bar exactly
+   one card wide sharing a row with the arrows.
+
+   ── A native scroll rail, not a slider library ──
+   `overflow-x: auto` with scroll snapping. Four other sections in this theme
+   already init a Swiper, and none of what this needs is worth a fifth: the
+   progress bar IS `scrollLeft / (scrollWidth - clientWidth)`, the arrows are
+   `scrollBy`, and a phone gets real momentum scrolling for free rather than a
+   touch handler pretending to be one.
+
+   ⚠️  `scrollLeft` counts DOWN from 0 in RTL — it goes negative as the rail
+   moves. Every read below is wrapped in Math.abs() for that reason; a raw
+   comparison leaves the bar pinned at 0 for the whole of an Arabic page.
+
+   ── The count is rendered only when Qumra sends one ──
+   The `collections` picker documents `{ _id, title, handle, image }` and no
+   count. Two other widgets in this theme read `productsCount` anyway and guard
+   it, because the page-level collection list does carry it — so the same guard
+   is here. Where it exists the design gets its number; where it does not, the
+   name stands alone instead of printing a zero.
+
+   All styling lives in assets/style.css → "15.10 COLLECTION TABS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set tabs = widget.blocks | default([]) %}
+{% set tabCount = tabs | length %}
+
+{% set heading = d.title | default('') %}
+{% set per = d.cards_per_view | default(5) %}
+{% set ratio = d.card_ratio | default('3x4') %}
+{% set showCount = d.show_count | default(true) %}
+{% set showBar = d.show_progress | default(true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+
+{# A tab strip is only meaningful with something to switch between, and only
+   when the merchant has actually named the tabs. One unnamed tab is just a
+   rail. #}
+{% set named = [] %}
+{% for b in tabs %}{% if b.data.tab_title %}{% set named = (named.push(1), named) %}{% endif %}{% endfor %}
+{% set showTabs = tabCount > 1 and (named | length) == tabCount %}
+
+{% set ratioMap = { '3x4': '3 / 4', '1x1': '1 / 1', '4x5': '4 / 5' } %}
+
+
+<section id="hy-ct-{{ id }}" class="hy-ct" data-hy-rail-root>
+  <style>
+    /* NOTE: `--hy-ct-per-set`, not `--hy-ct-per`. This block is an ID selector, so
+       anything it writes beats every class rule in the stylesheet — including
+       the responsive ones. Written directly, the merchant's desktop count of 5
+       survived into a 390px viewport and put six cards on a phone.
+
+       The stylesheet reads this as the DESKTOP value and decides what the
+       narrower breakpoints use. */
+    #hy-ct-{{ id }} {
+      --hy-ct-per-set: {{ per }};
+      --hy-ct-ratio: {{ ratioMap[ratio] | default('3 / 4') }};
+    }
+  </style>
+
+  {# ---- head ---- #}
+  {% if heading or showTabs %}
+    <div class="hy-container">
+      <div class="hy-ct-head">
+        {% if heading %}<h2 class="hy-ct-title">{{ heading }}</h2>{% endif %}
+
+        {% if showTabs %}
+          <div class="hy-ct-tabs" role="tablist" aria-label="{{ heading | default(t('common.categories'), true) }}">
+            {% for b in tabs %}
+              <button type="button"
+                      class="hy-ct-tab {{ 'is-active' if loop.first }}"
+                      role="tab"
+                      id="hy-ctTab-{{ id }}-{{ loop.index0 }}"
+                      data-hy-tab="{{ loop.index0 }}"
+                      aria-controls="hy-ctRail-{{ id }}-{{ loop.index0 }}"
+                      aria-selected="{{ 'true' if loop.first else 'false' }}">{{ b.data.tab_title }}</button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ---- rails: one per tab, all server-rendered ----
+     The sets are already in the page JSON, so fetching on a tab click would be
+     a round trip to redisplay data the browser is holding. Only the first tab's
+     images are eager. #}
+  <div class="hy-ct-rails">
+    {% for b in tabs %}
+      {% set cols = b.data.collections | default([]) %}
+      <div class="hy-ct-rail taqa-scroll-thin"
+           id="hy-ctRail-{{ id }}-{{ loop.index0 }}"
+           data-hy-rail="{{ loop.index0 }}"
+           role="{{ 'tabpanel' if showTabs else 'group' }}"
+           {% if showTabs %}aria-labelledby="hy-ctTab-{{ id }}-{{ loop.index0 }}"{% endif %}
+           {% if not loop.first %}hidden{% endif %}>
+        {% set outer = loop %}
+
+        {% if (cols | length) > 0 %}
+          {% for c in cols %}
+            {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+            <a href="/shop/{{ c.handle | default(c._id) }}" class="hy-ct-card">
+              <span class="hy-ct-media">
+                {% if img %}
+                  <img src="{{ img }}" alt="{{ c.title }}"
+                       {% if outer.first and loop.index <= 5 %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                {% else %}
+                  <span class="hy-ct-noimg" aria-hidden="true">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.75" cy="9" r="1.5"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                    </svg>
+                  </span>
+                {% endif %}
+              </span>
+              <span class="hy-ct-name">
+                {{ c.title }}
+                {# Raised, and only when Qumra sent a number — see the header. #}
+                {% if showCount and c.productsCount %}
+                  <sup class="hy-ct-count">{{ c.productsCount }}</sup>
+                {% endif %}
+              </span>
+            </a>
+          {% endfor %}
+        {% else %}
+          {# Nothing picked yet. The rail is drawn at its real size with tiles
+             sketched in, so the merchant sees the shape they are filling rather
+             than a collapsed strip. #}
+          {% for i in range(0, per) %}
+            <span class="hy-ct-card" data-hy-placeholder aria-hidden="true">
+              <span class="hy-ct-media hy-ct-media--ph"></span>
+              <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 60%;"></span>
+            </span>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {# ---- foot ---- #}
+  {% if showBar or showArrows %}
+    <div class="hy-container">
+      <div class="hy-ct-foot">
+        {% if showBar %}
+          <span class="hy-ct-track" role="presentation">
+            <span class="hy-ct-bar" data-hy-bar></span>
+          </span>
+        {% endif %}
+
+        {% if showArrows %}
+          <span class="hy-ct-arrows">
+            <button type="button" class="hy-ct-arrow" data-hy-prev aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+              </svg>
+            </button>
+            <button type="button" class="hy-ct-arrow" data-hy-next aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </button>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+{# ---- empty tabs borrow the store's collections ----
+   A tab with nothing picked renders skeleton tiles; HayatAuto (main.js) fills
+   each such rail with the next run of the store's collections, read off the
+   /collections page. The tile mirrors the server one above — keep them
+   together. #}
+<script>
+  (function () {
+    var root = document.getElementById('hy-ct-{{ id }}');
+    if (!root) return;
+    var showCount = {{ 'true' if showCount else 'false' }};
+    var noImg = '<span class="hy-ct-noimg" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.75" cy="9" r="1.5"/><path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span>';
+
+    function fill() {
+      if (!window.HayatAuto) return;
+      root.querySelectorAll('[data-hy-rail]').forEach(function (rail) {
+        var ph = rail.querySelectorAll('[data-hy-placeholder]');
+        if (!ph.length) return;
+        HayatAuto.takeCollections(ph.length).then(function (list) {
+          if (!list.length) return;              /* skeleton stays */
+          var esc = HayatCard.esc;
+          rail.innerHTML = list.map(function (c) {
+            return '<a href="' + esc(c.url) + '" class="hy-ct-card">' +
+              '<span class="hy-ct-media">' +
+                (c.image ? '<img src="' + esc(c.image) + '" alt="' + esc(c.title) + '" loading="lazy"/>' : noImg) +
+              '</span>' +
+              '<span class="hy-ct-name">' + esc(c.title) +
+                (showCount && c.count ? ' <sup class="hy-ct-count">' + c.count + '</sup>' : '') +
+              '</span></a>';
+          }).join('');
+          window.dispatchEvent(new Event('resize'));
+        });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fill);
+    } else {
+      fill();
+    }
+  })();
+</script>
+
+{# The rail's behaviour — the tabs, the arrows and the progress bar — is
+   HayatRail in assets/main.js, which this section opts into with the
+   `data-hy-rail-*` attributes above. It was an inline copy here; the product
+   tabs carousel needed the same thing over different cards, and one of the two
+   copies would eventually have been the one with the RTL arithmetic fixed. #}
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-ct-' ~ id, c=d %}

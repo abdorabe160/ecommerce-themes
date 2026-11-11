@@ -1,0 +1,16 @@
+{# صفحة عامة (من نحن، سياسة الاسترجاع، ...) — العنوان والمحتوى من بيانات الصفحة #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set ctx = context or {} %}
+{% set pg = page if (page and (page.content or page.body or page.title)) else (ctx.page or page or {}) %}
+{% set body = pg.content or pg.body or pg.html or pg.description or wd.fallback_text %}
+<section class="mw-page">
+  <div class="container container--narrow">
+    <nav class="mw-breadcrumb" aria-label="{{ t('common.breadcrumb') }}">
+      <a href="/">{{t('common.home') | default('Home') }}</a>
+      <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>{{ pg.title | default(wd.title) }}</span>
+    </nav>
+    {% if pg.title or wd.title %}<h1 class="mw-collection-hero__title" style="margin-bottom:3.2rem">{{ pg.title | default(wd.title) }}</h1>{% endif %}
+    {% if body %}<div class="mw-rte" dir="auto">{{ body | safe }}</div>{% else %}<p class="mw-empty">{{t('page.empty') | default('This page has no content yet.') }}</p>{% endif %}
+  </div>
+</section>

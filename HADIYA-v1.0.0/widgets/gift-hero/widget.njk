@@ -1,0 +1,141 @@
+{# ============================================================================
+   HADIYA · بانر الهدايا  (gift-hero) — engine E4 · القصة والمناسبة
+   ----------------------------------------------------------------------------
+       ┌───────────────────────────────┬──────────────┐
+       │ هدايا لكل مناسبة               │   ╭──────╮   │
+       │ الهدية الصح، من غير حيرة       │   │ صورة │   │
+       │ وصف                            │   │ قوس  │   │
+       │ ┌ بتدوّر على إيه؟ ┐┌ الميزانية ┐ │   │      │   │
+       │ └─────────────────┘└──────────┘ │   ╰──────╯   │
+       │            [ رشّحلي هدايا ]     │              │
+       └───────────────────────────────┴──────────────┘
+
+   ── The finder is a URL builder, nothing more ──
+   Measured on the store (2026-10-04): `/shop/<collection>` opens one
+   collection, and `?filters[price][min]=…&filters[price][max]=…` filters the
+   SSR grid (12 → 3 products for 450–650). A store URL takes ONE collection,
+   so occasions and recipients share the first list rather than being two
+   lists that could not both apply. Each option is a block with a plain link —
+   a collections picker INSIDE a block is reported to stop the editor drawing
+   the block's settings.
+
+   ── Budget units ──
+   The steps are typed in the unit the shopper READS (300 = "300 ج.م"), the
+   same unit the shop page's own price filter puts in the URL. They are
+   printed with the currency symbol, NOT `| money`: money expects the cart's
+   units and would print 3.00 on a store whose prices are in minor units.
+
+   Styling: assets/theme.css → "gift-hero".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set opts = widget.blocks | default([], true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set title = d.title | default(t('gifts.hero_title'), true) %}
+{% set finderOn = d.finder_enabled | default(true) %}
+{% set budgetOn = d.budget_enabled | default(true) %}
+{% set cur = localization.currency.currencySymbol | default('', true) %}
+
+{# ---- budget ranges from "300، 700، 1500" ----
+   Arabic and Latin commas both split. Non-numbers are dropped by `| int`
+   landing on 0 and the `> 0` test — a stray word cannot make a 0–0 range. #}
+{% set rawSteps = ((d.budget_steps | default('', true)) | replace('،', ',')).split(',') %}
+{% set steps = [] %}
+{% for s in rawSteps %}{% if (s | trim | int) > 0 %}{% set _ = steps.push(s | trim | int) %}{% endif %}{% endfor %}
+{% set ranges = [] %}
+{% if steps | length %}
+  {% set _ = ranges.push({ 'v': '-' ~ steps[0], 'label': t('gifts.budget_under') | replace('{amount}', steps[0] ~ ' ' ~ cur) }) %}
+  {% for s in steps %}{% if not loop.last %}
+    {# Worded ("من 300 لـ 700") rather than "300 – 700": an <option> cannot hold
+       a dir="ltr" isolate, and a bare digit range flips to "700 – 300" in RTL. #}
+    {% set _ = ranges.push({ 'v': s ~ '-' ~ steps[loop.index], 'label': t('gifts.budget_between') | replace('{min}', s) | replace('{max}', steps[loop.index] ~ ' ' ~ cur) }) %}
+  {% endif %}{% endfor %}
+  {% set _ = ranges.push({ 'v': steps[steps | length - 1] ~ '-', 'label': t('gifts.budget_over') | replace('{amount}', steps[steps | length - 1] ~ ' ' ~ cur) }) %}
+{% endif %}
+
+<section id="hd-hero-{{ id }}" class="hd-hero" aria-labelledby="hd-hero-t-{{ id }}">
+  <div class="hd-hero-in">
+    <div class="hd-hero-copy">
+      {% if d.eyebrow %}<p class="hd-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+      <h1 id="hd-hero-t-{{ id }}" class="hd-hero-title">{{ title }}</h1>
+      {% if d.text %}<div class="hd-hero-text">{{ d.text | safe }}</div>{% endif %}
+
+      {% if finderOn %}
+        {# Without JS the form still lands on /shop; the script turns the two
+           choices into the collection path + price filter. #}
+        <form class="hd-finder" action="/shop" method="get" data-hd-finder>
+          <label class="hd-field">{{ d.finder_label | default(t('gifts.finder_label'), true) }}
+            <select data-hd-where>
+              <option value="/shop">{{ d.finder_any | default(t('gifts.finder_any'), true) }}</option>
+              {% for block in opts %}{% set b = block.data %}
+                {% if b.label and b.url %}<option value="{{ b.url }}">{{ b.label }}</option>{% endif %}
+              {% endfor %}
+            </select>
+          </label>
+          {% if budgetOn and (ranges | length) %}
+            <label class="hd-field">{{ t('gifts.budget') }}
+              <select data-hd-budget>
+                <option value="">{{ t('gifts.budget_any') }}</option>
+                {% for r in ranges %}<option value="{{ r.v }}"><bdi>{{ r.label }}</bdi></option>{% endfor %}
+              </select>
+            </label>
+          {% endif %}
+          <button type="submit" class="hy-btn hy-btn--solid">{{ d.button_text | default(t('gifts.finder_button'), true) }}</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="hd-hero-media">
+      {% if img | length %}
+        <picture>
+          {% if imgM | length %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+          <img src="{{ img }}" alt="" fetchpriority="high"/>
+        </picture>
+      {% else %}
+        {# No upload yet: the theme's own gift illustration, so the first screen
+           of a fresh install reads as a gift shop, not as an empty arch. #}
+        <img class="hd-hero-art" src="{{ 'hd-gift.svg' | assets }}" alt="" fetchpriority="high"/>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+  #hd-hero-{{ id }} {
+    --hd-hero-h: {{ d.height | default(520) }}px;
+    --hd-hero-h-m: {{ d.height_mobile | default(320) }}px;
+    --hd-hero-tint: {{ d.media_tint | default('var(--color-bg-tertiary)', true) }};
+  }
+</style>
+
+{% if finderOn %}
+<script>
+  (function () {
+    var root = document.getElementById('hd-hero-{{ id }}');
+    var form = root && root.querySelector('[data-hd-finder]');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var where = form.querySelector('[data-hd-where]');
+      var budget = form.querySelector('[data-hd-budget]');
+      var url = new URL((where && where.value) || '/shop', location.origin);
+      var b = budget ? budget.value : '';
+      if (b) {
+        /* "min-max", either side may be empty. `price` is the range handle the
+           shop page reads (rangeHandles: ["price"] on this store). */
+        var parts = b.split('-');
+        if (parts[0]) url.searchParams.set('filters[price][min]', parts[0]);
+        if (parts[1]) url.searchParams.set('filters[price][max]', parts[1]);
+      }
+      location.href = url.pathname + url.search;
+    });
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#hd-hero-' ~ id, c=d %}

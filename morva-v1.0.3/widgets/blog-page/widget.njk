@@ -1,0 +1,28 @@
+{# MORVA · BLOG — /blogs/<handle> · one blog's articles as tiles #}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}) %}
+{% set articles = context.articles | default(blog.articles) | default([]) %}
+{% set cover = blog.image.fileUrl if blog.image and blog.image.fileUrl and (not blog.image.notFound) else '' %}
+{% set pg = context.pagination or {} %}
+{#- data-pages: /blogs gathers this category's other pages from here (mvBlogs) -#}
+<section class="mv-section" data-mv-blog-pages="{{ pg.totalPages or pg.pages or 1 }}">
+  {% if cover and (d.show_cover | default(true)) %}
+    <div class="mv-shop-cover"><img class="mv-fill" src="{{ cover }}" alt="{{ blog.title }}" fetchpriority="high"/></div>
+  {% endif %}
+  <div class="mv-head">
+    <div>
+      <div class="mv-kicker">— <a href="/blogs">{{ d.kicker | default(t('morva.journal'), true) }}</a></div>
+      <h1 class="mv-h">{{ blog.title | default(t('pages.blog.title'), true) }}</h1>
+      {% if blog.description %}<div class="mv-shop-desc">{{ blog.description | safe }}</div>{% endif %}
+    </div>
+    {% if (articles | length) > 0 %}<div class="mv-sub">{{ ('0' ~ (articles | length)) if (articles | length) < 10 else (articles | length) }}</div>{% endif %}
+  </div>
+  {% if (articles | length) > 0 %}
+    <div class="mv-tiles" style="--tile-ratio: 4 / 3;" data-mv-stagger>
+      {% for a in articles %}{% ui "article-card.njk", article=a %}{% endfor %}
+    </div>
+    {% ui "pagination.njk" %}
+  {% else %}
+    <p class="mv-empty">{{ t('pages.blog.no_articles_desc') }}</p>
+  {% endif %}
+</section>

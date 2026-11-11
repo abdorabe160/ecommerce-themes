@@ -1,0 +1,27 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة السلة",
+      "widget": "cart-page",
+      "settings": {
+        "title": "",
+        "show_breadcrumb": true,
+        "show_savings": true,
+        "show_discount_row": true,
+        "free_shipping_threshold": 0,
+        "confirm_remove": true,
+        "checkout_url": "/checkout",
+        "continue_shopping_url": "/shop",
+        "show_trust_row": false,
+        "trust1_text": "دفع آمن ومشفّر بالكامل",
+        "trust2_text": "توصيل لباب البيت",
+        "trust3_text": "استبدال واسترجاع حسب سياسة المتجر",
+        "note_text": "الشحن يُحتسب عند إتمام الطلب"
+      }
+    }
+  ]
+}

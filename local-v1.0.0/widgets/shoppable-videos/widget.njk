@@ -1,0 +1,456 @@
+{# ============================================================================
+   LOCAL · SHOPPABLE VIDEOS — مقاطع فيديو قابلة للتسوق
+   ----------------------------------------------------------------------------
+     See It, Cook It, Shop It
+     Our freshest products, brought to life.
+     ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐
+     │ 9:16│ │ 9:16│ │ 9:16│ │ 9:16│ │ 9:16│   muted loops, playing only
+     │ clip│ │ clip│ │ clip│ │ clip│ │ clip│   while on screen
+     └─────┘ └─────┘ └─────┘ └─────┘ └─────┘
+     [▢ price  name] × 5                          product mini-cards
+                   ‹  ▬▬ •  ›
+
+   Tap a clip → the REEL VIEWER: full screen, with sound, previous / next
+   (arrows, keyboard, swipe), the caption and the product with a
+   "shop the product" button that hands over to the existing quick view.
+
+   ── Qumra limits, and what this does about them ──
+   · No `video` setting type → the block's `media` field takes an mp4/webm
+     upload; `video_url` takes a direct .mp4 link OR any YouTube link
+     (watch?v= · youtu.be · /shorts/ · /embed/ · /live/). YouTube plays through
+     youtube-nocookie.com, muted in the row and with sound in the viewer,
+     driven by its postMessage API; its thumbnail is the default cover.
+     /shorts/ links are portrait and fill the 9:16 frame; other links are
+     landscape and are scaled to COVER it (the sides are cropped).
+   · A `products` picker INSIDE a block breaks the Theme Editor (see the note
+     in widgets/cta-banner). So products are ONE widget-level list, matched to
+     the videos by position: products[0] under video 1, and so on.
+
+   ── Bandwidth ──
+   Clips carry `data-src` and `preload="none"`; the real `src` is set only
+   when a clip first scrolls into view, and it plays only while visible.
+
+   Styling: assets/style.css → "15.5.10 SHOPPABLE VIDEOS · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set clips = widget.blocks | default([], true) %}
+{% set count = clips | length %}
+{% set products = d.products | default([], true) %}
+
+{% set perView = d.columns | default(5, true) %}
+{% set perViewM = d.columns_mobile | default('1.6', true) %}
+{% set playMode = d.autoplay | default('view') %}
+{% if not (settings.enableAnimations | default(true)) %}{% set playMode = 'off' %}{% endif %}
+{% set viewer = d.open_viewer | default(true) %}
+{% set showProd = d.show_product | default(true) %}
+{% set showVendor = d.show_vendor | default(true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set filled = [] %}
+{% for block in clips %}{% if block.data.video or block.data.video_url or block.data.poster %}{% set _ = filled.push(1) %}{% endif %}{% endfor %}
+
+<section id="lc-sv-{{ id }}" class="lc-sv lc-sv--{{ playMode }}"
+         style="padding-block: {{ d.padding_top | default(48) }}px {{ d.padding_bottom | default(48) }}px;">
+  {% if (filled | length) == 0 %}<i data-lc-placeholder hidden></i>{% endif %}
+  <div class="lc-hwrap">
+    {% if d.title or d.subtitle %}
+      <div class="lc-sv-head">
+        {% if d.title %}<h2 class="lc-sec-title">{{ d.title }}</h2>{% endif %}
+        {% if d.subtitle %}<p class="lc-sv-sub">{{ d.subtitle }}</p>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="swiper" id="lc-svSw-{{ id }}">
+      <div class="swiper-wrapper">
+        {% for block in clips %}
+          {% set b = block.data %}
+          {% set up = mediaUrl(b.video) | trim %}
+          {# YouTube: any link form → the 11-character id. An uploaded file
+             always wins over the link field. #}
+          {% set rawUrl = b.video_url | default('', true) | trim %}
+          {% set yt = '' %}
+          {% if rawUrl.indexOf('youtu') > -1 %}
+            {% if rawUrl.indexOf('youtu.be/') > -1 %}{% set yt = rawUrl.split('youtu.be/')[1] %}
+            {% elif rawUrl.indexOf('/shorts/') > -1 %}{% set yt = rawUrl.split('/shorts/')[1] %}
+            {% elif rawUrl.indexOf('/embed/') > -1 %}{% set yt = rawUrl.split('/embed/')[1] %}
+            {% elif rawUrl.indexOf('/live/') > -1 %}{% set yt = rawUrl.split('/live/')[1] %}
+            {% elif rawUrl.indexOf('v=') > -1 %}{% set yt = rawUrl.split('v=')[1] %}{% endif %}
+            {% set yt = yt.split('?')[0].split('&')[0].split('#')[0].split('/')[0] %}
+          {% endif %}
+          {% set isShort = rawUrl.indexOf('/shorts/') > -1 %}
+          {% set useYt = (up | length) == 0 and (yt | length) > 0 %}
+          {% set src = up if (up | length) > 0 else ('' if useYt else rawUrl) %}
+          {% set poster = mediaUrl(b.poster) | trim %}
+          {% set poster = poster if (poster | length) > 0 else (('https://i.ytimg.com/vi/' ~ yt ~ '/hqdefault.jpg') if useYt else '') %}
+          {% set p = products[loop.index0] if (products | length) > loop.index0 else null %}
+
+          {# ⚠️  `| length`, never truthiness: mediaUrl() returns a SafeString
+             OBJECT, which is truthy even when empty — an unfilled block printed
+             <img src=""> and the browser drew a broken-image box. #}
+          {% set hasSrc = (src | length) > 0 or useYt %}
+          {% set hasPoster = (poster | length) > 0 %}
+
+          <div class="swiper-slide lc-sv-item {{ '' if hasSrc or hasPoster else 'lc-builder-only' }}">
+            {% if hasSrc or hasPoster %}
+              <button type="button" class="lc-sv-media" data-lc-sv-open="{{ loop.index0 }}"
+                      aria-label="{{ t('videos.play') }}"{% if not viewer or not hasSrc %} tabindex="-1" disabled{% endif %}>
+                {% if useYt %}
+                  {# The thumbnail shows until the player has loaded, then the
+                     iframe fades in over it. `pointer-events: none` on the
+                     frame keeps the tap on the button (→ the viewer). #}
+                  <img class="lc-sv-video" src="{{ poster }}" alt="" loading="lazy"/>
+                  <span class="lc-sv-yt {{ 'is-short' if isShort }}">
+                    {# referrerpolicy: YouTube refuses embeds that arrive without a
+                       Referer (player error 153), and some store/browser policies
+                       strip it by default. #}
+                    <iframe class="lc-sv-frame" data-lc-player tabindex="-1" title="{{ b.caption | default('video') }}"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            data-src="https://www.youtube-nocookie.com/embed/{{ yt }}?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist={{ yt }}&amp;controls=0&amp;playsinline=1&amp;rel=0&amp;modestbranding=1&amp;iv_load_policy=3&amp;enablejsapi=1"></iframe>
+                  </span>
+                {% elif hasSrc %}
+                  <video class="lc-sv-video" data-lc-player muted loop playsinline preload="none"
+                         data-src="{{ src }}"{% if hasPoster %} poster="{{ poster }}"{% endif %}></video>
+                {% else %}
+                  <img class="lc-sv-video" src="{{ poster }}" alt="" loading="lazy"/>
+                {% endif %}
+                <span class="lc-sv-play" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+                </span>
+              </button>
+            {% else %}
+              {# Nothing uploaded yet — a still placeholder in the real shape. #}
+              <span class="lc-sv-media lc-sv-media--ph" aria-hidden="true">
+                <span class="lc-sv-ph">
+                  <span class="lc-sv-ph-play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>
+                  <span class="lc-sv-ph-text">{{ t('videos.add_video') }}</span>
+                </span>
+              </span>
+            {% endif %}
+
+            {% if showProd and p %}
+              {% set pSlug = p.slug | default(p.handle) | default(p._id) %}
+              {% set pImg = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+              {% set pPrice = p.pricing.price | default(0, true) %}
+              {% set pWas = p.pricing.compareAtPrice | default(0, true) %}
+              {% set pVendor = p.brand | default(p.vendor) | default('', true) %}
+              <a href="/products/{{ pSlug }}" class="lc-sv-prod">
+                <span class="lc-sv-thumb">{% if pImg %}<img src="{{ pImg }}" alt="" loading="lazy"/>{% endif %}</span>
+                <span class="lc-sv-info">
+                  {% if showVendor and pVendor %}<span class="lc-sv-vendor">{{ pVendor.title if pVendor.title else pVendor }}</span>{% endif %}
+                  <span class="lc-sv-price">
+                    {% if pPrice == 0 %}{{ t('common.free') }}{% else %}{{ pPrice | money }}{% endif %}
+                    {% if pWas > pPrice %}<s>{{ pWas | money }}</s>{% endif %}
+                  </span>
+                  <span class="lc-sv-name">{{ p.title }}</span>
+                </span>
+              </a>
+            {% elif showProd %}
+              {# no product at this position yet — the card's shape, inert #}
+              <span class="lc-sv-prod lc-sv-prod--ph" aria-hidden="true">
+                <span class="lc-sv-thumb"></span>
+                <span class="lc-sv-info">
+                  <span class="lc-ph-line" style="width: 48px; margin: 0;"></span>
+                  <span class="lc-ph-line" style="width: 110px;"></span>
+                </span>
+              </span>
+            {% endif %}
+          </div>
+        {% else %}
+          {% for i in range(perView) %}
+            <div class="swiper-slide lc-sv-item" aria-hidden="true" data-lc-placeholder>
+              <span class="lc-sv-media lc-sv-media--ph">
+                <span class="lc-sv-ph">
+                  <span class="lc-sv-ph-play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>
+                  <span class="lc-sv-ph-text">{{ t('videos.add_video') }}</span>
+                </span>
+              </span>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="lc-pager lc-sv-pager">
+      <button type="button" class="lc-pager-arrow" id="lc-svPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+        <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+      </button>
+      <div class="lc-pager-dots" id="lc-svDots-{{ id }}"></div>
+      <button type="button" class="lc-pager-arrow" id="lc-svNext-{{ id }}" aria-label="{{ t('common.next') }}">
+        <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  {% if viewer and count > 0 %}
+    {# ═══════════════ reel viewer ═══════════════ #}
+    <div class="lc-reel" id="lc-reel-{{ id }}" role="dialog" aria-modal="true" aria-label="{{ d.title | default('', true) }}" hidden>
+      <div class="lc-reel-backdrop" data-lc-reel-close></div>
+      <div class="lc-reel-box">
+        <video class="lc-reel-video" playsinline loop></video>
+        <div class="lc-reel-yt" data-lc-reel-yt hidden></div>
+
+        <div class="lc-reel-top">
+          <span class="lc-reel-count" data-lc-reel-count></span>
+          <div class="lc-reel-tools">
+            <button type="button" class="lc-reel-btn" data-lc-reel-mute aria-label="{{ t('videos.mute') }}"
+                    data-label-mute="{{ t('videos.mute') }}" data-label-unmute="{{ t('videos.unmute') }}">
+              <svg class="lc-reel-ico-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linejoin="round" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path stroke-linecap="round" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+              <svg class="lc-reel-ico-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linejoin="round" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path stroke-linecap="round" d="m16 9.5 5 5M21 9.5l-5 5"/></svg>
+            </button>
+            <button type="button" class="lc-reel-btn" data-lc-reel-close aria-label="{{ t('common.close') }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="lc-reel-nav lc-reel-nav--prev" data-lc-reel-step="-1" aria-label="{{ t('common.prev') }}">
+          <svg class="lc-flip" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+        </button>
+        <button type="button" class="lc-reel-nav lc-reel-nav--next" data-lc-reel-step="1" aria-label="{{ t('common.next') }}">
+          <svg class="lc-flip" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+        </button>
+
+        <div class="lc-reel-bottom">
+          <p class="lc-reel-caption" data-lc-reel-caption></p>
+          <div class="lc-reel-prod" data-lc-reel-prod hidden>
+            <span class="lc-sv-thumb"><img data-lc-reel-img alt=""/></span>
+            <span class="lc-sv-info">
+              <span class="lc-sv-price" data-lc-reel-price></span>
+              <span class="lc-sv-name" data-lc-reel-name></span>
+            </span>
+            <button type="button" class="lc-reel-shop" data-lc-reel-shop>{{ t('videos.shop_product') }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Everything the viewer needs, printed once — prices already formatted by
+       `| money`, so the viewer never formats a number itself. #}
+    <script type="application/json" id="lc-svData-{{ id }}">[
+      {# ⚠️  URLs are read straight off the fields here, NOT through mediaUrl():
+         a macro returns an escaped SafeString, which `dump` serialises as
+         {"val": …} with `&` turned into `&amp;` — the viewer got an object
+         for a src and played nothing. #}
+      {% for block in clips %}
+        {% set b = block.data %}
+        {% set vUp = b.video.fileUrl if (b.video and b.video.fileUrl) else (b.video.url if (b.video and b.video.url) else (b.video if b.video is string else '')) %}
+        {% set rawUrl = b.video_url | default('', true) | trim %}
+          {% set yt = '' %}
+          {% if rawUrl.indexOf('youtu') > -1 %}
+            {% if rawUrl.indexOf('youtu.be/') > -1 %}{% set yt = rawUrl.split('youtu.be/')[1] %}
+            {% elif rawUrl.indexOf('/shorts/') > -1 %}{% set yt = rawUrl.split('/shorts/')[1] %}
+            {% elif rawUrl.indexOf('/embed/') > -1 %}{% set yt = rawUrl.split('/embed/')[1] %}
+            {% elif rawUrl.indexOf('/live/') > -1 %}{% set yt = rawUrl.split('/live/')[1] %}
+            {% elif rawUrl.indexOf('v=') > -1 %}{% set yt = rawUrl.split('v=')[1] %}{% endif %}
+            {% set yt = yt.split('?')[0].split('&')[0].split('#')[0].split('/')[0] %}
+          {% endif %}
+          {% set isShort = rawUrl.indexOf('/shorts/') > -1 %}
+        {% set vYt = yt if (not vUp and (yt | length) > 0) else '' %}
+        {% set vSrc = vUp if vUp else ('' if vYt else rawUrl) %}
+        {% set vPoster = b.poster.fileUrl if (b.poster and b.poster.fileUrl) else (b.poster.url if (b.poster and b.poster.url) else (b.poster if b.poster is string else '')) %}
+        {% set vPoster = vPoster if vPoster else (('https://i.ytimg.com/vi/' ~ vYt ~ '/hqdefault.jpg') if vYt else '') %}
+        {% set p = products[loop.index0] if (products | length) > loop.index0 else null %}
+        {
+          "src": {{ vSrc | dump | safe }},
+          "yt": {{ vYt | dump | safe }},
+          "short": {{ 'true' if isShort else 'false' }},
+          "poster": {{ vPoster | dump | safe }},
+          "caption": {{ (b.caption | default('', true)) | dump | safe }},
+          "product": {% if p %}{
+            "slug": {{ (p.slug | default(p.handle) | default(p._id)) | dump | safe }},
+            "title": {{ (p.title | default('', true)) | dump | safe }},
+            "img": {{ (p.images[0].fileUrl if p.images and (p.images | length) > 0 else '') | dump | safe }},
+            "price": {{ ((t('common.free') if (p.pricing.price | default(0, true)) == 0 else (p.pricing.price | default(0, true) | money)) ~ '') | dump | safe }}
+          }{% else %}null{% endif %}
+        }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]</script>
+  {% endif %}
+</section>
+
+<script>
+  LocalReady(function () {
+    var root = document.getElementById('lc-sv-{{ id }}');
+    if (!root) return;
+
+    LocalSlider({
+      root: root,
+      el: 'lc-svSw-{{ id }}',
+      prev: '#lc-svPrev-{{ id }}',
+      next: '#lc-svNext-{{ id }}',
+      dots: '#lc-svDots-{{ id }}',
+      desk: {{ perView | default(5, true) }},
+      mob: {{ perViewM | default('1.6', true) }},
+      gap: 22
+    });
+
+    var MODE = '{{ playMode }}';
+    /* A "player" is a <video> or a YouTube <iframe>; both carry data-src and
+       get their real src only when first needed. YouTube is driven through
+       its postMessage API (enablejsapi=1). */
+    var clips = [].slice.call(root.querySelectorAll('[data-lc-player]'));
+    var ytCmd = function (f, fn) {
+      try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: fn, args: [] }), '*'); } catch (e) {}
+    };
+    var load = function (el) {
+      if (el.getAttribute('src') || !el.dataset.src) return false;
+      if (el.tagName === 'IFRAME') el.addEventListener('load', function () { el.classList.add('is-ready'); }, { once: true });
+      el.src = el.dataset.src;
+      return true;
+    };
+    var play = function (el) {
+      var fresh = load(el);
+      if (el.tagName === 'VIDEO') { var pr = el.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      else if (!fresh) ytCmd(el, 'playVideo');       /* a fresh embed autoplays */
+    };
+    var pause = function (el) {
+      if (el.tagName === 'VIDEO') el.pause();
+      else if (el.getAttribute('src')) ytCmd(el, 'pauseVideo');
+    };
+    var paused = false;   /* true while the viewer is open */
+
+    /* ---- section playback ---- */
+    if (MODE === 'view' && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && !paused) play(e.target); else pause(e.target);
+        });
+      }, { threshold: 0.35 });
+      clips.forEach(function (v) { io.observe(v); });
+    } else if (MODE === 'hover') {
+      clips.forEach(function (v) {
+        var host = v.closest('.lc-sv-media');
+        host.addEventListener('mouseenter', function () { play(v); });
+        host.addEventListener('mouseleave', function () { pause(v); });
+      });
+    }
+
+    {% if viewer and count > 0 %}
+    /* ---- reel viewer ---- */
+    var reel = document.getElementById('lc-reel-{{ id }}');
+    var dataEl = document.getElementById('lc-svData-{{ id }}');
+    if (!reel || !dataEl) return;
+    /* Moved to <body> so no ancestor's transform/overflow can trap a fixed box. */
+    document.body.appendChild(reel);
+
+    var items = [];
+    try { items = JSON.parse(dataEl.textContent); } catch (e) {}
+    var video = reel.querySelector('.lc-reel-video');
+    var q = function (s) { return reel.querySelector(s); };
+    var cur = 0, lastFocus = null;
+    var isRtl = document.documentElement.dir === 'rtl';
+
+    var ytHost = q('[data-lc-reel-yt]');
+    var ytFrame = null, ytMuted = false;
+    var clearYt = function () { ytHost.innerHTML = ''; ytHost.hidden = true; ytFrame = null; };
+
+    var render = function () {
+      var it = items[cur] || {};
+      reel.classList.toggle('is-yt', !!it.yt);
+      if (it.yt) {
+        /* YouTube: its own player, WITH controls and sound (the tap that
+           opened the viewer counts as the user gesture). */
+        video.pause(); video.removeAttribute('src'); video.hidden = true;
+        clearYt();
+        ytFrame = document.createElement('iframe');
+        ytFrame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        ytFrame.referrerPolicy = 'strict-origin-when-cross-origin';   /* see the row's iframe */
+        ytFrame.title = it.caption || 'video';
+        ytFrame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(it.yt) +
+          '?autoplay=1&mute=0&loop=1&playlist=' + encodeURIComponent(it.yt) +
+          '&controls=1&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&enablejsapi=1';
+        ytHost.classList.toggle('is-short', !!it.short);
+        ytHost.appendChild(ytFrame);
+        ytHost.hidden = false;
+        ytMuted = false;
+        reel.classList.remove('is-muted');
+      } else {
+        clearYt();
+        video.hidden = false;
+        video.src = it.src || '';
+        if (it.poster) video.poster = it.poster; else video.removeAttribute('poster');
+        var pr = video.play(); if (pr && pr.catch) pr.catch(function () {});
+      }
+      q('[data-lc-reel-count]').textContent = (cur + 1) + ' / ' + items.length;
+      q('[data-lc-reel-caption]').textContent = it.caption || '';
+      var box = q('[data-lc-reel-prod]');
+      if (it.product) {
+        box.hidden = false;
+        q('[data-lc-reel-img]').src = it.product.img || '';
+        q('[data-lc-reel-price]').textContent = it.product.price || '';
+        q('[data-lc-reel-name]').textContent = it.product.title || '';
+      } else {
+        box.hidden = true;
+      }
+    };
+    var open = function (i) {
+      cur = i; lastFocus = document.activeElement; paused = true;
+      clips.forEach(pause);
+      reel.hidden = false;
+      document.documentElement.classList.add('lc-reel-open');
+      video.muted = false;          /* a tap started this, so sound is allowed */
+      reel.classList.remove('is-muted');
+      render();
+      q('[data-lc-reel-close].lc-reel-btn').focus();
+    };
+    var close = function () {
+      video.pause(); video.removeAttribute('src'); video.load();
+      clearYt();
+      reel.hidden = true; paused = false;
+      document.documentElement.classList.remove('lc-reel-open');
+      if (lastFocus) lastFocus.focus();
+      if (MODE === 'view') clips.forEach(function (v) {
+        var r = v.getBoundingClientRect();
+        if (r.bottom > 0 && r.top < innerHeight) play(v);
+      });
+    };
+    var step = function (n) { cur = (cur + n + items.length) % items.length; render(); };
+
+    root.querySelectorAll('[data-lc-sv-open]').forEach(function (btn) {
+      btn.addEventListener('click', function () { open(+btn.getAttribute('data-lc-sv-open')); });
+    });
+    reel.querySelectorAll('[data-lc-reel-close]').forEach(function (b) { b.addEventListener('click', close); });
+    reel.querySelectorAll('[data-lc-reel-step]').forEach(function (b) {
+      b.addEventListener('click', function () { step(+b.getAttribute('data-lc-reel-step')); });
+    });
+    q('[data-lc-reel-mute]').addEventListener('click', function () {
+      var muted;
+      if (ytFrame) { ytMuted = !ytMuted; ytCmd(ytFrame, ytMuted ? 'mute' : 'unMute'); muted = ytMuted; }
+      else { video.muted = !video.muted; muted = video.muted; }
+      reel.classList.toggle('is-muted', muted);
+      this.setAttribute('aria-label', muted ? this.dataset.labelUnmute : this.dataset.labelMute);
+    });
+    q('[data-lc-reel-shop]').addEventListener('click', function () {
+      var it = items[cur];
+      if (!it || !it.product) return;
+      var slug = it.product.slug;
+      close();
+      window.dispatchEvent(new CustomEvent('quick-view', { detail: { slug: slug } }));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (reel.hidden) return;
+      if (e.key === 'Escape') close();
+      /* "next" is the reading direction: → in LTR, ← in RTL; ↓ always next */
+      if (e.key === 'ArrowDown' || e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) step(1);
+      if (e.key === 'ArrowUp' || e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) step(-1);
+    });
+
+    /* Swipe: up or toward the reading direction = next, like a reel. */
+    var sx = 0, sy = 0;
+    reel.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    reel.addEventListener('touchend', function (e) {
+      var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 40) return;
+      if (Math.abs(dy) > Math.abs(dx)) step(dy < 0 ? 1 : -1);
+      else step((dx < 0) !== isRtl ? 1 : -1);
+    }, { passive: true });
+    {% endif %}
+  });
+</script>
+
+{% ui "section-colors.njk", scope='#lc-sv-' ~ id, c=d %}

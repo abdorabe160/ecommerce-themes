@@ -1,0 +1,21 @@
+{# MORVA · STATIC PAGE — /pages/<handle> (shipping, returns, size guide, about…)
+   The reference's StaticPageView: an 820px column, a big uppercase title and
+   merchant-authored HTML in .mv-prose. Pair it with the FAQ widget in
+   pages/page.json for an FAQ page. #}
+{% set d = widget.data %}
+{% set cp = context.page | default({}) %}
+{% set pageTitle = d.title_override | default('') %}
+{% if not pageTitle %}{% set pageTitle = cp.title | default(page.title) | default('') %}{% endif %}
+{% set body = cp.content | default(cp.body) | default(cp.description) | default(cp.html) | default(page.content) | default(page.body) | default('') %}
+
+<section class="mv-section">
+  <div class="mv-page">
+    {% if d.kicker %}<div class="mv-kicker" style="margin-bottom: 10px;">— {{ d.kicker }}</div>{% endif %}
+    {% if pageTitle and (d.show_title | default(true)) %}<h1 class="mv-page-title">{{ pageTitle }}</h1>{% endif %}
+    {% if body %}
+      <div class="mv-prose">{{ body | safe }}</div>
+    {% else %}
+      <p class="mv-note">{{ t('morva.coming_soon') }}</p>
+    {% endif %}
+  </div>
+</section>

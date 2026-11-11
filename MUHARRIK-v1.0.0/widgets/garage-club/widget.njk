@@ -1,0 +1,159 @@
+{#
+  ============================================================================
+  MUHARRIK · GARAGE CLUB · نادي محرّك
+  ----------------------------------------------------------------------------
+   ┌────────────────────────────────────────────────────────────────────────┐
+   │ (full-bleed garage photo, heavy dark overlay, parallax)                │
+   │  — 04 / MEMBERS ONLY                  ┌ ⌐ ────────────────────── ┐    │
+   │  THE GARAGE                           │ [ your@email      ] [JOIN]│    │
+   │  CLUB                                 │ ◆ 10% off your first order│    │
+   │  10% off your first order +           │ ◆ service-date reminders  │    │
+   │  reminders for your service dates.    │ ◆ early access to drops   │    │
+   │                                       └ ──────────────────────  ⌐ ┘    │
+   └────────────────────────────────────────────────────────────────────────┘
+
+  The closing CTA before the footer: mh-garage.jpg under a heavy overlay
+  (data-mh-parallax on the image, data-mh-split on the two-line headline),
+  a short pitch, a square email form in a HUD panel and three small perks
+  with inline icons (blocks: icon + text).
+
+  ⚠️  THE EMAIL FORM IS THE SAME MECHANISM AS widgets/site-footer, on purpose:
+  the theme has no newsletter endpoint of its own. With `nl_action` EMPTY the
+  form is PRESENTATIONAL — Alpine validates the address, prevents the submit
+  and shows the thank-you line; nothing is stored anywhere. With `nl_action`
+  set to the merchant's provider URL (Mailchimp, Brevo, …) the form really
+  POSTs there in a new tab, with the email in the field named `nl_field`
+  (default EMAIL) and a hidden honeypot `hy_hp`. The locale strings
+  (newsletter.*, sfoot.nl_*, common.email) are the footer's too.
+
+  Styles: assets/mh-w-b.css → "04. GARAGE CLUB".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro icon(k) %}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+  {%- if k == 'tag' -%}<path d="M3 3h8l10 10-8 8L3 11V3Z"/><path d="M7.5 7.5h.01"/>
+  {%- elif k == 'bell' -%}<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2Z"/><path d="M10 21h4"/>
+  {%- elif k == 'bolt' -%}<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>
+  {%- elif k == 'shield' -%}<path d="M12 3 4 6v6c0 4.5 3.4 7.8 8 9 4.6-1.2 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>
+  {%- elif k == 'truck' -%}<path d="M2 7h11v9H2zM13 10h5l4 3v3h-9z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+  {%- elif k == 'wrench' -%}<path d="M14.5 6.5a4 4 0 0 0 4.9 4.9L21 13l-8 8-2-2 8-8-1.6-1.6a4 4 0 0 0-4.9-4.9L10 2l2.5 2.5-2 2L8 4Z"/>
+  {%- else -%}<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.2 6.1L12 16.8l-5.5 2.9 1.2-6.1L3.2 9.4l6.1-.8L12 3Z"/>
+  {%- endif -%}
+</svg>
+{% endmacro %}
+
+{% if isAr %}
+  {% set D = {
+    kicker: 'للأعضاء فقط', title: 'نادي', hl: 'محرّك',
+    text: 'تذكير بمواعيد الصيانة وأول من يعرف بالعروض الجديدة. انضم بالبريد الإلكتروني، ولا شيء آخر.',
+    fine: 'بلا رسائل مزعجة · إلغاء الاشتراك بضغطة',
+    perks: [
+      { icon: 'tag', text: 'نصايح عناية لعربيتك' },
+      { icon: 'bell', text: 'تذكير بمواعيد الصيانة' },
+      { icon: 'bolt', text: 'وصول مبكر للعروض الجديدة' }
+    ]
+  } %}
+{% else %}
+  {% set D = {
+    kicker: 'Members only', title: 'The garage', hl: 'club',
+    text: 'Service-date reminders and first word on new offers. Join with your email, nothing else.',
+    fine: 'No spam · one-click unsubscribe',
+    perks: [
+      { icon: 'tag', text: 'Care tips for your car' },
+      { icon: 'bell', text: 'Service-date reminders' },
+      { icon: 'bolt', text: 'Early access to new drops' }
+    ]
+  } %}
+{% endif %}
+
+{% set imgRaw = mediaUrl(d.image) | trim %}
+{% set img = imgRaw if (imgRaw | length) else ('mh-garage.jpg' | assets) %}
+{% set overlay = d.overlay if d.overlay is defined and d.overlay !== '' else 72 %}
+
+{% set perks = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set txt = bd.text | default('', true) | trim %}
+  {% if txt %}{% set _ = perks.push({ icon: bd.icon | default('star', true), text: txt }) %}{% endif %}
+{% endfor %}
+{% if (perks | length) == 0 %}{% set perks = D.perks %}{% endif %}
+
+{% set kicker = d.kicker | default(D.kicker, true) %}
+{% set title = d.title | default(D.title, true) %}
+{% set hl = D.hl if not d.title else (d.title_hl | default('', true)) %}
+{% set text = d.text | default(D.text, true) %}
+{% set fine = d.fine_print | default(D.fine, true) %}
+{% set btn = d.nl_button | default(t('sfoot.nl_btn'), true) %}
+{% set ph = d.nl_placeholder | default(t('sfoot.nl_ph'), true) %}
+
+{#- Without `nl_action` the form only pretends to subscribe (it shows the
+    thank-you and stores nothing) — so the club stays in the editor until the
+    merchant connects a list provider, and never fools a shopper. -#}
+<section id="mh-gc-{{ id }}"{% if not d.nl_action %} data-hy-empty{% endif %}
+         class="mh-gc"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 112 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 112 }}px; --gc-ov: {{ overlay }}%;">
+
+  <div class="mh-gc-media" aria-hidden="true">
+    <img src="{{ img }}" alt="" loading="lazy" decoding="async" draggable="false" data-mh-parallax="-0.18"/>
+  </div>
+  <div class="mh-gc-shade" aria-hidden="true"></div>
+
+  <div class="mh-gc-wrap">
+    <div class="mh-gc-copy">
+      {% if kicker %}<p class="mh-kicker mh-gc-kicker" data-mh-reveal="up"><span class="mh-kicker-num">04</span><span class="mh-gc-ksep">/</span>{{ kicker | safe }}</p>{% endif %}
+      {% if title or hl %}
+        {# split per LINE so the word-mask animation never flattens the
+           accent-coloured second line #}
+        <h2 class="mh-h mh-h--xl mh-gc-title">
+          <span class="mh-gc-l1" data-mh-split>{{ title | safe }}</span>
+          {% if hl %}<span class="mh-gc-l2 mh-hl" data-mh-split>{{ hl | safe }}</span>{% endif %}
+        </h2>
+      {% endif %}
+      {% if text %}<p class="mh-gc-text" data-mh-reveal="up" data-mh-delay="0.15">{{ text | safe }}</p>{% endif %}
+    </div>
+
+    <div class="mh-gc-panel mh-hud" data-mh-reveal="up" data-mh-delay="0.1" x-data="{ sent: false, err: '' }">
+      {# ── Newsletter form ─────────────────────────────────────────────────
+         Identical mechanism to widgets/site-footer: PRESENTATIONAL when
+         `nl_action` is empty (validate → prevent → thank-you), a real POST to
+         the provider URL when it is set. See the header comment. #}
+      <form class="mh-gc-form" novalidate x-show="!sent"
+            data-err-empty="{{ t('newsletter.error_empty') }}" data-err-format="{{ t('newsletter.error_format') }}"
+            {% if d.nl_action %}action="{{ d.nl_action }}" method="post" target="_blank" rel="noopener"{% endif %}
+            @submit="
+              const f = $el.querySelector('input[type=email]');
+              if (!f.checkValidity() || !f.value.trim()) { $event.preventDefault(); err = f.value.trim() === '' ? $el.dataset.errEmpty : $el.dataset.errFormat; f.focus(); return; }
+              err = ''; {% if not d.nl_action %}$event.preventDefault(); {% endif %}sent = true;
+            ">
+        <label class="mh-sr" for="mh-gc-email-{{ id }}">{{ t('common.email') }}</label>
+        <input id="mh-gc-email-{{ id }}" class="mh-gc-input" type="email" name="{{ d.nl_field | default('EMAIL', true) }}" required autocomplete="email" inputmode="email"
+               placeholder="{{ ph | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" @input="err = ''"/>
+        <button type="submit" class="mh-gc-btn mh-btn hy-btn--solid">{{ btn | safe }} <span class="mh-arrow" aria-hidden="true">→</span></button>
+        <span class="mh-gc-hp" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);"><input type="text" name="hy_hp" tabindex="-1" autocomplete="off"/></span>
+      </form>
+      <p class="mh-gc-err mh-mono" x-show="err" x-text="err" x-cloak role="alert"></p>
+      <p class="mh-gc-ok mh-led" x-show="sent" x-cloak role="status">{{ t('sfoot.nl_ok') }}</p>
+
+      {% if d.show_perks != false and (perks | length) %}
+        <ul class="mh-gc-perks" role="list" data-mh-stagger>
+          {% for p in perks %}
+            <li class="mh-gc-perk" data-mh-item>
+              <span class="mh-gc-perk-ico">{{ icon(p.icon) }}</span>
+              <span class="mh-gc-perk-t">{{ p.text | safe }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if fine %}<p class="mh-gc-fine mh-mono">{{ fine | safe }}</p>{% endif %}
+    </div>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#mh-gc-' ~ id, c=d %}

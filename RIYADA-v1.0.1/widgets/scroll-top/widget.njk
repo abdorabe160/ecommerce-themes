@@ -1,0 +1,15 @@
+{#- Back-to-top button: appears after one screen of scrolling, opposite corner to WhatsApp by default. -#}
+{% set d = widget.data %}
+{% if d.enabled != false %}
+  <button type="button"
+          class="riyada-fab riyada-fab--{{ 'start' if d.position == 'start' else 'end' }}"
+          x-data="{ on: false }"
+          x-init="const f = () => on = window.scrollY > window.innerHeight; f(); window.addEventListener('scroll', f, { passive: true })"
+          x-show="on" x-cloak
+          @click="window.scrollTo({ top: 0, behavior: (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('riyada-no-motion')) ? 'auto' : 'smooth' })"
+          aria-label="{{ t('footer.back_to_top') }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0-5.5 5.5M12 5l5.5 5.5"/>
+    </svg>
+  </button>
+{% endif %}

@@ -1,0 +1,184 @@
+{# ============================================================================
+   HYPER COLLECTIONS PAGE — /collections
+   ----------------------------------------------------------------------------
+   Lists every collection in the store.
+
+   The tile is NOT redefined here: it is the very same `.hy-coll-tile` the
+   homepage carousel uses (assets/style.css → "15.11 COLLECTIONS CAROUSEL"), so
+   a collection looks identical wherever a shopper meets it. Only the container
+   differs — a grid here, a rail there.
+
+   Routes: every card points at /shop/<slug>, which is the single-collection
+   route this theme actually has. Nothing here invents a page.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# Hidden collections and a collection with no title or link stay out. `cols`
+   is built first so the count and the grid classes describe what is shown. #}
+{% set cols = [] %}
+{% for c in context.collections | default([], true) %}
+  {% if c.title and (c.slug or c.handle or c._id) and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}
+{% endfor %}
+{% set count = cols | length %}
+{% set pagination = context.pagination %}
+
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.collections.title') %}
+{% set desc = d.description | default('', true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set metaLabel = d.meta_label | default('', true) %}
+{% set moreText = d.more_text | default('', true) %}
+{% set colsD = d.columns_desktop | default('3', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{% set bg = d.background | default('white', true) %}
+
+{% set ratio = d.card_ratio | default('3x4', true) %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+{% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+
+<section id="hy-collp-{{ id }}"
+         class="hy-collp {{ 'hy-collp--well' if bg == 'well' }}"
+         style="--collp-cols: {{ colsD }}; --collp-cols-m: {{ colsM }};">
+  <div class="hy-container">
+
+    {% if showTitle %}
+      <div class="hy-collp-head">
+        {% if eyebrow %}<span class="hy-collp-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="hy-collp-title">{{ title }}</h1>
+        {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+             HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the CSS. #}
+        {% if desc %}<div class="hy-collp-desc">{{ desc | safe }}</div>{% endif %}
+        {% if showCount and count > 0 %}
+          <span class="hy-collp-count">
+            {% set collTotal = pagination.totalItems if (pagination and pagination.totalPages > 1 and pagination.totalItems) else count %}{% ui "count.njk", n=collTotal, kind='collection' %}
+          </span>
+        {% endif %}
+      </div>
+    {% else %}
+      <h1 class="hy-sr-only">{{ title }}</h1>
+    {% endif %}
+
+    {% if count > 0 %}
+
+      {# A last tile alone in its row takes the whole row. Tablets are always two
+         columns (style.css → .hy-collp-grid). #}
+      {% set cD = colsD | int %}{% set cM = colsM | int %}
+      <div class="hy-collp-grid {{ 'hy-collp-grid--wide-d' if cD > 1 and (count % cD) == 1 }} {{ 'hy-collp-grid--wide-t' if (count % 2) == 1 }} {{ 'hy-collp-grid--wide-m' if cM > 1 and (count % cM) == 1 }}">
+        {% for c in cols %}
+          {% set url = '/shop/' ~ (c.slug | default(c.handle, true) | default(c._id, true)) %}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+
+          {# `data-hy-coll-*` is read by HayatAuto.collections() in main.js —
+             Qumra has no collections endpoint, so this page IS the list the
+             home page's empty collection pickers borrow from. #}
+          <a href="{{ url }}" class="hy-coll-tile" style="--coll-ratio: {{ ratioVal }};"
+             data-hy-coll
+             data-hy-coll-title="{{ c.title }}"
+             data-hy-coll-url="{{ url }}"
+             data-hy-coll-img="{{ img }}"
+             data-hy-coll-count="{{ c.productsCount | default(0, true) }}">
+
+            {% if img %}
+              <img src="{{ img }}" alt="{{ c.title }}" loading="lazy" class="hy-coll-img"/>
+            {% else %}
+              <span class="hy-coll-noimg">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18"/>
+                  <circle cx="8.75" cy="9" r="1.5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                </svg>
+              </span>
+            {% endif %}
+
+            {% if metaLabel or (showCount and c.productsCount) %}
+              <div class="hy-coll-meta">
+                <span class="hy-coll-label">
+                  {% if metaLabel %}
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/>
+                    </svg>
+                    {{ metaLabel }}
+                  {% endif %}
+                </span>
+                {% if showCount and c.productsCount %}
+                  <span class="hy-coll-count">{{ c.productsCount }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="hy-coll-foot">
+              <span class="hy-coll-name">{{ c.title }}</span>
+              {% if moreText %}
+                <span class="hy-coll-more">
+                  {{ moreText }}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8"/>
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {# ═════ pagination — plain links. This page has no Alpine scope and needs
+         none: /collections is server-paginated, so a link is the whole feature.
+         Same .hy-pager as the shop page, so the two never look different. ═════ #}
+      {% if pagination and pagination.totalPages > 1 %}
+        <nav class="hy-pager" aria-label="{{ t('common.next') }}">
+          {% if pagination.currentPage > 1 %}
+            <a href="?page={{ pagination.currentPage - 1 }}" class="hy-pager-btn" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+
+          {% for n in range(1, pagination.totalPages + 1) %}
+            {% if n == pagination.currentPage %}
+              <span class="hy-pager-btn is-active" aria-current="page">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="hy-pager-btn">{{ n }}</a>
+            {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+              <span class="hy-pager-gap">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if pagination.hasNextPage %}
+            <a href="?page={{ pagination.currentPage + 1 }}" class="hy-pager-btn" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+
+      {# Placeholder tiles rather than an apology: a merchant looking at their
+         own empty /collections learns more from the shape of the page than
+         from being told it is empty. #}
+      <div class="hy-empty">
+        <span class="hy-empty-title">{{ t('categories.no_categories_desc') }}</span>
+        <a href="/shop" class="hy-btn hy-btn--outline hy-btn--sm" style="margin-block-start: var(--space-4);">{{ t('pages.shop.all_products') }}</a>
+      </div>
+      <div class="hy-collp-grid hy-editor-only">
+        {% ui "placeholder.njk", kind='collection', count='6', image_ratio=ratio %}
+      </div>
+
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. #}
+{% ui "section-colors.njk", scope='#hy-collp-' ~ id, c=d %}

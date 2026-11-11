@@ -1,0 +1,159 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "سلايدر الواجهة",
+      "widget": "hero-slider",
+      "settings": {
+        "height": "full",
+        "autoplay": true,
+        "interval": 6,
+        "show_index": true,
+        "strip_text": "تحرّك بسرعة",
+        "strip_speed": 28
+      },
+      "blocks": [
+        {
+          "name": "شريحة ١",
+          "block": "slide",
+          "settings": {
+            "image_position": "center",
+            "overlay": 55,
+            "kicker": "الإصدار ٠٣ · متاح الآن",
+            "title": "ارتدِ الضجيج",
+            "text": "قطع خام بطاقة الشارع — لليل المدينة.",
+            "button_text": "تسوّق الآن",
+            "button_url": "/shop",
+            "button2_text": "المعرض",
+            "button2_url": "#look",
+            "align": "start"
+          }
+        },
+        {
+          "name": "شريحة ٢",
+          "block": "slide",
+          "settings": {
+            "image_position": "right",
+            "overlay": 55,
+            "kicker": "شتاء ٢٦",
+            "title": "مساحة للشغب",
+            "text": "خامات ثقيلة وقصّات واسعة.",
+            "button_text": "تسوّق الآن",
+            "button_url": "/shop",
+            "button2_text": "",
+            "button2_url": "",
+            "align": "start"
+          }
+        },
+        {
+          "name": "شريحة ٣",
+          "block": "slide",
+          "settings": {
+            "image_position": "center",
+            "overlay": 60,
+            "kicker": "أنت ابن الحي",
+            "title": "تحرّك بسرعة",
+            "text": "خلّيك أول واحد يعرف بالإصدار الجاي.",
+            "button_text": "اشترك في النشرة",
+            "button_url": "#news",
+            "button2_text": "",
+            "button2_url": "",
+            "align": "start"
+          }
+        }
+      ]
+    },
+    {
+      "name": "كل القطع",
+      "widget": "product-drop",
+      "settings": {
+        "index": "02",
+        "kicker": "تسوّق",
+        "heading": "كل القطع",
+        "view_all_text": "عرض الكل",
+        "view_all_url": "/shop",
+        "limit": 8,
+        "auto_fill": true,
+        "anchor": "drop"
+      }
+    },
+    {
+      "name": "من الشارع",
+      "widget": "lookbook",
+      "settings": {
+        "index": "03",
+        "kicker": "المعرض",
+        "heading": "من الشارع",
+        "view_all_text": "عرض الكل",
+        "view_all_url": "/shop",
+        "height": 520,
+        "anchor": "look"
+      },
+      "blocks": [
+        {
+          "name": "صورة ١",
+          "block": "look",
+          "settings": {
+            "caption": "شوارع القاهرة",
+            "url": ""
+          }
+        },
+        {
+          "name": "صورة ٢",
+          "block": "look",
+          "settings": {
+            "caption": "الإصدار ٠٣",
+            "url": ""
+          }
+        },
+        {
+          "name": "صورة ٣",
+          "block": "look",
+          "settings": {
+            "caption": "ليل وسط البلد",
+            "url": ""
+          }
+        },
+        {
+          "name": "صورة ٤",
+          "block": "look",
+          "settings": {
+            "caption": "دورة الغبار",
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "البيان",
+      "widget": "story",
+      "settings": {
+        "image_side": "start",
+        "index": "04",
+        "kicker": "البيان",
+        "body": "ستريت وير من ضجيج المدينة — للولد اللي بيحكم الحي، مش الكاتووك. كل غُرزة هتاف، وكل إصدار رسالة.",
+        "signature": "",
+        "anchor": "story"
+      }
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "index": "05",
+        "kicker": "ابقَ في المقدمة",
+        "title": "كن أول من يعرف بالإصدار القادم.",
+        "subtitle": "خلّيك أول واحد يعرف بكل إصدار جديد.",
+        "placeholder": "your@email.com",
+        "button": "اشترك",
+        "form_action": "",
+        "field_name": "EMAIL",
+        "strip_text": "تحرّك بسرعة",
+        "anchor": "news"
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "title": "الهيدر",
+  "allowAdd": false,
+  "allowRemove": false,
+  "allowReorder": false,
+  "widgets": [
+    {
+      "name": "الهيدر الزجاجي",
+      "widget": "header",
+      "settings": {
+        "header_menu": "header-menu",
+        "show_categories_menu": true,
+        "show_shop_link": true,
+        "sticky": true,
+        "show_announcement": false,
+        "announcement_text": "",
+        "announcement_link": "",
+        "logo_height": 34,
+        "show_search": true,
+        "hide_on_scroll": true
+      }
+    }
+  ]
+}

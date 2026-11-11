@@ -1,0 +1,513 @@
+{# ===== ATTAR Quick View Product ===== #}
+{# Fetched via: /products/{slug}?widgetKey=quick-view-product #}
+{# Injected into #quick-view-content-dynamic in layouts/layout.njk; Alpine.initTree() runs on it #}
+
+{% set p = context.product %}
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{% set discount = ((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice * 100) | int if hasDiscount else 0 %}
+{% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+{# Server render gives variant.images as raw IDs (no fileUrl) — those can't be appended here;
+   the browser shows them from /ajax/product instead (Qumra.stock.variantImage).
+   Gallery = product images + variant images not already there (same rule as product-detail).
+   ObjectId-like IDs: compare with `| string` on both sides. #}
+{% set gallery = (p.images or []).slice() %}
+{% for v in p.variants or [] %}
+  {% set vImg = v.images[0] if (v.images and v.images | length) else null %}
+  {% if vImg and vImg.fileUrl %}
+    {% set seen = [] %}
+    {% for g in gallery %}{% if (g._id | string) == ((vImg._id if vImg._id else vImg) | string) %}{% set _ = seen.push(1) %}{% endif %}{% endfor %}
+    {% if not seen | length %}{% set _ = gallery.push(vImg) %}{% endif %}
+  {% endif %}
+{% endfor %}
+
+<style>
+  .anaqa-qv-gallery {
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+    position: relative;
+    aspect-ratio: 3 / 4;
+  }
+  .anaqa-qv-gallery img { filter: saturate(1.03) contrast(1.02); }
+  .anaqa-qv-badge {
+    position: absolute;
+    top: 16px;
+    inset-inline-start: 16px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    z-index: 10;
+  }
+  .anaqa-qv-thumb {
+    flex-shrink: 0;
+    width: 56px;
+    height: 70px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    transition: border-color 0.25s ease, opacity 0.25s ease;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .anaqa-qv-thumb img { filter: saturate(1.03) contrast(1.02); }
+  .anaqa-qv-thumb-active {
+    border-color: var(--color-text-primary);
+    opacity: 1;
+  }
+  .anaqa-qv-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    box-shadow: inset 0 0 0 2px var(--color-bg-secondary);
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+  }
+  .anaqa-qv-swatch-active {
+    box-shadow: 0 0 0 1.5px var(--color-accent), inset 0 0 0 2px var(--color-bg-secondary);
+  }
+  .anaqa-qv-opt {
+    padding: 9px 18px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .anaqa-qv-opt:not(.anaqa-qv-opt-active):hover {
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+  }
+  .anaqa-qv-opt-active {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+  }
+  .anaqa-qv-qty {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .anaqa-qv-qty button {
+    width: 40px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .anaqa-qv-qty button:hover:not(:disabled) { color: var(--color-text-primary); }
+  .anaqa-qv-qty button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .anaqa-qv-qty-val {
+    width: 48px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    border-inline: 1px solid var(--color-border);
+  }
+  .anaqa-qv-add {
+    flex: 1;
+    height: 44px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-bg-primary);
+    background: var(--color-accent);
+    transition: background 0.3s ease, color 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+  html[dir="rtl"] .anaqa-qv-add { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-qv-add:disabled { opacity: 0.5; cursor: not-allowed; }
+  .anaqa-qv-add.anaqa-qv-success { background: var(--color-success); }
+  .anaqa-qv-buy {
+    width: 100%;
+    height: 46px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-text-primary);
+    color: var(--color-text-primary);
+    background: transparent;
+    transition: background 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+  }
+  html[dir="rtl"] .anaqa-qv-buy { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-qv-buy:hover:not(:disabled) { background: var(--color-text-primary); color: var(--color-bg-primary); }
+  .anaqa-qv-buy:disabled { opacity: 0.5; cursor: not-allowed; }
+  .anaqa-qv-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 3px;
+    align-self: flex-start;
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  html[dir="rtl"] .anaqa-qv-link { letter-spacing: 0; text-transform: none; font-size: 13px; }
+  .anaqa-qv-link:hover { color: var(--color-accent); border-color: var(--color-accent); }
+</style>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-sm:gap-6" x-data="quickViewProduct()" x-init="init()">
+
+  {# ——— Image Gallery ——— #}
+  <div class="flex flex-col gap-3">
+    <div class="anaqa-qv-gallery">
+      {% if gallery | length > 0 %}
+        {% for image in gallery %}
+          <img
+            data-qv-img="{{ loop.index0 }}"
+            src="{{ image.fileUrl }}"
+            alt="{{ p.title }}"
+            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+            :class="!variantImageUrl && activeImage === {{ loop.index0 }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+            loading="lazy"
+          />
+        {% endfor %}
+      {% else %}
+        <div class="w-full h-full flex items-center justify-center">
+          <svg class="w-16 h-16" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" style="color: var(--color-text-tertiary); opacity: 0.3;">
+            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      {% endif %}
+
+      {# Selected variant's own image when it isn't part of the product gallery #}
+      <img x-show="variantImageUrl" x-cloak :src="variantImageUrl" alt="{{ p.title }}" class="absolute inset-0 w-full h-full object-cover" />
+
+      {# Discount Badge #}
+      {% if hasDiscount %}
+        <span class="anaqa-qv-badge font-body-ar"><bdi dir="ltr">−{{ discount }}%</bdi></span>
+      {% endif %}
+    </div>
+
+    {# Thumbnails #}
+    {% if gallery | length > 1 %}
+      <div class="flex gap-2 overflow-x-auto pb-1">
+        {% for image in gallery %}
+          <button
+            @click="showImage({{ loop.index0 }})"
+            class="anaqa-qv-thumb"
+            :class="!variantImageUrl && activeImage === {{ loop.index0 }} && 'anaqa-qv-thumb-active'">
+            <img src="{{ image.fileUrl }}" alt="" class="w-full h-full object-cover" loading="lazy"/>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# ——— Product Info ——— #}
+  <div class="flex flex-col gap-5">
+    {# Title #}
+    <h2 class="font-heading-ar leading-tight" style="color: var(--color-text-primary); font-weight: 500; font-size: 24px;">{{ p.title }}</h2>
+
+    {# Rating #}
+    {% if p.totalReviews > 0 %}
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-0.5">
+          {% for i in range(5) %}
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
+                 style="color: {% if i < p.averageRating %}var(--color-accent){% else %}var(--color-border){% endif %};">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+          {% endfor %}
+        </div>
+        <span class="text-[12px] font-body-ar" style="color: var(--color-text-tertiary);">({{ p.totalReviews }})</span>
+      </div>
+    {% endif %}
+
+    {# Price #}
+    <div class="flex flex-col gap-1">
+      <div class="flex items-baseline gap-3 flex-wrap">
+        <span class="font-bold font-body-ar" style="color: var(--color-text-primary); font-size: 20px;" :style="hasDiscount() && { color: 'var(--color-sale-text, var(--color-text-primary))' }" x-text="displayPrice()">{{ p.pricing.price | money }}</span>
+        <span class="line-through font-body-ar" style="color: var(--color-text-tertiary); font-size: 15px;"
+              x-show="hasDiscount()" x-text="displayComparePrice()">
+          {% if hasDiscount %}{{ p.pricing.compareAtPrice | money }}{% endif %}
+        </span>
+        <span class="px-2.5 py-1 text-[11px] font-medium tracking-wide font-body-ar"
+              style="background: var(--color-sale); color: var(--color-on-sale);"
+              x-show="hasDiscount()" x-text="'−' + discountPercent + '%'">
+          {% if hasDiscount %}−{{ discount }}%{% endif %}
+        </span>
+      </div>
+      <span class="text-[12px] font-body-ar" style="color: var(--color-text-secondary);" x-show="qty > 1" x-text="displayUnitPrice() + ' × ' + qty"></span>
+    </div>
+
+    <hr class="border-0 h-px" style="background: var(--color-border);"/>
+
+    {# Variant Options #}
+    {% if p.options and p.options | length > 0 %}
+      <div class="flex flex-col gap-4">
+        {% for option in p.options %}
+          <div class="flex flex-col gap-3">
+            <span class="editorial-label font-body-ar" style="color: var(--color-text-secondary);">
+              {{ option.name }}
+            </span>
+
+            {% if option.type == 'color' %}
+              <div class="flex flex-wrap gap-2.5">
+                {% for value in option.values %}
+                  <button
+                    @click="selectOption({{ option.name | dump }}, {{ value._id | dump }}, {{ (value.label or value.name or '') | dump }})"
+                    class="anaqa-qv-swatch"
+                    :class="selectedOptions[{{ option.name | dump }}] === {{ value._id | dump }} && 'anaqa-qv-swatch-active'"
+                    style="background: {% ui "color-value.njk", value=(value.value or ''), label=(value.label or value.name or '') %};"
+                    title="{{ value.label or value.name }}" aria-label="{{ value.label or value.name }}">
+                  </button>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="flex flex-wrap gap-2.5">
+                {% for value in option.values %}
+                  <button
+                    @click="selectOption({{ option.name | dump }}, {{ value._id | dump }}, {{ (value.label or value.name or '') | dump }})"
+                    class="anaqa-qv-opt font-body-ar"
+                    :class="selectedOptions[{{ option.name | dump }}] === {{ value._id | dump }} && 'anaqa-qv-opt-active'">
+                    {{ value.label or value.name }}
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <hr class="border-0 h-px" style="background: var(--color-border);"/>
+    {% endif %}
+
+    {# Stock Status — one line, four states (Qumra.stock.cap → stockState): soldout · incart · low · instock #}
+    <div class="flex items-center gap-1.5"
+         :style="'color: ' + ({ soldout: 'var(--color-error, #E53935)', incart: 'var(--color-error, #E53935)', low: 'var(--color-warning, #D97706)', instock: 'var(--color-instock, var(--color-accent))' })[stockState()]">
+      <span class="w-2 h-2 rounded-full" style="background: currentColor;"></span>
+      <span class="text-[13px] font-medium font-body-ar" x-text="stockLine()">{{t('pages.product.in_stock') if canPurchase else t('pages.product.out_of_stock')}}</span>
+    </div>
+
+    {# Description (truncated) #}
+    {% if p.description %}
+      <div class="text-[14px] leading-[1.8] line-clamp-3 font-body-ar" style="color: var(--color-text-secondary);">
+        {{ p.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | truncate(200) }}
+      </div>
+    {% endif %}
+
+    {# Quantity + Add to Cart #}
+    <div class="flex items-center gap-3 mt-auto">
+      {# Quantity #}
+      <div class="anaqa-qv-qty">
+        <button type="button" @click="qty > 1 && qty--" :disabled="qty <= 1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+        </button>
+        <span class="anaqa-qv-qty-val font-body-ar" x-text="qty">1</span>
+        <button type="button" @click="qty < maxQty() && qty++" :disabled="qty >= maxQty()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        </button>
+      </div>
+
+      {# Add to Cart #}
+      <button type="button" @click="addToCart()" :disabled="!canBuy() || addingToCart"
+              class="anaqa-qv-add font-body-ar"
+              :class="addedSuccess && 'anaqa-qv-success'">
+        <template x-if="addingToCart">
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </span>
+        </template>
+        <template x-if="addedSuccess && !addingToCart">
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{t('pages.product.added')}}
+          </span>
+        </template>
+        <template x-if="!addingToCart && !addedSuccess">
+          <span class="flex items-center justify-center gap-2">
+            {{t('pages.product.add_to_cart')}}
+          </span>
+        </template>
+      </button>
+    </div>
+
+    {# Buy Now #}
+    <button type="button" @click="buyNow()" :disabled="!canBuy() || addingToCart"
+            class="anaqa-qv-buy font-body-ar">
+      {{t('pages.product.buy_now')}}
+    </button>
+
+    {# View Full Product Link #}
+    <a href="/products/{{ p.slug }}"
+       @click="$store.modal.close()"
+       class="anaqa-qv-link font-body-ar">
+      {{t('pages.product.view_full_details')}}
+      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<script>
+  window.quickViewProduct = function() {
+    return Object.assign(Qumra.stock.cap('{{ p._id }}', {
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }}
+    }, {{ (p.slug or p.handle or '') | dump | safe }}), {
+      qty: 1,
+      activeImage: 0,
+      variantImageUrl: null,
+      showImage(idx) { this.activeImage = idx; this.variantImageUrl = null; },
+      addingToCart: false,
+      addedSuccess: false,
+      selectedOptions: {},
+      selectedLabels: {},
+      currentVariantId: null,
+      unitPrice: {{ p.pricing.price | default(0, true) }},
+      unitComparePrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+      discountPercent: {% if hasDiscount %}{{ discount }}{% else %}0{% endif %},
+
+      displayPrice() {
+        return window.formatMoney ? window.formatMoney(this.unitPrice * this.qty) : '';
+      },
+      displayUnitPrice() {
+        return window.formatMoney ? window.formatMoney(this.unitPrice) : '';
+      },
+      displayComparePrice() {
+        if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+        return window.formatMoney ? window.formatMoney(this.unitComparePrice * this.qty) : '';
+      },
+      hasDiscount() {
+        return this.unitComparePrice && this.unitComparePrice > this.unitPrice;
+      },
+
+      variants: [
+        {% for variant in p.variants %}
+        {# A variant with empty pricing inherits the parent's price #}
+        {% if variant.pricing and variant.pricing.price %}{% set vp = variant.pricing %}
+        {% elif variant.price %}{% set vp = { price: variant.price, compareAtPrice: variant.compareAtPrice } %}
+        {% else %}{% set vp = p.pricing %}{% endif %}
+        {% set vImg = variant.images[0] if (variant.images and variant.images | length) else null %}
+        {% set idx = [] %}
+        {% set vid = ((vImg._id if vImg._id else vImg) | string) if vImg else '' %}
+            {% if vid %}{% for g in gallery %}{% if (g._id | string) == vid %}{% set _ = idx.push(loop.index0) %}{% endif %}{% endfor %}{% endif %}
+        {
+          id: '{{ variant._id }}',
+          isVariant: true,
+          imageIndex: {{ idx[0] if idx | length else -1 }},
+          price: {{ vp.price | default(0, true) }},
+          priceFormatted: '{{ vp.price | money }}',
+          compareAtPrice: {{ vp.compareAtPrice | default(0, true) }},
+          compareAtPriceFormatted: '{{ vp.compareAtPrice | money }}',
+          quantity: {{ variant.quantity | default(0, true) }},
+          trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+          options: {{ (variant.options or []) | dump | safe }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+
+      init() {
+        {% for option in p.options %}
+          {% if option.values | length > 0 %}
+            this.selectedOptions[{{ option.name | dump | safe }}] = {{ option.values[0]._id | dump | safe }};
+            this.selectedLabels[{{ option.name | dump | safe }}] = {{ (option.values[0].label or option.values[0].name or '') | dump | safe }};
+          {% endif %}
+        {% endfor %}
+
+        {% if p.options | length > 0 %}
+          {# a sold-out first combination: open on the first one that can be bought #}
+          var byValue = { {% for option in p.options %}{% for value in option.values %}{{ (value._id | string) | dump | safe }}: [{{ option.name | dump | safe }}, {{ (value.label or value.name or '') | dump | safe }}],{% endfor %}{% endfor %} };
+          Qumra.stock.openOnBuyable(this, byValue);
+          this.matchVariant();
+        {% endif %}
+        this._watchCart();
+      },
+
+      selectOption(name, valueId, label) {
+        this.selectedOptions[name] = valueId;
+        this.selectedLabels[name] = label;
+        this.matchVariant();
+        // The gallery follows the chosen variant; -1 = no image of its own → leave it
+        var v = this.variants.find(function(x) { return x.id === this.currentVariantId; }, this);
+        if (!v) return;
+        if (v.imageIndex >= 0) { this.showImage(v.imageIndex); return; }
+        var self = this, id = v.id;
+        Qumra.stock.variantImage({{ (p.slug or '') | dump | safe }}, id).then(function(url) {
+          if (url && self.currentVariantId === id) self.variantImageUrl = url;
+        });
+      },
+
+      matchVariant() {
+        var selectedIds = Object.values(this.selectedOptions);
+        var matched = this.variants.find(function(v) {
+          if (!v.options || !v.options.length) return false;
+          if (v.options.length !== selectedIds.length) return false;
+          for (var i = 0; i < selectedIds.length; i++) {
+            if (v.options.indexOf(selectedIds[i]) === -1) return false;
+          }
+          return true;
+        });
+
+        if (matched) {
+          this.currentVariantId = matched.id;
+          this.unitPrice = matched.price;
+
+          this.stockEntity = matched;
+          this._clampQty();
+
+          if (matched.compareAtPrice && matched.compareAtPrice > matched.price) {
+            this.unitComparePrice = matched.compareAtPrice;
+            this.discountPercent = Math.floor(((matched.compareAtPrice - matched.price) / matched.compareAtPrice) * 100);
+          } else {
+            this.unitComparePrice = 0;
+            this.discountPercent = 0;
+          }
+        }
+      },
+
+      async buyNow() {
+        if (!this.canBuy() || this.addingToCart) return;
+        this.addingToCart = true;
+        try {
+          var optionIds = Object.values(this.selectedOptions);
+          await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+          window.location.href = '/cart';
+        } catch (err) {
+          console.error('Quick view buy now error:', err);
+          this.addingToCart = false;
+        }
+      },
+
+      async addToCart() {
+        if (!this.canBuy() || this.addingToCart) return;
+        this.addingToCart = true;
+        try {
+          var optionIds = Object.values(this.selectedOptions);
+          await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+          this.addedSuccess = true;
+          setTimeout(() => { this.addedSuccess = false; }, 2000);
+        } catch (err) {
+          console.error('Quick view add to cart error:', err);
+        } finally {
+          this.addingToCart = false;
+        }
+      }
+    });
+  };
+</script>

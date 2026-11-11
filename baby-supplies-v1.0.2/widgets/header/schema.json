@@ -1,0 +1,460 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "floating": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط عائم فوق المحتوى — يفترش عرض الشاشة مع أول تمرير",
+        "en": "▸ Floating bar over the content — spreads edge to edge on first scroll"
+      },
+      "default": true
+    },
+    "float_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض الشريط العائم",
+        "en": "Floating bar width"
+      },
+      "default": 1200,
+      "min": 960,
+      "max": 1440,
+      "step": 20,
+      "unit": "px"
+    },
+    "float_gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة من أعلى الصفحة",
+        "en": "Gap from the top of the page"
+      },
+      "default": 24,
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px"
+    },
+    "float_radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة زوايا الشريط",
+        "en": "Bar corner radius"
+      },
+      "default": 8,
+      "min": 0,
+      "max": 28,
+      "step": 2,
+      "unit": "px"
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "تثبيت الشريط أثناء التمرير",
+        "en": "Keep the bar pinned while scrolling"
+      },
+      "default": true
+    },
+    "header_logo": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الشعار — اتركه فارغًا ليُستخدم شعار المتجر",
+        "en": "▸ Logo — leave empty to use the store logo"
+      }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "default": 30,
+      "min": 18,
+      "max": 56,
+      "step": 2,
+      "unit": "px"
+    },
+    "topbar_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط الإعلانات فوق الهيدر",
+        "en": "▸ Announcement bar above the header"
+      },
+      "default": false
+    },
+    "topbar_message": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان",
+        "en": "Announcement text"
+      },
+      "default": ""
+    },
+    "topbar_message_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الإعلان (اختياري)",
+        "en": "Announcement link (optional)"
+      },
+      "default": ""
+    },
+    "topbar_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية شريط الإعلانات",
+        "en": "Announcement background"
+      },
+      "default": ""
+    },
+    "topbar_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص شريط الإعلانات",
+        "en": "Announcement text colour"
+      },
+      "default": ""
+    },
+    "topbar_show_locale": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مُبدّل اللغة",
+        "en": "Show the language switcher"
+      },
+      "default": true
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ إظهار البحث",
+        "en": "▸ Show search"
+      },
+      "default": true
+    },
+    "search_style": {
+      "type": "select",
+      "label": {
+        "ar": "شكل البحث",
+        "en": "Search style"
+      },
+      "default": "inline",
+      "options": [
+        {
+          "value": "inline",
+          "label": {
+            "ar": "نص + أيقونة (مثل التصميم)",
+            "en": "Text prompt + icon"
+          }
+        },
+        {
+          "value": "icon",
+          "label": {
+            "ar": "أيقونة فقط",
+            "en": "Icon only"
+          }
+        }
+      ]
+    },
+    "search_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص الحقل — اتركه فارغًا للنص المترجم",
+        "en": "Field prompt — leave empty for the translated default"
+      },
+      "default": ""
+    },
+    "search_show_suggestions": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار كلمات البحث المقترحة",
+        "en": "Show suggested search terms"
+      },
+      "default": true
+    },
+    "action_link_url": {
+      "type": "string",
+      "label": {
+        "ar": "▸ رابط مخصّص — قمرة ليس بها صفحة حساب، فهذا المكان لأي رابط تريده (واتساب، تتبّع شحنة، من نحن)",
+        "en": "▸ Custom link — Qumra has no account page, so this slot takes any link you want"
+      },
+      "default": ""
+    },
+    "action_link_icon": {
+      "type": "select",
+      "label": {
+        "ar": "أيقونة الرابط المخصّص",
+        "en": "Custom link icon"
+      },
+      "default": "heart",
+      "options": [
+        {
+          "value": "heart",
+          "label": {
+            "ar": "قلب",
+            "en": "Heart"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شحنة",
+            "en": "Delivery"
+          }
+        }
+      ]
+    },
+    "action_link_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الرابط لقارئ الشاشة",
+        "en": "Link label for screen readers"
+      },
+      "default": ""
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السلة",
+        "en": "Show the cart"
+      },
+      "default": true
+    },
+    "cart_free_shipping": {
+      "type": "number",
+      "label": {
+        "ar": "▸ حد الشحن المجاني — بعملة المتجر · ٠ = إخفاء شريط التقدّم",
+        "en": "▸ Free-shipping threshold — in store currency · 0 hides the progress bar"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 1
+    },
+    "cart_upsell_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان «أكملي الإطلالة» — اتركيه فارغًا لإخفاء الشريط",
+        "en": "Cross-sell heading — leave empty to hide the strip"
+      },
+      "default": ""
+    },
+    "cart_upsell_products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات «أكملي الإطلالة» — قمرة ليس بها اقتراحات تلقائية للسلة، فالاختيار يدوي",
+        "en": "Cross-sell products — Qumra has no cart-recommendation API, so these are picked by hand"
+      }
+    },
+    "cart_empty_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيفات تظهر عندما تكون السلة فارغة",
+        "en": "Collections shown when the cart is empty"
+      }
+    },
+    "cart_footer_dark": {
+      "type": "boolean",
+      "label": {
+        "ar": "خلفية داكنة لتذييل السلة",
+        "en": "Dark ground under the cart total"
+      },
+      "default": true
+    },
+    "cart_note": {
+      "type": "string",
+      "label": {
+        "ar": "سطر أسفل الإجمالي",
+        "en": "Line under the total"
+      },
+      "default": ""
+    },
+    "nav_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ إظهار روابط التنقّل",
+        "en": "▸ Show the navigation links"
+      },
+      "default": true
+    },
+    "nav_extra_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط إضافية بعد العناصر أعلاه",
+        "en": "Extra links after the items above"
+      },
+      "default": "header-menu"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الشريط",
+        "en": "Bar background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الروابط والشعار",
+        "en": "Links and logo colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "nav_item": {
+      "name": "عنصر تنقّل",
+      "settings": {
+        "nav_label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "nav_url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — / · /shop · /collections · /blogs · /cart",
+            "en": "Link — / · /shop · /collections · /blogs · /cart"
+          },
+          "default": "/shop"
+        },
+        "nav_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "قائمة منسدلة (اختيارية)",
+            "en": "Dropdown menu (optional)"
+          },
+          "default": "header-menu"
+        },
+        "nav_columns": {
+          "type": "select",
+          "label": {
+            "ar": "أعمدة القائمة المنسدلة",
+            "en": "Dropdown columns"
+          },
+          "default": "1",
+          "options": [
+            {
+              "value": "1",
+              "label": {
+                "ar": "عمود واحد",
+                "en": "One column"
+              }
+            },
+            {
+              "value": "2",
+              "label": {
+                "ar": "عمودان",
+                "en": "Two columns"
+              }
+            },
+            {
+              "value": "3",
+              "label": {
+                "ar": "ثلاثة أعمدة",
+                "en": "Three columns"
+              }
+            },
+            {
+              "value": "4",
+              "label": {
+                "ar": "أربعة أعمدة",
+                "en": "Four columns"
+              }
+            }
+          ]
+        },
+        "nav_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة ترويجية داخل القائمة (تظهر مع عمودين فأكثر)",
+            "en": "Promo image inside the dropdown (two columns or more)"
+          }
+        },
+        "nav_image_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الصورة الترويجية",
+            "en": "Promo image link"
+          },
+          "default": ""
+        },
+        "nav_image_caption": {
+          "type": "string",
+          "label": {
+            "ar": "تعليق الصورة الترويجية",
+            "en": "Promo image caption"
+          },
+          "default": ""
+        },
+        "nav_badge": {
+          "type": "string",
+          "label": {
+            "ar": "شارة صغيرة بجانب النص",
+            "en": "Small badge next to the label"
+          },
+          "default": ""
+        },
+        "nav_highlight": {
+          "type": "boolean",
+          "label": {
+            "ar": "إبراز العنصر باللون المميّز",
+            "en": "Highlight with the accent colour"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الرئيسي"
+    }
+  ]
+}

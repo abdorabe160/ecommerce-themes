@@ -1,0 +1,418 @@
+{# ============================================================================
+   LAMSA TESTIMONIALS — reviews with optional before/after comparison
+   A block that has BOTH image_before and image_after renders the draggable
+   comparison slider (.lamsa-ba from style.css); otherwise it renders as a
+   plain quote card. Both shapes live in the same card so a mixed set of
+   reviews still reads as one grid.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set reviews = widget.blocks | default([]) %}
+{% set count = reviews | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('slider') %}
+{% set isSlider = layout == 'slider' %}
+{% set bg = d.background | default('blush') %}
+{% set cols = d.columns | default('3', true) %}
+{% set baRatio = d.ba_ratio | default('1/1') %}
+
+{% set showSummary = d.show_summary | default(true) %}
+{% set sumRating = d.summary_rating | default('') %}
+{% set sumCount = d.summary_count | default('') %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set autoplay = d.autoplay | default(false) %}
+{% set apSpeed = d.autoplay_speed | default(6, true) %}
+
+{% if bg == 'white' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+{% set colsInt = cols | int %}
+{% set colsMid = 2 if colsInt > 2 else colsInt %}
+
+{# ---- stars ---- #}
+{% macro stars(n, size) %}
+  <span class="lamsa-stars {{ 'lamsa-stars--lg' if size == 'lg' }}">
+    {% for i in [1, 2, 3, 4, 5] %}
+      <svg {% if i > n %}class="lamsa-star-empty"{% endif %} viewBox="0 0 24 24" fill="currentColor">
+        <path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/>
+      </svg>
+    {% endfor %}
+  </span>
+{% endmacro %}
+
+
+<style>
+  #lamsa-tr-{{ id }} { background: {{ bgVal }}; }
+
+  .lamsa-tr-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-tr-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-tr-{{ id }}-title { line-height: 1.34; }
+  .lamsa-tr-{{ id }}-title em { font-style: normal; color: var(--color-accent); }
+  .lamsa-tr-{{ id }}-title p { margin: 0; }
+
+  /* ================= summary ================= */
+  .lamsa-tr-{{ id }}-sum {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+    padding: 12px 22px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .lamsa-tr-{{ id }}-sumnum {
+    font-family: var(--font-display-en);
+    font-size: 1.625rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+  @media (max-width: 640px) {
+    .lamsa-tr-{{ id }}-sum { gap: 10px; padding: 10px 16px; flex-wrap: wrap; justify-content: center; }
+    .lamsa-tr-{{ id }}-sumnum { font-size: 1.375rem; }
+  }
+
+  /* ================= grid / slider ================= */
+  {% if not isSlider %}
+  .lamsa-tr-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 641px) { .lamsa-tr-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 22px; } }
+  @media (min-width: 1024px) { .lamsa-tr-{{ id }}-grid { grid-template-columns: repeat({{ cols }}, minmax(0, 1fr)); gap: 24px; } }
+  {% else %}
+  .lamsa-tr-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .lamsa-tr-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .lamsa-tr-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .lamsa-tr-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .lamsa-tr-{{ id }}-sw .swiper-slide > * { width: 100%; }
+  {% endif %}
+
+  /* ================= card ================= */
+  .lamsa-tr-{{ id }}-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    min-width: 0;
+    padding: 26px;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft);
+  }
+  .lamsa-tr-{{ id }}-card:hover { box-shadow: var(--shadow-md); }
+  @media (max-width: 640px) { .lamsa-tr-{{ id }}-card { padding: 20px; gap: 14px; } }
+
+  .lamsa-tr-{{ id }}-quote {
+    margin: 0;
+    flex: 1;
+    font-size: 0.9375rem;
+    line-height: 1.85;
+    color: var(--color-text-secondary);
+  }
+  /* opening quote mark as a soft rose glyph */
+  .lamsa-tr-{{ id }}-quote::before {
+    content: '”';
+    display: block;
+    margin-bottom: -14px;
+    font-family: var(--font-display-en);
+    font-size: 2.75rem;
+    line-height: 1;
+    color: var(--color-accent-soft);
+  }
+
+  /* ---- reviewer ---- */
+  .lamsa-tr-{{ id }}-who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+  }
+  .lamsa-tr-{{ id }}-avatar {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display-en);
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+  .lamsa-tr-{{ id }}-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  .lamsa-tr-{{ id }}-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+  }
+  .lamsa-tr-{{ id }}-role {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--color-text-tertiary);
+  }
+
+  /* ---- reviewed product ---- */
+  .lamsa-tr-{{ id }}-prod {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-primary);
+    transition: background var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-tr-{{ id }}-prod:hover { background: var(--color-accent-light); }
+  .lamsa-tr-{{ id }}-prodimg {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-tertiary);
+  }
+  .lamsa-tr-{{ id }}-prodimg img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ================= before / after ================= */
+  .lamsa-tr-{{ id }}-ba { aspect-ratio: {{ baRatio | replace('/', ' / ') }}; }
+  .lamsa-tr-{{ id }}-ba img { height: 100%; object-fit: cover; }
+</style>
+
+
+{% if count > 0 %}
+<section id="lamsa-tr-{{ id }}" class="lamsa-section">
+  <div class="lamsa-container">
+
+    {# ═════════════ header ═════════════ #}
+    <div class="lamsa-head lamsa-head--center">
+      {% if eyebrow %}
+        <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+      {% endif %}
+      {% if title %}<div class="lamsa-tr-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+      {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+
+      {% if showSummary and sumRating %}
+        <div class="lamsa-tr-{{ id }}-sum">
+          <span class="lamsa-tr-{{ id }}-sumnum">{{ sumRating }}</span>
+          {{ stars(5, 'lg') }}
+          {% if sumCount %}
+            <span class="lamsa-text-sm" style="color: var(--color-text-tertiary);">{{ sumCount }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    {# ═════════════ reviews ═════════════ #}
+    <div class="{{ 'swiper lamsa-tr-' ~ id ~ '-sw' if isSlider else 'lamsa-tr-' ~ id ~ '-grid reveal reveal-stagger' }}"
+         {% if isSlider %}id="trSwiper-{{ id }}"{% endif %}>
+      <div class="{{ 'swiper-wrapper' if isSlider else 'contents' }}">
+
+        {% for block in reviews %}
+          {% set r = block.data %}
+          {% set before = r.image_before.fileUrl if r.image_before and r.image_before.fileUrl else '' %}
+          {% set after = r.image_after.fileUrl if r.image_after and r.image_after.fileUrl else '' %}
+          {% set hasBa = before and after %}
+          {% set avatar = r.avatar.fileUrl if r.avatar and r.avatar.fileUrl else '' %}
+          {% set p = r.product[0] if r.product and (r.product | length) > 0 else null %}
+
+          <div class="{{ 'swiper-slide' if isSlider else '' }}">
+            <article class="lamsa-tr-{{ id }}-card">
+
+              {# ---- before / after ---- #}
+              {% if hasBa %}
+                {% if r.duration %}
+                  <span class="lamsa-tag lamsa-tag--sage self-start">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+                      <circle cx="12" cy="12" r="8.75"/><path d="M12 7.2V12l3.4 2"/>
+                    </svg>
+                    {{ r.duration }}
+                  </span>
+                {% endif %}
+
+                <div class="lamsa-ba lamsa-tr-{{ id }}-ba" data-lamsa-ba>
+                  {# base layer = AFTER; the clipped layer on top = BEFORE #}
+                  <img src="{{ after }}" alt="{{ t('testimonials.after') }}" loading="lazy"/>
+                  <div class="lamsa-ba-clip">
+                    <img src="{{ before }}" alt="{{ t('testimonials.before') }}" loading="lazy"/>
+                  </div>
+
+                  <span class="lamsa-ba-label lamsa-ba-label--before">{{ t('testimonials.before') }}</span>
+                  <span class="lamsa-ba-label lamsa-ba-label--after">{{ t('testimonials.after') }}</span>
+
+                  <div class="lamsa-ba-handle">
+                    <span class="lamsa-ba-grip">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 7l-4 5 4 5M15 7l4 5-4 5"/>
+                      </svg>
+                    </span>
+                  </div>
+
+                  <input type="range" min="0" max="100" value="50"
+                         aria-label="{{ t('testimonials.before') }} / {{ t('testimonials.after') }}"/>
+                </div>
+              {% endif %}
+
+              {# ---- rating ---- #}
+              <div class="flex items-center gap-2.5 flex-wrap">
+                {{ stars(r.rating | default(5)) }}
+                {% if r.verified | default(true) %}
+                  <span class="lamsa-suit">{{ t('testimonials.verified') }}</span>
+                {% endif %}
+              </div>
+
+              {# ---- quote ---- #}
+              {% if r.review_text %}
+                <p class="lamsa-tr-{{ id }}-quote">{{ r.review_text | safe }}</p>
+              {% endif %}
+
+              {# ---- reviewed product ---- #}
+              {% if p %}
+                <a href="/products/{{ p.slug | default(p.handle) | default(p._id) }}" class="lamsa-tr-{{ id }}-prod">
+                  <span class="lamsa-tr-{{ id }}-prodimg">
+                    {% if p.images and (p.images | length) > 0 %}
+                      <img src="{{ p.images[0].fileUrl }}" alt="{{ p.title }}" loading="lazy"/>
+                    {% endif %}
+                  </span>
+                  <span class="flex flex-col min-w-0">
+                    <span class="lamsa-caption">{{ t('testimonials.about_product') }}</span>
+                    <span class="lamsa-tr-{{ id }}-name line-clamp-1">{{ p.title }}</span>
+                  </span>
+                </a>
+              {% endif %}
+
+              {# ---- reviewer ---- #}
+              {% if r.reviewer_name %}
+                <div class="lamsa-tr-{{ id }}-who">
+                  <span class="lamsa-tr-{{ id }}-avatar">
+                    {% if avatar %}
+                      <img src="{{ avatar }}" alt="{{ r.reviewer_name }}" loading="lazy"/>
+                    {% else %}
+                      {{ (r.reviewer_name | string).slice(0, 1) }}
+                    {% endif %}
+                  </span>
+                  <span class="flex flex-col min-w-0">
+                    <span class="lamsa-tr-{{ id }}-name">{{ r.reviewer_name }}</span>
+                    {% if r.reviewer_role %}
+                      <span class="lamsa-tr-{{ id }}-role">{{ r.reviewer_role }}</span>
+                    {% endif %}
+                  </span>
+                </div>
+              {% endif %}
+
+            </article>
+          </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    {# ═════════════ arrows ═════════════ #}
+    {% if isSlider and showArrows and count > 1 %}
+      <div class="flex items-center justify-center gap-2.5 mt-10 max-sm:mt-7">
+        <button type="button" id="trPrev-{{ id }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+                aria-label="{{ t('common.prev') }}">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+          </svg>
+        </button>
+        <button type="button" id="trNext-{{ id }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+                aria-label="{{ t('common.next') }}">
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('lamsa-tr-{{ id }}');
+    if (!root) return;
+
+    /* ---- before/after: the range input drives the --pos custom property.
+       CSS does the clipping (and flips it in RTL), so there is no JS layout. ---- */
+    root.querySelectorAll('[data-lamsa-ba]').forEach(function (ba) {
+      var input = ba.querySelector('input[type="range"]');
+      if (!input) return;
+      var apply = function () { ba.style.setProperty('--pos', input.value); };
+      input.addEventListener('input', apply);
+      apply();
+    });
+
+    {% if isSlider %}
+    if ({{ count }} < 2 || typeof Swiper === 'undefined') return;
+    var el = document.getElementById('trSwiper-{{ id }}');
+    if (!el) return;
+
+    var sw = new Swiper(el, {
+      slidesPerView: 1.08,
+      spaceBetween: 16,
+      speed: 480,
+      watchOverflow: true,
+      /* dragging the comparison handle must not drag the slider with it */
+      noSwipingSelector: 'input[type="range"], [data-lamsa-ba]',
+      breakpoints: {
+        641:  { slidesPerView: {{ colsMid | int }}, spaceBetween: 22 },
+        1024: { slidesPerView: {{ cols | int }}, spaceBetween: 24 }
+      },
+      {% if autoplay %}
+      autoplay: { delay: {{ (apSpeed * 1000) | int }}, disableOnInteraction: true, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#trPrev-{{ id }}', nextEl: '#trNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+    {% if autoplay %}window.lamsaAutoplayWhenVisible && lamsaAutoplayWhenVisible(sw, el);{% endif %}
+    {% endif %}
+  })();
+</script>
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section id="lamsa-tr-{{ id }}" class="lamsa-section" data-lamsa-empty>
+    <div class="lamsa-container">
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+            <path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('testimonials.no_reviews') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('testimonials.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}

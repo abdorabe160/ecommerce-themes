@@ -1,0 +1,22 @@
+{# إعدادات الويدجت: widget.settings مع دعم widget.data #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set items = [] %}
+{% for line in ((wd.items or '') | string).split('\n') %}{% if line | trim %}{% set _ = items.push(line | trim) %}{% endif %}{% endfor %}
+{% if items | length %}
+<div class="mw-marquee" aria-hidden="true">
+  <div class="mw-marquee__track">
+    {% for item in items %}
+      <span class="mw-marquee__item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="currentColor"/></svg>
+        {{ item }}
+      </span>
+    {% endfor %}
+    {% for item in items %}
+      <span class="mw-marquee__item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="currentColor"/></svg>
+        {{ item }}
+      </span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

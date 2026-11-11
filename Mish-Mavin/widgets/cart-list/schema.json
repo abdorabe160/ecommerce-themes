@@ -1,0 +1,13 @@
+{
+  "name": "cart-list",
+  "settings": {
+    "show_upsells": {
+      "type": "boolean",
+      "label": { "ar": "إظهار المنتجات الرائجة", "en": "Show popular items" },
+      "default": true
+    }
+  },
+  "presets": [
+    { "category": "cart", "name": "cart-list" }
+  ]
+}

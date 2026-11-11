@@ -1,0 +1,15 @@
+{# ===== ATTAR static page (من نحن، السياسات…) — title + page.description ===== #}
+{% set pg = (context.page if (context and context.page) else page) or {} %}
+<section class="py-20 max-sm:py-12" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+    <div class="max-w-3xl mx-auto">
+      <nav class="mb-6 text-[13px] font-body-ar" aria-label="breadcrumb" style="color: var(--color-text-tertiary);">
+        <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+        <span class="mx-1.5" style="opacity: .5;">/</span>
+        <span style="color: var(--color-text-secondary);">{{ pg.title }}</span>
+      </nav>
+      <h1 class="{{ '' if widget.data.show_title != false else 'sr-only' }} font-heading-ar mb-10" style="font-size: clamp(1.9rem, 4vw, 3rem); font-weight: 500;">{{ pg.title }}</h1>
+      <div class="attar-prose font-body-ar">{{ (pg.description or pg.content or '') | safe }}</div>
+    </div>
+  </div>
+</section>

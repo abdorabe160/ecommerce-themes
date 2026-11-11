@@ -1,0 +1,140 @@
+{
+  "name": "منتجات قسم",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان السكشن (اتركه فارغاً لاستخدام اسم القسم)",
+        "en": "Section Title (leave empty to use collection name)"
+      },
+      "default": ""
+    },
+    "featuredCollection": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات",
+        "en": "Products"
+      },
+      "default": []
+    },
+    "display_type": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة العرض",
+        "en": "Display Type"
+      },
+      "default": "grid",
+      "options": [
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة",
+            "en": "Grid"
+          }
+        },
+        {
+          "value": "slider",
+          "label": {
+            "ar": "سلايدر",
+            "en": "Slider"
+          }
+        }
+      ]
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات",
+        "en": "Products Limit"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 30,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2 Columns"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3 Columns"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4 Columns"
+          }
+        }
+      ]
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (اختياري)",
+        "en": "View All URL (optional)"
+      },
+      "default": "/collections"
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صورة الكارت",
+        "en": "Card Image Ratio"
+      },
+      "default": "portrait",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "مستطيل",
+            "en": "Landscape"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "منتجات من قسم"
+    }
+  ]
+}

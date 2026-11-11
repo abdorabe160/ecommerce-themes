@@ -1,0 +1,122 @@
+
+  
+  <!-- Navigation Drawer (from Right) -->
+  <div x-data="xDataSidebar({ menu: {{ data.menu | dump }} })" x-cloak x-show="modal.open && modal.type === 'sidebar'" class="fixed inset-0 z-50">
+    <!-- Overlay -->
+    <div @click="toggleModal('sidebar')" x-show="modal.open && modal.type === 'sidebar'"
+         x-transition:enter="transition-opacity ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  
+    <!-- Panel -->
+    <div class="absolute top-0 right-0 bg-gradient-to-b from-white to-gray-50 w-4/5 max-w-sm h-full shadow-2xl border-l border-gray-200"
+         x-show="modal.open && modal.type === 'sidebar'"
+         x-transition:enter="transition ease-in-out duration-300 transform"
+         x-transition:enter-start="translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in-out duration-300 transform"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="translate-x-full">
+      <div class="relative h-full overflow-hidden">
+        <!-- Main Panel -->
+        <div x-transition:enter="transition ease-in-out duration-300"
+             x-transition:enter-start="opacity-0 translate-x-12"
+             x-transition:enter-end="opacity-100 translate-x-0"
+             x-transition:leave="transition ease-in-out duration-300"
+             x-transition:leave-start="opacity-100 translate-x-0"
+             x-transition:leave-end="opacity-0 translate-x-12"
+             class="absolute inset-0 p-6 pb-0 flex flex-col">
+  
+          <!-- Header -->
+          <div class="mb-8">
+          </div>
+  
+          <!-- Search + Results -->
+          <div class="">
+            <div class="relative">
+              <div class="flex items-center gap-3 bg-white border-2 border-gray-200 rounded-2xl py-3 px-4 hover:border-gray-300 focus-within:border-gray-800 transition-colors duration-200">
+                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 22 22" stroke="currentColor" stroke-width="1.9" fill="none">
+                  <circle cx="11" cy="10" r="7"></circle>
+                  <path d="m16 15 3 3" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <input x-ref="searchInput"
+                       x-model="q"
+                       @keydown.arrow-down.prevent="move(1)"
+                       @keydown.arrow-up.prevent="move(-1)"
+                       @keydown.enter.prevent="go()"
+                       @keydown.esc.prevent="closeSearch()"
+                       type="text" 
+                       class="flex-1 outline-none text-gray-700 placeholder-gray-400 font-['Cairo',sans-serif]"
+                       placeholder="ابحث في المنتجات...">
+              </div>
+            </div>
+  
+            <!-- نتائج البحث (Grouped) -->
+            <div x-show="q && groupedResults.length"
+                 x-transition
+                 class="mt-4 overflow-y-auto bg-white rounded-2xl border border-gray-200 shadow-lg max-h-64">
+                 <template x-for="(group, gi) in groupedResults" :key="group.label">
+                  <div class="py-3 border-b border-gray-100 last:border-b-0">
+                    <div class="px-4 text-xs font-bold text-gray-600 uppercase tracking-wide mb-2 font-['Cairo',sans-serif]"
+                         x-text="group.label"></div>
+                    <ul>
+                      <!-- group.items -->
+                      <template x-for="(it, idx) in group.items" :key="(it.url || '') + '_' + idx">
+                        <li
+                          @mouseenter="activeIndex = flatIndex(gi, idx)"
+                          @mouseleave="activeIndex = -1"
+                          @click="
+                            $root.toggleModal?.('sidebar', false);
+                            closeSearch();
+                            if (it.url) window.location.href = it.url;
+                          "
+                          :data-active="activeIndex === flatIndex(gi, idx)"
+                          :class="activeIndex === flatIndex(gi, idx) ? 'bg-gray-100' : ''"
+                          class="cursor-pointer px-4 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors duration-200">
+                          <span class="truncate text-gray-700 font-['Cairo',sans-serif]" x-text="it.title"></span>
+                          <span class="text-xs text-gray-400 truncate max-w-[40%] font-['Cairo',sans-serif]" x-text="it.url"></span>
+                        </li>
+                      </template>
+                    </ul>
+                  </div>
+                </template>
+                
+            </div>
+  
+            <!-- لا توجد نتائج -->
+            <div x-show="q && !groupedResults.length" class="mt-4 text-center py-6">
+              <div class="text-gray-400 mb-2">
+                <svg class="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <p class="text-sm text-gray-500 font-['Cairo',sans-serif]">لا توجد نتائج مطابقة</p>
+            </div>
+          </div>
+  
+          <!-- القائمة (ديناميكية: عرض كل العناصر بدون زر ⋯) -->
+          <nav class="flex-grow overflow-y-auto" x-show="!q">
+            <ul class="flex flex-col gap-1 py-6">
+              {% set items = data.menu or [] %}
+              {% for item in items %}
+              <li>
+                <a href="{{ item.url | default('#') }}" @click="toggleModal('sidebar', false)" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 font-['Cairo',sans-serif] group">
+                  <div class="w-2 h-2 bg-gray-300 rounded-full group-hover:bg-gray-800 transition-colors duration-200"></div>
+                  <span class="font-medium">{{ item.title | default('بدون عنوان') }}</span>
+                  <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors duration-200 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  

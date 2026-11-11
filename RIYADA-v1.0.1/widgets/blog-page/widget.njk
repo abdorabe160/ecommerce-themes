@@ -1,0 +1,172 @@
+{# ============================================================================
+   RIYADA BLOG PAGE — /blogs/<handle>
+   The article list for one blog. Cards come from ui/article-card.njk.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}) %}
+{% set articles = context.articles or blog.articles or [] %}
+{% set count = articles | length %}
+{# /blogs/<handle> sends pagination as { total, page, limit, pages } #}
+{% set _pg = context.pagination or {} %}
+{% set pgTotalItems = _pg.totalItems or _pg.total or 0 %}
+{% set pgPages = (_pg.totalPages or _pg.pages or 1) | int %}
+{% set pgCurrent = (_pg.currentPage or _pg.page or 1) | int %}
+
+{% set showHero = d.show_hero | default(true) %}
+{% set showDate = d.show_date | default(true) %}
+{% set showExcerpt = d.show_excerpt | default(true) %}
+{% set featureFirst = d.feature_first | default(true) %}
+{% set colsD = d.columns | default('3', true) %}
+{% set colsDInt = colsD | int %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+
+{% set heroImg = blog.image.fileUrl if blog.image and blog.image.fileUrl and not blog.image.notFound else '' %}
+
+
+<style>
+  .riyada-bp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .riyada-bp-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .riyada-bp-{{ id }}-title { line-height: 1.34; }
+
+  .riyada-bp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  @media (min-width: 640px) { .riyada-bp-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .riyada-bp-{{ id }}-grid { grid-template-columns: repeat({{ colsD }}, minmax(0, 1fr)); gap: 26px; } }
+
+  {% if featureFirst %}
+  /* the newest article gets a wide cell */
+  @media (min-width: 640px) {
+    .riyada-bp-{{ id }}-grid > *:first-child { grid-column: 1 / -1; }
+    .riyada-bp-{{ id }}-grid > *:first-child.riyada-acard { flex-direction: row; }
+    .riyada-bp-{{ id }}-grid > *:first-child .riyada-acard-media { width: 52%; flex-shrink: 0; aspect-ratio: auto; }
+    .riyada-bp-{{ id }}-grid > *:first-child .riyada-acard-body { justify-content: center; padding: 32px; gap: 12px; }
+    .riyada-bp-{{ id }}-grid > *:first-child .riyada-acard-title { font-size: 1.5rem; }
+    .riyada-bp-{{ id }}-grid > *:first-child .riyada-acard-excerpt { -webkit-line-clamp: 3; }
+  }
+  {% endif %}
+  {# 2 with the wide first cell (it fills its own row), else 1 #}
+  {% set loneOffset = 2 if featureFirst else 1 %}
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsMid }}n+{{ loneOffset }}):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsMid }}n+{{ loneOffset }}):not(:first-child) .riyada-acard-media { width: 40%; min-height: 240px; flex-shrink: 0; aspect-ratio: auto; }
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsMid }}n+{{ loneOffset }}):not(:first-child) .riyada-acard-media img { position: absolute; inset: 0; }
+  }
+  @media (min-width: 1024px) {
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsDInt }}n+{{ loneOffset }}):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsDInt }}n+{{ loneOffset }}):not(:first-child) .riyada-acard-media { width: 40%; min-height: 240px; flex-shrink: 0; aspect-ratio: auto; }
+    .riyada-bp-{{ id }}-grid > *:last-child:nth-child({{ colsDInt }}n+{{ loneOffset }}):not(:first-child) .riyada-acard-media img { position: absolute; inset: 0; }
+  }
+</style>
+
+
+<section id="riyada-bp-{{ id }}" class="riyada-section" style="background: var(--color-bg-primary);">
+  <div class="riyada-container">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 riyada-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-flame transition-colors">{{ t('common.home') }}</a>
+      <svg class="riyada-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <a href="/blogs" class="hover:text-flame transition-colors">{{ t('pages.blog.title') }}</a>
+      {% if blog.title %}
+        <svg class="riyada-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <span class="line-clamp-1" style="color: var(--color-text-secondary);">{{ blog.title }}</span>
+      {% endif %}
+    </nav>
+
+    {# ═════════════ hero ═════════════ #}
+    {% if showHero and heroImg %}
+      <div class="riyada-article-hero mb-8">
+        <img src="{{ heroImg }}" alt="{{ blog.title }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    {# ═════════════ header ═════════════ #}
+    <div class="riyada-head riyada-head--center">
+      <span class="riyada-eyebrow">{{ t('pages.blog.title') }}</span>
+      <h1 class="riyada-bp-{{ id }}-title riyada-h2">{{ blog.title | default(t('pages.blog.title'), true) }}</h1>
+      {% if blog.description %}
+        <p class="riyada-lead">{{ blog.description | safe }}</p>
+      {% endif %}
+      {% if pgTotalItems %}
+        <p class="riyada-caption m-0 mt-2">{% ui "count.njk", n=pgTotalItems, kind='article' %}</p>
+      {% endif %}
+    </div>
+
+    {# ═════════════ articles ═════════════ #}
+    {% if count > 0 %}
+      <div class="riyada-bp-{{ id }}-grid reveal reveal-stagger" data-pages="{{ pgPages }}">
+        {% for article in articles %}
+          {% ui "article-card.njk", article=article, show_date=showDate, show_excerpt=showExcerpt %}
+        {% endfor %}
+      </div>
+
+      {% if pgPages > 1 %}
+        <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+          {% if pgCurrent > 1 %}
+            <a href="?page={{ pgCurrent - 1 }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+               aria-label="{{ t('common.prev') }}">
+              <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pgPages + 1) %}
+            {% if n == pgCurrent %}
+              <span class="riyada-btn-icon riyada-num" aria-current="page"
+                    style="background: var(--color-flame-fill); color: #fff;">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm riyada-num">{{ n }}</a>
+            {% elif n == pgCurrent - 2 or n == pgCurrent + 2 %}
+              <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pgCurrent < pgPages %}
+            <a href="?page={{ pgCurrent + 1 }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+               aria-label="{{ t('common.next') }}">
+              <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="riyada-empty">
+        <span class="riyada-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4" width="17" height="16" rx="2.5"/>
+            <path d="M7.5 9h9M7.5 13h9M7.5 17h5"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('pages.blog.no_articles') }}</h3>
+        <p class="riyada-text-sm m-0">{{ t('pages.blog.no_articles_desc') }}</p>
+        <a href="/blogs" class="riyada-btn riyada-btn--outline riyada-btn--sm mt-1">{{ t('pages.blog.back_to_blogs') }}</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-bp-' ~ id, c=d %}

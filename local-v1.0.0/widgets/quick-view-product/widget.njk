@@ -1,0 +1,242 @@
+{# ============================================================================
+   LOCAL · QUICK VIEW
+   ----------------------------------------------------------------------------
+   Fetched by main.js as: /product/{slug}?widgetKey=quick-view-product
+   Injected into #quick-view-content-dynamic in layouts/layout.njk, after which
+   Alpine.initTree() runs over it.
+
+   ⚠️  JS CONTRACT — do not rename:
+     · reads `context.product`
+     · exposes window.quickViewProduct(), called by the x-data below
+     · matches variants client-side against `variant.options` (option-VALUE ids)
+     · adds via Qumra.cart.add(id, qty, optionIds)
+
+   A DELIBERATELY reduced PDP: gallery, name, price, stock, options, quantity,
+   add. No breadcrumb, no panels, no related row — the modal exists to settle a
+   decision in a few seconds, and the full page is one click away.
+
+   Styling reuses the product page's pieces — the shared .lc-buy-* box, the
+   thumb row and the stock flags — so the modal and the page cannot drift.
+   Only the two-column layout around them is quick-view specific (.lc-qv-*).
+   ========================================================================= #}
+
+{% set p = context.product %}
+
+{% if p %}
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{# `| int` truncates — it is the Nunjucks equivalent of the Math.floor()
+   the JS mirrors use. `| round` here advertised 38% for a 37.5% cut. #}
+{% set discount = ((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice * 100) | int if hasDiscount else 0 %}
+{% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+{% set images = p.images | default([], true) %}
+{% set imgCount = images | length %}
+{% set url = '/products/' ~ (p.slug | default(p.handle) | default(p._id)) %}
+{% set brand = p.brand | default(p.vendor) | default('', true) %}
+{# widgets do not inherit the layout's `set` locals — resolve it here #}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+
+{# No x-init: Alpine calls init() on its own — both ran it twice. #}
+<div class="lc-qv" x-data="quickViewProduct()">
+
+  {# ═══════════════ gallery ═══════════════ #}
+  <div class="lc-qv-media">
+    <div class="lc-qv-frame">
+      {% if imgCount > 0 %}
+        {% for img in images %}
+          {# the first shot has no x-cloak, so the modal is never blank before Alpine #}
+          <div class="lc-qv-shot" x-show="activeImage === {{ loop.index0 }}" {% if not loop.first %}x-cloak{% endif %}>
+            <img src="{{ img.fileUrl }}" alt="{{ p.title }}" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+          </div>
+        {% endfor %}
+      {% else %}
+        <span class="lc-pcard-noimg lc-pdp-noimg"></span>
+      {% endif %}
+      <span class="lc-pcard-badge lc-pcard-badge--sale lc-qv-badge" x-show="hasDiscount()" x-cloak x-text="'−' + discountPercent + '%'"></span>
+    </div>
+    {% if imgCount > 1 %}
+      <div class="lc-pdp-thumbs" role="group" aria-label="{{ p.title }}">
+        {% for img in images %}
+          <button type="button" class="lc-pdp-thumb" :class="activeImage === {{ loop.index0 }} && 'is-active'"
+                  :aria-pressed="activeImage === {{ loop.index0 }}" @click="activeImage = {{ loop.index0 }}" aria-label="{{ loop.index }}">
+            <img src="{{ img.fileUrl }}" alt="" loading="lazy"/>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# ═══════════════ info — the shared .lc-buy-* box ═══════════════ #}
+  <div class="lc-qv-info">
+    {% if brand %}<span class="lc-qv-brand">{{ brand.title if brand.title else brand }}</span>{% endif %}
+    <a href="{{ url }}" class="lc-qv-title">{{ p.title }}</a>
+
+    {# headline = LINE total (unit × qty); the unit returns as a subtitle at qty > 1 #}
+    <div class="lc-buy-price lc-qv-price">
+      <span class="lc-buy-now" x-text="displayPrice()">{% if (p.pricing.price | default(0, true)) == 0 %}{{ t('common.free') }}{% else %}{{ p.pricing.price | default(0, true) | money }}{% endif %}</span>
+      <span class="lc-buy-save" x-show="hasDiscount()" x-cloak><s x-text="displayComparePrice()"></s></span>
+    </div>
+    <p class="lc-pdp-unit" x-show="qty > 1" x-cloak>
+      <bdi x-text="displayUnitPrice()"></bdi> <span aria-hidden="true">×</span> <bdi x-text="qty"></bdi>
+    </p>
+
+    <div class="lc-pdp-stock">
+      <span class="lc-pdp-flag lc-pdp-flag--in" x-show="!isOutOfStock">{{ t('pages.product.in_stock') }}</span>
+      <span class="lc-pdp-flag lc-pdp-flag--out" x-show="isOutOfStock" x-cloak>{{ t('pages.product.out_of_stock') }}</span>
+    </div>
+
+    {% for option in p.options %}
+      {% if (option.values | length) > 0 %}
+        <div class="lc-buy-opt">
+          <p class="lc-buy-opt-name">
+            {{ option.name }}:
+            <span class="lc-pdp-optval" data-opt="{{ option.name }}"
+                  data-prompt="{{ t('pages.product.select_option') | replace('{{option}}', option.name) }}"
+                  :class="!selectedOptions[$el.dataset.opt] && 'is-empty'"
+                  x-text="selectedLabels[$el.dataset.opt] || $el.dataset.prompt"></span>
+          </p>
+          <div class="lc-buy-vals" role="group" aria-label="{{ option.name }}">
+            {% for v in option.values %}
+              {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+              <button type="button" class="lc-buy-val {{ 'has-img' if vImg }}"
+                      data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                      :class="{ 'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val,
+                                'is-off': valueDisabled($el.dataset.opt, $el.dataset.val) }"
+                      :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                      :title="valueDisabled($el.dataset.opt, $el.dataset.val) ? _strings.variantSoldOut : $el.dataset.label"
+                      @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)">
+                {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% endif %}
+                <span>{{ v.label }}</span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="lc-buy-actions">
+      <div class="lc-buy-qty">
+        <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+        </button>
+        <span x-text="qty">1</span>
+        <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+      {# enabled while the selection is incomplete on purpose — see the engine #}
+      <button type="button" class="lc-buy-add" @click="addToCart()" :disabled="addDisabled()">
+        <span x-show="addingToCart" x-cloak class="lc-spinner" style="width:16px;height:16px;"></span>
+        <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+        <span x-show="!addingToCart && !addedSuccess">
+          <span x-show="!isOutOfStock">{{ t('pages.product.add_to_cart') }}</span>
+          <span x-show="isOutOfStock" x-cloak>{{ t('pages.product.out_of_stock') }}</span>
+        </span>
+      </button>
+    </div>
+    <p class="lc-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+    <a href="{{ url }}" class="lc-qv-full">
+      {{ t('pages.product.view_full_details') }}
+      <svg class="lc-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/></svg>
+    </a>
+  </div>
+</div>
+
+<script>
+  window.quickViewProduct = function () {
+    /* Same shared engine as the product page (assets/main.js → LocalVariants),
+       so the modal cannot develop its own idea of what is addable. Only the
+       gallery state is local to the quick view. */
+    return Object.assign(window.LocalVariants({
+      productId: '{{ p._id }}',
+      sku: {{ (p.sku | default('', true)) | dump | safe }},
+      price: {{ p.pricing.price | default(0, true) }},
+      compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+
+      groups: [
+        {% for option in p.options %}{% if (option.values | length) > 0 %}
+        { name: {{ (option.name | default('', true)) | dump | safe }},
+          values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ (v.label | default(v.name, true) | default('', true)) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+        {% endif %}{% endfor %}
+      ],
+
+      {# a variant with an empty `pricing` inherits the product's price #}
+            {# option VALUE → gallery index, for a value that carries its own
+         picture (a colour swatch) when no variant image resolves. Matched on
+         the image id, then on the file URL. #}
+      valueImages: {
+        {% for option in p.options %}{% for v in option.values | default([], true) %}{% if v.image %}
+          {% set vid = ((v.image._id if v.image._id else '') | string) %}
+          {% set vurl = v.image.fileUrl | default('', true) %}
+          {% set vhit = [] %}
+          {% for img in p.images | default([], true) %}
+            {% if (vid and (img._id | string) == vid) or (vurl and img.fileUrl == vurl) %}{% set _ = vhit.push(loop.index0) %}{% endif %}
+          {% endfor %}
+          {% if (vhit | length) > 0 %}'{{ v._id }}': {{ vhit[0] | default(0, true) }},{% endif %}
+        {% endif %}{% endfor %}{% endfor %}
+      },
+      variants: [
+        {% for variant in p.variants %}
+        {# the variant's own picture → its index in this product's gallery
+           (`| string` on both sides — the ids are objects that print alike
+           but do not compare equal) #}
+        {% set vRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else (variant.image if variant.image else '') %}
+        {% set vImgId = ((vRaw._id if vRaw._id else vRaw) | string) if vRaw else '' %}
+        {% set vUrl = vRaw.fileUrl if vRaw and vRaw.fileUrl else '' %}
+        {% set hit = [] %}
+        {% for img in p.images | default([], true) %}
+          {% if (vImgId and (img._id | string) == vImgId) or (vUrl and img.fileUrl == vUrl) %}{% set _ = hit.push(loop.index0) %}{% endif %}
+        {% endfor %}
+        {
+          id: '{{ variant._id }}',
+          imageIndex: {{ hit[0] if (hit | length) > 0 else -1 }},
+          price: {{ (variant.pricing.price if variant.pricing else variant.price) | default(p.pricing.price, true) | default(0, true) }},
+          compareAtPrice: {{ (variant.pricing.compareAtPrice if variant.pricing else variant.compareAtPrice) | default(p.pricing.compareAtPrice) | default(0, true) }},
+          sku: {{ (variant.sku | default('', true)) | dump | safe }},
+          quantity: {{ variant.quantity | default(0, true) }},
+          {# what the server actually counts — see the note in LocalVariants #}
+          available: {{ variant.inventoryLevel.available | default(variant.quantity) | default(0, true) }},
+          trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+          options: {{ (variant.options | default([], true)) | dump | safe }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+
+      strings: {
+        selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+        comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+        maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+        outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+        variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+        addError:           {{ t('common.error') | dump | safe }},
+        listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+      }
+    }), {
+      activeImage: 0,
+      /* the engine's hook — see _syncImage in main.js */
+      onVariantImage(idx) { if (idx < {{ imgCount }}) this.activeImage = idx; },
+      init() {
+        this.initVariants();
+
+        /* Same cart-aware ceiling the product page uses — maxQty() subtracts
+           what is already in the cart, and it can only do that if something
+           fills `cartLines`. Without this the modal would cap at the store's
+           stock while the page behind it capped at what is left for the
+           shopper, and the two would disagree on the same product.
+
+           No `cart:updated` listener here: the modal is short-lived and closes
+           on an add, so it re-reads on its next open rather than holding a
+           subscription that outlives the markup. */
+        var self = this;
+        Qumra.cart.get()
+          .then(function (data) { self.cartLines = (data && data.items) || []; })
+          .catch(function () { self.cartLines = []; });
+      }
+    });
+  };
+</script>
+{% endif %}

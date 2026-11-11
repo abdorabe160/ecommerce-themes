@@ -1,0 +1,220 @@
+{# ============================================================================
+   HYPER · المنتجات المفضلة  (favourite products)
+   ----------------------------------------------------------------------------
+     ┌───────────────────────┬───────────────────────────┐
+     │  صورة أجواء           │  منتجاتنا المفضّلة        │
+     │      ┌────────┐       │                           │
+     │      │ بطاقة  │       │  «كل قطعة أصلية ومنتقاة   │
+     │      │ المنتج │       │   بعناية من موطنها.»      │
+     │      └────────┘       │                           │
+     │                       │  جولي ماذرز · أستراليا    │
+     │                       │  ‹  2/3  ›                │
+     └───────────────────────┴───────────────────────────┘
+
+   A quote carousel. Each slide carries a photograph, a quote, an author, and
+   one featured product whose card floats ON the photograph.
+
+   ── Where the product comes from, and why it is not in the block ──
+   `products` is a WIDGET-level picker here, and slide N uses the Nth product
+   from it. It is not a per-block field because a `products` picker inside a
+   `blocks` entry stops the Theme Editor rendering that block's settings at all
+   — no original widget in this theme puts one there, and doing it in
+   editorial-products broke its whole settings panel. `menu` and `media` are the
+   only pickers proven to work at block level. Do not move this into the block.
+
+   A slide with no product at its index simply shows no card, which is a valid
+   composition rather than a broken one.
+
+   ── The card is the shared catalog card ──
+   ui/product-card.njk with `variant='catalog'`, its shopping affordances turned
+   off: this is a portrait of a product, not a place to buy it. The locals are
+   read as STRINGS by `{% ui %}`, so 'off' / 'hidden' are the values that
+   disable them — a bare `false` does not survive the tag.
+
+   ── RTL ──
+   `media_position` is start/end, and the panel aligns to the container's
+   content edge with logical padding. The COUNTER is forced LTR in the CSS: 2/3
+   is a fraction and reads left-to-right in Arabic too. See the note in
+   assets/style.css → "15.13 FAVOURITE PRODUCTS".
+
+   Styling lives in assets/style.css → "15.13 FAVOURITE PRODUCTS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set mediaPos = d.media_position | default('start') %}
+{% set panelColor = d.panel_color | default('var(--color-panel)', true) %}
+{% set cardW = d.card_width | default(300) %}
+{% set ratio = d.card_image_ratio | default('1x1') %}
+{% set showCard = d.show_card | default(true) %}
+{% set showNav = d.show_nav | default(true) %}
+
+{% set products = d.products | default([]) %}
+
+{# The empty state. A preset cannot seed blocks, so a freshly added section
+   arrives with none — see the note in style.css → "15.29.1". #}
+{% macro phHint() %}
+  <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    {{ t('common.placeholder_add') }}
+  </span>
+{% endmacro %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+<section id="hy-fav-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-fav hy-fav--media-{{ mediaPos }}"
+         x-data="{ i: 0, n: {{ count }},
+                   prev() { this.i = (this.i - 1 + this.n) % this.n },
+                   next() { this.i = (this.i + 1) % this.n } }">
+  <style>
+    #hy-fav-{{ id }} {
+      --hy-fav-panel: {{ panelColor }};
+      --hy-fav-card-w: {{ cardW }}px;
+    }
+  </style>
+
+  {# ═══════════════════ media half ═══════════════════ #}
+  <div class="hy-fav-media">
+    {% if count == 0 %}
+      <div class="hy-fav-pane hy-ph-box" data-hy-placeholder aria-hidden="true"></div>
+    {% endif %}
+
+    {% for block in slides %}
+      {% set b = block.data %}
+      {% set img = mediaUrl(b.image) | trim %}
+      {# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+      {% if not (img | length) %}{% set img = ['demo-fav-1.jpg', 'demo-fav-2.jpg', 'demo-fav-3.jpg'][loop.index0 % 3] | assets %}{% endif %}
+      {# `| length`, not truthiness — a macro returns a SafeString OBJECT, and an
+         object is truthy even when it holds an empty string. #}
+      {% set hasImg = (img | length) > 0 %}
+
+      <div class="hy-fav-pane"
+           x-show="i === {{ loop.index0 }}"
+           {% if not loop.first %}x-cloak{% endif %}
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100">
+        {% if hasImg %}
+          <img src="{{ img }}"
+               {# striptags, NOT safe — this is an ATTRIBUTE. Raw HTML in an
+                  alt is meaningless to a screen reader, and `| safe` inside a
+                  quoted attribute would let the field's own quotes close it. #}
+               alt="{{ b.quote | default('', true) | replace('</p>', ' ') | replace('<br>', ' ') | striptags }}"
+               {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        {% else %}
+          <span class="hy-fav-noimg">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.75" cy="9" r="1.5"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if showCard %}
+      {# Slide N ↔ product N — see the note at the top of this file. The loop is
+         over the PRODUCTS, so a shorter list simply leaves the later slides
+         without a card. #}
+      {% for p in products %}
+        {% if loop.index0 < count %}
+          <div class="hy-fav-card"
+               x-show="i === {{ loop.index0 }}"
+               {% if not loop.first %}x-cloak{% endif %}
+               x-transition:enter="transition ease-out duration-300"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100">
+            {# 'off' / 'hidden' as STRINGS — see the note at the top. #}
+            {% ui "product-card.njk", product=p, variant='catalog', image_ratio=ratio,
+                  show_quick_view='off', show_badge='off', show_second_image='off',
+                  atc_style='hidden' %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {# ═══════════════════ panel half ═══════════════════ #}
+  <div class="hy-fav-panel">
+
+    {% if eyebrow %}
+      <p class="hy-fav-eyebrow">{{ eyebrow }}</p>
+    {% endif %}
+
+    {% if count == 0 %}
+      <div class="hy-fav-slide" data-hy-placeholder aria-hidden="true">
+        <div class="hy-ph-stack" style="max-width: 24ch;">
+          <span class="hy-ph-line hy-ph-line--lg"></span>
+          <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 76%;"></span>
+          <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 40%;"></span>
+        </div>
+      </div>
+      <div style="margin-block-start: var(--space-4);">{{ phHint() }}</div>
+    {% endif %}
+
+    {% for block in slides %}
+      {% set b = block.data %}
+      <div class="hy-fav-slide"
+           x-show="i === {{ loop.index0 }}"
+           {% if not loop.first %}x-cloak{% endif %}
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 translate-y-2"
+           x-transition:enter-end="opacity-100 translate-y-0">
+
+        {% if b.quote %}
+          {# A real <blockquote>, and the quotation marks come from the merchant's
+             own text rather than being added here — Arabic uses « » and English
+             uses “ ”, and hardcoding either would be wrong half the time. #}
+          {# ⚠️  `| safe` is REQUIRED. A `text` field comes back from Qumra as
+             HTML (`<p><span style="…"><strong>…`), so without it the markup is
+             escaped and the shopper reads the raw tags. Every `text` field in
+             this theme is printed with `| safe` for the same reason. #}
+          <blockquote class="hy-fav-quote">{{ b.quote | safe }}</blockquote>
+        {% endif %}
+
+        {% if b.author_name or b.author_role %}
+          <div class="hy-fav-author">
+            {% if b.author_name %}<span class="hy-fav-name">{{ b.author_name }}</span>{% endif %}
+            {% if b.author_role %}<span class="hy-fav-role">{{ b.author_role }}</span>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if showNav and count > 1 %}
+      <div class="hy-fav-nav">
+        <button type="button" class="hy-fav-arrow" @click="prev()" aria-label="{{ t('common.prev') }}">
+          <svg class="rtl-flip" width="19" height="19" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+          </svg>
+        </button>
+
+        {# Forced LTR in the CSS — 2/3 is a fraction, not a phrase. #}
+        <span class="hy-fav-count"><span x-text="i + 1">1</span>/{{ count }}</span>
+
+        <button type="button" class="hy-fav-arrow" @click="next()" aria-label="{{ t('common.next') }}">
+          <svg class="rtl-flip" width="19" height="19" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+</section>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-fav-' ~ id, c=d %}

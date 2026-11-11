@@ -1,0 +1,388 @@
+{
+  "name": "أعمدة النص",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل القسم",
+        "en": "▸ Section layout"
+      },
+      "default": "loop",
+      "options": [
+        {
+          "value": "loop",
+          "label": {
+            "ar": "شريط متحرك — أيقونة بجانب العنوان",
+            "en": "Moving strip — icon beside the title"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "أعمدة ثابتة — أيقونة فوق العنوان والوصف، وخطوط فاصلة",
+            "en": "Fixed columns — icon above title and text, with dividers"
+          }
+        }
+      ]
+    },
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد العناصر الظاهرة — كمبيوتر",
+        "en": "Visible items — desktop"
+      },
+      "default": 5,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    },
+    "columns_tablet": {
+      "type": "range",
+      "label": {
+        "ar": "عدد العناصر الظاهرة — تابلت",
+        "en": "Visible items — tablet"
+      },
+      "default": 3,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد العناصر الظاهرة — موبايل",
+        "en": "Visible items — mobile"
+      },
+      "default": "1.6",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "1",
+            "en": "1"
+          }
+        },
+        {
+          "value": "1.6",
+          "label": {
+            "ar": "1 وجزء من التالي",
+            "en": "1 and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ حركة تلقائية — تتحرك خطوة كل فترة وتدور بلا نهاية",
+        "en": "▸ Autoplay — steps one item at a time, looping"
+      },
+      "default": true
+    },
+    "interval": {
+      "type": "range",
+      "label": {
+        "ar": "المدة بين كل حركة",
+        "en": "Time between steps"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s"
+    },
+    "pause_on_hover": {
+      "type": "boolean",
+      "label": {
+        "ar": "إيقاف الحركة عند مرور الماوس",
+        "en": "Pause on hover"
+      },
+      "default": true
+    },
+    "icon_size": {
+      "type": "range",
+      "label": {
+        "ar": "حجم مربع الأيقونة",
+        "en": "Icon tile size"
+      },
+      "default": 44,
+      "min": 32,
+      "max": 72,
+      "step": 2,
+      "unit": "px"
+    },
+    "icon_radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة مربع الأيقونة",
+        "en": "Icon tile corners"
+      },
+      "default": 8,
+      "min": 0,
+      "max": 36,
+      "step": 2,
+      "unit": "px"
+    },
+    "icon_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية مربع الأيقونة",
+        "en": "Icon tile background"
+      },
+      "default": ""
+    },
+    "icon_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الأيقونة",
+        "en": "Icon colour"
+      },
+      "default": ""
+    },
+    "show_dividers": {
+      "type": "boolean",
+      "label": {
+        "ar": "خطوط فاصلة بين العناصر",
+        "en": "Dividers between items"
+      },
+      "default": false
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "item": {
+      "name": "عمود",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "delivery",
+          "options": [
+            {
+              "value": "delivery",
+              "label": {
+                "ar": "ضمان التوصيل (يد ودرع)",
+                "en": "Delivery guarantee"
+              }
+            },
+            {
+              "value": "returns",
+              "label": {
+                "ar": "إرجاع مجاني (عملة وسهم)",
+                "en": "Free returns"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "شاحنة توصيل",
+                "en": "Delivery truck"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "درع ضمان",
+                "en": "Warranty shield"
+              }
+            },
+            {
+              "value": "card",
+              "label": {
+                "ar": "دفع آمن (بطاقة)",
+                "en": "Secure payment"
+              }
+            },
+            {
+              "value": "hand",
+              "label": {
+                "ar": "ضمان بلا متاعب (يد وعين)",
+                "en": "Hassle-free warranty"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "ar": "دعم فني",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "tag",
+              "label": {
+                "ar": "تخفيض",
+                "en": "Price tag"
+              }
+            },
+            {
+              "value": "box",
+              "label": {
+                "ar": "صندوق",
+                "en": "Box"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            },
+            {
+              "value": "wrench",
+              "label": {
+                "ar": "مفتاح — تركيب / صيانة (اكتب العنوان بنفسك)",
+                "en": "Wrench — installation / service (type your own title)"
+              }
+            },
+            {
+              "value": "gauge",
+              "label": {
+                "ar": "عدّاد — أداء / فحص (اكتب العنوان بنفسك)",
+                "en": "Gauge — performance / inspection (type your own title)"
+              }
+            },
+            {
+              "value": "car",
+              "label": {
+                "ar": "سيارة — يناسب سيارتك (اكتب العنوان بنفسك)",
+                "en": "Car — fits your car (type your own title)"
+              }
+            },
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون أيقونة",
+                "en": "No icon"
+              }
+            }
+          ]
+        },
+        "icon_image": {
+          "type": "media",
+          "label": {
+            "ar": "أو ارفع أيقونة/صورة — تحل محل الأيقونة المختارة",
+            "en": "Or upload an icon / image — replaces the chosen icon"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان — فارغ = نص افتراضي حسب الأيقونة وبلغة الزائر",
+            "en": "Title — empty = default text for the icon, in the visitor's language"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "سطر وصف تحت العنوان — في الأعمدة الثابتة: فارغ = نص افتراضي",
+            "en": "Line under the title — in fixed columns: empty = default text"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط — اختياري، مثال: /pages/shipping",
+            "en": "Link — optional, e.g. /pages/shipping"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "أعمدة النص"
+    }
+  ]
+}

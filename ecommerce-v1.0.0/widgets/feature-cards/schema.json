@@ -1,0 +1,105 @@
+{
+  "name": "مميزات بارزة",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "dark": {
+      "type": "boolean",
+      "label": {
+        "ar": "خلفية داكنة",
+        "en": "Dark background"
+      },
+      "default": true
+    },
+    "bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية — فارغ = افتراضي",
+        "en": "Background — empty = default"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "ميزة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Picture"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "مميزات بارزة"
+    }
+  ]
+}

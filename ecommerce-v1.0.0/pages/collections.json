@@ -1,0 +1,57 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "شبكة التصنيفات",
+      "widget": "collections-grid",
+      "settings": {
+        "show_banner": true,
+        "banner_title": "",
+        "banner_text": "",
+        "banner_url": "/shop",
+        "show_breadcrumb": true,
+        "show_heading": true,
+        "title": "",
+        "description": "",
+        "show_toolbar": true,
+        "columns_desktop": 5,
+        "columns_mobile": "2",
+        "image_ratio": "square",
+        "image_fit": "cover",
+        "show_count": true,
+        "hover_zoom": true,
+        "padding_top": 8,
+        "padding_bottom": 48
+      }
+    },
+    {
+      "name": "مميزات المتجر",
+      "widget": "text-columns",
+      "settings": {
+        "layout": "grid",
+        "full_width": true,
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": "1.6",
+        "autoplay": true,
+        "interval": 4,
+        "pause_on_hover": true,
+        "icon_size": 44,
+        "icon_radius": 8,
+        "icon_bg": "",
+        "icon_color": "",
+        "show_dividers": false,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

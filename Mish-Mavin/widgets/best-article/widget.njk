@@ -1,0 +1,15 @@
+{# مقال مميز — مقال واحد مختار من المحرر بنفس تصميم بطاقات المدونة. يختفي لو مفيش مقال. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set a = wd.article %}
+{% if a and a.title %}
+<section class="mw-section">
+  <div class="container">
+    {% if wd.title %}
+    <div class="mw-section__head mw-align-{{ wd.heading_align | default('center') }}">
+      <h2 class="mw-section__title">{{ wd.title }}</h2>
+    </div>
+    {% endif %}
+    <div class="mw-spotlight">{% ui "post-card.njk", article=a, heading='h3' %}</div>
+  </div>
+</section>
+{% endif %}

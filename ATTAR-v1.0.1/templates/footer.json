@@ -1,0 +1,27 @@
+{
+    "title": "Footer Group",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "الفوتر الرئيسي",
+            "widget": "footer",
+            "settings": {
+                "footer_description": "دار عطور شرقية — عطور وعود ودهن عود بخلطاتٍ خاصة. عبقٌ يميّزك ويبقى في الذاكرة.",
+                "footer_menu_1_title": "تسوّق",
+                "footer_menu_2_title": "الدار"
+            }
+        },
+        {
+            "name": "زر واتساب العائم",
+            "widget": "whatsapp-float",
+            "settings": {}
+        },
+        {
+            "name": "زر العودة للأعلى",
+            "widget": "scroll-top",
+            "settings": {}
+        }
+    ]
+}

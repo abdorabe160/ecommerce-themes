@@ -1,0 +1,16 @@
+{
+  "name": "المدونة",
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "مقالات المدونة",
+      "widget": "blog-page",
+      "settings": {
+        "display_layout": "grid",
+        "columns": "3",
+        "show_date": true,
+        "show_excerpt": true
+      }
+    }
+  ]
+}

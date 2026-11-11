@@ -1,0 +1,21 @@
+{# =========================================================
+   Dark Blood - محتوى صفحة عامة (من نحن، سياسة الاسترجاع، ...)
+   المحتوى من الصفحة نفسها، أو من الإعدادات لو الصفحة فاضية
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# المنصة بتبعت محتوى الصفحة الثابتة في page.description (مفيش حقل body منفصل) #}
+{% set pg = page if (page and (page.title or page.description)) else ((context.page if (context and context.page) else null) or {}) %}
+{% set body = pg.content or pg.body or pg.description or page.description or s.content %}
+
+<section class="blk-section blk-page-content" id="blkPage-{{ widget.id }}">
+  <div class="blk-container blk-article-container">
+    {% if body %}
+      <div class="blk-rich-text blk-article-body blk-anim-fade-up">
+        {{ body | safe }}
+      </div>
+    {% else %}
+      {% set emptyTitle = t('page.empty_title') %}{% set emptyText = t('page.empty_text') %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, icon="box" %}
+    {% endif %}
+  </div>
+</section>

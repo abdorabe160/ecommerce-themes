@@ -1,0 +1,1581 @@
+/* ===== SECTION WIDGET VISIBILITY ===== */
+/* Hide standalone SSR render; show only when inside data-qumra-section (AJAX) */
+.shop-products-content { display: none; }
+[data-qumra-section="shop-products"] .shop-products-content { display: block; }
+
+/* ===== ATTAR COLOR SYSTEM — Oriental Fragrance House · Dark · Mysterious ===== */
+/* عطّار — دار عطور شرقية. Gold / Purple-Black / Light Purple.
+   Tokens & class names are kept stable so widgets keep rendering
+   while we rebuild them one by one. */
+:root {
+    /* Background — deep purple-black tones */
+    --color-bg-primary: #1A1220;      /* بنفسجي أسود — purple-black canvas */
+    --color-bg-secondary: #221730;    /* raised panel */
+    --color-bg-tertiary: #2C1F3C;     /* deeper raised */
+    --color-bg-green: #1E2620;        /* muted dark (repurposed) */
+    --color-bg-peach: #2A1D2E;        /* warm dark tint (repurposed) */
+    --color-surface: #221730;         /* card surface on dark */
+
+    /* Section Alternation */
+    --color-section-a: #1A1220;
+    --color-section-b: #211732;
+
+    /* Header — transparent over hero, purple-black when solid */
+    --color-header: #1A1220;
+    --color-header-text: #F5EFE6;
+    --color-header-border: #33263F;
+
+    /* Footer — deepest purple-black */
+    --color-footer: #120C18;
+    --color-footer-text: #B5A9C4;
+    --color-footer-text-muted: #978BA9; /* #7E7290 was 4.2:1 on the footer */
+    --color-footer-border: #2A2033;
+    --color-footer-heading: #F5EFE6;
+
+    /* Text */
+    --color-text-primary: #F5EFE6;    /* عاجي دافئ — warm cream */
+    --color-text-secondary: #C3B7CE;  /* muted lavender-grey */
+    --color-text-tertiary: #9A8FA8;   /* dim mauve — #877B96 was 3.9:1 on the raised panels; this clears 4.5 on all three */
+
+    /* Accent — Antique Gold */
+    --color-accent: #C9A227;          /* ذهبي عتيق — antique gold */
+    --color-accent-hover: #DDB84A;    /* brighter gold on hover */
+    --color-accent-light: #2B2410;    /* dark gold wash (chips on dark) */
+
+    /* Accent Secondary — Light Purple (mystical highlight) */
+    --color-accent-secondary: #A97BD0;
+    --color-accent-secondary-hover: #BB93DD;
+    --color-accent-secondary-light: #251A31;
+
+    /* Primary alias (used by Tailwind & components) */
+    --color-primary: #C9A227;
+    --color-primary-dark: #A5851C;
+    --color-primary-rgb: 201, 162, 39;
+    --primary-rgb: 201, 162, 39;
+
+    /* Borders */
+    --color-border: #33263F;
+    --color-border-hover: #4C3B5E;
+    --color-border-focus: #C9A227;
+
+    /* Status */
+    --color-success: #6F9E6B;
+    --color-error: #E0685A;
+    --color-warning: #C9A227;
+    --color-sale: var(--color-accent);      /* discount badge — settings.saleColor */
+    --color-on-sale: var(--color-bg-primary);
+
+    /* Typography — Font Stacks (headings fixed by ATTAR identity) */
+    --font-heading-ar: 'Aref Ruqaa', 'Almarai', Georgia, serif;
+    --font-heading-en: 'Cormorant Garamond', Georgia, serif;
+    --font-body-ar: 'Almarai', system-ui, -apple-system, sans-serif;
+    --font-body-en: 'Jost', system-ui, -apple-system, sans-serif;
+
+    /* Spacing — 8px base grid */
+    --space-1: 4px;     /* Inline icon gaps */
+    --space-2: 8px;     /* Tight padding (tags, badges) */
+    --space-3: 12px;    /* Inner component padding */
+    --space-4: 16px;    /* Default component padding */
+    --space-5: 24px;    /* Card padding */
+    --space-6: 32px;    /* Section inner padding */
+    --space-7: 48px;    /* Between related sections */
+    --space-8: 64px;    /* Section vertical padding */
+    --space-9: 80px;    /* Large section gaps */
+    --space-10: 120px;  /* Hero/CTA vertical padding */
+
+    /* Accent surfaces (flat — no gradients in quiet-luxury editorial) */
+    --gradient-accent: var(--color-accent);
+    --gradient-accent-hover: var(--color-accent-hover);
+    --gradient-accent-light: var(--color-accent-light);
+    --gradient-accent-subtle: var(--color-bg-secondary);
+
+    /* Border Radius — editorial: crisp corners */
+    --radius-none: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-full: 9999px;   /* Pills, avatars only */
+
+    /* Shadows — deep black on dark, with warm gold glow for accents */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40);
+    --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.55);
+    --shadow-xl: 0 20px 56px rgba(0, 0, 0, 0.60);
+    --shadow-accent: 0 4px 18px color-mix(in srgb, var(--color-accent) 25%, transparent);
+    --shadow-accent-lg: 0 10px 34px color-mix(in srgb, var(--color-accent) 30%, transparent);
+    --shadow-focus: 0 0 0 2px color-mix(in srgb, var(--color-accent) 45%, transparent);
+
+    /* Animation & Motion — slow, composed */
+    --transition-fast: 200ms ease;
+    --transition-base: 400ms ease-in-out;
+    --transition-slow: 900ms ease-in-out;
+    --transition-glacial: 1200ms cubic-bezier(0.25, 0, 0.25, 1);
+}
+
+/* ===== HEADER — Scroll State ===== */
+.header-scrolled {
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+}
+
+/* ===== SECTION ALTERNATION ===== */
+.section-a { background: var(--color-section-a); }
+.section-b { background: var(--color-section-b); }
+
+/* ===== RESET ===== */
+/* Tailwind v4 preflight handles the full reset. */
+/* We only keep x-cloak and base body styles. */
+
+/* Alpine.js — hide elements until initialized */
+[x-cloak] {
+    display: none !important;
+}
+
+body {
+    font-family: var(--font-body-ar);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.7;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+    font-size: 16px;
+    animation: pageEnter 600ms ease both;
+}
+
+html[lang="en"] body,
+html[dir="ltr"] body {
+    font-family: var(--font-body-en);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ===== MADAR TYPOGRAPHY SYSTEM ===== */
+
+/* --- Headings --- */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading-ar);
+    color: var(--color-text-primary);
+    /* Keep long words / unbroken strings inside their container — wrap instead of overflowing */
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+html[lang="en"] h1, html[lang="en"] h2, html[lang="en"] h3,
+html[lang="en"] h4, html[lang="en"] h5, html[lang="en"] h6,
+html[dir="ltr"] h1, html[dir="ltr"] h2, html[dir="ltr"] h3,
+html[dir="ltr"] h4, html[dir="ltr"] h5, html[dir="ltr"] h6 {
+    font-family: var(--font-heading-en);
+}
+
+/* Arabic headings — Noto Sans Arabic at bold weight for editorial drama */
+html[lang="ar"] h1, html[lang="ar"] h2,
+html[dir="rtl"] h1, html[dir="rtl"] h2 {
+    font-weight: 700;
+}
+
+html[lang="ar"] h3, html[lang="ar"] h4,
+html[dir="rtl"] h3, html[dir="rtl"] h4 {
+    font-weight: 600;
+}
+
+/* H1 — Dramatic Editorial Title */
+h1 {
+    font-size: 4.5rem;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+
+/* H2 — Section Title */
+h2 {
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+/* H3 — Card Title */
+h3 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+/* H4 — Subtitle */
+h4 {
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+}
+
+/* --- Body Variants --- */
+.text-body-lg {
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+}
+
+.text-body {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+}
+
+.text-body-sm {
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.015em;
+    color: var(--color-text-secondary);
+}
+
+.text-caption {
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    color: var(--color-text-tertiary);
+}
+
+/* --- Price --- */
+.text-price {
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-family: var(--font-heading-ar);
+}
+
+.text-price-sale {
+    font-size: 1.375rem;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-decoration: line-through;
+    color: var(--color-text-tertiary);
+}
+
+/* --- Typography Rules --- */
+p {
+    max-width: 65ch;
+    margin-bottom: 1.5em;
+}
+
+p:last-child {
+    margin-bottom: 0;
+}
+
+/* --- Mobile Type Scale --- */
+@media (max-width: 767px) {
+    body { font-size: 15px; }
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.375rem; }
+    h4 { font-size: 1rem; }
+    .text-body-lg { font-size: 1rem; }
+    .text-body { font-size: 0.9375rem; }
+    .text-body-sm { font-size: 0.8125rem; }
+    .text-caption { font-size: 0.6875rem; }
+    .text-price, .text-price-sale { font-size: 1.125rem; }
+}
+
+/* Image fade-in on load */
+.img-fade {
+    transition: opacity 600ms ease;
+}
+
+.img-fade.is-loaded {
+    opacity: 1;
+}
+
+/* Scroll Reveal — only when JS has initialised (prevents builder blanking) */
+html.reveal-init .reveal {
+    transform: translateY(14px);
+    transition: transform 700ms ease;
+}
+html.reveal-init .reveal.is-visible {
+    transform: translateY(0);
+}
+
+/* Hover — subtle opacity, NO scale on cards */
+.hover-fade {
+    transition: opacity 400ms ease;
+}
+
+.hover-fade:hover {
+    opacity: 0.85;
+}
+
+
+.btn-breathe-white {
+    animation: btnBreatheWhite 3s ease-in-out infinite;
+}
+
+
+/* ===== THEME COLOR UTILITIES ===== */
+.bg-accent        { background-color: var(--color-accent); }
+.bg-accent-hover  { background-color: var(--color-accent-hover); }
+.text-accent      { color: var(--color-accent); }
+.text-secondary   { color: var(--color-text-secondary); }
+.text-tertiary    { color: var(--color-text-tertiary); }
+.bg-tertiary      { background-color: var(--color-bg-tertiary); }
+.border-accent    { border-color: var(--color-accent); }
+
+.hover\:bg-accent:hover       { background-color: var(--color-accent); }
+.hover\:bg-accent-hover:hover { background-color: var(--color-accent-hover); }
+.hover\:border-accent:hover   { border-color: var(--color-accent); }
+.hover\:text-accent:hover     { color: var(--color-accent); }
+
+/* Mazaj Duotone Utilities — Terracotta secondary accent */
+.bg-accent-secondary        { background-color: var(--color-accent-secondary); }
+.bg-accent-secondary-light  { background-color: var(--color-accent-secondary-light); }
+.text-accent-secondary      { color: var(--color-accent-secondary); }
+.border-accent-secondary    { border-color: var(--color-accent-secondary); }
+.bg-green                   { background-color: var(--color-bg-green); }
+.bg-peach                   { background-color: var(--color-bg-peach); }
+
+.hover\:bg-accent-secondary:hover       { background-color: var(--color-accent-secondary); }
+.hover\:text-accent-secondary:hover     { color: var(--color-accent-secondary); }
+.hover\:border-accent-secondary:hover   { border-color: var(--color-accent-secondary); }
+
+/* ===== MADAR BUTTON SYSTEM — Editorial ===== */
+
+/* Base — shared by all buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 300ms ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Primary — solid rectangle, no gradient */
+.btn-primary {
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    border: none;
+    padding: 16px 40px;
+    box-shadow: none;
+}
+
+.btn-primary:hover {
+    background: var(--color-accent-hover);
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary:active {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Secondary — thin border rectangle */
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-text-primary);
+    padding: 15px 40px;
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-secondary:active {
+    border-color: var(--color-accent-hover);
+    color: var(--color-accent-hover);
+    transform: none;
+}
+
+/* Ghost — animated underline CTA */
+.btn-ghost {
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    padding: 8px 0;
+    text-decoration: none;
+    position: relative;
+}
+
+.btn-ghost::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 400ms ease;
+}
+html[dir="rtl"] .btn-ghost::after {
+    transform-origin: left;
+}
+.btn-ghost:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+html[dir="rtl"] .btn-ghost:hover::after {
+    transform-origin: right;
+}
+
+.btn-ghost:active {
+    color: var(--color-accent);
+}
+
+/* ===== MADAR GRADIENT UTILITIES (flattened for editorial) ===== */
+.mazaj-gradient-bg       { background: var(--color-accent); }
+.mazaj-gradient-bg-hover:hover { background: var(--color-accent-hover); }
+.mazaj-gradient-bg-light { background: var(--color-accent-light); }
+.mazaj-gradient-bg-subtle { background: var(--color-bg-secondary); }
+.mazaj-gradient-text {
+    color: var(--color-accent);
+}
+
+/* ===== MADAR CARD SYSTEM — Editorial: flat, on-the-page ===== */
+.mazaj-card {
+    border-radius: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: border-color 300ms ease;
+}
+.mazaj-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-text-tertiary);
+}
+
+.mazaj-card-gradient {
+    border-radius: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 300ms ease;
+}
+.mazaj-card-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity 300ms ease;
+}
+.mazaj-card-gradient:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-text-tertiary);
+}
+.mazaj-card-gradient:hover::before {
+    opacity: 1;
+}
+
+/* ===== MADAR DECORATIVE ELEMENTS — Hidden for editorial ===== */
+.mazaj-section-deco {
+    position: relative;
+    overflow: hidden;
+}
+.mazaj-section-deco::before { display: none; }
+.mazaj-deco-top-end::before { display: none; }
+.mazaj-deco-bottom-start::before { display: none; }
+.mazaj-deco-center::before { display: none; }
+.mazaj-dots { display: none; }
+.mazaj-ring { display: none; }
+
+/* ===== MADAR SECTION HEADER — Editorial thin rule ===== */
+.mazaj-section-header {
+    text-align: center;
+    margin-bottom: 64px;
+    position: relative;
+    z-index: 1;
+}
+.mazaj-section-header .mazaj-sh-line {
+    width: 100%;
+    max-width: 120px;
+    height: 1px;
+    border-radius: 0;
+    background: var(--color-border);
+    margin: 0 auto 20px;
+}
+.mazaj-section-header h2 {
+    margin-bottom: 16px;
+}
+.mazaj-section-header p {
+    color: var(--color-text-tertiary);
+    max-width: 500px;
+    margin: 0 auto;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+}
+
+/* ===== MADAR HOVER LIFT — Disabled for editorial ===== */
+.mazaj-lift {
+    transition: opacity 300ms ease;
+}
+.mazaj-lift:hover {
+    transform: none;
+    box-shadow: none;
+    opacity: 0.85;
+}
+
+/* ===== MADAR FORM & INPUT STYLES ===== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select,
+.input {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background-color: transparent;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+}
+select option { background: var(--color-bg-secondary); color: var(--color-text-primary); }
+
+input::placeholder,
+textarea::placeholder,
+.input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.input:focus {
+    border-color: var(--color-text-primary);
+    box-shadow: none;
+}
+
+/* Error state */
+input.is-error,
+textarea.is-error,
+select.is-error,
+.input.is-error {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 18%, transparent);
+}
+
+/* Label */
+label,
+.label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+}
+
+/* Helper / Error text */
+.input-helper {
+    font-size: 13px;
+    color: var(--color-text-tertiary);
+    margin-top: var(--space-1);
+}
+
+.input-error {
+    font-size: 13px;
+    color: var(--color-error);
+    margin-top: var(--space-1);
+}
+
+/* ===== MADAR ICON SYSTEM ===== */
+/* Line/outline icons, 1.5px stroke — Phosphor Icons (Light) */
+
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+    flex-shrink: 0;
+}
+
+.icon svg {
+    stroke-width: 1.5;
+}
+
+.icon-sm { width: 16px; height: 16px; }      /* Inline */
+.icon-md { width: 20px; height: 20px; }      /* Default */
+.icon-lg { width: 24px; height: 24px; }      /* Navigation */
+
+/* ===== MADAR IMAGE TREATMENT ===== */
+
+/* Aspect Ratios */
+.img-product { aspect-ratio: 4 / 5; }        /* Product — portrait */
+.img-hero { aspect-ratio: 16 / 9; }          /* Hero — wide */
+.img-category { aspect-ratio: 1 / 1; }       /* Category — square */
+
+/* Base image style */
+.img-product,
+.img-hero,
+.img-category,
+.img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.9);
+}
+
+/* Image in cards — sharp editorial */
+.img-card {
+    border-radius: 0;
+    overflow: hidden;
+}
+
+/* Image standalone — no radius */
+.img-full {
+    border-radius: var(--radius-none);
+    overflow: hidden;
+}
+
+/* Hover — slow subtle zoom */
+.img-zoom {
+    overflow: hidden;
+}
+
+.img-zoom img {
+    transition: transform var(--transition-slow);
+}
+
+.img-zoom:hover img {
+    transform: scale(1.02);
+}
+
+/* Placeholder — shown before image loads */
+.img-placeholder {
+    background: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Blur-up loading technique */
+.img-blur {
+    filter: blur(15px) saturate(0.9);
+    transform: scale(1.05);
+    transition: filter var(--transition-slow), transform var(--transition-slow);
+}
+
+.img-blur.is-loaded {
+    filter: blur(0) saturate(0.9);
+    transform: scale(1);
+}
+
+
+
+
+
+
+
+
+
+
+/* Mazaj Theme - Stylesheet */
+
+/* ===== Base Styles ===== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  .active {
+    color: var(--color-accent);
+  }
+  
+  .removing {
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+  html[dir="ltr"] .removing { transform: translateX(-100%); }
+  html[dir="rtl"] .removing { transform: translateX(100%); }
+
+  /* ===== Line Clamp ===== */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Button Styles — Mazaj Button System */
+  
+  /* ===== Scrollbar ===== */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 2px;
+  }
+  
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+  }
+  
+  /* ===== Swiper Custom Styles ===== */
+  .swiper-pagination-bullet {
+    background: var(--color-accent) !important;
+    opacity: 0.4;
+  }
+  
+  .swiper-pagination-bullet-active {
+    opacity: 1 !important;
+  }
+  
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: var(--color-accent) !important;
+    background: var(--color-surface);
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0;
+    box-shadow: none;
+    border: 1px solid var(--color-border);
+  }
+  
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 16px !important;
+    font-weight: bold;
+  }
+  
+  /* Swiper equal-height slides */
+  .swiper-outside-pagination .swiper-wrapper {
+    align-items: stretch;
+  }
+  .swiper-outside-pagination .swiper-slide {
+    height: auto;
+  }
+  
+  /* Pagination outside slides (for product sliders) */
+  .swiper-outside-pagination {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+  
+  .swiper-outside-pagination > .swiper-pagination {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 1.5rem;
+  }
+  
+  /* ===== Toast Notifications ===== */
+  .toast {
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+    animation: toastIn 0.4s ease;
+  }
+  
+  .toast { background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border); border-inline-start-width: 3px; display: flex; align-items: center; gap: 10px; }
+  .toast::before { content: ''; flex: 0 0 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .toast-success { border-inline-start-color: var(--color-success); }
+  .toast-success::before { background: var(--color-success); }
+  .toast-error { border-inline-start-color: var(--color-error); }
+  .toast-error::before { background: var(--color-error); }
+  .toast-warning, .toast-info { border-inline-start-color: var(--color-accent); }
+  .toast-warning::before, .toast-info::before { background: var(--color-accent); }
+  
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ===== Overlay ===== */
+  /* Lang form reset — remove default form spacing */
+  .lang-form {
+    margin: 0;
+    padding: 0;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background-color: color-mix(in srgb, var(--color-footer) 72%, transparent);
+    z-index: 200;
+    backdrop-filter: blur(3px);
+  }
+
+  /* ===== Drawer ===== */
+  .drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-bg-secondary);
+    z-index: 210;
+    overflow-y: auto;
+    transition: transform 0.4s ease;
+  }
+
+  html[dir="rtl"] .drawer-start {
+    right: 0;
+    transform: translateX(100%);
+  }
+  
+  html[dir="ltr"] .drawer-start {
+    left: 0;
+    transform: translateX(-100%);
+  }
+  
+  html[dir="rtl"] .drawer-end {
+    left: 0;
+    transform: translateX(-100%);
+  }
+  
+  html[dir="ltr"] .drawer-end {
+    right: 0;
+    transform: translateX(100%);
+  }
+  
+  .drawer.open {
+    transform: translateX(0) !important;
+  }
+  
+  /* ===== Animations ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fade-in { animation: fadeIn 0.4s ease; }
+  .animate-slide-up { animation: slideUp 0.7s ease; }
+  
+  /* ===== Product Card ===== */
+  /* Cards use Tailwind classes directly. This section is for AJAX-loaded cards only. */
+  .ajax-card {
+    transition: opacity 700ms ease, transform 700ms ease;
+  }
+  
+  
+  /* ===== Section Header ===== */
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .section-header p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+  }
+  
+  /* ===== Loading & Success Animations ===== */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes checkPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  
+  .animate-check {
+    animation: checkPop 0.4s ease;
+  }
+  
+  /* ===== Cart Item Enter ===== */
+  @keyframes cartItemEnter {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .cart-item-enter {
+    animation: cartItemEnter 0.4s ease-out;
+  }
+  
+  /* ===== Rating Stars ===== */
+  .stars {
+    display: inline-flex;
+    gap: 2px;
+  }
+  
+  .stars .star-filled { color: var(--color-accent); }
+  .stars .star-empty { color: var(--color-border); }
+  
+  /* ===== Price Range Slider ===== */
+  .price-slider {
+    position: relative;
+    height: 28px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .price-slider .slider-track {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  .price-slider .slider-range {
+    position: absolute;
+    height: 5px;
+    background: var(--color-accent);
+    border-radius: 9999px;
+  }
+  
+  .price-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    height: 5px;
+    outline: none;
+  }
+  
+  .price-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-text-primary);
+    border: 2.5px solid var(--color-accent);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .price-slider input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+
+  .price-slider input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+  }
+
+  .price-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-text-primary);
+    border: 2.5px solid var(--color-accent);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+  }
+  
+  .price-slider input[type="range"]::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+
+  /* ===== Missing Keyframes ===== */
+  @keyframes pageEnter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes btnBreatheWhite {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+  }
+
+  /* ===== Reduced Motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html.reveal-init .reveal { opacity: 1; transform: none; }
+    .img-fade { opacity: 1; }
+  }
+
+
+
+  .p-qoute * {
+    color: var(--color-text-primary);
+  }
+
+/* ===== EDITORIAL UTILITY CLASSES ===== */
+
+/* Section kicker / eyebrow — gold brand accent */
+.editorial-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+}
+html[dir="rtl"] .editorial-label {
+    letter-spacing: 0.06em;
+    text-transform: none;
+    font-size: 12.5px;
+}
+
+/* Flanking gold hairline for centered kickers */
+.attar-kicker-line {
+    display: inline-block;
+    width: 30px;
+    height: 1px;
+    background: var(--color-accent);
+    opacity: 0.55;
+}
+
+/* Eyebrow with a leading gold hairline — opt-in via .editorial-label--rule */
+.editorial-label--rule::before {
+    content: '';
+    display: inline-block;
+    width: 26px;
+    height: 1px;
+    margin-inline-end: 12px;
+    vertical-align: middle;
+    background: var(--color-accent);
+    opacity: 0.65;
+}
+
+/* Thin horizontal rule divider */
+.editorial-rule {
+    width: 100%;
+    height: 1px;
+    background: var(--color-border);
+    border: none;
+}
+
+/* Editorial underline link — animated ::after */
+.editorial-link {
+    position: relative;
+    display: inline-block;
+    color: var(--color-text-primary);
+    text-decoration: none;
+}
+.editorial-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 300ms ease;
+}
+html[dir="rtl"] .editorial-link::after {
+    transform-origin: left;
+}
+.editorial-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+html[dir="rtl"] .editorial-link:hover::after {
+    transform-origin: right;
+}
+
+/* Editorial outline button — global (works outside the hero) */
+.anaqa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 44px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-text-primary);
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+html[dir="rtl"] .anaqa-btn { letter-spacing: 0.04em; text-transform: none; font-size: 14px; }
+.anaqa-btn:hover {
+    background: var(--color-text-primary);
+    color: var(--color-bg-primary);
+    border-color: var(--color-text-primary);
+}
+/* Light variant — for dark / charcoal backgrounds */
+.anaqa-btn--light { color: var(--color-bg-primary); border-color: var(--color-bg-primary); }
+.anaqa-btn--light:hover {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border-color: var(--color-bg-primary);
+}
+
+/* Editorial add-to-cart — understated underlined CTA */
+.anaqa-add-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 0 3px;
+    background: none;
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+html[dir="rtl"] .anaqa-add-btn { letter-spacing: 0; text-transform: none; font-size: 13px; }
+.anaqa-add-btn:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.anaqa-add-btn:disabled { cursor: default; opacity: 0.7; }
+
+/* Scent-note tag chip — fragrance boutique card */
+.attar-note-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--color-accent);
+    background: var(--color-accent-light);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+html[dir="rtl"] .attar-note-tag { letter-spacing: 0; }
+
+/* Fragrance card media — soft gold niche + hover lift */
+.attar-pcard-media { transition: border-color 0.4s ease, box-shadow 0.5s ease; }
+.group:hover .attar-pcard-media {
+    border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+    box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.85), 0 0 0 1px color-mix(in srgb, var(--color-accent) 10%, transparent) inset;
+}
+
+/* Drop cap removed — first letter shows normally */
+
+/* Editorial toast — sharp */
+.toast {
+    border-radius: 0;
+}
+/* Card title hover — was inline onmouseenter/onmouseleave on every card */
+.attar-pcard-name { color: var(--color-text-primary); transition: color .2s ease; }
+.attar-pcard-name:hover { color: var(--color-accent); }
+
+/* Cart stock notes ("only N available", "choose options") and the checkout-gate line */
+.attar-citem-note { margin: 4px 0 0; font-size: 11px; line-height: 1.5; font-weight: 600; color: var(--color-error, #E5484D); }
+
+/* ── Sub-menus — `item.menu` children (header dropdown, sidebar, footer) ── */
+.attar-nav-item { position: relative; display: inline-flex; align-items: center; }
+.attar-nav-drop {
+  position: absolute; top: 100%; inset-inline-start: -16px; z-index: 60;
+  min-width: 200px; padding: 10px 0; margin-top: 10px;
+  background: var(--color-bg-primary); border: 1px solid var(--color-border);
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  opacity: 0; visibility: hidden; transform: translateY(-4px);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+}
+.attar-nav-drop::before { content: ""; position: absolute; inset-inline: 0; top: -12px; height: 12px; } /* hover bridge */
+.attar-nav-item:hover .attar-nav-drop,
+.attar-nav-item:focus-within .attar-nav-drop { opacity: 1; visibility: visible; transform: none; }
+.attar-nav-drop-link { display: block; padding: 8px 18px; font-size: 14px; color: var(--color-text-secondary); white-space: nowrap; }
+.attar-nav-drop-link:hover { color: var(--color-accent); }
+.attar-nav-drop-link--l3 { padding-inline-start: 32px; font-size: 13px; }
+/* keep a dropdown near the viewport edge inside the screen */
+.attar-nav-item:last-child .attar-nav-drop, .attar-nav-item:nth-last-child(2) .attar-nav-drop { inset-inline-start: auto; inset-inline-end: -16px; }
+.attar-sb-subs { padding-inline-start: 18px; }
+.attar-sb-sublink { font-size: .92em; opacity: .85; }
+.attar-foot-sublink { padding-inline-start: 12px; opacity: .85; }
+
+/* ── Touch: 44px hit areas + no iOS zoom on focus ─────────────────────
+   Fine pointers keep the compact look. On touch, the small icon buttons
+   (Tailwind w-8/h-8 · w-9/h-9 — header, cart drawer, steppers) keep their
+   visual size but get an invisible ::after hit area that reaches 44px.
+   Positioned buttons (.absolute/.fixed) are skipped — `relative` would move them.
+   Inputs go to 16px so iOS Safari doesn't zoom the page when a field is focused. */
+@media (pointer: coarse) {
+  :is(button, a).w-8.h-8:not(.absolute):not(.fixed),
+  :is(button, a).w-9.h-9:not(.absolute):not(.fixed),
+  :is(button, a).w-9.h-8:not(.absolute):not(.fixed),
+  :is(button, a).w-7.h-7:not(.absolute):not(.fixed) { position: relative; }
+  :is(button, a).w-8.h-8:not(.absolute):not(.fixed)::after,
+  :is(button, a).w-9.h-9:not(.absolute):not(.fixed)::after,
+  :is(button, a).w-9.h-8:not(.absolute):not(.fixed)::after,
+  :is(button, a).w-7.h-7:not(.absolute):not(.fixed)::after {
+    content: "";
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+  input, select, textarea { font-size: 16px !important; }
+}
+
+
+/* =====================================================================
+   QA fixes — responsive, a11y, Arabic typography
+   ===================================================================== */
+
+/* A class `display` rule must never beat the hidden attribute */
+[hidden] { display: none !important; }
+
+/* Arabic: tracking breaks joined letters, tight line-height clips Ruqaa's tall glyphs */
+html[dir="rtl"] h1, html[dir="rtl"] h2, html[dir="rtl"] h3, html[dir="rtl"] h4 { letter-spacing: 0; }
+html[dir="rtl"] h1, html[dir="rtl"] h2 { line-height: 1.3; }
+html[dir="rtl"] h3 { line-height: 1.4; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+/* Keyboard focus is always visible */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Closed drawers leave the tab order (they are only moved off-screen) */
+.drawer { visibility: hidden; transition: transform 0.4s ease, visibility 0s linear 0.4s; }
+.drawer.open { visibility: visible; transition: transform 0.4s ease, visibility 0s; }
+
+/* Cards: low-stock badge */
+.attar-low-badge {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-bg-primary);
+  background: var(--color-text-primary);
+}
+
+/* No lone card on the last row.
+   Wide grids (.attar-fit-N) swap their column count; a count that fails both ways spans the row.
+   Narrower grids (.attar-fit-span*, .attar-lone-*) let the last card span the row: product and article
+   cards turn horizontal, image tiles get a shorter image. nth-of-type ignores Alpine <template> nodes. */
+@media (min-width: 1024px) {
+  .attar-fit-3:has(> :last-of-type:nth-of-type(3n+1):not(:first-of-type)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .attar-fit-3:has(> :last-of-type:nth-of-type(3n+1):nth-of-type(4n+1):not(:first-of-type)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .attar-fit-4:has(> :last-of-type:nth-of-type(4n+1):not(:first-of-type)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .attar-fit-4:has(> :last-of-type:nth-of-type(4n+1):nth-of-type(3n+1):not(:first-of-type)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .attar-fit-3 > :last-of-type:nth-of-type(12n+1), .attar-fit-4 > :last-of-type:nth-of-type(12n+1),
+  .attar-lone-lg2 > :last-of-type:nth-of-type(2n+1), .attar-lone-wide5 > :last-of-type:nth-of-type(5n+1), .attar-lone-wide6 > :last-of-type:nth-of-type(6n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-fit-3 > :last-of-type:nth-of-type(12n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *), .attar-fit-4 > :last-of-type:nth-of-type(12n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *),
+  .attar-lone-lg2 > :last-of-type:nth-of-type(2n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *), .attar-lone-wide5 > :last-of-type:nth-of-type(5n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *), .attar-lone-wide6 > :last-of-type:nth-of-type(6n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 3 / 1; }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .attar-lone-lg3 > :last-of-type:nth-of-type(3n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-lone-lg3 > :last-of-type:nth-of-type(3n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 3 / 1; }
+}
+@media (min-width: 1280px) {
+  .attar-lone-xl4 > :last-of-type:nth-of-type(4n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-lone-xl4 > :last-of-type:nth-of-type(4n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 3 / 1; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .attar-lone-md2 > :last-of-type:nth-of-type(2n+1), .attar-lone-md3 > :last-of-type:nth-of-type(3n+1), .attar-lone-md4 > :last-of-type:nth-of-type(4n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-lone-md2 > :last-of-type:nth-of-type(2n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *), .attar-lone-md3 > :last-of-type:nth-of-type(3n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *), .attar-lone-md4 > :last-of-type:nth-of-type(4n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 2 / 1; }
+}
+@media (min-width: 640px) and (max-width: 767px) {
+  .attar-lone-sm2 > :last-of-type:nth-of-type(2n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-lone-sm2 > :last-of-type:nth-of-type(2n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 2 / 1; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* 2-column tablet grids */
+  .attar-fit-span > :last-of-type:nth-of-type(2n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-fit-span > :last-of-type:nth-of-type(2n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 2 / 1; }
+}
+@media (max-width: 639px) {
+  .attar-fit-span-sm > :last-of-type:nth-of-type(2n+1) { grid-column: 1 / -1; --attar-lone-dir: row; --attar-lone-media: min(44%, 340px); --attar-lone-gap: clamp(16px, 3vw, 40px); --attar-lone-top: 0; }
+  .attar-fit-span-sm > :last-of-type:nth-of-type(2n+1) [class*="aspect-["]:not(article *):not(.attar-article-card *) { aspect-ratio: 2 / 1; }
+}
+/* the horizontal form: read from the variables above, so a normal card is untouched */
+article.group, a.attar-article-card { flex-direction: var(--attar-lone-dir, column); gap: var(--attar-lone-gap, 0); }
+article.group > a:first-child, a.attar-article-card > div:first-child { width: var(--attar-lone-media, 100%); flex-shrink: 0; }
+article.group > div.flex-1.mt-5, a.attar-article-card > div.flex-1.mt-5 { margin-top: var(--attar-lone-top, 1.25rem); min-width: 0; }
+
+/* Product page: mobile gallery dots, zoom cursor, sticky buy bar */
+.attar-pd-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.attar-pd-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--color-border-hover); transition: width .25s ease, background .25s ease; }
+.attar-pd-dots span.is-on { width: 18px; border-radius: 3px; background: var(--color-accent); }
+.attar-pd-zoom { cursor: zoom-in; }
+.attar-pd-bar {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 90;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--color-bg-primary) 94%, transparent);
+  border-top: 1px solid var(--color-border);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transform: translateY(110%); visibility: hidden;
+  transition: transform .3s ease, visibility 0s linear .3s;
+}
+.attar-pd-bar.is-on { transform: none; visibility: visible; transition: transform .3s ease, visibility 0s; }
+.attar-pd-bar__btn {
+  flex-shrink: 0; min-height: 46px; padding: 0 22px;
+  font-size: 14px; font-weight: 600;
+  background: var(--color-accent); color: var(--color-bg-primary);
+}
+.attar-pd-bar__btn:disabled { opacity: .5; }
+
+/* Floating WhatsApp + back-to-top (opposite corners) */
+.attar-wa, .attar-top {
+  position: fixed; bottom: 20px; z-index: 80;
+  min-width: 48px; height: 48px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 9999px;
+  transition: transform .2s ease, bottom .3s ease, opacity .2s ease;
+}
+.attar-wa { padding: 0 12px; background: #25D366; color: #fff; box-shadow: var(--shadow-md); }
+.attar-wa__label { display: none; font-size: 14px; font-weight: 600; }
+.attar-wa--start { inset-inline-start: 20px; }
+.attar-wa--end { inset-inline-end: 20px; }
+.attar-top { width: 44px; min-width: 44px; height: 44px; background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+.attar-wa--start ~ .attar-top, .attar-top { inset-inline-end: 20px; }
+body:has(.attar-wa--end) .attar-top { inset-inline-end: auto; inset-inline-start: 20px; }
+.attar-wa:hover, .attar-top:hover { transform: translateY(-2px); }
+html.has-buy-bar .attar-wa, html.has-buy-bar .attar-top { bottom: 92px; }
+@media (min-width: 1024px) { .attar-wa__label { display: inline; padding-inline-end: 6px; } }
+@media (max-width: 1023px) { .attar-wa--desktop { display: none; } .attar-wa, .attar-top { bottom: 16px; } }
+@media (prefers-reduced-motion: reduce) { .attar-wa, .attar-top { transition: none; } }
+
+/* Touch: every control reaches 44px without changing the editorial look */
+@media (max-width: 1023px) {
+  .anaqa-add-btn { min-height: 44px; padding-top: 12px; align-items: center; }
+  .anaqa-icon-btn { width: 44px !important; height: 44px !important; }
+  .anaqa-lang-btn { min-height: 34px; padding: 0 6px; }
+  .anaqa-foot-social { width: 44px !important; height: 44px !important; }
+  .anaqa-foot-link, .attar-foot-sublink { display: inline-flex; align-items: center; min-height: 44px; }
+  .anaqa-shop-chip { min-height: 44px; }
+  .anaqa-shop-col-btn { min-height: 44px; }
+  input, select, textarea, .anaqa-shop-search, .anaqa-nl-input { font-size: 16px !important; }
+}
+
+/* Demo content (theme editor only) */
+.attar-demo-only { display: none !important; }
+html.is-builder .attar-demo-only { display: block !important; }
+
+/* Rich text from the dashboard (static pages) */
+.attar-prose { color: var(--color-text-secondary); font-size: 15px; line-height: 1.9; overflow-wrap: break-word; }
+.attar-prose > :first-child { margin-top: 0; }
+.attar-prose :is(h2, h3, h4) { margin: 1.6em 0 .6em; }
+.attar-prose h2 { font-size: 1.6rem; } .attar-prose h3 { font-size: 1.3rem; }
+.attar-prose :is(ul, ol) { padding-inline-start: 1.4em; margin-bottom: 1.2em; }
+.attar-prose ul { list-style: disc; } .attar-prose ol { list-style: decimal; }
+.attar-prose a { color: var(--color-accent); text-decoration: underline; }
+.attar-prose img { max-width: 100%; height: auto; }
+.attar-prose table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.attar-prose :is(td, th) { border: 1px solid var(--color-border); padding: 8px 12px; min-width: 5.5em; overflow-wrap: normal; word-break: normal; vertical-align: top; }
+
+@media (max-width: 1023px) {
+  .anaqa-cp-arrow, .anaqa-pg-arrow, .anaqa-test-arrow, .anaqa-cs-arrow, .anaqa-art-share-btn { width: 44px !important; height: 44px !important; }
+  .anaqa-foot-logo { min-height: 44px; display: inline-flex !important; align-items: center; }
+  .anaqa-lang-btn { min-width: 44px; justify-content: center; }
+}
+/* language switch sits in the slim announcement bar — a taller invisible hit area */
+.anaqa-lang-btn { position: relative; }
+.anaqa-lang-btn::after { content: ''; position: absolute; inset: -6px 0; }
+
+/* Arabic text inside a tracked/uppercased Latin style (EN storefront) */
+.attar-ar { letter-spacing: 0 !important; text-transform: none !important; }
+@media (min-width: 1024px) { .attar-pd-bar, .attar-pd-dots { display: none !important; } }
+@media (max-width: 1023px) {
+  a.editorial-link.inline-flex, .anaqa-art-back { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* Letter-spacing breaks joined Arabic letters, whatever set it */
+:lang(ar) *, :lang(ar) *::before, :lang(ar) *::after { letter-spacing: 0 !important; }
+
+/* Missing photo: the theme's bottle on its smoky ground, never an empty box */
+.attar-mark {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 120% at 50% 18%, color-mix(in srgb, var(--color-accent) 12%, transparent) 0%, var(--color-bg-secondary) 46%, var(--color-bg-primary) 100%);
+}
+.attar-mark::before {
+  content: ''; width: 30%; max-width: 96px; aspect-ratio: 3 / 5;
+  background: var(--color-accent); opacity: 0.6;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 100' fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round'%3E%3Cpath d='M23 4h14v12H23zM26 16v8c0 4-16 10-16 28v36c0 5 3 8 8 8h24c5 0 8-3 8-8V52c0-18-16-24-16-28v-8'/%3E%3Cpath d='M10 62h40'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 100' fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round'%3E%3Cpath d='M23 4h14v12H23zM26 16v8c0 4-16 10-16 28v36c0 5 3 8 8 8h24c5 0 8-3 8-8V52c0-18-16-24-16-28v-8'/%3E%3Cpath d='M10 62h40'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* /blogs category filter */
+.attar-blog-chip {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+  border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 14px;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.attar-blog-chip:hover { border-color: var(--color-accent); color: var(--color-text-primary); }
+.attar-blog-chip[aria-current] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg-primary); }
+
+/* Sold-out state of the sticky buy bar stays readable */
+.attar-pd-bar__btn:disabled { opacity: 1; background: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+/* 44px tap targets where the design keeps the control small */
+.anaqa-lang-btn { position: relative; }
+.anaqa-lang-btn::after { content: ''; position: absolute; inset: -6px 0; }
+@media (max-width: 1023px) {
+  .anaqa-filter-opt { min-height: 44px; align-items: center; }
+}
+
+/* Used by the hidden fallback H1 even if the Tailwind CDN fails */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+
+/* Header logo — settings.logoHeight (default 36px, 28px on phones) */
+.attar-logo-img { height: var(--attar-logo-h, 36px); max-width: min(calc(var(--attar-logo-h, 36px) * 5), 30vw); }
+@media (max-width: 639px) {
+  .attar-logo-img { height: calc(var(--attar-logo-h, 36px) * 7 / 9); max-width: min(calc(var(--attar-logo-h, 36px) * 130 / 36), 42vw); }
+}
+
+/* Closable announcement bar: the language button lives in the bar, so it stays when there is one */
+.anaqa-announce-x { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; color: currentColor; }
+.anaqa-announce-x::after { content: ''; position: absolute; inset: -8px 0; }
+.anaqa-announce.is-closed .anaqa-announce-text, .anaqa-announce.is-closed .anaqa-announce-x { visibility: hidden; }
+.anaqa-announce.is-closed:not(:has(.anaqa-lang-btn)) { display: none; }
+
+/* Status tokens */
+.attar-low-badge { color: var(--color-on-low, var(--color-bg-primary)); background: var(--color-low-badge, var(--color-text-primary)); }
+
+/* Free-shipping progress (cart page + drawer) */
+.attar-fs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.attar-fs__text { font-size: 12px; line-height: 1.6; color: var(--color-text-secondary); }
+.attar-fs__track { height: 3px; background: var(--color-border); overflow: hidden; }
+.attar-fs__bar { display: block; height: 100%; background: var(--color-accent); transition: width .4s ease; }
+
+/* Touch: card and cart-line titles reach 44px (a one-line title keeps the box, two lines are already taller);
+   breadcrumb and pager links get a larger invisible hit area, so the row keeps its height */
+@media (max-width: 1023px) {
+  .attar-pcard-name, a.font-heading-ar.line-clamp-2 { min-height: 44px; }
+  a.editorial-link.md\:inline-flex { min-height: 44px; }
+  main section nav a:not(.editorial-link) { position: relative; }
+  main section nav a:not(.editorial-link)::after { content: ''; position: absolute; inset: -12px -4px; }
+  .anaqa-announce-x { min-width: 44px; }
+  .anaqa-announce-x::after { inset: -16px 0; }
+}
+
+/* settings.enableAnimations off: no motion at all */
+html.attar-no-motion { scroll-behavior: auto; }
+html.attar-no-motion *, html.attar-no-motion *::before, html.attar-no-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0s !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+}
+html.attar-no-motion .reveal, html.attar-no-motion [class*="group-hover:scale"], html.attar-no-motion .attar-wa:hover, html.attar-no-motion .attar-top:hover { transform: none !important; }
+
+/* Print: dark ground off, page content only */
+@media print {
+  html:root:root {
+    --color-bg-primary: #fff; --color-bg-secondary: #fff; --color-bg-tertiary: #fff; --color-surface: #fff;
+    --color-section-a: #fff; --color-section-b: #fff;
+    --color-text-primary: #111; --color-text-secondary: #333; --color-text-tertiary: #555;
+    --color-border: #ccc; --color-accent: #111; --color-sale: #111; --color-on-sale: #fff;
+    --color-sale-text: #111; --color-warning: #333; --color-instock: #111; --color-low-badge: #111; --color-on-low: #fff;
+    --color-accent-light: #fff;
+  }
+  html, body { background: #fff !important; color: #111 !important; }
+  #anaqa-header, #anaqa-header-spacer, .anaqa-footer, .drawer, .overlay, #toast-container,
+  .attar-wa, .attar-top, .attar-pd-bar, nav[aria-label="pagination"], [x-data="quickView()"],
+  [class*="attar-cta-"], [class*="anaqa-nl-"] { display: none !important; }
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; animation: none !important; transition: none !important; }
+  .reveal { transform: none !important; opacity: 1 !important; }
+  section { padding-block: 16px !important; background: #fff !important; }
+  a { text-decoration: none !important; }
+  article, img, tr { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; color: #111 !important; }
+  /* titles over a photo keep their scrim, so they stay light */
+  .anaqa-cp-frame *, .anaqa-cs-card * { color: #fff !important; }
+}

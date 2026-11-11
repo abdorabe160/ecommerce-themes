@@ -1,0 +1,639 @@
+{
+  "name": "الفوتر الجديد",
+  "settings": {
+    "logo": {
+      "type": "media",
+      "label": {
+        "ar": "الشعار — فارغ = شعار المتجر",
+        "en": "Logo — empty = the store logo"
+      }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "default": 40,
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px"
+    },
+    "top_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "قائمة الروابط بجانب الشعار",
+        "en": "Links beside the logo"
+      },
+      "default": "header-menu"
+    },
+    "show_contact": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عمود المساعدة",
+        "en": "▸ Help column"
+      },
+      "default": true
+    },
+    "contact_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان العمود — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Column title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "المساعدة 1 — الأيقونة",
+        "en": "Help 1 — icon"
+      },
+      "default": "phone",
+      "options": [
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "headset",
+          "label": {
+            "ar": "سماعة دعم",
+            "en": "Headset"
+          }
+        },
+        {
+          "value": "chat",
+          "label": {
+            "ar": "محادثة",
+            "en": "Chat"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "بريد",
+            "en": "Mail"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "c1_line": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 1 — السطر الصغير — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 1 — small line — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c1_value": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 1 — النص العريض (رقم أو رابط) — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 1 — bold text (number or link) — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c1_url": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 1 — الرابط (tel: أو mailto: أو صفحة)",
+        "en": "Help 1 — link (tel:, mailto: or a page)"
+      },
+      "default": ""
+    },
+    "c2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "المساعدة 2 — الأيقونة",
+        "en": "Help 2 — icon"
+      },
+      "default": "headset",
+      "options": [
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "headset",
+          "label": {
+            "ar": "سماعة دعم",
+            "en": "Headset"
+          }
+        },
+        {
+          "value": "chat",
+          "label": {
+            "ar": "محادثة",
+            "en": "Chat"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "بريد",
+            "en": "Mail"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "c2_line": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 2 — السطر الصغير — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 2 — small line — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c2_value": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 2 — النص العريض (رقم أو رابط) — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 2 — bold text (number or link) — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c2_url": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 2 — الرابط (tel: أو mailto: أو صفحة)",
+        "en": "Help 2 — link (tel:, mailto: or a page)"
+      },
+      "default": ""
+    },
+    "c3_icon": {
+      "type": "select",
+      "label": {
+        "ar": "المساعدة 3 — الأيقونة",
+        "en": "Help 3 — icon"
+      },
+      "default": "chat",
+      "options": [
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "headset",
+          "label": {
+            "ar": "سماعة دعم",
+            "en": "Headset"
+          }
+        },
+        {
+          "value": "chat",
+          "label": {
+            "ar": "محادثة",
+            "en": "Chat"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "بريد",
+            "en": "Mail"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "c3_line": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 3 — السطر الصغير — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 3 — small line — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c3_value": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 3 — النص العريض (رقم أو رابط) — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Help 3 — bold text (number or link) — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "c3_url": {
+      "type": "string",
+      "label": {
+        "ar": "المساعدة 3 — الرابط (tel: أو mailto: أو صفحة)",
+        "en": "Help 3 — link (tel:, mailto: or a page)"
+      },
+      "default": ""
+    },
+    "menu1_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ عمود الروابط 1 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Link column 1 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "menu1_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "menu1": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "footer-menu"
+    },
+    "menu2_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ عمود الروابط 2 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Link column 2 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "menu2_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "menu2": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "footer-menu"
+    },
+    "menu3_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ عمود الروابط 3 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Link column 3 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "menu3_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "menu3": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "footer-menu"
+    },
+    "show_newsletter": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ النشرة البريدية",
+        "en": "▸ Newsletter"
+      },
+      "default": true
+    },
+    "nl_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان النشرة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Newsletter title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "nl_text": {
+      "type": "string",
+      "label": {
+        "ar": "وصف النشرة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Newsletter text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "nl_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الإرسال (Mailchimp أو غيره) — فارغ = رسالة شكر فقط",
+        "en": "Form action URL (Mailchimp etc.) — empty = a thank-you message only"
+      },
+      "default": ""
+    },
+    "nl_field": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد عند المزود",
+        "en": "Email field name at the provider"
+      },
+      "default": "EMAIL"
+    },
+    "nl_button": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Button text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "social_facebook": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Facebook",
+        "en": "Facebook link"
+      },
+      "default": ""
+    },
+    "social_x": {
+      "type": "string",
+      "label": {
+        "ar": "رابط X",
+        "en": "X link"
+      },
+      "default": ""
+    },
+    "social_pinterest": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Pinterest",
+        "en": "Pinterest link"
+      },
+      "default": ""
+    },
+    "social_instagram": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Instagram",
+        "en": "Instagram link"
+      },
+      "default": ""
+    },
+    "social_tiktok": {
+      "type": "string",
+      "label": {
+        "ar": "رابط TikTok",
+        "en": "TikTok link"
+      },
+      "default": ""
+    },
+    "social_youtube": {
+      "type": "string",
+      "label": {
+        "ar": "رابط YouTube",
+        "en": "YouTube link"
+      },
+      "default": ""
+    },
+    "social_snapchat": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Snapchat",
+        "en": "Snapchat link"
+      },
+      "default": ""
+    },
+    "social_whatsapp": {
+      "type": "string",
+      "label": {
+        "ar": "رابط WhatsApp",
+        "en": "WhatsApp link"
+      },
+      "default": ""
+    },
+    "row1_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ صف التصنيفات 1 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Category row 1 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "row1_menu_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "row1_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "header-menu"
+    },
+    "row1_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "صف التصنيفات 1 — إظهار",
+        "en": "Category row 1 — show"
+      },
+      "default": true
+    },
+    "row2_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ صف التصنيفات 2 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Category row 2 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "row2_menu_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "row2_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "header-menu"
+    },
+    "row2_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "صف التصنيفات 2 — إظهار",
+        "en": "Category row 2 — show"
+      },
+      "default": true
+    },
+    "row3_title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ صف التصنيفات 3 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Category row 3 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "row3_menu_use": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدم قائمة من المتجر بدل الروابط الجاهزة",
+        "en": "Use a store menu instead of the ready-made links"
+      },
+      "default": false
+    },
+    "row3_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة (تظهر عند تفعيل الخيار السابق)",
+        "en": "Menu (used when the option above is on)"
+      },
+      "default": "header-menu"
+    },
+    "row3_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "صف التصنيفات 3 — إظهار",
+        "en": "Category row 3 — show"
+      },
+      "default": true
+    },
+    "show_language": {
+      "type": "boolean",
+      "label": {
+        "ar": "مُبدّل اللغة أسفل الفوتر",
+        "en": "Language switcher at the bottom"
+      },
+      "default": true
+    },
+    "copyright": {
+      "type": "string",
+      "label": {
+        "ar": "نص الحقوق — فارغ = © السنة اسم المتجر",
+        "en": "Copyright — empty = © year store name"
+      },
+      "default": ""
+    },
+    "payments": {
+      "type": "string",
+      "label": {
+        "ar": "أيقونات الدفع — مفصولة بفاصلة: mada, visa, mastercard, amex, applepay, stcpay, tabby, tamara, paypal, cod (فارغ = إخفاء)",
+        "en": "Payment marks — comma separated (empty = hidden)"
+      },
+      "default": "visa,mastercard,applepay,mada"
+    },
+    "bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الفوتر — فارغ = لون الفوتر من إعدادات الثيم",
+        "en": "Footer background — empty = the theme's footer colour"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص — فارغ = من إعدادات الثيم",
+        "en": "Text colour — empty = from the theme settings"
+      },
+      "default": ""
+    },
+    "title_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين — فارغ = من إعدادات الثيم",
+        "en": "Title colour — empty = from the theme settings"
+      },
+      "default": ""
+    },
+    "accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون زر الاشتراك — فارغ = اللون الأساسي للثيم",
+        "en": "Subscribe button — empty = the theme's main colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر الجديد"
+    }
+  ]
+}

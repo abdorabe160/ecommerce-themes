@@ -1,0 +1,116 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# أسماء الروابط المعروفة بالإنجليزية — قوائم المتجر بلغة واحدة من لوحة التحكم #}
+{% set isEn = localization.language == 'en' %}
+{% set routeNames = { '/': t('common.home'), '/collections': t('header.categories'), '/shop': t('nav.shop'), '/latest': t('nav.latest'), '/cart': t('header.cart'), '/wishlist': t('header.wishlist'), '/search': t('header.search') } %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# واتساب من إعدادات الثيم: رابط كامل أو رقم دولي ← https://wa.me/<رقم> #}
+{% set waRaw = (settings.socialWhatsapp or '') | string | trim %}
+{% if waRaw and 'http' not in waRaw %}{% set waUrl = 'https://wa.me/' + (waRaw | replace('+', '') | replace(' ', '') | replace('-', '')) %}{% else %}{% set waUrl = waRaw %}{% endif %}
+{# الروابط الخارجية في قوائم الفوتر تفتح في تبويب جديد (GEN-12) #}
+{% macro linkAttrs(url) %}{% set u = (url or '') | string %}href="{{ u or '#' }}"{% if u.indexOf('http') == 0 and not (store.url and u.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+{% set socials = [] %}
+{% for s in [
+  { key: 'facebook', url: settings.socialFacebook },
+  { key: 'instagram', url: settings.socialInstagram },
+  { key: 'x', url: settings.socialX },
+  { key: 'youtube', url: settings.socialYoutube },
+  { key: 'tiktok', url: settings.socialTiktok },
+  { key: 'whatsapp', url: waUrl }
+] %}{% if s.url %}{% if socials.push(s) %}{% endif %}{% endif %}{% endfor %}
+
+{% set menu1 = wd.menu_1 | default([]) %}
+{% set menu2 = wd.menu_2 | default([]) %}
+{# منع تكرار نفس القائمة في عمودين (REG-22) #}
+{% if menu2 | length and (menu2 | join('|', 'url')) == (menu1 | join('|', 'url')) %}{% set menu2 = [] %}{% endif %}
+
+{% set pays = [] %}
+{% for pm in [
+  { on: wd.pay_visa, label: 'VISA' },
+  { on: wd.pay_mastercard, label: 'Mastercard' },
+  { on: wd.pay_mada, label: 'mada' },
+  { on: wd.pay_paypal, label: 'PayPal' },
+  { on: wd.pay_applepay, label: 'Apple Pay' },
+  { on: wd.pay_googlepay, label: 'G Pay' },
+  { on: wd.pay_cod, label: t('footer.cod') }
+] %}{% if pm.on %}{% if pays.push(pm.label) %}{% endif %}{% endif %}{% endfor %}
+{% set hasPayImage = wd.payments_image and wd.payments_image.fileUrl %}
+
+<footer class="lg-footer mt-10 pt-10 md:pt-12 pb-6 rounded-t-[clamp(24px,4vw,48px)]"
+        style="--footer-c1: {{ wd.color_1 | default('var(--footer-d1)', true) }}; --footer-c2: {{ wd.color_2 | default('var(--footer-d2)', true) }};{% if wd.text_color %} --footer-text: {{ wd.text_color }};{% endif %}">
+  <div class="lg-container">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+
+      <div class="space-y-3">
+        <a href="/" class="lg-tap inline-flex items-center gap-2 text-xl font-semibold" style="color: var(--color-text)">
+          {% if store.logo and store.logo.fileUrl %}
+            <img src="{{ store.logo.fileUrl }}" alt="{{ store.name }}" class="h-9 w-auto max-w-[160px] object-contain" width="160" height="36" loading="lazy" decoding="async">
+          {% else %}
+            {% ui "icon.njk", name="bag", cls="w-7 h-7" %}<span class="break-all">{{ store.name }}</span>
+          {% endif %}
+        </a>
+        {% set about = (wd['about_text' + L] or wd.about_text) or store.description %}
+        {% if about %}<p class="text-sm text-muted leading-7 max-w-xs">{{ about | safe }}</p>{% endif %}
+        {% set address = wd['address' + L] or wd.address %}
+        {% if wd.phone or wd.email or address %}
+          <ul class="space-y-1 text-sm">
+            {% if wd.phone %}<li><a href="tel:{{ wd.phone }}" dir="ltr" class="inline-flex items-center gap-2 min-h-[32px]">{% ui "icon.njk", name="phone", cls="w-4 h-4" %}{{ wd.phone }}</a></li>{% endif %}
+            {% if wd.email %}<li><a href="mailto:{{ wd.email }}" class="inline-flex items-center gap-2 min-h-[32px] break-all">{% ui "icon.njk", name="mail", cls="w-4 h-4 shrink-0" %}{{ wd.email }}</a></li>{% endif %}
+            {% if address %}<li class="flex items-start gap-2 text-muted">{% ui "icon.njk", name="pin", cls="w-4 h-4 shrink-0 mt-1" %}<span>{{ address }}</span></li>{% endif %}
+          </ul>
+        {% endif %}
+      </div>
+
+      {% if menu1 | length %}
+        <nav aria-label="{{ (wd['menu_1_title' + L] or wd.menu_1_title) | default(t('footer.quick_links')) }}">
+          <h3 class="font-semibold mb-3">{{ (wd['menu_1_title' + L] or wd.menu_1_title) | default(t('footer.quick_links')) }}</h3>
+          <ul class="space-y-1 text-sm">
+            {% for item in menu1 %}
+              <li><a {{ linkAttrs(item.url) }} class="inline-flex min-h-[32px] items-center">{{ (routeNames[item.url] if (isEn and routeNames[item.url]) else item.title) }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+
+      {% if menu2 | length %}
+        <nav aria-label="{{ (wd['menu_2_title' + L] or wd.menu_2_title) | default(t('footer.customer_service')) }}">
+          <h3 class="font-semibold mb-3">{{ (wd['menu_2_title' + L] or wd.menu_2_title) | default(t('footer.customer_service')) }}</h3>
+          <ul class="space-y-1 text-sm">
+            {% for item in menu2 %}
+              <li><a {{ linkAttrs(item.url) }} class="inline-flex min-h-[32px] items-center">{{ (routeNames[item.url] if (isEn and routeNames[item.url]) else item.title) }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+
+      {% if socials | length %}
+        <div>
+          <h3 class="font-semibold mb-3">{{t('footer.follow_us')}}</h3>
+          <ul class="flex flex-wrap gap-1.5" data-dock="bottom">
+            {% for s in socials %}
+              <li>
+                <a href="{{ s.url }}" target="_blank" rel="noopener noreferrer" class="lg-social" aria-label="{{ s.key | capitalize }}">
+                  {% ui "icon.njk", name=s.key, cls="w-[18px] h-[18px]" %}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="lg-divider my-6"></div>
+
+    <div class="flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-xs text-muted">
+      <p>© {{ store.name }}. {{t('footer.copyright')}}.</p>
+      {% if hasPayImage %}
+        <img src="{{ wd.payments_image.fileUrl }}" alt="{{t('footer.secure_payments')}}" class="h-7 w-auto" loading="lazy" height="28">
+      {% elif pays | length %}
+        <ul class="flex flex-wrap justify-center gap-2" aria-label="{{t('footer.secure_payments')}}">
+          {% for label in pays %}<li class="lg-pay">{{ label }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+</footer>

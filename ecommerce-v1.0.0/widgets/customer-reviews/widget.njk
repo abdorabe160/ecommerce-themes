@@ -1,0 +1,87 @@
+{#
+  ============================================================================
+  CUSTOMER REVIEWS · آراء العملاء
+  ----------------------------------------------------------------------------
+  A centred title over a scroll-snap row of reviews: a quote mark, a bold
+  headline, the text, then the customer's photo and name. Arrows sit on the
+  row's edges (HxRail). Each review is a block; with none yet, six demo
+  reviews in the visitor's language (locales → reviews.*) with initials
+  instead of photos.
+
+  Styles: assets/sections.css → "CUSTOMER REVIEWS".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set items = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% if b.text or b.title %}
+    {% set av = mediaUrl(b.avatar) | trim %}
+    {% set _ = items.push({ title: b.title | default(''), text: b.text | default(''), name: b.name | default(''), avatar: av, rating: b.rating | default(5) }) %}
+  {% endif %}
+{% endfor %}
+{% set hxDemo = (items | length) == 0 %}
+{% if (items | length) == 0 %}
+  {% for n in [1, 2, 3, 4, 5, 6] %}
+    {% set _ = items.push({ title: t('reviews.r' ~ n ~ '.title'), text: t('reviews.r' ~ n ~ '.text'), name: t('reviews.r' ~ n ~ '.name'), avatar: '', rating: 5 }) %}
+  {% endfor %}
+{% endif %}
+
+{% set title = (d.title or t('reviews.title')) if d.show_title != false else '' %}
+
+<section id="hx-rv-{{ id }}" {% if hxDemo %}data-hx-demo{% endif %}
+         class="hx-rv {{ 'has-lines' if d.dividers != false }}"
+         style="--rv-per: {{ d.columns_desktop | default(5) }}; --rv-per-m: {{ d.columns_mobile | default('1.2') }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.band_bg %} --rv-band: {{ d.band_bg }};{% endif %}">
+  <div class="hx-rv-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}<h2 class="hx-rv-title">{{ title | safe }}</h2>{% endif %}
+    <div class="hx-rv-rail">
+      <div class="hx-rv-viewport" data-hx-loop data-autoplay="{{ 'false' if d.autoplay == false else 'true' }}" data-interval="{{ d.interval | default(4) }}" data-pause="true">
+      <ul class="hx-rv-track" data-hx-loop-track role="list">
+        {% for r in items %}
+          <li class="hx-rv-item">
+            <span class="hx-rv-quote" aria-hidden="true">&rdquo;</span>
+            {% if d.show_stars %}
+              <span class="hx-rv-stars" aria-label="{{ r.rating }}/5">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" class="{{ 'is-on' if s < r.rating }}" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+            {% endif %}
+            {% if r.title %}<h3 class="hx-rv-head">{{ r.title | safe }}</h3>{% endif %}
+            {% if r.text %}<p class="hx-rv-text">{{ r.text | safe }}</p>{% endif %}
+            <div class="hx-rv-who">
+              {% if (r.avatar | length) > 0 %}<img class="hx-rv-avatar" src="{{ r.avatar }}" alt="" loading="lazy"/>
+              {% else %}<span class="hx-rv-avatar is-initial" aria-hidden="true">{{ r.name | default('?') | first }}</span>{% endif %}
+              {% if r.name %}<span class="hx-rv-name">{{ r.name | safe }}</span>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      </div>
+      {% if d.show_arrows != false %}
+        <button type="button" class="hx-fc-arrow hx-rv-arrow is-prev" data-rv-prev aria-label="{{ t('common.prev') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/></svg></button>
+        <button type="button" class="hx-fc-arrow hx-rv-arrow is-next" data-rv-next aria-label="{{ t('common.next') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></button>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var root = document.getElementById('hx-rv-{{ id }}');
+      var vp = root && root.querySelector('[data-hx-loop]');
+      if (!vp || !window.HxLoop) return;
+      HxLoop.init(vp);
+      var api = vp.__hxLoopApi;
+      var p = root.querySelector('[data-rv-prev]'), n = root.querySelector('[data-rv-next]');
+      if (p) p.addEventListener('click', function () { api.prev(); });
+      if (n) n.addEventListener('click', function () { api.next(); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-rv-' ~ id, c=d %}

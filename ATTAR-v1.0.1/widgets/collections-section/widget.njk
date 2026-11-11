@@ -1,0 +1,209 @@
+{# ===== ATTAR COLLECTIONS — "Shop by Fragrance Family" ===== #}
+{% set collections = widget.data.collections %}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set title = widget.data.title | safe %}
+{% set viewAllUrl = widget.data.view_all_url | default('/collections') %}
+{% set isSlider = (widget.data.display_type | default('grid')) == 'slider' %}
+{% set labelStyle = widget.data.label_style | default('overlay') %}
+{% set autoplay = widget.data.autoplay | default(false) %}
+{% if settings.enableAnimations == false %}{% set autoplay = false %}{% endif %}
+{% set autoplaySpeed = (widget.data.autoplay_speed | default(5, true)) | int %}
+{% set id = widget.id %}
+
+{% set cols = widget.data.columns_desktop | default('3') %}
+{% if cols == '2' %}{% set gridCols = 'grid-cols-1 sm:grid-cols-2 attar-fit-span attar-lone-lg2' %}{% set spv = 2 %}
+{% elif cols == '4' %}{% set gridCols = 'grid-cols-2 md:grid-cols-4 attar-fit-4 attar-fit-span-sm attar-lone-sm2 attar-lone-md4' %}{% set spv = 4 %}
+{# phones get two smaller tiles a row (one tall tile per screen made a very long page) #}
+{% else %}{% set gridCols = 'grid-cols-2 lg:grid-cols-3 attar-fit-3 attar-fit-span attar-fit-span-sm' %}{% set spv = 3 %}{% endif %}
+
+{% set _ratio = widget.data.card_ratio | default('portrait') %}
+{% if _ratio == 'tall' %}{% set aspectClass = 'aspect-[4/5]' %}
+{% elif _ratio == 'square' %}{% set aspectClass = 'aspect-[1/1]' %}
+{% else %}{% set aspectClass = 'aspect-[3/4]' %}{% endif %}
+
+{# Until the merchant picks collections in the Theme Editor, show demo fragrance
+   families (bundled CC0 photos, assets/demo-collection-*.jpg — docs/demo-images.md)
+   so the section never ships empty. One row's worth; they link to /shop; no counts,
+   a made-up number reads as a real one. #}
+{% set isDemo = false %}
+{% set showCount = widget.data.show_count %}
+{# nothing picked → the store's own collections (hidden ones left out) #}
+{% if not (collections and (collections | length) > 0) and context and context.collections and (context.collections | length) %}
+  {% set _live = [] %}
+  {% for c in context.collections %}{% if _live | length < 6 and c.title and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = _live.push(c) %}{% endif %}{% endfor %}
+  {% set collections = _live %}
+{% endif %}
+{# still nothing → demo families, shown in the theme editor only (never to customers) #}
+{% if not (collections and (collections | length) > 0) %}
+  {% set isDemo = true %}
+  {% set en = (localization.language | default('ar')) == 'en' %}
+  {% set demoCols = [
+    { title: 'Oud' if en else 'العود', slug: '', image: { fileUrl: 'demo-collection-1.jpg' | assets } },
+    { title: 'Florals' if en else 'الورديات', slug: '', image: { fileUrl: 'demo-collection-2.jpg' | assets } },
+    { title: 'Amber' if en else 'العنبر', slug: '', image: { fileUrl: 'demo-collection-3.jpg' | assets } },
+    { title: 'Incense' if en else 'البخور', slug: '', image: { fileUrl: 'demo-collection-4.jpg' | assets } },
+    { title: 'Musk' if en else 'المسك', slug: '', image: { fileUrl: 'demo-collection-5.jpg' | assets } },
+    { title: 'Spices' if en else 'التوابل الشرقية', slug: '', image: { fileUrl: 'demo-collection-6.jpg' | assets } }
+  ] %}
+  {% set collections = demoCols if isSlider else demoCols.slice(0, spv) %}
+{% endif %}
+
+{% set isOverlay = labelStyle == 'overlay' %}
+
+<style>
+  .anaqa-cs-{{ id }} .anaqa-cs-title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  html[dir="rtl"] .anaqa-cs-{{ id }} .anaqa-cs-title { line-height: 1.25; font-weight: 600; }
+  .anaqa-cs-{{ id }} .anaqa-cs-title p { margin: 0; }
+
+  .anaqa-cs-{{ id }} .anaqa-cs-img { filter: saturate(1.03) contrast(1.02); transition: transform 1.1s ease; }
+  .anaqa-cs-{{ id }} .anaqa-cs-card:hover .anaqa-cs-img { transform: scale(1.05); }
+  .anaqa-cs-{{ id }} .anaqa-cs-name { font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 500; line-height: 1.15; }
+  html[dir="rtl"] .anaqa-cs-{{ id }} .anaqa-cs-name { font-weight: 600; }
+
+  /* Card frame → gold on hover */
+  .anaqa-cs-{{ id }} .anaqa-cs-frame {
+    border: 1px solid var(--color-border);
+    transition: border-color 0.4s ease, box-shadow 0.5s ease;
+  }
+  .anaqa-cs-{{ id }} .anaqa-cs-card:hover .anaqa-cs-frame {
+    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+    box-shadow: 0 20px 46px -26px rgba(0,0,0,0.85);
+  }
+
+  /* Arrows */
+  .anaqa-cs-arrow {
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--color-border);
+    color: var(--color-text-primary); cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-cs-arrow:hover { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg-primary); }
+  .anaqa-cs-arrow.swiper-button-disabled { opacity: 0.3; cursor: default; background: transparent; border-color: var(--color-border); color: var(--color-text-tertiary); }
+
+  .anaqa-cs-{{ id }} .swiper, .anaqa-cs-{{ id }} .swiper-wrapper { align-items: stretch; }
+  .anaqa-cs-{{ id }} .swiper-slide { height: auto !important; }
+
+  @media (max-width: 639px) { .anaqa-cs-arrow { width: 40px; height: 40px; } }
+</style>
+
+<section id="{{ id }}" class="{{ 'attar-demo-only ' if isDemo }}anaqa-cs-{{ id }} py-24 max-sm:py-14" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ===== Header ===== #}
+    {% if isSlider %}
+    <div class="flex items-end justify-between gap-6 mb-12 max-sm:mb-8">
+      <div class="min-w-0">
+        {% if eyebrow %}<span class="editorial-label editorial-label--rule block mb-3">{{ eyebrow }}</span>{% endif %}
+        {% if title %}<div class="anaqa-cs-title font-heading-ar" role="heading" aria-level="2">{{ title }}</div>{% endif %}
+      </div>
+      <div class="flex items-center gap-2.5 shrink-0">
+        <button id="csPrev-{{ id }}" class="anaqa-cs-arrow" aria-label="{{ t('common.back') | default('السابق') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M15 19l-7-7 7-7{% else %}M9 5l7 7-7 7{% endif %}"/></svg>
+        </button>
+        <button id="csNext-{{ id }}" class="anaqa-cs-arrow" aria-label="{{ t('common.continue') | default('التالي') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M9 5l7 7-7 7{% else %}M15 19l-7-7 7-7{% endif %}"/></svg>
+        </button>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center mb-16 max-sm:mb-10">
+      {% if eyebrow %}
+      <div class="flex items-center justify-center gap-3 mb-5">
+        <span class="attar-kicker-line"></span>
+        <span class="editorial-label">{{ eyebrow }}</span>
+        <span class="attar-kicker-line"></span>
+      </div>
+      {% endif %}
+      {% if title %}<div class="anaqa-cs-title font-heading-ar" role="heading" aria-level="2">{{ title }}</div>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if collections and (collections | length) > 0 %}
+
+      {# ——— Card macro ——— #}
+      {% macro collCard(collection) %}
+        <a href="{{ ('/shop/' ~ (collection.slug or collection.handle)) if (collection.slug or collection.handle) else '/shop' }}" class="anaqa-cs-card group block h-full">
+          <div class="anaqa-cs-frame relative {{ aspectClass }} w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+            {% if collection.image and collection.image.fileUrl %}
+              <img src="{{ collection.image.fileUrl }}" alt="{{ collection.title }}" loading="lazy" class="anaqa-cs-img absolute inset-0 w-full h-full object-cover"/>
+            {% else %}
+              <div class="attar-mark" aria-hidden="true"></div>
+            {% endif %}
+
+            {% if isOverlay %}
+              <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(12,8,18,0.82) 0%, rgba(12,8,18,0.30) 46%, rgba(12,8,18,0.04) 78%);"></div>
+              <div class="absolute inset-x-0 bottom-0 p-6 max-sm:p-4" style="color: var(--color-text-primary);">
+                {% if showCount and (collection.productsCount or collection.productCount) %}
+                  <span class="editorial-label block mb-2">{{ collection.productsCount or collection.productCount }} {{ t('categories.products_count') | default('قطعة') }}</span>
+                {% endif %}
+                <h3 class="anaqa-cs-name font-heading-ar" style="color: var(--color-text-primary);">{{ collection.title }}</h3>
+                <span class="inline-flex items-center gap-2 mt-3 text-[12px] tracking-[0.14em] uppercase rtl:tracking-normal rtl:normal-case rtl:text-[13px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 font-body-ar" style="color: var(--color-accent);">
+                  {{ t('categories.explore') | default('استكشف') }}
+                  <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </span>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if not isOverlay %}
+            <div class="pt-4 flex items-baseline justify-between gap-3">
+              <h3 class="anaqa-cs-name font-heading-ar transition-colors duration-200 group-hover:text-accent" style="color: var(--color-text-primary);">{{ collection.title }}</h3>
+              {% if showCount and (collection.productsCount or collection.productCount) %}
+                <span class="editorial-label shrink-0">{{ collection.productsCount or collection.productCount }} {{ t('categories.products_count') | default('قطعة') }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </a>
+      {% endmacro %}
+
+      {% if isSlider %}
+      <div class="swiper" id="csSwiper-{{ id }}">
+        <div class="swiper-wrapper">
+          {% for collection in collections %}
+            <div class="swiper-slide">{{ collCard(collection) }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <script>
+        (() => {
+          new Swiper('#csSwiper-{{ id }}', {
+            slidesPerView: 1.25,
+            spaceBetween: 20,
+            {% if autoplay %}autoplay: { delay: {{ (autoplaySpeed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },{% endif %}
+            navigation: { prevEl: '#csPrev-{{ id }}', nextEl: '#csNext-{{ id }}' },
+            breakpoints: {
+              640: { slidesPerView: 2, spaceBetween: 24 },
+              1024: { slidesPerView: {{ spv | int }}, spaceBetween: 28 }
+            }
+          });
+        })();
+      </script>
+      {% else %}
+      <div class="grid {{ gridCols }} gap-6 md:gap-8">
+        {% for collection in collections %}
+          {{ collCard(collection) }}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if viewAllUrl and not isSlider %}
+        <div class="text-center mt-16 max-sm:mt-10">
+          <a href="{{ viewAllUrl }}" class="anaqa-btn font-body-ar">{{ t('common.view_all') | default('عرض الكل') }}</a>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="text-center py-16">
+        <p style="color: var(--color-text-tertiary);" class="text-[15px] font-body-ar">{{t('categories.no_categories') | default('لا توجد تصنيفات بعد')}}</p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

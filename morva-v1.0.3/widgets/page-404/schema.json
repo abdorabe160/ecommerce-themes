@@ -1,0 +1,20 @@
+{
+  "name": "صفحة 404",
+  "settings": {
+    "kicker": { "type": "string", "label": { "ar": "العنوان الصغير", "en": "Kicker" }, "default": "تُهت؟" },
+    "title": { "type": "string", "label": { "ar": "العنوان", "en": "Title" }, "default": "الصفحة غير موجودة" },
+    "text": { "type": "text", "label": { "ar": "النص", "en": "Text" }, "default": "الرابط ده مش موجود أو اتنقل. ارجع للشارع." }
+  },
+  "blocks": {
+    "link": {
+      "name": "رابط إضافي",
+      "settings": {
+        "label": { "type": "string", "label": { "ar": "النص", "en": "Label" }, "default": "" },
+        "url": { "type": "string", "label": { "ar": "الرابط", "en": "URL" }, "default": "/" }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الصفحات", "name": "صفحة 404" }
+  ]
+}

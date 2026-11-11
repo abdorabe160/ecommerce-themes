@@ -1,0 +1,77 @@
+{
+  "title": "Footer Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر الرئيسي",
+      "widget": "footer",
+      "settings": {
+        "footer_description": "مطبخ ومخبز — مخبوزات وحلويات ووجبات، كلها في منيو واحد.",
+        "contact_heading": "تواصل معنا",
+        "contact_phone": "",
+        "contact_whatsapp": "",
+        "contact_email": "",
+        "contact_hours": "",
+        "social_heading": "تابعنا",
+        "footer_social_instagram": "",
+        "footer_social_x": "",
+        "footer_social_tiktok": "",
+        "footer_social_youtube": "",
+        "footer_social_snapchat": "",
+        "footer_social_linkedin": "",
+        "footer_social_facebook": "",
+        "payment_heading": "طرق الدفع",
+        "bottom_menu": "footer-menu",
+        "tax_number": "",
+        "commercial_reg": "",
+        "show_back_to_top": false,
+        "footer_logo_height": 30
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "المنيو",
+          "settings": {
+            "title": "المنيو",
+            "menu": "footer-menu"
+          }
+        },
+        {
+          "block": "column",
+          "name": "خدمة العملاء",
+          "settings": {
+            "title": "خدمة العملاء",
+            "menu": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "عن المتجر",
+          "settings": {
+            "title": "عن المتجر",
+            "menu": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {
+        "number": "",
+        "message": "",
+        "message_en": "",
+        "label": "",
+        "position": "start",
+        "show_mobile": true
+      }
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

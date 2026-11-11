@@ -1,0 +1,41 @@
+{# MORVA · BLOGS — /blogs · the articles of every blog, newest first.
+   The platform sends this page only the list of blogs (categories), so the
+   articles are gathered in the browser from each /blogs/<handle> page, the
+   same way HayatAuto reads /collections. Their tiles are ui/article-card.njk,
+   one card, no twin. The blogs become a filter above them, hidden when there
+   is only one. Logic: Alpine `mvBlogs` in assets/main.js. #}
+{% set d = widget.data %}
+{% set blogs = context.blogs | default([], true) %}
+{% set handles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = handles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+<section class="mv-section" x-data="mvBlogs({ handles: {{ handles | dump }} })">
+  <div class="mv-head">
+    <div>
+      <div class="mv-kicker">— {{ d.kicker | default(t('morva.journal'), true) }}</div>
+      <h1 class="mv-h">{{ d.title | default(t('pages.blog.title'), true) }}</h1>
+    </div>
+    {% if d.subtitle %}<div class="mv-sub">{{ d.subtitle }}</div>{% endif %}
+    {% if (handles | length) > 1 %}
+      <div class="mv-pills" role="group" aria-label="{{ t('common.categories') }}" x-show="pills" x-cloak>
+        <button type="button" class="mv-pill" :class="!active && 'is-active'" @click="show('')">{{ t('morva.all') }}</button>
+        {% for b in blogs %}
+          {% if (b.handle or b.slug) and b.title %}
+            <button type="button" class="mv-pill" data-h="{{ b.handle or b.slug }}"
+                    :class="active === $el.dataset.h && 'is-active'" @click="show($el.dataset.h)">{{ b.title }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if (handles | length) > 0 %}
+    <div class="mv-tiles" style="--tile-ratio: 4 / 3;" x-ref="grid" data-mv-stagger x-show="loading || count > 0">
+      {% for i in range(0, 3) %}<div class="mv-tile mv-card--ph" aria-hidden="true"><div class="mv-tile-img mv-skel"></div><div class="mv-tile-cap"><div class="mv-ph-line" style="flex: 1;"></div></div></div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="mv-empty-box" x-show="!loading && count === 0" {% if (handles | length) > 0 %}x-cloak{% endif %}>
+    <p class="mv-empty-title">{{ t('pages.blog.no_articles_desc') }}</p>
+    <a href="/shop" class="mv-btn mv-btn--ghost mv-btn--sm">{{ t('morva.all_pieces') }}</a>
+  </div>
+</section>

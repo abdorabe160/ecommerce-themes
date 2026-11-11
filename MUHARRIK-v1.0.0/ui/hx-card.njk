@@ -1,0 +1,197 @@
+{# ============================================================================
+   NEW THEME · PRODUCT CARD  (SSR)
+   ----------------------------------------------------------------------------
+   ⚠️ TWIN: HxCard.build() in assets/hx.js renders the same markup for products
+   fetched over AJAX. Change the structure here → change it there.
+   Styles: assets/sections.css → "PRODUCT CARD".
+
+   Usage:  ui "hx-card.njk", product=p, sale_badge='…', low_badge='…', note='…',
+           rating='on', thumbs='on', stock='on', quick='on', atc='on', hover='on'
+
+   Flags are passed as the STRINGS 'on' / 'off' — a bare boolean literal does
+   not survive Qalab's ui tag (see ui/product-card.njk). Missing = on.
+
+   Only fields Qumra's product payload really carries are used: images,
+   pricing, quantity, allowBackorder, averageRating, reviewsCount. A listed
+   product has no variants, so the swatch row is the product's own images, and
+   add-to-cart goes through main.js `productCard`, which opens the quick view
+   when the product turns out to have options.
+   ========================================================================= #}
+
+{% set p = data.product %}
+{% if p %}
+  {% set MAX_IMAGES = 4 %}
+  {% set LOW_STOCK_AT = (settings.lowStockThreshold or 3) | int %}
+
+  {% set fRating = (data.rating | string) != 'off' if data.rating is defined else true %}
+  {% set fThumbs = (data.thumbs | string) != 'off' if data.thumbs is defined else true %}
+  {% set fStock  = (data.stock  | string) != 'off' if data.stock  is defined else true %}
+  {% set fQuick  = (data.quick  | string) != 'off' if data.quick  is defined else true %}
+  {% set fAtc    = (data.atc    | string) != 'off' if data.atc    is defined else true %}
+  {% set fHover  = (data.hover  | string) != 'off' if data.hover  is defined else true %}
+  {% set fCmp    = (data.compare | string) != 'off' if data.compare is defined else true %}
+  {# demo='on' → a stand-in product shown while the store has none: it links
+     to /shop and carries no buy buttons (there is nothing to buy). #}
+  {% set isDemo = (data.demo | string) == 'on' if data.demo is defined else false %}
+  {% set fQuick = false if isDemo else fQuick %}
+  {% set fAtc = false if isDemo else fAtc %}
+  {% set fCmp = false if isDemo else fCmp %}
+  {% set saleBadge = data.sale_badge | default('', true) %}
+  {% set lowBadge  = data.low_badge | default('', true) %}
+  {% set note      = data.note | default('', true) %}
+
+  {% set slug  = p.slug | default(p.handle, true) | default(p._id, true) %}
+  {% set url   = '/shop' if isDemo else ('/products/' ~ slug) %}
+  {# MUHARRIK kicker — the mono "spec" line above the title. The list payload
+     carries no brand field, so it is the first collection's title — the same
+     source the compare table calls "brand" (hxCompare.brand in hx.js). Guarded:
+     `collections[0]` may be an id string, and `.title` on a string is undefined. #}
+  {% set kickCols = p.collections | default([], true) %}
+  {% set kicker = (kickCols[0].title | default('', true)) if (kickCols | length) > 0 else '' %}
+  {% set price = p.pricing.price | default(0, true) %}
+  {# null is "no price on record", not free: 0 is the only free #}
+  {% set priceKnown = p.pricing.price or p.pricing.price == 0 %}
+  {% set was   = p.pricing.compareAtPrice | default(0, true) %}
+  {% set onSale = was and was > price %}
+  {% set pct = (((was - price) / was * 100) | int) if onSale else 0 %}{# floor: never advertise more than the real cut #}
+  {% set qty = p.quantity | default(0, true) %}
+  {# Sold out is only said when it is known. A listed product with quantity 0
+     and no variant data may hold its stock on variants, so it is UNKNOWN: no
+     «نفد» on first paint, the bag stays (quickAdd resolves it, no blind POST)
+     and HxStock writes the real line. Twin: HxCard.build (assets/hx.js). #}
+  {% set vList = p.variants | default([], true) %}
+  {% set vOk = [] %}
+  {% for v in vList %}{% if v.allowBackorder or v.trackQuantity == false or (v.quantity | default(0, true)) > 0 or (v.inventoryLevel.available | default(0, true)) > 0 %}{% set _ = vOk.push(1) %}{% endif %}{% endfor %}
+  {% set hasOpts = (p.options | default([], true) | length) > 0 %}
+  {% set knownSimple = (p.options or p.variants or p.variantsCount == 0) and not hasOpts and (vList | length) == 0 and not p.variantsCount %}
+  {% set sellable = p.allowBackorder or p.trackQuantity == false or qty > 0 or (vOk | length) > 0 %}
+  {% set knownOut = (not sellable) and (knownSimple or (vList | length) > 0) %}
+  {% set stockUnknown = (not sellable) and (not knownOut) %}
+  {% set inStock = not knownOut %}
+  {% set isLow = (not p.allowBackorder) and qty > 0 and qty <= LOW_STOCK_AT %}
+
+  {% set allImgs = p.images | default([], true) %}
+  {% set cap = (MAX_IMAGES if fHover else 1) %}
+  {% set n = (allImgs | length) if (allImgs | length) < cap else cap %}
+
+  <article class="hx-card {{ 'is-soldout' if not inStock }} {{ 'is-demo' if isDemo }}" x-data="hxCard('{{ p._id }}', '{{ slug }}')" @mouseleave="img = 0">
+    {# .mh-hud: the HUD corner ticks (muharrik.css); mh-ui.css shows them on hover #}
+    <div class="hx-card-frame mh-hud">
+      <a href="{{ url }}" class="hx-card-media" aria-label="{{ p.title }}">
+        {% if n > 0 %}
+          {% for im in allImgs %}{% if loop.index0 < n and im.fileUrl %}
+            <img src="{{ im.fileUrl }}" alt="{{ p.title if loop.first else '' }}" loading="{{ 'eager' if loop.first else 'lazy' }}" class="hx-card-img" :class="{ 'is-on': img === {{ loop.index0 }} }"{% if loop.first %} data-first{% endif %}/>
+          {% endif %}{% endfor %}
+        {% else %}
+          <span class="hx-card-noimg" aria-hidden="true"></span>
+        {% endif %}
+        {% if n > 1 %}<span class="hx-card-zones" aria-hidden="true">{% for z in range(0, n) %}<span @mouseenter="img = {{ z }}"></span>{% endfor %}</span>{% endif %}
+      </a>
+      {% if n > 1 %}
+        <div class="hx-card-dots" aria-hidden="true">{% for z in range(0, n) %}<span :class="{ 'is-on': img === {{ z }} }"></span>{% endfor %}</div>
+      {% endif %}
+
+      {% if (onSale and saleBadge) or (isLow and lowBadge) %}
+        <div class="hx-card-badges">
+          {% if onSale and saleBadge %}<span class="hx-badge-tag is-sale">{{ saleBadge | safe }}</span>{% endif %}
+          {% if isLow and lowBadge %}<span class="hx-badge-tag is-low">{{ lowBadge | safe }}</span>{% endif %}
+        </div>
+      {% endif %}
+
+      {% if fQuick or (fAtc and inStock) or fCmp %}
+        <div class="hx-card-actions">
+          {% if fQuick %}
+            <button type="button" class="hx-card-act" aria-label="{{ t('pages.product.quick_view') }}" title="{{ t('pages.product.quick_view') }}"
+                    @click.prevent="$dispatch('quick-view', { slug: '{{ slug }}' })">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            </button>
+          {% endif %}
+          {% if fCmp %}
+            <button type="button" class="hx-card-act hx-card-cmp"
+                    data-cmp='{{ { id: p._id, slug: slug, title: p.title, price: price, was: was, img: (allImgs[0].fileUrl if (allImgs | length) > 0 else '') } | dump }}'
+                    :class="{ 'is-on': $store.hxCompare && $store.hxCompare.has('{{ p._id }}') }"
+                    @click.prevent="$store.hxCompare.toggle(JSON.parse($el.dataset.cmp))"
+                    aria-label="{{ t('compare.add') }}" title="{{ t('compare.add') }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M8 20h8M5 7h14M12 4.5 5 7M12 4.5 19 7"/><path d="M5 7 2.5 13a2.5 2.5 0 0 0 5 0L5 7ZM19 7l-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z"/></svg>
+            </button>
+          {% endif %}
+          {% if fAtc and inStock %}
+            <button type="button" class="hx-card-act hx-card-atc" aria-label="{{ t('pages.product.add_to_cart') }}" title="{{ t('pages.product.add_to_cart') }}"
+                    @click.prevent="quickAdd()" :disabled="qaLoading" :class="{ 'is-busy': qaLoading }">
+              <span x-show="!qaLoading"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linejoin="round" d="M4.5 7.5h15l-1.1 12a1.5 1.5 0 0 1-1.5 1.35H7.1a1.5 1.5 0 0 1-1.5-1.35L4.5 7.5Z"/><path stroke-linecap="round" d="M8.75 10V6.75a3.25 3.25 0 0 1 6.5 0V10"/></svg></span>
+              <span x-show="qaLoading" x-cloak class="hx-spin"></span>
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="hx-card-info">
+      {% if kicker %}<p class="hx-card-kicker">{{ kicker }}</p>{% endif %}
+      <a href="{{ url }}" class="hx-card-name">{{ p.title }}</a>
+      {% if fRating %}
+        {% set avg = p.averageRating | default(0, true) %}
+        <div class="hx-card-rating">
+          <span class="hx-stars" style="--hx-stars:{{ (avg / 5 * 100) if avg <= 5 else 100 }}%">
+            <span class="hx-stars-bg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+            <span class="hx-stars-fg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+          </span>
+          <span class="hx-card-count">({{ p.reviewsCount | default(0, true) }})</span>
+        </div>
+      {% endif %}
+      <div class="hx-card-prices">
+        <span class="hx-card-price {{ 'is-sale' if onSale }}">{% if not priceKnown %}{% elif price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+        {% if onSale %}
+          <s class="hx-card-was">{{ was | money }}</s>
+          {% if pct > 0 %}<span class="hx-card-off">-{{ pct }}%</span>{% endif %}
+        {% endif %}
+      </div>
+      {% if fThumbs and n > 1 %}
+        <div class="hx-card-thumbs">
+          {% for im in allImgs %}{% if loop.index0 < n and im.fileUrl %}
+            <button type="button" class="hx-card-thumb" :class="{ 'is-on': img === {{ loop.index0 }} }"
+                    @mouseenter="img = {{ loop.index0 }}" @focus="img = {{ loop.index0 }}" @click.prevent="img = {{ loop.index0 }}"
+                    aria-label="{{ t('common.image') }} {{ loop.index }}"><img src="{{ im.fileUrl }}" alt="" loading="lazy"/></button>
+          {% endif %}{% endfor %}
+        </div>
+      {% endif %}
+      {% if fStock %}
+        {# The list payload's `quantity` is the product row only (often 0 when
+           stock lives on the variants), so the real count is fetched for the
+           cards on screen by HxStock (assets/hx.js). This is the first paint. #}
+        <p class="hx-card-stock {{ 'is-out' if not inStock }} {{ 'is-low' if isLow }} {{ 'is-pending' if stockUnknown }}"
+           {% if not isDemo %}data-hx-stock="{{ slug }}" data-low-badge="{{ lowBadge }}"{% endif %}>
+          <i></i><span>{% if not inStock %}{{ t('pages.product.out_of_stock') }}{% elif stockUnknown %}{% elif qty > 0 %}{{ (t('stock.low') if isLow else t('stock.in')) | replace('{count}', qty) }}{% else %}{{ t('common.in_stock') }}{% endif %}</span>
+        </p>
+      {% endif %}
+      {% if onSale and note %}
+        <p class="hx-card-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg><span>{{ note | safe }}</span></p>
+      {% endif %}
+    </div>
+
+    {# ═══ quick add ═══  ⚠️ Mirrored in assets/hx.js → qaHTML(). #}
+    {% if fAtc and inStock %}
+      <div class="hx-qa" x-show="qaOpen" x-cloak x-transition.opacity.duration.200ms @keydown.escape.window="qaOpen = false">
+        <button type="button" class="hx-qa-close" @click="qaOpen = false" aria-label="{{ t('common.close') }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+        <template x-if="qaReady"><div class="hx-qa-body">
+          <p class="hx-qa-title" x-text="qaTitle"></p>
+          <p class="hx-qa-prices"><span class="hx-card-price" :class="hasDiscount() && 'is-sale'" x-text="displayPrice()"></span><s class="hx-card-was" x-show="hasDiscount()" x-text="displayComparePrice()"></s></p>
+          <template x-for="g in qaGroups" :key="g.name"><div class="hx-qa-opt">
+            <p class="hx-opt-name"><span x-text="g.name"></span>: <b x-text="selectedLabels[g.name] || ''"></b></p>
+            <div class="hx-opt-vals"><template x-for="v in g.values" :key="v.id">
+              <button type="button" class="hx-opt" :class="{ 'is-swatch': v.image || v.color, 'is-active': selectedOptions[g.name] === v.id, 'is-off': valueDisabled(g.name, v.id) }"
+                      :disabled="valueDisabled(g.name, v.id)" @click="selectOption(g.name, v.id, v.label)" :title="v.label" :aria-label="v.label"><img x-show="v.image" :src="v.image || ''" alt=""/><i x-show="!v.image && v.color" :style="v.color ? 'background:' + v.color : ''"></i><span x-show="!v.image && !v.color" x-text="v.label"></span></button>
+            </template></div>
+          </div></template>
+          <p class="hx-qa-err" x-show="formError" x-text="formError" role="alert"></p>
+          <button type="button" class="hx-qa-add" @click="qaAdd()" :disabled="addingToCart || isOutOfStock">
+            <span x-show="addingToCart" class="hx-spin"></span>
+            <span x-show="addedSuccess && !addingToCart"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg></span>
+            <span x-show="!addingToCart && !addedSuccess" x-text="isOutOfStock ? '{{ t('pages.product.out_of_stock') }}' : '{{ t('pages.product.add_to_cart') }}'"></span>
+          </button>
+          <a :href="qaUrl" class="hx-qa-full">{{ t('pages.product.view_full_details') }}</a>
+        </div></template>
+      </div>
+    {% endif %}
+  </article>
+{% endif %}

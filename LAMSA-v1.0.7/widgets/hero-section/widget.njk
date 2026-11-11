@@ -1,0 +1,571 @@
+{# ============================================================================
+   LAMSA HERO — "Close-Up Split"
+   Text column + close-up product image in a soft arch frame, with floating
+   proof cards (rating · key ingredient). Slides come from `slide` blocks.
+   Marked [data-hero-top] so the header can overlay it when configured.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set layout = d.layout | default('split') %}
+{% set isCentered = layout == 'centered' %}
+{% set isReverse = layout == 'split-reverse' %}
+
+{% set height = d.height | default('large') %}
+{% set heightM = d.height_mobile | default('medium') %}
+{% set bg = d.background | default('blush') %}
+{% set showGlow = d.show_glow | default(true) %}
+{% set shape = d.image_shape | default('arch') %}
+{% set titleSize = d.title_size | default('large') %}
+{% set tone = d.text_tone | default('light') %}
+{% set scrim = d.scrim | default('medium') %}
+
+{% set showRating = d.show_rating_card | default(true) %}
+{# No invented score: the badge shows only a rating the merchant typed. #}
+{% set ratingValue = d.rating_value | default('') %}
+{% set ratingLabel = d.rating_label | default('') %}
+{% set showNote = d.show_note_card | default(true) %}
+{% set noteTitle = d.note_title | default('') %}
+{% set noteLabel = d.note_label | default('') %}
+
+{% set showHint = d.show_scroll_hint | default(true) %}
+{% set hintText = d.scroll_hint_text | default('') %}
+
+{% set autoplay = d.autoplay | default(true) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+{% set showDots = d.show_dots | default(true) %}
+{% set showArrows = d.show_arrows | default(false) %}
+
+{# ---- desktop / mobile min-heights ---- #}
+{% if height == 'compact' %}{% set hDesk = '480px' %}
+{% elif height == 'medium' %}{% set hDesk = '580px' %}
+{% elif height == 'full' %}{% set hDesk = '100svh' %}
+{% else %}{% set hDesk = '672px' %}{% endif %}
+
+{% if heightM == 'compact' %}{% set hMob = '440px' %}
+{% elif heightM == 'large' %}{% set hMob = '620px' %}
+{% elif heightM == 'auto' %}{% set hMob = 'auto' %}
+{% else %}{% set hMob = '540px' %}{% endif %}
+
+{# ---- background ---- #}
+{% if bg == 'white' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+{# ---- title scale ---- #}
+{% if titleSize == 'medium' %}{% set titleClamp = 'clamp(1.75rem, 3.4vw, 2.625rem)' %}
+{% elif titleSize == 'xlarge' %}{% set titleClamp = 'clamp(2.375rem, 6vw, 4.25rem)' %}
+{% else %}{% set titleClamp = 'clamp(2.125rem, 4.8vw, 3.5rem)' %}{% endif %}
+
+
+<style>
+  /* ===================== shell ===================== */
+  #lamsa-hero-{{ id }} {
+    position: relative;
+    background: {{ bgVal }};
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .lamsa-hero-{{ id }}-slide {
+    display: flex;
+    align-items: center;
+    min-height: {{ hDesk }};
+    padding-block: 56px;
+  }
+  @media (max-width: 1023px) {
+    .lamsa-hero-{{ id }}-slide {
+      min-height: {{ hMob }};
+      padding-block: 44px;
+    }
+  }
+
+  /* ===================== split grid ===================== */
+  .lamsa-hero-{{ id }}-row {
+    display: grid;
+    grid-template-columns: 1.02fr 0.98fr;
+    align-items: center;
+    gap: 56px;
+    width: 100%;
+  }
+  {% if isReverse %}
+  /* flip the two columns without touching the text direction inside them */
+  .lamsa-hero-{{ id }}-text { order: 2; }
+  .lamsa-hero-{{ id }}-media { order: 1; }
+  {% endif %}
+  @media (max-width: 1023px) {
+    .lamsa-hero-{{ id }}-row { grid-template-columns: 1fr; gap: 36px; }
+    .lamsa-hero-{{ id }}-media { order: -1; width: 100%; max-width: 440px; margin-inline: auto; }
+    .lamsa-hero-{{ id }}-text { order: 0; }
+  }
+  @media (max-width: 640px) {
+    .lamsa-hero-{{ id }}-media { max-width: 320px; }
+    .lamsa-hero-{{ id }}-title em { white-space: normal; }
+  }
+
+  /* ===================== text column ===================== */
+  .lamsa-hero-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: {{ titleClamp }};
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: -0.01em;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-hero-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-hero-{{ id }}-title { line-height: 1.3; letter-spacing: 0; }
+
+  /* <em>word</em> in the title → rose accent + soft highlighter sweep */
+  .lamsa-hero-{{ id }}-title em {
+    font-style: normal;
+    color: var(--color-accent);
+    position: relative;
+    white-space: nowrap;
+  }
+  .lamsa-hero-{{ id }}-title em::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-inline: -3px;
+    bottom: 0.06em;
+    height: 0.3em;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    opacity: 0.6;
+  }
+
+  .lamsa-hero-{{ id }}-desc {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--color-text-secondary);
+  }
+  @media (max-width: 767px) { .lamsa-hero-{{ id }}-desc { font-size: 0.9375rem; } }
+
+  /* ===================== media column ===================== */
+  .lamsa-hero-{{ id }}-media { position: relative; }
+
+  .lamsa-hero-{{ id }}-frame {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-bg-tertiary) 100%);
+  }
+  .lamsa-hero-{{ id }}-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  {% if shape == 'arch' %}
+  .lamsa-hero-{{ id }}-frame {
+    aspect-ratio: 4 / 5;
+    border-radius: 999px 999px var(--radius-xl) var(--radius-xl);
+  }
+  {% elif shape == 'circle' %}
+  .lamsa-hero-{{ id }}-frame { aspect-ratio: 1 / 1; border-radius: 50%; }
+  {% elif shape == 'bare' %}
+  .lamsa-hero-{{ id }}-frame { aspect-ratio: 4 / 5; border-radius: 0; background: transparent; }
+  .lamsa-hero-{{ id }}-frame img { object-fit: contain; }
+  {% else %}
+  .lamsa-hero-{{ id }}-frame { aspect-ratio: 4 / 5; border-radius: var(--radius-2xl); }
+  {% endif %}
+
+  {% if showGlow %}
+  /* soft blush halo behind the frame */
+  .lamsa-hero-{{ id }}-media::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 50%; /* physical: translate(-50%) centres from the left in both directions */
+    top: 50%;
+    width: 120%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent-light) 0%, transparent 66%);
+    pointer-events: none;
+  }
+  {% endif %}
+
+  /* ===================== floating proof cards ===================== */
+  .lamsa-hero-{{ id }}-chip {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    max-width: 232px;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
+  }
+  .lamsa-hero-{{ id }}-chip--rating { top: 10%; inset-inline-start: -22px; }
+  .lamsa-hero-{{ id }}-chip--note { bottom: 10%; inset-inline-end: -22px; }
+
+  @media (max-width: 1279px) {
+    .lamsa-hero-{{ id }}-chip--rating { inset-inline-start: 8px; }
+    .lamsa-hero-{{ id }}-chip--note { inset-inline-end: 8px; }
+  }
+  @media (max-width: 560px) {
+    .lamsa-hero-{{ id }}-chip { max-width: 188px; padding: 9px 12px; gap: 8px; border-radius: var(--radius-md); }
+    .lamsa-hero-{{ id }}-chip--rating { top: 10px; }
+    .lamsa-hero-{{ id }}-chip--note { bottom: 10px; }
+  }
+
+  /* ===================== centered layout ===================== */
+  {% if isCentered %}
+  .lamsa-hero-{{ id }}-bg { position: absolute; inset: 0; z-index: 0; }
+  .lamsa-hero-{{ id }}-bg img { width: 100%; height: 100%; object-fit: cover; }
+
+  .lamsa-hero-{{ id }}-center {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+  {% if tone == 'light' %}
+  .lamsa-hero-{{ id }}-center .lamsa-hero-{{ id }}-title,
+  .lamsa-hero-{{ id }}-center .lamsa-hero-{{ id }}-title em { color: #FFF; }
+  .lamsa-hero-{{ id }}-center .lamsa-hero-{{ id }}-title em::after { background: rgba(255, 255, 255, 0.34); opacity: 1; }
+  .lamsa-hero-{{ id }}-center .lamsa-hero-{{ id }}-desc { color: rgba(255, 255, 255, 0.88); }
+  {% endif %}
+  {% endif %}
+
+  /* ===================== slider chrome ===================== */
+  .lamsa-hero-{{ id }}-dots {
+    position: absolute;
+    z-index: 6;
+    bottom: 26px;
+    inset-inline: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .lamsa-hero-{{ id }}-dots .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    margin: 0 !important;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent) !important;
+    opacity: 0.3;
+    transition: all var(--t-base) var(--ease-out);
+  }
+  .lamsa-hero-{{ id }}-dots .swiper-pagination-bullet-active { width: 26px; opacity: 1; }
+  {% if isCentered and tone == 'light' %}
+  .lamsa-hero-{{ id }}-dots .swiper-pagination-bullet { background: #FFF !important; }
+  {% endif %}
+
+  .lamsa-hero-{{ id }}-arrow {
+    position: absolute;
+    z-index: 6;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-hero-{{ id }}-arrow:hover { background: var(--color-accent); color: #FFF; }
+  .lamsa-hero-{{ id }}-arrow.swiper-button-disabled { opacity: 0.35; cursor: default; }
+  .lamsa-hero-{{ id }}-arrow--prev { inset-inline-start: 18px; }
+  .lamsa-hero-{{ id }}-arrow--next { inset-inline-end: 18px; }
+  @media (max-width: 767px) { .lamsa-hero-{{ id }}-arrow { display: none; } }
+
+  /* ===================== scroll hint ===================== */
+  .lamsa-hero-{{ id }}-hint {
+    position: absolute;
+    z-index: 6;
+    bottom: 22px;
+    inset-inline-end: max(24px, calc((100vw - var(--container-max)) / 2 + 24px));
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--color-text-tertiary);
+  }
+  {% if isCentered and tone == 'light' %}
+  .lamsa-hero-{{ id }}-hint { color: rgba(255, 255, 255, 0.85); }
+  {% endif %}
+  .lamsa-hero-{{ id }}-hint svg { animation: lamsaHint-{{ id }} 1.9s var(--ease-soft) infinite; }
+  @keyframes lamsaHint-{{ id }} {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+  @media (max-width: 1023px) { .lamsa-hero-{{ id }}-hint { display: none; } }
+</style>
+
+
+{% if count == 0 %}<h1 class="sr-only">{{ store.name }}</h1>{% endif %}
+<section id="lamsa-hero-{{ id }}" data-hero-top{% if count == 0 %} data-lamsa-empty{% endif %}>
+  <div class="swiper" id="lamsa-heroSw-{{ id }}">
+    <div class="swiper-wrapper">
+
+      {% for block in slides %}
+        {% set s = block.data %}
+        {% set img = s.slide_image.fileUrl if s.slide_image and s.slide_image.fileUrl else '' %}
+        {% set imgM = s.slide_image_mobile.fileUrl if s.slide_image_mobile and s.slide_image_mobile.fileUrl else img %}
+
+        <div class="swiper-slide">
+
+          {# ==================== CENTERED ==================== #}
+          {% if isCentered %}
+            <div class="lamsa-hero-{{ id }}-slide {% if scrim != 'none' %}lamsa-scrim lamsa-scrim--{{ scrim }}{% endif %}">
+              {% if img %}
+                <div class="lamsa-hero-{{ id }}-bg">
+                  <picture>
+                    {% if imgM != img %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+                    <img src="{{ img }}" alt="{{ s.slide_title | default('') | replace('<br>', ' ') | striptags }}"
+                         {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                  </picture>
+                </div>
+              {% endif %}
+
+              <div class="lamsa-container">
+                <div class="lamsa-hero-{{ id }}-center">
+                  {% if s.slide_eyebrow %}
+                    <span class="lamsa-eyebrow {% if tone == 'light' %}lamsa-eyebrow--light{% endif %}">
+                      <span class="lamsa-eyebrow-dot"></span>{{ s.slide_eyebrow }}
+                    </span>
+                  {% endif %}
+
+                  {% if s.slide_title and loop.first %}
+                    <h1 class="lamsa-hero-{{ id }}-title">{{ s.slide_title | safe }}</h1>
+                  {% elif s.slide_title %}
+                    <h2 class="lamsa-hero-{{ id }}-title">{{ s.slide_title | safe }}</h2>
+                  {% elif loop.first %}
+                    <h1 class="sr-only">{{ store.name }}</h1>
+                  {% endif %}
+
+                  {% if s.slide_description %}
+                    <p class="lamsa-hero-{{ id }}-desc mx-auto">{{ s.slide_description | safe }}</p>
+                  {% endif %}
+
+                  <div class="flex items-center justify-center gap-3 flex-wrap mt-1">
+                    {% if s.slide_button_text %}
+                      <a href="{{ s.slide_button_url | default('/shop') }}"
+                         class="lamsa-btn lamsa-btn--lg {% if tone == 'light' %}lamsa-btn--light{% else %}lamsa-btn--primary{% endif %}">
+                        {{ s.slide_button_text }}
+                      </a>
+                    {% endif %}
+                    {% if s.slide_button2_text %}
+                      <a href="{{ s.slide_button2_url | default('/shop') }}"
+                         class="lamsa-btn lamsa-btn--lg {% if tone == 'light' %}lamsa-btn--outline-light{% else %}lamsa-btn--outline{% endif %}">
+                        {{ s.slide_button2_text }}
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          {# ==================== SPLIT ==================== #}
+          {% else %}
+            <div class="lamsa-hero-{{ id }}-slide">
+              <div class="lamsa-container">
+                <div class="lamsa-hero-{{ id }}-row">
+
+                  {# ---- text ---- #}
+                  <div class="lamsa-hero-{{ id }}-text flex flex-col gap-6 items-start min-w-0">
+                    {% if s.slide_eyebrow %}
+                      <span class="lamsa-eyebrow">
+                        <span class="lamsa-eyebrow-dot"></span>{{ s.slide_eyebrow }}
+                      </span>
+                    {% endif %}
+
+                    {% if s.slide_title and loop.first %}
+                      <h1 class="lamsa-hero-{{ id }}-title">{{ s.slide_title | safe }}</h1>
+                    {% elif s.slide_title %}
+                      <h2 class="lamsa-hero-{{ id }}-title">{{ s.slide_title | safe }}</h2>
+                    {% elif loop.first %}
+                      <h1 class="sr-only">{{ store.name }}</h1>
+                    {% endif %}
+
+                    {% if s.slide_description %}
+                      <p class="lamsa-hero-{{ id }}-desc">{{ s.slide_description | safe }}</p>
+                    {% endif %}
+
+                    <div class="flex items-center gap-3 flex-wrap mt-1">
+                      {% if s.slide_button_text %}
+                        <a href="{{ s.slide_button_url | default('/shop') }}" class="lamsa-btn lamsa-btn--primary lamsa-btn--lg">
+                          {{ s.slide_button_text }}
+                          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                          </svg>
+                        </a>
+                      {% endif %}
+                      {% if s.slide_button2_text %}
+                        <a href="{{ s.slide_button2_url | default('/shop') }}" class="lamsa-btn lamsa-btn--outline lamsa-btn--lg">
+                          {{ s.slide_button2_text }}
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  {# ---- media ---- #}
+                  <div class="lamsa-hero-{{ id }}-media">
+                    <div class="lamsa-hero-{{ id }}-frame">
+                      {% if img %}
+                        <picture>
+                          {% if imgM != img %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+                          <img src="{{ img }}" alt="{{ s.slide_title | default('') | replace('<br>', ' ') | striptags }}"
+                               {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                        </picture>
+                      {% else %}
+                        {# static stand-in until the merchant uploads a slide image #}
+                        <img src="{{ ['lamsa-ph-hero-3.jpg', 'lamsa-ph-bottle.jpg', 'lamsa-ph-makeup.jpg'][loop.index0 % 3] | assets }}"
+                             alt="{{ s.slide_title | default('') | replace('<br>', ' ') | striptags }}"
+                             {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                      {% endif %}
+                    </div>
+
+                    {# floating proof cards — shared across slides #}
+                    {% if showRating and ratingValue %}
+                      <div class="lamsa-hero-{{ id }}-chip lamsa-hero-{{ id }}-chip--rating">
+                        <span class="shrink-0 flex flex-col items-center">
+                          <span class="lamsa-price font-num" style="font-size: 1.125rem; line-height: 1;">{{ ratingValue }}</span>
+                          <span class="lamsa-stars lamsa-stars--sm mt-1">
+                            {% for i in [1, 2, 3, 4, 5] %}
+                              <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+                            {% endfor %}
+                          </span>
+                        </span>
+                        {% if ratingLabel %}
+                          <span class="lamsa-caption leading-snug" style="color: var(--color-text-secondary);">{{ ratingLabel }}</span>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if showNote and noteTitle %}
+                      <div class="lamsa-hero-{{ id }}-chip lamsa-hero-{{ id }}-chip--note">
+                        <span class="lamsa-trust-icon shrink-0"
+                              style="width: 38px; height: 38px; background: var(--color-sage-light); color: var(--color-sage-hover);">
+                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21c4 0 7-3 7-7 0-4.5-4-8-7-11C9 6 5 9.5 5 14c0 4 3 7 7 7Z"/>
+                            <path stroke-linecap="round" d="M12 17.5c1.9 0 3.5-1.6 3.5-3.5"/>
+                          </svg>
+                        </span>
+                        <span class="flex flex-col min-w-0">
+                          <span class="text-[13px] font-bold leading-tight" style="color: var(--color-text-primary);">{{ noteTitle }}</span>
+                          {% if noteLabel %}
+                            <span class="lamsa-caption leading-snug mt-0.5">{{ noteLabel }}</span>
+                          {% endif %}
+                        </span>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+
+      {# ---- editor empty state ---- #}
+      {% if count == 0 %}
+        <div class="swiper-slide">
+          <div class="lamsa-hero-{{ id }}-slide">
+            <div class="lamsa-container">
+              <div class="lamsa-empty">
+                <span class="lamsa-empty-icon">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="4"/>
+                    <circle cx="8.75" cy="9" r="1.75"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                  </svg>
+                </span>
+                <h3 class="m-0">{{ t('hero.empty_title') }}</h3>
+                <p class="lamsa-text-sm m-0">{{ t('hero.empty_desc') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+
+    {% if showDots and count > 1 %}
+      <div class="lamsa-hero-{{ id }}-dots" id="lamsa-heroDots-{{ id }}"></div>
+    {% endif %}
+  </div>
+
+  {% if showArrows and count > 1 %}
+    <button type="button" id="lamsa-heroPrev-{{ id }}"
+            class="lamsa-hero-{{ id }}-arrow lamsa-hero-{{ id }}-arrow--prev"
+            aria-label="{{ t('common.prev') }}">
+      <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+      </svg>
+    </button>
+    <button type="button" id="lamsa-heroNext-{{ id }}"
+            class="lamsa-hero-{{ id }}-arrow lamsa-hero-{{ id }}-arrow--next"
+            aria-label="{{ t('common.next') }}">
+      <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+    </button>
+  {% endif %}
+
+  {% if showHint and hintText %}
+    <span class="lamsa-hero-{{ id }}-hint lamsa-micro">
+      {{ hintText }}
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0-5.5-5.5M12 19l5.5-5.5"/>
+      </svg>
+    </span>
+  {% endif %}
+</section>
+
+<script>
+  (function () {
+    /* Single slide (or none) needs no slider at all. */
+    if ({{ count }} < 2) return;
+
+    var el = document.getElementById('lamsa-heroSw-{{ id }}');
+    if (!el || typeof Swiper === 'undefined') return;
+
+    var sw = new Swiper(el, {
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      speed: 750,
+      loop: true,
+      grabCursor: false,
+      {% if autoplay %}
+      autoplay: { delay: {{ (speed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showDots %}
+      pagination: { el: '#lamsa-heroDots-{{ id }}', clickable: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#lamsa-heroPrev-{{ id }}', nextEl: '#lamsa-heroNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+    {% if autoplay %}window.lamsaAutoplayWhenVisible && lamsaAutoplayWhenVisible(sw, el);{% endif %}
+  })();
+</script>

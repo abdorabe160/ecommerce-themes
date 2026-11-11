@@ -1,0 +1,144 @@
+{#
+  ============================================================================
+  BLOG GRID · شبكة المقالات — MUHARRIK: the "DIY guides" index
+  ----------------------------------------------------------------------------
+  /blogs/<handle> → that blog's articles (context.articles), server-paginated.
+  /blogs          → Qumra hands only the blog list, so the articles of every
+                    blog are gathered by HxPosts (assets/hx.js, data-card="bg").
+  Page head: mono crumb, kicker, display H1, mono article count on the end
+  side, closed by a hairline. Cards are hairline tiles: picture, mono
+  category, display title, mono author · date, excerpt.
+  Nothing yet → six demo articles (theme pictures, texts in the visitor's
+  language) so the page never arrives blank.
+
+  ⚠️ Qalab's `truncate` is (length, end) — a boolean 2nd arg prints as
+  "true" after the date — so dates are cut with `truncate(10, '')`.
+  Articles carry `description` (not `excerpt`) from the API: the card uses
+  whichever is set.
+
+  ⚠️ HxPosts scrapes `.hx-bg-card` (and the older `a.hy-post`) on blog pages
+  and RE-RENDERS cards from its own markup: keep .hx-bg-title a /
+  time[datetime] / .hx-bg-excerpt / .hx-bg-cat / .hx-bg-author in place and
+  put no extra elements inside the card — the look is CSS-only.
+  Styles: assets/sections.css → "BLOG GRID", re-voiced in assets/mh-content.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}, true) %}
+{% set articles = context.articles | default(blog.articles, true) | default([], true) %}
+{% set blogs = context.blogs | default([], true) %}
+{#- /blogs sends totalPages/currentPage; a blog page sends pages/page/total -#}
+{% set pg0 = context.pagination or {} %}
+{% set pgTotal = pg0.totalPages or pg0.pages or 1 %}
+{% set pgCur = pg0.currentPage or pg0.page or 1 %}
+{% set onBlog = (blog.title | default('', true) | length) > 0 %}
+{% set showCat = d.show_category != false %}
+{% set showDate = d.show_date != false %}
+{% set showEx = d.show_excerpt != false %}
+{% set pageTitle = blog.title if onBlog else t('bx.blog') %}
+{% set pageSub = blog.description if onBlog else t('bx.blogs_sub') %}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = t('bx.blog') %}{% endif %}
+{% set n = articles | length %}
+{% set nPad = ('0' ~ n) if n < 10 else (n ~ '') %}
+{% set demoImgs = ['mh-build-2.jpg', 'mh-build-3.jpg', 'mh-hero-3.jpg', 'mh-build-4.jpg', 'mh-build-1.jpg', 'mh-garage.jpg'] %}
+
+{% macro card(url, img, cat, ttl, author, date, excerpt, showCat, showDate, showEx, demo) %}
+  <article class="hx-bg-card{{ ' is-demo' if demo }}">
+    <a href="{{ url }}" class="hx-bg-media" tabindex="-1" aria-hidden="true">{% if img %}<img src="{{ img }}" alt="" loading="lazy"/>{% endif %}</a>
+    {% if showCat and cat %}<p class="hx-bg-cat">{{ cat }}</p>{% endif %}
+    <h2 class="hx-bg-title" dir="auto"><a href="{{ url }}">{{ ttl }}</a></h2>
+    {% if author or (showDate and date) %}
+      <p class="hx-bg-meta">
+        {% if author %}<span class="hx-bg-author"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>{{ author }}</span>{% endif %}
+        {% if author and showDate and date %}<span class="hx-bg-dot" aria-hidden="true">·</span>{% endif %}
+        {% if showDate and date %}<time datetime="{{ date }}" data-hy-date>{{ date | truncate(10, '') }}</time>{% endif %}
+      </p>
+    {% endif %}
+    {% if showEx and excerpt %}<p class="hx-bg-excerpt">{{ excerpt | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}</p>{% endif %}
+  </article>
+{% endmacro %}
+
+{#- covers arrive as image.fileUrl, imageUrl or a plain string; notFound = the platform's grey stand-in -#}
+{% macro coverOf(a) %}{% if a.image is string %}{{ a.image }}{% elif a.image and a.image.fileUrl and not a.image.notFound %}{{ a.image.fileUrl }}{% elif a.imageUrl %}{{ a.imageUrl }}{% endif %}{% endmacro %}
+{% macro catOf(a) %}{% if a.category %}{{ a.category.title | default(a.category.name, true) | default('', true) }}{% endif %}{% endmacro %}
+{% macro authorOf(a) %}{% if a.author %}{% if a.author is string %}{{ a.author }}{% else %}{{ a.author.name | default((a.author.firstName | default('', true)) ~ ' ' ~ (a.author.lastName | default('', true))) }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="hx-bg-{{ id }}"
+         class="hx-bg {{ 'is-zoom' if d.hover_zoom != false }} is-r-{{ d.image_ratio | default('wide', true) }}"
+         data-bg-cols="{{ d.columns_desktop | default(3, true) }}"
+         style="--bg-cols: {{ d.columns_desktop | default(3, true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 16 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 48 }}px;">
+  <div class="hx-bg-wrap">
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-crumbs mh-mono" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+        {% if onBlog %}<a href="/blogs">{{ t('bx.blog') }}</a><span aria-hidden="true">/</span>{% endif %}
+        <span aria-current="page">{{ pageTitle }}</span>
+      </nav>
+    {% endif %}
+
+    {% if d.show_heading != false %}
+      <header class="hx-bg-head mh-head">
+        <div class="mh-head-main">
+          {% if onBlog %}<a class="mh-kicker" href="/blogs">{{ kicker | safe }}</a>{% else %}<span class="mh-kicker">{{ kicker | safe }}</span>{% endif %}
+          <h1 class="mh-h hx-bg-h">{{ pageTitle }}</h1>
+          {% if pageSub %}<div class="hx-bg-sub">{{ pageSub | safe }}</div>{% endif %}
+        </div>
+        {% if n > 0 %}<span class="mh-sub hx-bg-count"><bdi>{{ nPad }}</bdi></span>{% endif %}
+      </header>
+    {% endif %}
+
+    {% if not onBlog and (blogs | length) > 1 %}
+      <nav class="hx-bg-chips" aria-label="{{ t('bx.blog') }}">
+        <span class="hx-bg-chip is-on" aria-current="page">{{ t('bx.all') }}</span>
+        {% for b in blogs %}{% if b.title %}<a class="hx-bg-chip" href="/blogs/{{ b.handle | default(b.slug, true) | default(b._id, true) }}">{{ b.title }}</a>{% endif %}{% endfor %}
+      </nav>
+    {% elif not onBlog %}
+      {% for b in blogs %}<a hidden href="/blogs/{{ b.handle | default(b.slug, true) | default(b._id, true) }}">{{ b.title }}</a>{% endfor %}
+    {% endif %}
+
+    {% if (articles | length) > 0 %}
+      <div class="hx-bg-grid">
+        {% for a in articles %}
+          {% set cov = coverOf(a) | trim %}
+          {{ card('/articles/' ~ (a.handle | default(a.slug, true) | default(a._id, true)), cov if (cov | length) else (demoImgs[(loop.index0 % 6)] | assets), catOf(a) | trim, a.title, authorOf(a) | trim, a.publishedAt | default(a.createdAt, true), a.excerpt | default(a.description, true), showCat, showDate, showEx) }}
+        {% endfor %}
+      </div>
+
+      {% if pgTotal > 1 %}
+        <nav class="hx-bg-pager" aria-label="pagination">
+          {% if pgCur > 1 %}<a href="?page={{ pgCur - 1 }}" class="hx-bg-pg is-arrow" aria-label="{{ t('common.prev') }}"><svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg></a>{% endif %}
+          {% for n in range(1, pgTotal + 1) %}
+            {% if n == pgCur %}<span class="hx-bg-pg is-on" aria-current="page"><bdi>{{ n }}</bdi></span>
+            {% elif n == 1 or n == pgTotal or (n >= pgCur - 1 and n <= pgCur + 1) %}<a href="?page={{ n }}" class="hx-bg-pg"><bdi>{{ n }}</bdi></a>
+            {% elif n == pgCur - 2 or n == pgCur + 2 %}<span class="hx-bg-gap">…</span>{% endif %}
+          {% endfor %}
+          {% if pgCur < pgTotal %}<a href="?page={{ pgCur + 1 }}" class="hx-bg-pg is-arrow" aria-label="{{ t('common.next') }}"><svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></a>{% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      {# /blogs (or an empty blog): demo cards, replaced by real articles when HxPosts finds any #}
+      <div class="hx-bg-grid" {% if not onBlog %}data-hx-posts data-card="bg" data-limit="24" data-cat="{{ 'on' if showCat else 'off' }}" data-date="{{ 'on' if showDate else 'off' }}" data-excerpt="{{ 'on' if showEx else 'off' }}"{% endif %}>
+        {% for n in [1, 2, 3, 4, 5, 6] %}
+          {% set k = ((n - 1) % 4) + 1 %}
+          {{ card('/blogs', demoImgs[n - 1] | assets, t('bx.demo_cat'), t('posts.a' ~ k ~ '.title'), t('bx.demo_author'), '2026-10-0' ~ n, t('posts.a' ~ k ~ '.excerpt'), showCat, showDate, showEx, true) }}
+        {% endfor %}
+      </div>
+      {#- Live store with no articles yet: the demo cards are removed (layout →
+          `.hy-live`), so the shopper gets a plain line instead of an empty grid.
+          It disappears again the moment HxPosts swaps real articles in. -#}
+      <p class="hx-bg-empty">{{ t('pages.blog.no_articles_desc') }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if not onBlog and (articles | length) == 0 %}
+<script>
+  (function () {
+    function boot() { var el = document.querySelector('#hx-bg-{{ id }} [data-hx-posts]'); if (el && window.HxPosts) HxPosts.fill(el); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+{% endif %}

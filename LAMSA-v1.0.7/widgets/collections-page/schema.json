@@ -1,0 +1,64 @@
+{
+  "name": "صفحة التصنيفات",
+  "settings": {
+    "show_title": {
+      "type": "boolean",
+      "label": { "ar": "إظهار العنوان", "en": "Show the header" },
+      "default": true
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": { "ar": "نص تمهيدي (فوق العنوان)", "en": "Eyebrow (above title)" },
+      "default": "الأقسام"
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "كل الأقسام"
+    },
+    "description": {
+      "type": "text",
+      "label": { "ar": "وصف قصير", "en": "Short description" },
+      "default": ""
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": { "ar": "إظهار عدد الأقسام", "en": "Show the collections count" },
+      "default": true
+    },
+    "card_shape": {
+      "type": "select",
+      "label": { "ar": "شكل الصورة", "en": "Image Shape" },
+      "default": "soft",
+      "options": [
+        { "value": "soft", "label": { "ar": "مستطيل ناعم", "en": "Soft rectangle" } },
+        { "value": "arch", "label": { "ar": "قوس", "en": "Arch" } },
+        { "value": "circle", "label": { "ar": "دائرة", "en": "Circle" } }
+      ]
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": { "ar": "أبعاد الصورة", "en": "Image Ratio" },
+      "default": "3/4",
+      "options": [
+        { "value": "1/1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "4/5", "label": { "ar": "طولي خفيف", "en": "Portrait 4:5" } },
+        { "value": "3/4", "label": { "ar": "طولي", "en": "Tall 3:4" } },
+        { "value": "4/3", "label": { "ar": "عرضي", "en": "Landscape 4:3" } }
+      ]
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (كمبيوتر)", "en": "Columns (Desktop)" },
+      "default": "3",
+      "options": [
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } },
+        { "value": "3", "label": { "ar": "٣ أعمدة", "en": "3" } },
+        { "value": "4", "label": { "ar": "٤ أعمدة", "en": "4" } }
+      ]
+    }
+  },
+  "presets": [
+    { "category": "صفحة التصنيفات", "name": "صفحة التصنيفات" }
+  ]
+}

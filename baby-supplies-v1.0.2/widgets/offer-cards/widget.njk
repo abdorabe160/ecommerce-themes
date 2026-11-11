@@ -1,0 +1,199 @@
+{#
+  ============================================================================
+  HYPER · STYLE STEPS  ·  اقتراح منتج
+  ----------------------------------------------------------------------------
+    HOW YOU STYLE IT
+    Dress up in 3 steps. Pick - Pair - Play!
+    ┌──────────────────────────────────────────────────────────────┐
+    │ ① Pick a top you love          ✓ 4-Way Stretch  ✓ Eco-Friendly│
+    │ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐                  │
+    │ │  card  │ │  card  │ │  card  │ │  card  │                  │
+    │ └────────┘ └────────┘ └────────┘ └────────┘                  │
+    └──────────────────────────────────────────────────────────────┘
+    … ② … ③ …
+
+  Styled in assets/style.css → "15.13.2 STYLE STEPS", where the measurements
+  are written down.
+
+  ── The cards are the SHARED card ──
+  `ui/product-card.njk` at `variant='catalog'` already ships everything the
+  reference's card shows: the badge stack, the quick-view button, the hover
+  "Choose Options" tray and the name / price / swatch column. It is not rebuilt
+  here — that card lives in four synchronised files and a fifth copy would
+  drift from all of them.
+
+  ── Why the steps are slots and not blocks ──
+  A `products` picker inside a `blocks` entry stops the Theme Editor rendering
+  that block's settings at all. So each step is a widget-level trio
+  (`stepN_title` / `stepN_products` / `stepN_chips`), the same shape
+  collection-products uses for its three tabs. A step with no products is
+  skipped, so two steps — or one — is a valid composition rather than a hole.
+
+  ── The chips ──
+  One comma-separated field per step rather than a block list: they are two or
+  three words each, and a repeater for "4-Way Stretch, Eco-Friendly" costs the
+  merchant more clicks than typing it.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title   = d.title | default('') %}
+{% set ratio   = d.image_ratio | default('3x4') %}
+{% set per     = d.columns | default(4) %}
+{% set panelBg = d.panel_color | default('') %}
+
+{# Three slots, read into one list so the markup loops once. A slot with no
+   products drops out here rather than rendering an empty panel. #}
+{% set steps = [
+  { 'title': d.step1_title | default(''), 'products': d.step1_products | default([]), 'chips': d.step1_chips | default('') },
+  { 'title': d.step2_title | default(''), 'products': d.step2_products | default([]), 'chips': d.step2_chips | default('') },
+  { 'title': d.step3_title | default(''), 'products': d.step3_products | default([]), 'chips': d.step3_chips | default('') }
+] %}
+
+{% macro tick() %}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4 10-10"/></svg>{% endmacro %}
+
+{# ── One open at a time ──
+   The reference keeps all three steps open. This is an accordion on purpose —
+   asked for directly — so it departs from the reference there and nowhere
+   else. `open` holds the INDEX of the panel showing; it starts at 1 so the
+   section never reads as three closed bars, and clicking the open one leaves
+   it open rather than emptying the section. That is why this is not the
+   sidebar's `open === key ? null : key` toggle. #}
+<section id="hy-step-{{ id }}" class="hy-step" x-data="{ open: 1 }">
+  <div class="hy-step-inner">
+
+    {% if eyebrow or title %}
+      <div class="hy-step-head">
+        {% if eyebrow %}<p class="hy-step-eyebrow">{{ eyebrow }}</p>{% endif %}
+        {% if title %}<h2 class="hy-step-title">{{ title }}</h2>{% endif %}
+      </div>
+    {% endif %}
+
+    {# `loop.index` numbers what is SHOWN, so hiding step 2 leaves 1 and 2 on
+       screen rather than 1 and 3. #}
+    {% set shown = [] %}
+    {% for s in steps %}{% if (s.products | length) > 0 %}{% set _ = shown.push(s) %}{% endif %}{% endfor %}
+
+    {# ── Nothing picked in ANY step ──
+       The steps that at least have a title still render, each with a row of
+       skeleton cards tagged `data-hy-auto-cards`: HayatAuto in main.js fills
+       them with the store's own products, so a fresh store shows the real
+       section instead of one grey panel. If the store has no products the
+       skeleton simply stays. Once one step has products picked, only picked
+       steps show — the merchant's choice wins outright. #}
+    {% set auto = (shown | length) == 0 %}
+    {% if auto %}
+      {% for s in steps %}{% if s.title %}{% set _ = shown.push(s) %}{% endif %}{% endfor %}
+    {% endif %}
+
+    {% for s in shown %}
+      {% set n = loop.index %}
+      <div class="hy-step-panel"
+           :class="open === {{ n }} && 'is-open'"
+           {% if panelBg %} style="--hy-step-panel: {{ panelBg }};"{% endif %}>
+
+        {# `<h3>` OUTSIDE the button and the button inside it: a heading is flow
+           content and is not valid inside a <button>, but the step titles still
+           have to be headings for anyone navigating by them. The chips ride
+           along as spans, which are. #}
+        <h3 class="hy-step-h">
+          <button type="button"
+                  class="hy-step-bar"
+                  @click="open = {{ n }}"
+                  :aria-expanded="open === {{ n }} ? 'true' : 'false'"
+                  aria-controls="hy-stepBody-{{ id }}-{{ n }}">
+            <span class="hy-step-n" aria-hidden="true">{{ n }}</span>
+            {% if s.title %}<span class="hy-step-name">{{ s.title }}</span>{% endif %}
+
+          {% if s.chips %}
+            <span class="hy-step-chips">
+              {# Split on BOTH commas. An Arabic keyboard types «،» (U+060C) and
+                 the defaults in schema.json use it — splitting on the ASCII one
+                 alone silently yields ONE chip holding the whole sentence, which
+                 is what this shipped as on the first render. #}
+              {% for c in (s.chips | replace('،', ',')).split(',') %}
+                {% if c | trim %}
+                  <span class="hy-step-chip">{{ tick() }}{{ c | trim }}</span>
+                {% endif %}
+              {% endfor %}
+            </span>
+          {% endif %}
+
+            <span class="hy-step-caret" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </button>
+        </h3>
+
+        {# `style="display:none"` on the closed ones is server-rendered so they
+           do not flash open before Alpine boots — the same thing ui/cart.njk
+           does for its footer. Alpine takes the property over from there. #}
+        <div id="hy-stepBody-{{ id }}-{{ n }}"
+             role="region"
+             x-show="open === {{ n }}"
+             x-collapse
+             {% if n != 1 %}style="display: none;"{% endif %}>
+        <div class="hy-step-grid"
+             {% if auto %}data-hy-auto-cards="{{ per }}" data-hy-auto-ratio="{{ ratio }}"{% endif %}>
+          {% if auto %}
+            {% ui "placeholder.njk", kind='product', count=per, image_ratio=ratio, variant='catalog' %}
+          {% endif %}
+          {# `show_eyebrow='off'` — the reference puts nothing between the
+             photograph and the name. The locals are read as STRINGS by
+             `{% ui %}`, so 'off' is what disables them; a bare `false` does not
+             survive the tag. #}
+          {% for p in s.products %}
+            {% ui "product-card.njk", product=p, image_ratio=ratio, variant='catalog', show_eyebrow='off' %}
+          {% endfor %}
+        </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    {% if (shown | length) == 0 %}
+      {# The real panel at its real size, in grey — the shape says "a numbered
+         step and a row of products" before anything is chosen. Inert and
+         aria-hidden, like every skeleton in this theme (15.29.1). #}
+      <div class="hy-step-panel" data-hy-placeholder aria-hidden="true">
+        <div class="hy-step-bar">
+          <span class="hy-step-n">1</span>
+          <span class="hy-ph-line" style="--ph-line-w: 210px; --ph-line-h: 14px;"></span>
+          <div class="hy-step-chips">
+            <span class="hy-step-chip hy-ph-box" style="width: 116px;"></span>
+            <span class="hy-step-chip hy-ph-box" style="width: 104px;"></span>
+          </div>
+        </div>
+        <div class="hy-step-grid">
+          {% ui "placeholder.njk", kind='product', count=per, image_ratio=ratio, variant='catalog' %}
+        </div>
+      </div>
+      <div class="hy-step-hint">
+        <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+          </svg>
+          {{ t('common.placeholder_add') }}
+        </span>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Shape knobs. The `-set` suffix is load-bearing: this block is an ID selector,
+   so a plain `--hy-step-per` here would beat the stylesheet's responsive rules
+   and a merchant's desktop column count would survive into a 390px viewport —
+   which is how six cards once ended up on a phone. #}
+<style>
+  {#- Tablet columns follow the card count: four cards in the stylesheet's
+      fixed three columns left one alone on the second row. -#}
+  #hy-step-{{ id }} { --hy-step-per-set: {{ per }}; --hy-step-per-md-set: {{ 2 if (per | int) % 2 == 0 else 3 }}; }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-step-' ~ id, c=d %}

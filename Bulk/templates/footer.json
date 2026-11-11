@@ -1,0 +1,25 @@
+{
+    "title": "Footer Group",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "footer",
+            "widget": "footer"
+        },
+        {
+            "name": "زر واتساب العائم",
+            "widget": "whatsapp-float",
+            "settings": {
+                "phone_number": "",
+                "message": ""
+            }
+        },
+        {
+            "name": "زر العودة للأعلى",
+            "widget": "scroll-top",
+            "settings": {}
+        }
+    ]
+}

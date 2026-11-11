@@ -1,0 +1,169 @@
+{# ============================================================================
+   HYPER · PLACEHOLDER CARD
+   ----------------------------------------------------------------------------
+   What a section shows on a fresh install, before the merchant has picked any
+   products / collections / articles. Without it a new store opens on rows of
+   empty white space and the merchant cannot tell whether the section is broken
+   or simply unfilled.
+
+   ⚠️  It borrows the REAL card's classes — `.hy-pcard-*`, `.hy-coll-tile`,
+   `.hy-post` — so the placeholder occupies exactly the space the real thing
+   will, and the merchant is looking at the true layout while they work. Only
+   `--ph` modifiers differ.
+
+   ⚠️  Inert on purpose:
+     · no `x-data`, so no cart component is created for a product that has no id
+     · every link is `href="#"` with `@click.prevent`, so a click cannot land on
+       a 404 or leave the page
+     · `aria-hidden="true"` and `data-hy-placeholder`, so screen readers skip it
+       and no script can ever mistake it for stock
+
+   Locals:
+     kind        'product' (default) · 'collection' · 'article'
+     count       how many to draw (default 4)
+     image_ratio '2x3' | '3x4' | '4x5' | '1x1' — product/collection only
+     variant     'compact' | 'catalog' — passes through to the product card
+                 layout, so the placeholder matches whatever the real row uses
+     price       the dummy price line, already formatted (default '—')
+     wrap        class for a wrapper around each card — 'swiper-slide' when the
+                 host is a Swiper, which needs every child to be a slide
+
+   Styling: assets/style.css → "15.29 PLACEHOLDERS".
+   ========================================================================= #}
+
+{% set kind = data.kind | default('product') %}
+{% set count = data.count | default(4) | int %}
+{% set variant = data.variant | default('') %}
+{% set phPrice = data.price | default('') %}
+{% set wrap = data.wrap | default('') %}
+
+{% set ratio = data.image_ratio | default('2x3') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% else %}{% set ratioVal = '2 / 3' %}{% endif %}
+
+
+{# ---------------------------------------------------------------------------
+   The piece. Flat, two tones off the theme's own neutrals, no photograph — it
+   has to read as "nothing here yet" at a glance, which a stock photo never
+   does. Four shapes so a row of four is not four copies of one; `n` picks by
+   index.
+
+   The viewBox is 200×170 — WIDE, and the four subjects were chosen to suit it.
+   `.hy-ph-art` sizes by HEIGHT (15.29), so a tall narrow subject drawn here —
+   a feeding bottle, say — would come out no wider than a thumb while the piece
+   beside it filled the frame, and the row would read as a rendering fault
+   rather than as a set. A romper with its sleeves out, a rattle lying on its
+   side, a pair of booties and a bear all fill it.
+   -------------------------------------------------------------------------- #}
+{% macro piece(n) %}
+  <svg class="hy-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false">
+    {% set i = n % 4 %}
+    {% if i == 0 %}
+      {# رومبر — a short romper. The LEGS are what make it read as babywear
+         rather than as a shirt: a bodysuit's snap crotch is a straight hem at
+         this size, and a straight hem on a wide torso is a top. #}
+      <rect class="hy-ph-fill" x="8" y="40" width="54" height="36" rx="17"/>
+      <rect class="hy-ph-fill" x="138" y="40" width="54" height="36" rx="17"/>
+      <rect class="hy-ph-fill" x="50" y="30" width="100" height="80" rx="24"/>
+      <rect class="hy-ph-fill" x="54" y="92" width="42" height="54" rx="18"/>
+      <rect class="hy-ph-fill" x="104" y="92" width="42" height="54" rx="18"/>
+      <ellipse class="hy-ph-tint" cx="100" cy="36" rx="21" ry="10"/>
+      <rect class="hy-ph-tint" x="62" y="96" width="76" height="16" rx="8"/>
+    {% elif i == 1 %}
+      {# خشخيشة — a rattle. The ring at the end is a TINT disc inside a fill
+         disc, not a hole: both tones are translucent and sit on a card whose
+         ground is not always the same colour, so a real cut-out would show
+         whatever happens to be behind it. #}
+      <circle class="hy-ph-fill" cx="70" cy="60" r="44"/>
+      <circle class="hy-ph-tint" cx="70" cy="60" r="21"/>
+      <rect class="hy-ph-fill" x="94" y="84" width="46" height="26" rx="13"
+            transform="rotate(38 94 84)"/>
+      <circle class="hy-ph-fill" cx="146" cy="126" r="31"/>
+      <circle class="hy-ph-tint" cx="146" cy="126" r="16"/>
+    {% elif i == 2 %}
+      {# حذاء بيبي — a pair of booties, seen from the side.
+
+         ONE path each, not a leg rectangle plus a foot rectangle. Both tones are
+         translucent, so two fill shapes that overlap darken where they cross —
+         the ankle would have shown as a bruise across the join. The cuff is the
+         other tone, which is why it may sit on top.
+
+         Drawn tall — 18→150 of the 170 box — so the pair carries the same
+         weight as the bear beside it. At the height it was first drawn the two
+         boots read as a smaller object rather than as a different one. #}
+      <path class="hy-ph-fill" d="M30 26h14a16 16 0 0 1 16 16v58h16a25 25 0 0 1 0 50H30a16 16 0 0 1-16-16V42a16 16 0 0 1 16-16Z"/>
+      <rect class="hy-ph-tint" x="6" y="18" width="62" height="24" rx="12"/>
+      <path class="hy-ph-fill" d="M124 26h14a16 16 0 0 1 16 16v58h16a25 25 0 0 1 0 50h-46a16 16 0 0 1-16-16V42a16 16 0 0 1 16-16Z"/>
+      <rect class="hy-ph-tint" x="100" y="18" width="62" height="24" rx="12"/>
+    {% else %}
+      {# دبدوب — a bear. Ears before the head, and the limbs before the body, so
+         each pair meets in a joint instead of showing a seam: both tones are
+         translucent and two shapes of one tone darken where they cross. #}
+      <circle class="hy-ph-fill" cx="68" cy="36" r="18"/>
+      <circle class="hy-ph-fill" cx="132" cy="36" r="18"/>
+      <rect class="hy-ph-fill" x="24" y="88" width="42" height="30" rx="15"/>
+      <rect class="hy-ph-fill" x="134" y="88" width="42" height="30" rx="15"/>
+      <rect class="hy-ph-fill" x="60" y="84" width="80" height="70" rx="32"/>
+      <circle class="hy-ph-fill" cx="100" cy="56" r="41"/>
+      <ellipse class="hy-ph-tint" cx="100" cy="66" rx="19" ry="14"/>
+      <ellipse class="hy-ph-tint" cx="100" cy="120" rx="23" ry="21"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+{% for n in range(0, count) %}
+{% if wrap %}<div class="{{ wrap }}">{% endif %}
+
+  {# ═══════════════ product ═══════════════ #}
+  {% if kind == 'product' %}
+    <article class="hy-pcard hy-pcard--ph {{ 'hy-pcard--compact' if variant == 'compact' }} {{ 'hy-pcard--catalog' if variant == 'catalog' }}"
+             style="--pcard-ratio: var(--hy-card-ratio, {{ ratioVal }});"
+             data-hy-placeholder aria-hidden="true">
+      <div class="hy-pcard-frame">
+        <a href="#" @click.prevent class="hy-pcard-media hy-ph-media" tabindex="-1">
+          {{ piece(n) }}
+        </a>
+      </div>
+      <div class="hy-pcard-info">
+        {# The catalog card leads with a category line. The order of the three
+           is a flex `order` in 15.9.1, not this markup order — same rule as the
+           real card, so the placeholder cannot drift out of step with it. #}
+        {% if variant == 'catalog' %}
+          <span class="hy-pcard-eyebrow">{{ t('common.placeholder_collection') }}</span>
+        {% endif %}
+        <div class="hy-pcard-prices">
+          <span class="hy-price">{{ phPrice if phPrice else t('common.placeholder_price') }}</span>
+        </div>
+        <span class="hy-pcard-name hy-clamp-2">{{ t('common.placeholder_product') }}</span>
+      </div>
+    </article>
+
+  {# ═══════════════ collection ═══════════════ #}
+  {% elif kind == 'collection' %}
+    <a href="#" @click.prevent class="hy-coll-tile hy-coll-tile--ph"
+       style="--coll-ratio: {{ ratioVal }};"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <span class="hy-ph-media">{{ piece(n) }}</span>
+      <div class="hy-coll-foot">
+        <span class="hy-coll-name">{{ t('common.placeholder_collection') }}</span>
+      </div>
+    </a>
+
+  {# ═══════════════ article ═══════════════ #}
+  {% else %}
+    <a href="#" @click.prevent class="hy-post hy-post--stacked hy-post--ph"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <div class="hy-post-media hy-ph-media">{{ piece(n) }}</div>
+      <div class="hy-post-body">
+        <div class="hy-post-meta"><span>{{ t('common.placeholder_date') }}</span></div>
+        <h3 class="hy-post-title hy-clamp-2">{{ t('common.placeholder_article') }}</h3>
+        <p class="hy-post-excerpt hy-clamp-2">{{ t('common.placeholder_excerpt') }}</p>
+      </div>
+    </a>
+  {% endif %}
+
+{% if wrap %}</div>{% endif %}
+{% endfor %}

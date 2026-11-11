@@ -1,0 +1,45 @@
+{
+  "name": "صفحة 404",
+  "description": "صفحة \"الصفحة مش موجودة\": رقم 404 كبير، زرار رجوع للصفحة اللي فاتت، زرار للرئيسية، بحث، ومنتجات مقترحة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "العنوان (سيبه فاضي عشان يتاخد من ملف اللغة)",
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": "الوصف (سيبه فاضي عشان يتاخد من ملف اللغة)",
+      "default": ""
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": "إظهار مربع البحث",
+      "default": true
+    },
+    "show_products": {
+      "type": "boolean",
+      "label": "إظهار منتجات مقترحة تحت الصفحة",
+      "default": true
+    },
+    "products_title": {
+      "type": "string",
+      "label": "عنوان المنتجات المقترحة (سيبه فاضي عشان يتاخد من ملف اللغة)",
+      "default": ""
+    },
+    "products_limit": {
+      "type": "number",
+      "label": "عدد المنتجات المقترحة",
+      "default": 4,
+      "min": 0,
+      "max": 8,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "name": "صفحة 404 (Dark Blood)",
+      "category": "صفحات"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "name": "عربيات عملائنا — المعرض",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر", "en": "Small line above the title — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان — فارغ = «عربيات عملائنا»", "en": "Title — empty = “Customer builds”" },
+      "default": ""
+    },
+    "count_number": {
+      "type": "number",
+      "label": { "ar": "رقم العدّاد — مثال: 2400 (يُعرض «+2,400»)", "en": "Counter figure — e.g. 2400 (shown as “+2,400”)" },
+      "default": 2400,
+      "min": 0,
+      "max": 10000000,
+      "step": 1
+    },
+    "count_text": {
+      "type": "string",
+      "label": { "ar": "النص بعد الرقم — فارغ = «صورة من عملائنا»", "en": "Text after the figure — empty = “photos from our customers”" },
+      "default": ""
+    },
+    "show_counter": {
+      "type": "boolean",
+      "label": { "ar": "▸ العدّاد", "en": "▸ Counter" },
+      "default": true
+    },
+    "share_text": {
+      "type": "string",
+      "label": { "ar": "نص زر «شارك عربيتك» — فارغ = النص الافتراضي", "en": "“Share your build” button label — empty = default text" },
+      "default": ""
+    },
+    "share_url": {
+      "type": "string",
+      "label": { "ar": "رابط زر «شارك عربيتك» — مثال: حسابكم على إنستغرام · فارغ = الزر مخفي", "en": "“Share your build” link — e.g. your Instagram · empty = button hidden" },
+      "default": "https://www.instagram.com/"
+    },
+    "lightbox": {
+      "type": "boolean",
+      "label": { "ar": "▸ فتح الصور بحجم كامل عند الضغط", "en": "▸ Open photos full-size on click" },
+      "default": true
+    },
+    "parallax": {
+      "type": "boolean",
+      "label": { "ar": "▸ حركة عمق مختلفة لكل صورة أثناء التمرير", "en": "▸ Per-tile parallax at different speeds" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "خلفية القسم", "en": "Section background" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون العناوين", "en": "Title colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون النص", "en": "Text colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز (الأصفر)", "en": "Accent (the yellow)" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الخطوط", "en": "Hairline colour" }, "default": "" }
+  },
+  "blocks": {
+    "build": {
+      "name": "عربية",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": { "ar": "▸ الصورة — أي نسبة · فارغ = صورة افتراضية", "en": "▸ Photo — any ratio · empty = a default photo" }
+        },
+        "car": {
+          "type": "string",
+          "label": { "ar": "اسم العربية — مثال: كامري 2022", "en": "Car name — e.g. Camry 2022" },
+          "default": ""
+        },
+        "spec": {
+          "type": "string",
+          "label": { "ar": "سطر المواصفات — مثال: LED + Ceramic", "en": "Spec line — e.g. LED + Ceramic" },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "رابط القطع المستخدمة (اختياري) — مثال: /products/led-h7 أو /shop/lighting", "en": "Link to the parts used (optional) — e.g. /products/led-h7 or /shop/lighting" },
+          "default": ""
+        },
+        "link_text": {
+          "type": "string",
+          "label": { "ar": "نص الرابط — فارغ = «تسوّق القطع»", "en": "Link label — empty = “Shop the parts”" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "المحتوى", "name": "عربيات عملائنا — المعرض" }
+  ]
+}

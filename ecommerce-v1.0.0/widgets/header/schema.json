@@ -1,0 +1,832 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ تثبيت الشريط الرئيسي أعلى الصفحة عند التمرير",
+        "en": "▸ Stick the main row to the top on scroll"
+      },
+      "default": true
+    },
+    "header_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الشعار — اتركه فارغًا لاستخدام شعار المتجر",
+        "en": "Logo — leave empty to use the store logo"
+      }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "default": 40,
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px"
+    },
+    "topbar_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط الإعلانات المتحرك",
+        "en": "▸ Scrolling announcement bar"
+      },
+      "default": true
+    },
+    "topbar_bg_start": {
+      "type": "color",
+      "label": {
+        "ar": "لون بداية تدرّج الشريط",
+        "en": "Bar gradient start"
+      },
+      "default": ""
+    },
+    "topbar_bg_end": {
+      "type": "color",
+      "label": {
+        "ar": "لون نهاية تدرّج الشريط — نفس اللون الأول = لون واحد",
+        "en": "Bar gradient end — same as start = solid"
+      },
+      "default": ""
+    },
+    "topbar_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الشريط",
+        "en": "Bar text colour"
+      },
+      "default": ""
+    },
+    "topbar_speed": {
+      "type": "range",
+      "label": {
+        "ar": "سرعة الحركة",
+        "en": "Scroll speed"
+      },
+      "default": 50,
+      "min": 20,
+      "max": 140,
+      "step": 5,
+      "unit": "px/s"
+    },
+    "topbar_pause": {
+      "type": "boolean",
+      "label": {
+        "ar": "إيقاف الحركة عند مرور الماوس",
+        "en": "Pause on hover"
+      },
+      "default": true
+    },
+    "show_menu_button": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ زر «القائمة» — يفتح القائمة الجانبية",
+        "en": "▸ “Menu” button — opens the side drawer"
+      },
+      "default": true
+    },
+    "menu_button_label": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر — فارغ = «القائمة»",
+        "en": "Button label — empty = “Menu”"
+      },
+      "default": ""
+    },
+    "menu_button_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "menu_button_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط البحث",
+        "en": "▸ Search bar"
+      },
+      "default": true
+    },
+    "search_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإرشاد داخل البحث — فارغ = النص الافتراضي",
+        "en": "Search placeholder — empty = default"
+      },
+      "default": ""
+    },
+    "search_categories": {
+      "type": "collections",
+      "label": {
+        "ar": "قائمة «كل التصنيفات» — البحث يتم داخل التصنيف المختار",
+        "en": "“All categories” dropdown — search runs inside the chosen collection"
+      }
+    },
+    "search_voice": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر البحث الصوتي — يظهر فقط في المتصفحات الداعمة",
+        "en": "Voice search — shown only in supporting browsers"
+      },
+      "default": true
+    },
+    "search_products_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان «الأكثر بحثًا» — فارغ = الافتراضي",
+        "en": "“Most searched” heading — empty = default"
+      },
+      "default": ""
+    },
+    "search_products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات «الأكثر بحثًا» تظهر عند فتح البحث",
+        "en": "“Most searched” products shown when search opens"
+      }
+    },
+    "search_collections_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان «تصفّح التصنيفات» — فارغ = الافتراضي",
+        "en": "“Explore collections” heading — empty = default"
+      },
+      "default": ""
+    },
+    "search_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيفات تظهر عند فتح البحث",
+        "en": "Collections shown when search opens"
+      }
+    },
+    "search_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية شريط البحث",
+        "en": "Search field background"
+      },
+      "default": ""
+    },
+    "show_theme_toggle": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ زر الوضع الليلي — يعمل فقط إذا كان الوضع الليلي مفعّلًا في إعدادات الثيم",
+        "en": "▸ Dark-mode switch — needs Dark mode enabled in theme settings"
+      },
+      "default": true
+    },
+    "action1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "أيقونة الرابط السريع ١",
+        "en": "Quick link 1 icon"
+      },
+      "default": "pin",
+      "options": [
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location pin"
+          }
+        },
+        {
+          "value": "user",
+          "label": {
+            "ar": "حساب",
+            "en": "User"
+          }
+        },
+        {
+          "value": "heart",
+          "label": {
+            "ar": "مفضلة",
+            "en": "Heart"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "تتبّع الطلب",
+            "en": "Truck"
+          }
+        }
+      ]
+    },
+    "action1_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط ١ — فارغ = إخفاء · مثال: /pages/contact",
+        "en": "Link 1 — empty hides it · e.g. /pages/contact"
+      },
+      "default": ""
+    },
+    "action1_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف رابط ١ (لقارئات الشاشة)",
+        "en": "Link 1 label (screen readers)"
+      },
+      "default": ""
+    },
+    "action2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "أيقونة الرابط السريع ٢",
+        "en": "Quick link 2 icon"
+      },
+      "default": "pin",
+      "options": [
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location pin"
+          }
+        },
+        {
+          "value": "user",
+          "label": {
+            "ar": "حساب",
+            "en": "User"
+          }
+        },
+        {
+          "value": "heart",
+          "label": {
+            "ar": "مفضلة",
+            "en": "Heart"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "تتبّع الطلب",
+            "en": "Truck"
+          }
+        }
+      ]
+    },
+    "action2_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط ٢ — فارغ = إخفاء",
+        "en": "Link 2 — empty hides it"
+      },
+      "default": ""
+    },
+    "action2_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف رابط ٢ (لقارئات الشاشة)",
+        "en": "Link 2 label (screen readers)"
+      },
+      "default": ""
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ أيقونة السلة",
+        "en": "▸ Cart icon"
+      },
+      "default": true
+    },
+    "nav_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط التنقّل — العناصر تُضاف كبلوكات «عنصر قائمة»",
+        "en": "▸ Navigation row — items are “Menu item” blocks"
+      },
+      "default": true
+    },
+    "nav_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة عناصر التنقّل",
+        "en": "Navigation alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "وسط",
+            "en": "Centre"
+          }
+        }
+      ]
+    },
+    "utility_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الشريط السفلي (روابط مساعدة + تواصل + اللغة)",
+        "en": "▸ Utility bar (help links + contact + language)"
+      },
+      "default": true
+    },
+    "utility_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط الشريط السفلي",
+        "en": "Utility links"
+      },
+      "default": "footer-menu"
+    },
+    "utility_email": {
+      "type": "string",
+      "label": {
+        "ar": "البريد الإلكتروني — فارغ = إخفاء",
+        "en": "Email — empty hides it"
+      },
+      "default": ""
+    },
+    "utility_phone": {
+      "type": "string",
+      "label": {
+        "ar": "رقم الهاتف — فارغ = إخفاء",
+        "en": "Phone — empty hides it"
+      },
+      "default": ""
+    },
+    "utility_language": {
+      "type": "boolean",
+      "label": {
+        "ar": "مبدّل اللغة مع العملة",
+        "en": "Language switcher with currency"
+      },
+      "default": true
+    },
+    "cart_free_shipping": {
+      "type": "number",
+      "label": {
+        "ar": "▸ حد الشحن المجاني في درج السلة — ٠ = إخفاء · لازم يطابق إعداد الشحن في لوحة التحكم",
+        "en": "▸ Cart drawer free-shipping threshold — 0 hides it · must match your shipping setup in the dashboard"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 1
+    },
+    "cart_upsell_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ قائمة «قد يعجبك أيضًا» بجانب السلة",
+        "en": "▸ “You'll love this too” panel beside the cart"
+      },
+      "default": true
+    },
+    "cart_upsell_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القائمة — فارغ = «قد يعجبك أيضًا»",
+        "en": "Panel heading — empty = “You'll love this too”"
+      },
+      "default": ""
+    },
+    "cart_upsell_products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات القائمة — فارغة = أحدث المنتجات تلقائيًا",
+        "en": "Panel products — empty = the newest automatically"
+      }
+    },
+    "cart_payments": {
+      "type": "string",
+      "label": {
+        "ar": "أيقونات الدفع أسفل السلة — مفصولة بفاصلة: mada, visa, mastercard, amex, applepay, stcpay, tabby, tamara, paypal, cod (فارغ = إخفاء)",
+        "en": "Payment marks under the cart — comma separated: mada, visa, mastercard, amex, applepay, stcpay, tabby, tamara, paypal, cod (empty = hidden)"
+      },
+      "default": "mada,visa,mastercard,applepay"
+    },
+    "cart_empty_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيفات تظهر عندما تكون السلة فارغة",
+        "en": "Collections shown when the cart is empty"
+      }
+    },
+    "cart_footer_dark": {
+      "type": "boolean",
+      "label": {
+        "ar": "خلفية داكنة لتذييل السلة",
+        "en": "Dark ground under the cart total"
+      },
+      "default": false
+    },
+    "cart_note": {
+      "type": "string",
+      "label": {
+        "ar": "سطر أسفل إجمالي السلة",
+        "en": "Line under the cart total"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الهيدر",
+        "en": "Header background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الروابط والشعار",
+        "en": "Links and logo colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز (خط الرابط النشط)",
+        "en": "Accent (active-link underline)"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "announcement": {
+      "name": "رسالة إعلانية",
+      "settings": {
+        "ann_text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "ann_icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة بعد النص",
+            "en": "Icon after the text"
+          },
+          "default": "badge",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            },
+            {
+              "value": "badge",
+              "label": {
+                "ar": "علامة توثيق",
+                "en": "Verified badge"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "شاحنة",
+                "en": "Truck"
+              }
+            },
+            {
+              "value": "flame",
+              "label": {
+                "ar": "لهب",
+                "en": "Flame"
+              }
+            },
+            {
+              "value": "percent",
+              "label": {
+                "ar": "نسبة خصم",
+                "en": "Percent"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "درع",
+                "en": "Shield"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "box",
+              "label": {
+                "ar": "صندوق",
+                "en": "Box"
+              }
+            }
+          ]
+        },
+        "ann_image": {
+          "type": "media",
+          "label": {
+            "ar": "أيقونة مخصّصة (تحلّ محل الأيقونة أعلاه)",
+            "en": "Custom icon (replaces the one above)"
+          }
+        },
+        "ann_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري)",
+            "en": "Link (optional)"
+          },
+          "default": ""
+        }
+      }
+    },
+    "nav_item": {
+      "name": "عنصر قائمة",
+      "settings": {
+        "item_label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "item_url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — / · /shop · /shop/<تصنيف> · /collections · /blogs · /pages/<صفحة>",
+            "en": "Link — / · /shop · /shop/<collection> · /collections · /blogs · /pages/<page>"
+          },
+          "default": "/shop"
+        },
+        "item_style": {
+          "type": "select",
+          "label": {
+            "ar": "▸ نوع القائمة المنسدلة",
+            "en": "▸ Dropdown type"
+          },
+          "default": "auto",
+          "options": [
+            {
+              "value": "auto",
+              "label": {
+                "ar": "تلقائي — أعمدة إذا تلته «مجموعات روابط»، وإلا قائمة بسيطة",
+                "en": "Auto — columns if “Link group” blocks follow it, else a simple list"
+              }
+            },
+            {
+              "value": "columns",
+              "label": {
+                "ar": "قائمة كبيرة: أعمدة",
+                "en": "Mega menu: columns"
+              }
+            },
+            {
+              "value": "tabs",
+              "label": {
+                "ar": "قائمة كبيرة: تبويبات جانبية",
+                "en": "Mega menu: side tabs"
+              }
+            },
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون قائمة منسدلة",
+                "en": "No dropdown"
+              }
+            }
+          ]
+        },
+        "item_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "قائمة منسدلة بسيطة (تُستخدم إذا لم تتله مجموعات)",
+            "en": "Simple dropdown (used when no groups follow)"
+          },
+          "default": "header-menu"
+        },
+        "item_badge": {
+          "type": "string",
+          "label": {
+            "ar": "شارة فوق العنصر — مثل: عرض · جديد",
+            "en": "Badge above the item — e.g. Offer · New"
+          },
+          "default": ""
+        },
+        "item_badge_bg": {
+          "type": "color",
+          "label": {
+            "ar": "خلفية الشارة",
+            "en": "Badge background"
+          },
+          "default": ""
+        },
+        "item_badge_text": {
+          "type": "color",
+          "label": {
+            "ar": "لون نص الشارة",
+            "en": "Badge text"
+          },
+          "default": ""
+        },
+        "item_view_all": {
+          "type": "string",
+          "label": {
+            "ar": "نص «عرض الكل» داخل القائمة الكبيرة — فارغ = الافتراضي",
+            "en": "“View all” text inside the mega menu — empty = default"
+          },
+          "default": ""
+        }
+      }
+    },
+    "nav_group": {
+      "name": "↳ مجموعة روابط",
+      "settings": {
+        "group_title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان المجموعة — تتبع آخر «عنصر قائمة» قبلها",
+            "en": "Group heading — belongs to the last “Menu item” above it"
+          },
+          "default": ""
+        },
+        "group_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط العنوان (اختياري)",
+            "en": "Heading link (optional)"
+          },
+          "default": ""
+        },
+        "group_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "روابط المجموعة — أنشئ قائمة لكل مجموعة من لوحة التحكم",
+            "en": "Group links — create one menu per group in the dashboard"
+          },
+          "default": "header-menu"
+        },
+        "group_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المجموعة — تظهر في نوع «تبويبات جانبية»",
+            "en": "Group image — used by the “side tabs” type"
+          }
+        }
+      }
+    },
+    "nav_promo": {
+      "name": "↳ بطاقة إعلانية",
+      "settings": {
+        "promo_image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "promo_title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان — تتبع آخر «عنصر قائمة» قبلها",
+            "en": "Title — belongs to the last “Menu item” above it"
+          },
+          "default": ""
+        },
+        "promo_text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        },
+        "promo_cta": {
+          "type": "string",
+          "label": {
+            "ar": "نص الرابط",
+            "en": "Link text"
+          },
+          "default": ""
+        },
+        "promo_url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "Link"
+          },
+          "default": ""
+        },
+        "promo_bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون الخلفية",
+            "en": "Background"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الرئيسي"
+    }
+  ]
+}

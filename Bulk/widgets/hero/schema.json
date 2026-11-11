@@ -1,0 +1,87 @@
+{
+  "name": "قسم الهيرو الرئيسي - Hero Section",
+  "description": "بانر رئيسي متوافق 100% مع محرر قمرة المباشر",
+  "settings": {
+    "hero_image": {
+      "type": "media",
+      "label": "صورة الخلفية (سطح المكتب)"
+    },
+    "hero_image_mobile": {
+      "type": "media",
+      "label": "صورة الخلفية (الجوال - اختياري)"
+    },
+    "badge_text": {
+      "type": "string",
+      "label": "نص الشارة (Badge)",
+      "default": "تشكيلة جديدة"
+    },
+    "title": {
+      "type": "string",
+      "label": "العنوان الرئيسي",
+      "default": "ابنِ قوتك بدون حدود"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": "الوصف الفرعي",
+      "default": "ملابس وإكسسوارات رياضية مصممة لأعلى مستويات الأداء والتحمل في التمرين."
+    },
+    "text_align": {
+      "type": "select",
+      "label": "محاذاة النصوص",
+      "options": [
+        { "label": "اليمين", "value": "right" },
+        { "label": "المنتصف", "value": "center" },
+        { "label": "اليسار", "value": "left" }
+      ],
+      "default": "right"
+    },
+    "primary_btn_text": {
+      "type": "string",
+      "label": "نص الزر الرئيسي",
+      "default": "تسوق المجموعات"
+    },
+    "primary_btn_url": {
+      "type": "string",
+      "label": "رابط الزر الرئيسي",
+      "default": "/collections/all"
+    },
+    "secondary_btn_text": {
+      "type": "string",
+      "label": "نص الزر الثانوي",
+      "default": "اكتشف العروض"
+    },
+    "secondary_btn_url": {
+      "type": "string",
+      "label": "رابط الزر الثانوي",
+      "default": "#offers"
+    },
+    "overlay_opacity": {
+      "type": "select",
+      "label": "درجة تعتيم الخلفية",
+      "options": [
+        { "label": "خفيف (40%)", "value": "0.4" },
+        { "label": "متوسط (65%)", "value": "0.65" },
+        { "label": "داكن (80%)", "value": "0.8" },
+        { "label": "داكن جداً (90%)", "value": "0.9" }
+      ],
+      "default": "0.65"
+    },
+    "hero_height": {
+      "type": "select",
+      "label": "ارتفاع القسم",
+      "options": [
+        { "label": "تلقائي", "value": "auto" },
+        { "label": "متوسط (70vh)", "value": "70vh" },
+        { "label": "كبير (80vh)", "value": "80vh" },
+        { "label": "شاشة كاملة (90vh)", "value": "90vh" }
+      ],
+      "default": "80vh"
+    }
+  },
+  "presets": [
+    {
+      "name": "الهيرو الرئيسي (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

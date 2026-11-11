@@ -1,0 +1,376 @@
+{
+  "name": "أعمدة نصية مع أيقونات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم (اختياري)",
+        "en": "Section heading (optional)"
+      },
+      "default": "تسوّق حسب احتياجك"
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "عدد الأعمدة — كمبيوتر",
+        "en": "Columns — desktop"
+      },
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    "circle_size": {
+      "type": "range",
+      "label": {
+        "ar": "حجم الدائرة",
+        "en": "Circle size"
+      },
+      "min": 56,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "default": 92
+    },
+    "icon_scale": {
+      "type": "range",
+      "label": {
+        "ar": "حجم الأيقونة داخل الدائرة",
+        "en": "Icon size inside the circle"
+      },
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 58
+    },
+    "shape": {
+      "type": "select",
+      "label": {
+        "ar": "الشكل",
+        "en": "Shape"
+      },
+      "default": "circle",
+      "options": [
+        {
+          "value": "circle",
+          "label": {
+            "ar": "دائرة",
+            "en": "Circle"
+          }
+        },
+        {
+          "value": "rounded",
+          "label": {
+            "ar": "مربع بزوايا مدوّرة",
+            "en": "Rounded square"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون خلفية",
+            "en": "No background"
+          }
+        }
+      ]
+    },
+    "mobile_layout": {
+      "type": "select",
+      "label": {
+        "ar": "على الجوال",
+        "en": "On mobile"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "شريط قابل للسحب",
+            "en": "Swipeable row"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "عمودان",
+            "en": "Two columns"
+          }
+        }
+      ]
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Headings colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الصغير",
+        "en": "Small text colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "▸ الأيقونة",
+            "en": "▸ Icon"
+          },
+          "default": "leaf",
+          "options": [
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة نبات — نباتي",
+                "en": "Leaf — vegan"
+              }
+            },
+            {
+              "value": "no-gluten",
+              "label": {
+                "ar": "خالٍ من الجلوتين",
+                "en": "Gluten-free"
+              }
+            },
+            {
+              "value": "corn",
+              "label": {
+                "ar": "ذرة",
+                "en": "Corn"
+              }
+            },
+            {
+              "value": "meat",
+              "label": {
+                "ar": "لحم — كيتو",
+                "en": "Meat — keto"
+              }
+            },
+            {
+              "value": "grain",
+              "label": {
+                "ar": "حبوب",
+                "en": "Grain"
+              }
+            },
+            {
+              "value": "fish",
+              "label": {
+                "ar": "سمك",
+                "en": "Fish"
+              }
+            },
+            {
+              "value": "milk",
+              "label": {
+                "ar": "حليب",
+                "en": "Milk"
+              }
+            },
+            {
+              "value": "egg",
+              "label": {
+                "ar": "بيض",
+                "en": "Egg"
+              }
+            },
+            {
+              "value": "apple",
+              "label": {
+                "ar": "تفاح — فواكه",
+                "en": "Apple — fruit"
+              }
+            },
+            {
+              "value": "carrot",
+              "label": {
+                "ar": "جزر — خضار",
+                "en": "Carrot — vegetables"
+              }
+            },
+            {
+              "value": "bread",
+              "label": {
+                "ar": "خبز",
+                "en": "Bread"
+              }
+            },
+            {
+              "value": "coffee",
+              "label": {
+                "ar": "قهوة",
+                "en": "Coffee"
+              }
+            },
+            {
+              "value": "cheese",
+              "label": {
+                "ar": "جبن",
+                "en": "Cheese"
+              }
+            },
+            {
+              "value": "leaf-circle",
+              "label": {
+                "ar": "عضوي",
+                "en": "Organic"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "توصيل",
+                "en": "Delivery"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "ضمان",
+                "en": "Guarantee"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب",
+                "en": "Heart"
+              }
+            },
+            {
+              "value": "recycle",
+              "label": {
+                "ar": "إعادة تدوير",
+                "en": "Recycle"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            }
+          ]
+        },
+        "custom_icon": {
+          "type": "media",
+          "label": {
+            "ar": "أو أيقونتك — صورة SVG/PNG تحل محل الأيقونة أعلاه",
+            "en": "Or your own icon — an SVG/PNG image replaces the one above"
+          }
+        },
+        "circle_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الدائرة",
+            "en": "Circle colour"
+          },
+          "default": ""
+        },
+        "icon_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الأيقونة",
+            "en": "Icon colour"
+          },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "سطر وصفي",
+            "en": "Description line"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط (اختياري) · /shop · /collections · /shop/اسم-التصنيف",
+            "en": "Link (optional) · /shop · /collections · /shop/collection-handle"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "أعمدة نصية مع أيقونات"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "صفحة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_title": true,
+        "eyebrow": "Local",
+        "title_override": "",
+        "width": "narrow",
+        "background": "white",
+        "fallback_text": "<p>هذه الصفحة لم تُكتب بعد. أضف محتواها من لوحة التحكّم.</p>",
+        "show_updated": false
+      }
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "title": "",
+        "layout": "inline",
+        "dividers": true,
+        "background": "none",
+        "icon_size": 30,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

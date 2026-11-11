@@ -1,0 +1,100 @@
+{
+  "title": "Footer Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر الرئيسي",
+      "widget": "footer",
+      "settings": {
+        "show_newsletter": true,
+        "newsletter_title": "اشترك في نشرتنا",
+        "newsletter_text": "وصفات موسمية ومنتجات جديدة.",
+        "newsletter_action": "",
+        "newsletter_field": "EMAIL",
+        "newsletter_placeholder": "أدخل بريدك الإلكتروني",
+        "newsletter_button": "اشترك",
+        "newsletter_note": "",
+        "show_logo": true,
+        "logo_height": 40,
+        "brand_text": "",
+        "social_facebook": "",
+        "social_x": "",
+        "social_instagram": "",
+        "social_tiktok": "",
+        "social_youtube": "",
+        "social_snapchat": "",
+        "social_whatsapp": "",
+        "social_pinterest": "",
+        "show_contact": true,
+        "contact_title": "تواصل معنا",
+        "contact1_icon": "chat",
+        "contact1_title": "",
+        "contact1_text": "",
+        "contact1_url": "",
+        "contact2_icon": "phone",
+        "contact2_title": "",
+        "contact2_text": "",
+        "contact2_url": "",
+        "contact3_icon": "send",
+        "contact3_title": "",
+        "contact3_text": "",
+        "contact3_url": "",
+        "contact4_icon": "pin",
+        "contact4_title": "",
+        "contact4_text": "",
+        "contact4_url": "",
+        "show_payments": true,
+        "pay_mada": false,
+        "pay_visa": false,
+        "pay_mastercard": false,
+        "pay_amex": false,
+        "pay_applepay": false,
+        "pay_stcpay": false,
+        "pay_tabby": false,
+        "pay_tamara": false,
+        "pay_paypal": false,
+        "pay_cod": false,
+        "copyright": "",
+        "bottom_menu": "",
+        "show_language_switcher": true,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": "",
+        "color_card": "",
+        "color_accent": ""
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "المتجر",
+          "settings": {
+            "title": "المتجر",
+            "menu": "header-menu"
+          }
+        },
+        {
+          "block": "column",
+          "name": "مساعدة",
+          "settings": {
+            "title": "مساعدة",
+            "menu": "footer-menu"
+          }
+        }
+      ]
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {}
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

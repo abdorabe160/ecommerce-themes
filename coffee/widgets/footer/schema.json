@@ -1,0 +1,27 @@
+{
+  "name": "تذييل الصفحة",
+  "settings": {
+    "footer_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط المتجر",
+        "en": "Store links"
+      },
+      "default": "footer-menu"
+    },
+    "support_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط المساعدة",
+        "en": "Support links"
+      },
+      "default": "footer-menu"
+    }
+  },
+  "presets": [
+    {
+      "category": "تذييل الصفحة",
+      "name": "تذييل DECAFE"
+    }
+  ]
+}

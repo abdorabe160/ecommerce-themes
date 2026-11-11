@@ -1,0 +1,476 @@
+{# ============================================================================
+   LAMSA FOOTER
+   Link columns come from `column` blocks (variable count) instead of the two
+   hard-coded menus the old footer had.
+   Payment badges are an uploaded image, not hand-drawn brand marks — those are
+   trademarks and a redrawn "mada" or "Visa" would be both wrong and risky.
+   Colours all come from the footer tokens in settings-schema.json.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set columns = widget.blocks | default([]) %}
+
+{# Logo resolution: footer_logo (already a light variant — the merchant uploaded
+   it knowing the footer is dark) → the store's own logo → wordmark.
+   The store logo is usually dark-on-transparent, so on this dark footer it would
+   disappear; it gets a soft light chip behind it. A purpose-made footer_logo
+   never does — a chip under an already-light logo would read as a bug. #}
+{% set ownLogo = d.footer_logo if d.footer_logo and d.footer_logo.fileUrl else null %}
+{% set logo = ownLogo if ownLogo else store.logo %}
+{% set hasLogo = logo and logo.fileUrl %}
+{% set needsChip = hasLogo and not ownLogo %}
+{% set desc = d.footer_description | default('') %}
+{% set storeName = store.name | default('LAMSA') %}
+
+{% set contactHeading = d.contact_heading | default('') %}
+{% set phone = d.contact_phone | default('') %}
+{% set whatsapp = d.contact_whatsapp | default('') %}
+{% set email = d.contact_email | default('') %}
+{% set hours = d.contact_hours | default('') %}
+{% set hasContact = contactHeading and (phone or whatsapp or email or hours) %}
+
+{% set socialHeading = d.social_heading | default('') %}
+{% set sInstagram = d.footer_social_instagram | default('') %}
+{% set sTiktok = d.footer_social_tiktok | default('') %}
+{% set sSnapchat = d.footer_social_snapchat | default('') %}
+{% set sX = d.footer_social_x | default('') %}
+{% set sPinterest = d.footer_social_pinterest | default('') %}
+{% set sYoutube = d.footer_social_youtube | default('') %}
+{% set sFacebook = d.footer_social_facebook | default('') %}
+{% set hasSocial = sInstagram or sTiktok or sSnapchat or sX or sPinterest or sYoutube or sFacebook %}
+
+{% set payHeading = d.payment_heading | default('') %}
+{% set showPayments = d.show_payments | default(true) %}
+
+{# Each mark is toggled from the builder. `label` stays a Latin wordmark in both
+   languages — that is how these marks are printed on real checkout pages — so
+   it does NOT go through t(). Cash on delivery is a phrase rather than a brand,
+   so it carries a `key` instead and gets translated. #}
+{% set payMethods = [
+  { 'on': d.pay_mada        | default(true),  'label': 'mada',       'key': '' },
+  { 'on': d.pay_visa        | default(true),  'label': 'VISA',       'key': '' },
+  { 'on': d.pay_mastercard  | default(true),  'label': 'Mastercard', 'key': '' },
+  { 'on': d.pay_apple_pay   | default(true),  'label': 'Apple Pay',  'key': '' },
+  { 'on': d.pay_stc_pay     | default(false), 'label': 'stc pay',    'key': '' },
+  { 'on': d.pay_tabby       | default(false), 'label': 'tabby',      'key': '' },
+  { 'on': d.pay_tamara      | default(false), 'label': 'tamara',     'key': '' },
+  { 'on': d.pay_cod         | default(true),  'label': '',           'key': 'cod' }
+] %}
+{# selectattr, not a counter incremented inside a {% for %} — whether a `set`
+   leaks out of a loop depends on the Nunjucks version, and this does not. #}
+{% set payOn = payMethods | selectattr('on') | list %}
+
+{% set bottomMenu = d.bottom_menu %}
+{% set backToTop = d.show_back_to_top | default(true) %}
+
+
+<style>
+  .lamsa-ft-{{ id }} {
+    background: var(--color-footer);
+    color: var(--color-footer-text);
+  }
+
+  /* ---- chip behind the store logo (see `needsChip` above) ---- */
+  .lamsa-ft-{{ id }}-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.92);
+    transition: background var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-ft-{{ id }}-chip:hover { background: #FFF; }
+
+  /* ---- wordmark fallback ---- */
+  .lamsa-ft-{{ id }}-mark {
+    font-family: var(--font-display-en);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-footer-heading);
+    padding-inline-start: 0.16em;
+    /* Wraps, never `nowrap`: a 60-character store name pushed the whole page
+       to 1,143px wide on a phone. */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+    max-width: 100%;
+  }
+  html[dir="rtl"] .lamsa-ft-{{ id }}-mark, .lamsa-ft-{{ id }}-mark:lang(ar) {
+    font-family: var(--font-display-ar);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    padding-inline-start: 0;
+  }
+
+  /* ---- main grid ---- */
+  .lamsa-ft-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-block: 72px 52px;
+  }
+  @media (min-width: 641px) {
+    .lamsa-ft-{{ id }}-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 44px 32px; }
+  }
+  @media (min-width: 1024px) {
+    /* brand column is wider than the link columns */
+    .lamsa-ft-{{ id }}-grid {
+      grid-template-columns: 1.6fr repeat(auto-fit, minmax(140px, 1fr));
+      gap: 48px 40px;
+    }
+  }
+  @media (max-width: 640px) {
+    .lamsa-ft-{{ id }}-grid { padding-block: 48px 36px; gap: 34px; }
+  }
+
+  /* ---- headings ---- */
+  .lamsa-ft-{{ id }}-h {
+    display: block;
+    margin-bottom: 18px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-footer-heading);
+  }
+  html[dir="rtl"] .lamsa-ft-{{ id }}-h {
+    font-size: 0.8125rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* ---- links ---- */
+  .lamsa-ft-{{ id }}-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-footer-text);
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-ft-{{ id }}-link:hover { color: var(--color-footer-heading); }
+  .lamsa-ft-{{ id }}-link svg { flex-shrink: 0; opacity: 0.7; }
+
+  .lamsa-ft-{{ id }}-desc {
+    margin: 0;
+    max-width: 42ch;
+    font-size: 0.875rem;
+    line-height: 1.9;
+    color: var(--color-footer-text);
+  }
+
+  /* ---- social ---- */
+  .lamsa-ft-{{ id }}-soc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-footer-text);
+    transition: background var(--t-fast) var(--ease-soft), color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-ft-{{ id }}-soc:hover { background: var(--color-accent); color: #FFF; }
+
+  /* ---- payments ---- */
+  /* Badges sit on the dark footer, so they get the light card treatment that
+     real payment marks use — never a tinted chip, which reads as a filter. */
+  .lamsa-ft-{{ id }}-paylist {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .lamsa-ft-{{ id }}-paybadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    height: 30px;
+    padding-inline: 10px;
+    border-radius: var(--radius-xs);
+    background: #FFF;
+    color: #2A2226;
+    font-family: var(--font-body-en);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    white-space: nowrap;
+    /* The white sits directly on the footer ink — a hairline keeps the badge
+       from glowing on lighter footer colours the editor allows. */
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+  /* Cash on delivery is a phrase, not a wordmark: it follows the page script
+     and needs room to breathe. */
+  .lamsa-ft-{{ id }}-paybadge--text {
+    font-family: var(--font-body-ar);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  html[dir="ltr"] .lamsa-ft-{{ id }}-paybadge--text { font-family: var(--font-body-en); }
+
+  /* ---- bottom bar ---- */
+  .lamsa-ft-{{ id }}-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-block: 24px;
+    border-top: 1px solid var(--color-footer-border);
+  }
+  .lamsa-ft-{{ id }}-small {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--color-footer-text-muted);
+  }
+  .lamsa-ft-{{ id }}-small a { color: inherit; transition: color var(--t-fast) var(--ease-soft); }
+  .lamsa-ft-{{ id }}-small a:hover { color: var(--color-footer-heading); }
+  @media (max-width: 767px) {
+    .lamsa-ft-{{ id }}-bottom { flex-direction: column; align-items: flex-start; gap: 14px; }
+  }
+
+  /* ---- back to top ---- */
+  .lamsa-ft-{{ id }}-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border: 1px solid var(--color-footer-border);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-footer-text);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-ft-{{ id }}-top:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #FFF;
+  }
+</style>
+
+
+<footer class="lamsa-ft-{{ id }}">
+  <div class="lamsa-container">
+
+    {# ═════════════════ main ═════════════════ #}
+    <div class="lamsa-ft-{{ id }}-grid">
+
+      {# ---------- brand ---------- #}
+      <div class="flex flex-col gap-5 min-w-0">
+        <a href="/" class="inline-flex w-fit max-w-full {{ ('lamsa-ft-' ~ id ~ '-chip') if needsChip }}"
+           aria-label="{{ storeName }}">
+          {% if hasLogo %}
+            <img src="{{ logo.fileUrl }}" alt="{{ storeName }}" class="h-10 w-auto object-contain"/>
+          {% else %}
+            <span class="lamsa-ft-{{ id }}-mark"{% if ((storeName | string) | upper) == ((storeName | string) | lower) %} lang="ar"{% endif %}>{{ storeName }}</span>
+          {% endif %}
+        </a>
+
+        {% if desc %}<p class="lamsa-ft-{{ id }}-desc">{{ desc | safe }}</p>{% endif %}
+
+        {% if hasSocial %}
+          <div class="flex flex-col gap-3 mt-1">
+            {% if socialHeading %}<span class="lamsa-ft-{{ id }}-h" style="margin-bottom: 0;">{{ socialHeading }}</span>{% endif %}
+            <div class="flex items-center gap-2 flex-wrap">
+              {% if sInstagram %}
+                <a href="{{ sInstagram }}" target="_blank" rel="noopener" aria-label="Instagram" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.6"/>
+                    <circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none"/>
+                  </svg>
+                </a>
+              {% endif %}
+              {% if sTiktok %}
+                <a href="{{ sTiktok }}" target="_blank" rel="noopener" aria-label="TikTok" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 1 1 0-5.78c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05 6.34 6.34 0 0 0 0 12.68 6.34 6.34 0 0 0 6.34-6.34V8.87a8.16 8.16 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.3Z"/></svg>
+                </a>
+              {% endif %}
+              {% if sSnapchat %}
+                <a href="{{ sSnapchat }}" target="_blank" rel="noopener" aria-label="Snapchat" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.2.8c1 0 4.4.3 6 3.8.5 1.2.4 3.2.3 4.9v.1c0 .2 0 .3-.1.5.1 0 .2.1.4.1.3 0 .7-.1 1-.2l.4-.1c.1 0 .2-.1.3 0 .3 0 .6.2.7.4.2.4 0 .8-.2 1-.1.1-.2.3-.4.4-.2.2-.6.3-1.1.3-.2 0-.4 0-.6-.1h-.3c-.1 0-.2 0-.2.1-.1 0-.3.2-.4.4-.2.4-.4.8-.6 1.1-.4.4-.9.7-1.4.9l-.7.2c0 .1.1.1.1.2.1.1.3.3.5.4l.2.1c.3.2.6.4.7.7 0 .2 0 .3 0 .4-.1.2-.3.4-.5.5-.4.2-.8.2-1.3.2-.3 0-.7 0-.9-.1-.2 0-.4-.1-.6-.1h-.3c-.2 0-.4.2-.6.3-.4.3-.9.6-1.6.6s-1.2-.3-1.6-.6c-.2-.1-.4-.3-.6-.3h-.3c-.2 0-.4 0-.6.1-.3 0-.6.1-.9.1-.5 0-.9-.1-1.3-.2-.2-.1-.4-.3-.5-.5-.1-.1-.1-.3 0-.4.1-.3.3-.5.7-.7l.2-.1c.1-.1.3-.2.5-.4 0-.1.1-.1.1-.2l-.7-.2c-.6-.2-1-.5-1.4-.9-.3-.3-.5-.7-.6-1.1-.1-.2-.2-.4-.4-.4 0 0-.1-.1-.2-.1h-.3c-.2.1-.4.1-.6.1-.5 0-.9-.1-1.1-.3-.2-.1-.3-.3-.4-.4-.2-.2-.4-.6-.2-1 .1-.2.4-.4.7-.4.1 0 .2 0 .3 0l.4.1c.3.1.6.2 1 .2.2 0 .3 0 .4-.1 0-.2 0-.3-.1-.5v-.1c-.1-1.7-.2-3.7.3-4.9C7.8 1.1 11.2.8 12.2.8Z"/></svg>
+                </a>
+              {% endif %}
+              {% if sX %}
+                <a href="{{ sX }}" target="_blank" rel="noopener" aria-label="X" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.75l-5.21-6.82-6 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23Zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64Z"/></svg>
+                </a>
+              {% endif %}
+              {% if sPinterest %}
+                <a href="{{ sPinterest }}" target="_blank" rel="noopener" aria-label="Pinterest" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.65 19.31c-.05-.77-.01-1.7.19-2.54.2-.86 1.35-5.72 1.35-5.72s-.34-.67-.34-1.66c0-1.56.9-2.72 2.03-2.72.96 0 1.42.72 1.42 1.58 0 .96-.61 2.4-.93 3.74-.27 1.12.56 2.03 1.66 2.03 2 0 3.53-2.1 3.53-5.14 0-2.69-1.93-4.57-4.69-4.57-3.19 0-5.07 2.39-5.07 4.86 0 .96.37 2 .83 2.56.09.11.11.21.08.32-.08.34-.27 1.1-.31 1.25-.05.2-.17.25-.39.15-1.35-.63-2.19-2.6-2.19-4.19 0-3.4 2.47-6.53 7.13-6.53 3.74 0 6.65 2.67 6.65 6.23 0 3.72-2.34 6.72-5.6 6.72-1.09 0-2.12-.57-2.47-1.24l-.68 2.57c-.24.94-.9 2.12-1.34 2.84A10 10 0 1 0 12 2Z"/></svg>
+                </a>
+              {% endif %}
+              {% if sYoutube %}
+                <a href="{{ sYoutube }}" target="_blank" rel="noopener" aria-label="YouTube" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81ZM9.55 15.57V8.43L15.82 12l-6.27 3.57Z"/></svg>
+                </a>
+              {% endif %}
+              {% if sFacebook %}
+                <a href="{{ sFacebook }}" target="_blank" rel="noopener" aria-label="Facebook" class="lamsa-ft-{{ id }}-soc">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.44 18.63.07 12 .07S0 5.44 0 12.07c0 5.99 4.39 10.95 10.13 11.85v-8.38H7.08v-3.47h3.05V9.43c0-3.01 1.79-4.67 4.53-4.67 1.31 0 2.69.24 2.69.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87v2.25h3.33l-.53 3.47h-2.8v8.38C19.61 23.02 24 18.06 24 12.07Z"/></svg>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {# ---------- link columns (blocks) ---------- #}
+      {# two columns bound to one menu would print every link twice #}
+      {% set seenMenus = [] %}
+      {% for block in columns %}
+        {% set menuKey = (block.data.menu | dump) if block.data.menu else '' %}
+        {% set menuRepeat = menuKey and seenMenus.indexOf(menuKey) > -1 %}
+        {% if menuKey %}{% set _ = seenMenus.push(menuKey) %}{% endif %}
+        {% if (block.data.title or block.data.menu) and not menuRepeat %}
+          <nav class="flex flex-col min-w-0">
+            {% if block.data.title %}
+              <span class="lamsa-ft-{{ id }}-h">{{ block.data.title }}</span>
+            {% endif %}
+            {% if block.data.menu %}
+              <ul class="flex flex-col gap-3.5">
+                {% for item in (block.data.menu.items if block.data.menu.items else block.data.menu) %}
+                  <li>
+                    <a href="{{ item.url | default('#') }}" class="lamsa-ft-{{ id }}-link">{{ item.title }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% endfor %}
+
+      {# ---------- contact ---------- #}
+      {% if hasContact %}
+        <div class="flex flex-col min-w-0">
+          <span class="lamsa-ft-{{ id }}-h">{{ contactHeading }}</span>
+          <ul class="flex flex-col gap-3.5">
+            {% if phone %}
+              <li>
+                <a href="tel:{{ phone }}" class="lamsa-ft-{{ id }}-link" dir="ltr">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6.5 3h3l1.5 4-2 1.5a11.5 11.5 0 0 0 5.5 5.5L16 12l4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A15.5 15.5 0 0 1 4 4.6 1.5 1.5 0 0 1 5.5 3h1Z"/>
+                  </svg>
+                  {{ phone }}
+                </a>
+              </li>
+            {% endif %}
+            {% if whatsapp %}
+              <li>
+                <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="lamsa-ft-{{ id }}-link">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.91-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.06 2.87 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.58-.34m-5.42 7.4h-.01a9.87 9.87 0 0 1-5.03-1.37l-.36-.22-3.74.98 1-3.65-.24-.37A9.86 9.86 0 0 1 2.16 12c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.17-3.49-8.42"/></svg>
+                  {{ t('footer.whatsapp') }}
+                </a>
+              </li>
+            {% endif %}
+            {% if email %}
+              <li>
+                <a href="mailto:{{ email }}" class="lamsa-ft-{{ id }}-link" dir="ltr">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 6.5 9 6 9-6"/>
+                  </svg>
+                  {{ email }}
+                </a>
+              </li>
+            {% endif %}
+            {% if hours %}
+              <li>
+                <span class="lamsa-ft-{{ id }}-link" style="cursor: default;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="8.75"/><path d="M12 7.2V12l3.4 2"/>
+                  </svg>
+                  {{ hours }}
+                </span>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# ═════════════════ payments ═════════════════ #}
+    {% if showPayments and (payOn | length) > 0 %}
+      <div class="flex items-center gap-4 flex-wrap py-6" style="border-top: 1px solid var(--color-footer-border);">
+        {% if payHeading %}
+          <span class="lamsa-ft-{{ id }}-small" style="font-weight: 600;">{{ payHeading }}</span>
+        {% endif %}
+
+        <ul class="lamsa-ft-{{ id }}-paylist" aria-label="{{ t('footer.payments') }}">
+          {% for m in payOn %}
+            <li class="lamsa-ft-{{ id }}-paybadge {{ 'lamsa-ft-' ~ id ~ '-paybadge--text' if m.key }}">{{ t('footer.' ~ m.key) if m.key else m.label }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# ═════════════════ bottom bar ═════════════════ #}
+    <div class="lamsa-ft-{{ id }}-bottom">
+      <p class="lamsa-ft-{{ id }}-small m-0">
+        {# the year is a JS-overwritten fallback — Nunjucks has no date filter #}
+        &copy; <span data-lamsa-year>2026</span>
+        {{ storeName }} · {{ t('footer.rights') }}
+      </p>
+
+      <div class="flex items-center gap-5 flex-wrap">
+        {% if bottomMenu %}
+          <nav class="flex items-center gap-5 flex-wrap lamsa-ft-{{ id }}-small">
+            {% for item in (bottomMenu.items if bottomMenu.items else bottomMenu) %}
+              <a href="{{ item.url | default('#') }}">{{ item.title }}</a>
+            {% endfor %}
+          </nav>
+        {% endif %}
+
+        {% if backToTop %}
+          <button type="button" class="lamsa-ft-{{ id }}-top" data-lamsa-totop>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5m0 0-5.5 5.5M12 5l5.5 5.5"/>
+            </svg>
+            {{ t('footer.back_to_top') }}
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+  (function () {
+    /* Year is stamped client-side — a hard-coded year in the template silently
+       goes stale on 1 January and nobody notices. */
+    document.querySelectorAll('[data-lamsa-year]').forEach(function (el) {
+      el.textContent = new Date().getFullYear();
+    });
+
+    document.querySelectorAll('[data-lamsa-totop]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      });
+    });
+  })();
+</script>

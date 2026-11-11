@@ -1,0 +1,18 @@
+{#- Store page body (About us, policies…) for pages/page.json — CNT-04. Qalab exposes the page as `page`
+    (title + description); body falls back across the field names the platform may use so content never
+    renders blank. -#}
+{%- set page = (context or {}).page if ((context or {}).page and (context or {}).page.title) else (page or {}) -%}
+{%- set body = page.content or page.body or page.html or page.description or '' -%}
+<section class="dc-article-page section surface-cream" aria-labelledby="dc-page-title">
+  <div class="shell">
+    <nav class="dc-breadcrumb" aria-label="{{ t('a11y.breadcrumb') }}">
+      <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span><span aria-current="page">{{ page.title }}</span>
+    </nav>
+    <article class="dc-article">
+      <h1 id="dc-page-title" class="h-display dc-article__title">{{ page.title }}</h1>
+      {%- if body | trim | length %}
+      <div class="prose-decafe">{{ body | safe }}</div>
+      {%- endif %}
+    </article>
+  </div>
+</section>

@@ -1,0 +1,44 @@
+{
+  "name": "best-article",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "From the journal"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        }
+      ]
+    },
+    "article": {
+      "type": "article",
+      "label": {
+        "ar": "المقال",
+        "en": "Article"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "best-article"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "صفحة الحقيبة",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "العنوان الصغير", "en": "Kicker" },
+      "default": "الحقيبة"
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "حقيبتك"
+    },
+    "confirm_remove": {
+      "type": "boolean",
+      "label": { "ar": "تأكيد قبل حذف منتج", "en": "Confirm before removing an item" },
+      "default": true
+    },
+    "checkout_url": {
+      "type": "string",
+      "label": { "ar": "رابط إتمام الشراء", "en": "Checkout link" },
+      "default": "/checkout"
+    },
+    "continue_url": {
+      "type": "string",
+      "label": { "ar": "رابط متابعة التسوق", "en": "Continue-shopping link" },
+      "default": "/shop"
+    },
+    "note_text": {
+      "type": "string",
+      "label": { "ar": "ملاحظة أسفل الملخص", "en": "Note under the summary" },
+      "default": "الشحن والضرائب تُحسب عند الدفع."
+    }
+  },
+  "presets": [
+    { "category": "صفحة الحقيبة", "name": "صفحة الحقيبة" }
+  ]
+}

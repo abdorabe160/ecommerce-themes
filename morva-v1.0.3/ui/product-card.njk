@@ -1,0 +1,123 @@
+{# ============================================================================
+   MORVA PRODUCT CARD · SSR renderer
+   ----------------------------------------------------------------------------
+   NOTE: THIS CARD HAS A TWIN: `HayatCard.build()` in assets/main.js renders the
+   same markup for AJAX results (filters, search, auto-filled grids). Change
+   the STRUCTURE here and you must change it there too. All styling lives in
+   assets/style.css → "11. PRODUCT CARD", so the two can never drift visually.
+   ----------------------------------------------------------------------------
+   Square photo on top, a hairline, then one row: name + price · BUY · +
+     BUY → productCard.buyNow()   (product page when it has options)
+     +   → productCard.addToCart() (quick view when it has options)
+
+   Usage (written without the tag braces so no parser sees them here):
+     ui "product-card.njk", product=item
+   ========================================================================= #}
+
+{% set p = data.product %}
+
+{# ---- Demo card ----------------------------------------------------------
+   `demo='0'…'7'` (a STRING — numbers and booleans are not trusted through
+   {% ui %}) renders one of eight bundled demo pieces, for sections whose
+   product picker is still empty, so a fresh store or a shared preview never
+   looks bare. A demo card is not a product: it links to /shop and has no
+   cart wiring. main.js swaps demo grids for the store's real products as
+   soon as the store has any.
+   NOTE: TWIN LIST: widgets/hero-grid/widget.njk holds the same eight. #}
+{% set isDemo = false %}
+{% if not p and data.demo is defined and (data.demo | string) != '' %}
+  {% set DEMO = [
+    { t: 'هودي الضوء الأحمر', img: 'demo-p1.jpg', price: 1690, was: 0, tag: 'new' },
+    { t: 'هودي الجمجمة', img: 'demo-p2.jpg', price: 1890, was: 2490, tag: '' },
+    { t: 'هودي أودير', img: 'demo-p3.jpg', price: 1590, was: 0, tag: '' },
+    { t: 'طقم الإصدار ٠٣', img: 'demo-p4.jpg', price: 990, was: 0, tag: 'new' },
+    { t: 'هودي الغبار', img: 'demo-p5.jpg', price: 1490, was: 0, tag: '' },
+    { t: 'جاكيت وسط البلد', img: 'demo-p6.jpg', price: 2890, was: 3490, tag: '' },
+    { t: 'هودي الحي', img: 'demo-p7.jpg', price: 1390, was: 0, tag: '' },
+    { t: 'هودي الليل', img: 'demo-p8.jpg', price: 1590, was: 0, tag: '' }
+  ] %}
+  {% set dd = DEMO[(data.demo | int) % (DEMO | length)] %}
+  {% set isDemo = true %}
+  {% set p = { _id: 'demo', title: dd.t, slug: '', images: [{ fileUrl: dd.img | assets }],
+               pricing: { price: dd.price, compareAtPrice: dd.was }, trackQuantity: false,
+               tags: [dd.tag] } %}
+{% endif %}
+
+{% if p %}
+  {% set slug = p.slug | default(p.handle) | default(p._id) %}
+  {% set url = '/shop' if isDemo else ('/products/' ~ slug) %}
+  {% set imgs = p.images | default([]) %}
+  {% set img = imgs[0].fileUrl if (imgs | length) > 0 and imgs[0].fileUrl else '' %}
+  {% set price = (p.pricing.price | default(0)) if p.pricing else 0 %}
+  {% set was = (p.pricing.compareAtPrice | default(0)) if p.pricing else 0 %}
+  {% set onSale = was and was > price %}
+  {#- Listing payloads carry no options, variants or variantsCount, and a parent
+      quantity of 0 says nothing about its variants. Only a product known to
+      be simple can be called sold out here; anything else is unknown, and the
+      buttons resolve it from /ajax/product on click. Twin: HayatCard.facts(). -#}
+  {% set vKnown = (p.options | default([], true) | length) + (p.variants | default([], true) | length) %}
+  {% set isSimple = p.variantsCount == 0 or (vKnown == 0 and p.options is defined and p.variants is defined) %}
+  {% set inStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 or (not isSimple) %}
+  {#- Quantity 0 with no variant data: the card can't say, so it sends the shopper to the page. -#}
+  {% set stockUnknown = (not p.allowBackorder) and (p.quantity | default(0, true)) <= 0 and (not isSimple) %}
+  {% set lowAt = settings.lowStockThreshold | default(3, true) %}
+  {% set isLow = p.trackQuantity and (not p.allowBackorder) and (p.quantity | default(0, true)) > 0 and (p.quantity | default(0, true)) <= lowAt %}
+
+  {# Badge: the sale cut first, otherwise a merchant tag named "new".
+     FLOOR, never round — "−38%" for a 37.5% cut overstates the discount.
+     A real cut under 1% still reads as a sale, not as "−0%". #}
+  {% set badge = '' %}
+  {% if onSale %}
+    {% set pct = (((was - price) / was) * 100) | round(0, 'floor') %}
+    {% set badge = ('−' ~ pct ~ '%') if pct > 0 else t('common.on_sale') %}
+  {% else %}
+    {% for tg in p.tags | default([]) %}
+      {% if tg is string %}{% set tgText = tg %}{% elif tg.name %}{% set tgText = tg.name %}{% elif tg.displayName %}{% set tgText = tg.displayName %}{% elif tg.title %}{% set tgText = tg.title %}{% elif tg.label %}{% set tgText = tg.label %}{% elif tg.value %}{% set tgText = tg.value %}{% else %}{% set tgText = '' %}{% endif %}
+      {% if (tgText | string | trim | lower) == 'new' and not badge %}{% set badge = t('products.new') %}{% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {#- Demo pieces are preview-only: visible in the Theme Editor, removed on
+      the live store (layout.njk · mv-live) so no shopper sees fake stock. -#}
+  <article class="mv-card{{ ' mv-card--demo' if isDemo }}"{% if isDemo %} data-mv-live-hide{% endif %}{% if not isDemo %} x-data="productCard('{{ p._id }}', '{{ url }}')"{% endif %}>
+    <a href="{{ url }}" class="mv-card-img" aria-label="{{ p.title }}">
+      {% if img %}
+        <img class="mv-fill" src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>
+      {% else %}
+        <span class="mv-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/><path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span>
+      {% endif %}
+      {% if badge %}<span class="mv-tag{{ ' mv-tag--sale' if onSale }}">{{ badge }}</span>{% endif %}
+      {% if not inStock %}<span class="mv-card-oos">{{ t('morva.sold_out') }}</span>{% elif isLow %}<span class="mv-card-oos">{{ t('morva.low_stock_short') }}</span>{% endif %}
+    </a>
+    <div class="mv-card-meta">
+      <div class="mv-card-info">
+        <a href="{{ url }}" class="mv-card-name">{{ p.title }}</a>
+        <span class="mv-price{{ ' is-sale' if onSale }}">
+          {% if onSale %}<s class="mv-was">{{ was | money }}</s>{% endif %}
+          <span>{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+        </span>
+      </div>
+      {% if isDemo %}
+        <a href="/shop" class="mv-card-buy">{{ t('morva.buy') }}</a>
+        <a href="/shop" class="mv-addsq" aria-label="{{ t('morva.add_to_bag') }}: {{ p.title }}">+</a>
+      {% elif inStock %}
+        {% if stockUnknown %}
+          <a href="{{ url }}" class="mv-card-buy">{{ t('morva.view_product') }}</a>
+        {% else %}
+          <button type="button" class="mv-card-buy" @click.prevent="buyNow()" :disabled="cartLoading">
+            <span x-show="!cartLoading">{{ t('morva.buy') }}</span>
+            <span x-show="cartLoading" x-cloak class="mv-spinner" style="width:13px;height:13px;"></span>
+          </button>
+        {% endif %}
+        <button type="button" class="mv-addsq" :class="cartSuccess && 'is-done'"
+                @click.prevent="addToCart()" :disabled="cartLoading"
+                aria-label="{{ t('morva.add_to_bag') }}: {{ p.title }}">
+          <span x-show="!cartSuccess">+</span>
+          <span x-show="cartSuccess" x-cloak>✓</span>
+        </button>
+      {% else %}
+        <a href="{{ url }}" class="mv-card-soldout">{{ t('morva.sold_out') }}</a>
+      {% endif %}
+    </div>
+  </article>
+{% endif %}

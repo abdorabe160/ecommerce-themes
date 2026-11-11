@@ -1,0 +1,136 @@
+{
+  "name": "جهّز عربيتك — الأطقم",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر", "en": "Small line above the title — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان — فارغ = «جهّز عربيتك»", "en": "Title — empty = “Build your kit”" },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": { "ar": "سطر وصفي — فارغ = النص الافتراضي", "en": "One line under the title — empty = default text" },
+      "default": ""
+    },
+    "featured_badge": {
+      "type": "string",
+      "label": { "ar": "شارة الطقم المميّز — فارغ = «الأوفر»", "en": "Featured-kit badge — empty = “Best value”" },
+      "default": ""
+    },
+    "inside_label": {
+      "type": "string",
+      "label": { "ar": "عنوان القائمة — فارغ = «ماذا في الطقم»", "en": "Checklist heading — empty = “What's inside”" },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": { "ar": "نص زر الطقم (لكل الأطقم) — فارغ = «اطلب الطقم»", "en": "Kit button label (all kits) — empty = “Get the kit”" },
+      "default": ""
+    },
+    "tilt": {
+      "type": "boolean",
+      "label": { "ar": "▸ إمالة ثلاثية الأبعاد خفيفة عند مرور الماوس (كمبيوتر فقط)", "en": "▸ Subtle 3D tilt on pointer move (desktop only)" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "خلفية القسم", "en": "Section background" }, "default": "" },
+    "color_card": { "type": "color", "label": { "ar": "خلفية البطاقات", "en": "Card background" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون العناوين", "en": "Title colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون النص", "en": "Text colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز (الأصفر)", "en": "Accent (the yellow)" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الخطوط", "en": "Hairline colour" }, "default": "" }
+  },
+  "blocks": {
+    "kit": {
+      "name": "طقم",
+      "settings": {
+        "name": {
+          "type": "string",
+          "label": { "ar": "▸ اسم الطقم", "en": "▸ Kit name" },
+          "default": ""
+        },
+        "tagline": {
+          "type": "string",
+          "label": { "ar": "سطر صغير تحت الاسم — مثال: لغسيل أسبوعي بلا خدوش", "en": "Small line under the name — e.g. For a scratch-free weekly wash" },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": { "ar": "الصورة — مربّعة · فارغ = صورة الطقم الافتراضية", "en": "Picture — square · empty = the default kit picture" }
+        },
+        "items": {
+          "type": "text",
+          "label": { "ar": "ماذا في الطقم — عنصر في كل سطر", "en": "What's inside — one item per line" },
+          "default": ""
+        },
+        "price_was": {
+          "type": "string",
+          "label": { "ar": "مجموع القطع منفردة — مثال: 1480", "en": "Sum of the parts bought separately — e.g. 1480" },
+          "default": ""
+        },
+        "price": {
+          "type": "string",
+          "label": { "ar": "سعر الطقم — مثال: 1190", "en": "Kit price — e.g. 1190" },
+          "default": ""
+        },
+        "badge": {
+          "type": "string",
+          "label": { "ar": "شارة خاصة بهذا الطقم — مثال: جديد · فارغ = لا شيء (المميّز يأخذ «الأوفر»)", "en": "Badge for this kit — e.g. New · empty = none (the featured one gets “Best value”)" },
+          "default": ""
+        },
+        "featured": {
+          "type": "boolean",
+          "label": { "ar": "▸ الطقم المميّز (إطار أصفر ومرفوع) — افتراضيًا الأوسط", "en": "▸ Featured kit (yellow frame, raised) — the middle one by default" },
+          "default": false
+        },
+        "product": {
+          "type": "products",
+          "label": { "ar": "الطقم كمنتج — يُؤخذ أول منتج مختار (رابط الزر)", "en": "The kit sold as a product — first picked one (button link)" }
+        },
+        "collection": {
+          "type": "collections",
+          "label": { "ar": "أو تصنيف — يُؤخذ أول تصنيف (لو لم تختر منتجًا)", "en": "Or a collection — first picked one (when no product is set)" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "أو رابط يدوي — فارغ = /shop", "en": "Or a manual link — empty = /shop" },
+          "default": ""
+        },
+        "cta_text": {
+          "type": "string",
+          "label": { "ar": "نص الزر لهذا الطقم — فارغ = النص العام", "en": "Button label for this kit — empty = the shared label" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "المنتجات", "name": "جهّز عربيتك — الأطقم" }
+  ]
+}

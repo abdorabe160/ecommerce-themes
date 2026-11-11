@@ -1,0 +1,11 @@
+{
+  "layout": "layout",
+  "widgets": [
+    { "name": "تفاصيل المنتج", "widget": "product-detail" },
+    {
+      "name": "منتجات قد تعجبك",
+      "widget": "featured-products-slider",
+      "settings": { "title": "منتجات قد تعجبك", "badge_text": "كمّل اللوك", "enable_tabs": false, "show_new_badge": false }
+    }
+  ]
+}

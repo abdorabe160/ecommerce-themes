@@ -1,0 +1,44 @@
+{
+  "name": "best-product",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "Featured product"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        }
+      ]
+    },
+    "product": {
+      "type": "product",
+      "label": {
+        "ar": "المنتج",
+        "en": "Product"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "best-product"
+    }
+  ]
+}

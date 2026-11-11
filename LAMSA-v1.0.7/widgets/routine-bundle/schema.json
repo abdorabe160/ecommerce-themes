@@ -1,0 +1,208 @@
+{
+  "name": "الروتين الكامل",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "الروتين"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "روتين النضارة في <em>٤ خطوات</em>"
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير",
+        "en": "Short Description"
+      },
+      "default": "خطوات مرتّبة بمكوّنات لا تتعارض — استخدميها بالترتيب صباحاً ومساءً."
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "row",
+      "options": [
+        {
+          "value": "row",
+          "label": {
+            "ar": "خطوات بالعرض",
+            "en": "Steps in a row"
+          }
+        },
+        {
+          "value": "list",
+          "label": {
+            "ar": "قائمة رأسية مرقّمة",
+            "en": "Numbered vertical list"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "blush",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        }
+      ]
+    },
+    "show_prices": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار سعر كل خطوة",
+        "en": "Show Each Step's Price"
+      },
+      "default": true
+    },
+    "show_bundle_bar": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط الإجمالي وزر «أضيفي الروتين كامل»",
+        "en": "Show the total + \"add whole routine\" bar"
+      },
+      "default": true
+    },
+    "bundle_price": {
+      "type": "number",
+      "label": {
+        "ar": "سعر المجموعة بعد الخصم (بالهللات — اتركيه 0 لعرض الإجمالي فقط)",
+        "en": "Discounted bundle price (minor units — leave 0 to just show the total)"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 100
+    },
+    "bundle_note": {
+      "type": "string",
+      "label": {
+        "ar": "ملاحظة تحت الإجمالي",
+        "en": "Note under the total"
+      },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الإضافة",
+        "en": "Add Button Text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "step": {
+      "name": "خطوة",
+      "settings": {
+        "product": {
+          "type": "products",
+          "label": {
+            "ar": "المنتج (اختاري منتجاً واحداً)",
+            "en": "Product (pick one)"
+          },
+          "default": []
+        },
+        "step_label": {
+          "type": "string",
+          "label": {
+            "ar": "اسم الخطوة",
+            "en": "Step Label"
+          },
+          "default": ""
+        },
+        "note": {
+          "type": "string",
+          "label": {
+            "ar": "طريقة الاستخدام (سطر قصير)",
+            "en": "How to use (one short line)"
+          },
+          "default": ""
+        },
+        "time": {
+          "type": "select",
+          "label": {
+            "ar": "وقت الاستخدام",
+            "en": "When to use"
+          },
+          "default": "both",
+          "options": [
+            {
+              "value": "both",
+              "label": {
+                "ar": "صباحاً ومساءً",
+                "en": "Morning & evening"
+              }
+            },
+            {
+              "value": "morning",
+              "label": {
+                "ar": "صباحاً",
+                "en": "Morning"
+              }
+            },
+            {
+              "value": "evening",
+              "label": {
+                "ar": "مساءً",
+                "en": "Evening"
+              }
+            },
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "الروتين الكامل"
+    }
+  ]
+}

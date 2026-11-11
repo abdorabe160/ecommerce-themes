@@ -1,0 +1,64 @@
+{
+  "name": "صفحة السلة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "عنوان الصفحة", "en": "Page Title" },
+      "default": "سلة التسوّق"
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مسار التصفّح", "en": "Show breadcrumb" },
+      "default": true
+    },
+    "show_savings": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مبلغ التوفير", "en": "Show the amount saved" },
+      "default": true
+    },
+    "show_discount_row": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار سطر الخصم عند تطبيق كوبون (عرض فقط — لا يوجد حقل إدخال)",
+        "en": "Show the discount row when a coupon is applied (display only — no input field)"
+      },
+      "default": true
+    },
+    "free_shipping_threshold": {
+      "type": "number",
+      "label": {
+        "ar": "حدّ الشحن المجّاني بعملة المتجر (0 = إخفاء شريط التقدّم)",
+        "en": "Free-shipping threshold in store currency (0 hides the progress bar)"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 1
+    },
+    "confirm_remove": {
+      "type": "boolean",
+      "label": { "ar": "تأكيد قبل حذف المنتج", "en": "Confirm before removing an item" },
+      "default": true
+    },
+    "checkout_url": {
+      "type": "string",
+      "label": { "ar": "رابط إتمام الطلب", "en": "Checkout URL" },
+      "default": "/checkout"
+    },
+    "continue_shopping_url": {
+      "type": "string",
+      "label": { "ar": "رابط متابعة التسوّق", "en": "Continue shopping URL" },
+      "default": "/shop"
+    },
+    "note_text": {
+      "type": "string",
+      "label": { "ar": "ملاحظة أسفل زر الدفع", "en": "Note under the checkout button" },
+      "default": "الشحن يُحسب عند إتمام الطلب"
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة السلة",
+      "name": "صفحة السلة"
+    }
+  ]
+}

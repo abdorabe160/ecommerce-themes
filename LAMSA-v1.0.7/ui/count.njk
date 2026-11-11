@@ -1,0 +1,8 @@
+{#- LAMSA count: منتج واحد · منتجان · 3 منتجات · 11 منتج. Twin: Utils.countText in main.js.
+    Usage: ui "count.njk", n=number, kind='product' | 'article' -#}
+{%- set n = (data.n or 0) | int -%}
+{%- if data.kind == 'article' -%}
+  {%- if n == 1 -%}{{ t('count.article_one') }}{%- elif n == 2 -%}{{ t('count.article_two') }}{%- elif n >= 3 and n <= 10 -%}{{ n }} {{ t('count.article_few') }}{%- else -%}{{ n }} {{ t('count.article_many') }}{%- endif -%}
+{%- else -%}
+  {%- if n == 1 -%}{{ t('count.product_one') }}{%- elif n == 2 -%}{{ t('count.product_two') }}{%- elif n >= 3 and n <= 10 -%}{{ n }} {{ t('count.product_few') }}{%- else -%}{{ n }} {{ t('count.product_many') }}{%- endif -%}
+{%- endif -%}

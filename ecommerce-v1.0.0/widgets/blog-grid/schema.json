@@ -1,0 +1,125 @@
+{
+  "name": "شبكة المقالات",
+  "settings": {
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "مسار التنقل",
+        "en": "Breadcrumb"
+      },
+      "default": true
+    },
+    "show_heading": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عنوان الصفحة ووصفها",
+        "en": "▸ Page title and description"
+      },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد الأعمدة — كمبيوتر",
+        "en": "Columns — desktop"
+      },
+      "default": 3,
+      "min": 2,
+      "max": 4,
+      "step": 1
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الصورة",
+        "en": "Picture shape"
+      },
+      "default": "wide",
+      "options": [
+        {
+          "value": "wide",
+          "label": {
+            "ar": "عريضة",
+            "en": "Wide"
+          }
+        },
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولية",
+            "en": "Portrait"
+          }
+        }
+      ]
+    },
+    "show_category": {
+      "type": "boolean",
+      "label": {
+        "ar": "التصنيف فوق العنوان",
+        "en": "Category above the title"
+      },
+      "default": true
+    },
+    "show_date": {
+      "type": "boolean",
+      "label": {
+        "ar": "التاريخ",
+        "en": "Date"
+      },
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "boolean",
+      "label": {
+        "ar": "المقتطف",
+        "en": "Excerpt"
+      },
+      "default": true
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند مرور الماوس",
+        "en": "Zoom on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 16,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 48,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "شبكة المقالات"
+    }
+  ]
+}

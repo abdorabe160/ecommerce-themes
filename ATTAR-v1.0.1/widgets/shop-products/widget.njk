@@ -1,0 +1,88 @@
+{# ===== ATTAR Shop Products — rendered via data-qumra-section ===== #}
+<div class="shop-products-content">
+{% set columns_desktop = widget.data.columns_desktop | default('3') %}
+{% set _cs_ratio = widget.data.card_image_ratio | default('square') %}
+
+{% set products = (context.shop.products if (context.shop and context.shop.products) else (context.products or [])) %}
+{% set pagination = (context.shop.pagination if (context.shop and context.shop.pagination) else context.pagination) %}
+{% set totalItems = pagination.totalItems if pagination else products | length %}
+
+{# Hidden count data — JS extracts this to update sidebar #}
+<div id="products-count-data" style="display:none">
+  <p class="text-[13px] font-body-ar" style="color: var(--color-text-secondary);">
+    <span class="font-medium" style="color: var(--color-text-primary);">{% ui "count.njk", n=(totalItems or 0), kind='product' %}</span>
+  </p>
+</div>
+
+{% if products | length > 0 %}
+  <div class="grid grid-cols-2 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-20 {% if columns_desktop == '4' %}attar-fit-4 attar-fit-span-sm attar-lone-sm2 attar-lone-md3 md:grid-cols-3 lg:grid-cols-4{% else %}attar-fit-3 attar-fit-span attar-fit-span-sm md:grid-cols-2 lg:grid-cols-3{% endif %}">
+    {% for product in products %}
+      {% ui "product-card.njk", product=product, image_ratio=_cs_ratio, index=loop.index %}
+    {% endfor %}
+  </div>
+
+  {# ===== Pagination — editorial, AJAX via goToPage() ===== #}
+  {% if pagination and pagination.totalPages > 1 %}
+    <nav class="flex items-center justify-center gap-6 md:gap-8 mt-16 pt-8" style="border-top: 1px solid var(--color-border);" aria-label="pagination">
+      {# Prev #}
+      {% if pagination.currentPage > 1 %}
+        <button @click.prevent="goToPage({{ pagination.currentPage - 1 }})"
+           class="h-11 w-11 flex items-center justify-center transition-colors duration-200"
+           style="color: var(--color-text-secondary);"
+           onmouseenter="this.style.color='var(--color-accent)'"
+           onmouseleave="this.style.color='var(--color-text-secondary)'"
+           aria-label="{{ t('common.back') | default('السابق') }}">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="h-11 w-11 flex items-center justify-center" style="color: var(--color-border);">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </span>
+      {% endif %}
+
+      {# current / total #}
+      <span class="select-none text-[15px] font-heading-ar" style="color: var(--color-text-primary);">
+        <span class="tabular-nums" style="color: var(--color-accent);">{{ pagination.currentPage }}</span>
+        <span class="mx-2" style="color: var(--color-border);">/</span>
+        <span class="tabular-nums">{{ pagination.totalPages }}</span>
+      </span>
+
+      {# Next #}
+      {% if pagination.hasNextPage %}
+        <button @click.prevent="goToPage({{ pagination.currentPage + 1 }})"
+           class="h-11 w-11 flex items-center justify-center transition-colors duration-200"
+           style="color: var(--color-text-secondary);"
+           onmouseenter="this.style.color='var(--color-accent)'"
+           onmouseleave="this.style.color='var(--color-text-secondary)'"
+           aria-label="{{ t('common.continue') | default('التالي') }}">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      {% else %}
+        <span class="h-11 w-11 flex items-center justify-center" style="color: var(--color-border);">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </span>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+  {# ===== Empty State — editorial ===== #}
+  <div class="flex flex-col items-center justify-center py-24 text-center">
+    {% set _isSearch = (context.shop and context.shop.mode == 'search') or (context.query and context.query.q) %}
+    <span class="editorial-label block mb-4">{{t('common.no_results')}}</span>
+    <h3 class="font-heading-ar text-[22px] mb-6" style="color: var(--color-text-primary); font-weight: 500;">{{ t('pages.search.try_different') if _isSearch else t('collection.no_products') }}</h3>
+    <span class="block w-12 mx-auto mb-6" style="height: 1px; background: var(--color-border);"></span>
+    <a href="/shop" class="anaqa-btn font-body-ar">
+      {{ t('pages.shop.title') }}
+    </a>
+  </div>
+{% endif %}
+</div>{# /.shop-products-content #}

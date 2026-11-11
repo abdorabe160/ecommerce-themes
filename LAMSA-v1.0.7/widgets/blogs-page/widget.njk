@@ -1,0 +1,108 @@
+{# ============================================================================
+   LAMSA BLOGS PAGE — /blogs
+   Lists the articles of every blog category, gathered in the browser (Alpine
+   `lamsaBlogsFeed` in assets/main.js), because the platform sends this page only
+   the categories. The cards are ui/article-card.njk; categories are the rail.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blogs = context.blogs | default([], true) %}
+{% set count = blogs | length %}
+{% set handles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = handles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default(t('pages.blog.title'), true) %}
+{% set subtitle = d.subtitle | default('') %}
+{% set showCats = d.show_categories | default(true) %}
+{% set colsD = d.columns | default('3', true) %}
+{% set colsDInt = colsD | int %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+
+
+<style>
+  .lamsa-blp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-blp-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-blp-{{ id }}-title { line-height: 1.34; }
+
+  .lamsa-blp-{{ id }}-cats { display: flex; justify-content: center; margin-bottom: 36px; }
+  .lamsa-blp-{{ id }}-cats .lamsa-blogcats { max-width: 100%; }
+
+  .lamsa-blp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  @media (min-width: 641px) { .lamsa-blp-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .lamsa-blp-{{ id }}-grid { grid-template-columns: repeat({{ colsD }}, minmax(0, 1fr)); gap: 26px; } }
+
+  /* set by lamsaBlogsFeed when the count would leave one card alone on a row */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .lamsa-blp-{{ id }}-grid.is-feature-mid > :first-child { grid-column: 1 / -1; flex-direction: row; }
+    .lamsa-blp-{{ id }}-grid.is-feature-mid > :first-child .lamsa-acard-media { width: 52%; flex-shrink: 0; aspect-ratio: auto; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-blp-{{ id }}-grid.is-feature > :first-child { grid-column: 1 / -1; flex-direction: row; }
+    .lamsa-blp-{{ id }}-grid.is-feature > :first-child .lamsa-acard-media { width: 52%; flex-shrink: 0; aspect-ratio: auto; }
+    .lamsa-blp-{{ id }}-grid.is-feature > :first-child .lamsa-acard-body { justify-content: center; padding: 32px; gap: 12px; }
+  }
+</style>
+
+
+<section id="lamsa-blp-{{ id }}" class="lamsa-section" style="background: var(--color-bg-primary);">
+  <div class="lamsa-container">
+
+    <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+      <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <span style="color: var(--color-text-secondary);">{{ title }}</span>
+    </nav>
+
+    <div class="lamsa-head lamsa-head--center">
+      {% if eyebrow %}
+        <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+      {% endif %}
+      <h1 class="lamsa-blp-{{ id }}-title lamsa-head-title">{{ title }}</h1>
+      {% if subtitle %}<p class="lamsa-head-desc">{{ subtitle | safe }}</p>{% endif %}
+    </div>
+
+    {# ═════════════ category rail, a filter above the articles: one category
+       has nothing to filter. Also publishes the list the rail on /blogs/<handle>
+       reads (ui/blog-categories.njk) ═════════════ #}
+    {% if count > 1 and showCats %}
+      <div class="lamsa-blp-{{ id }}-cats">{% ui "blog-categories.njk", active='all' %}</div>
+    {% endif %}
+
+    <div x-data="lamsaBlogsFeed({ handles: {{ handles | dump | escape }}, cols: {{ colsDInt }}, midCols: {{ colsMid }} })">
+      <div x-show="loading" class="flex items-center justify-center py-16">
+        <span class="lamsa-spinner" style="width: 30px; height: 30px;"></span>
+      </div>
+
+      <div class="lamsa-blp-{{ id }}-grid" x-ref="grid" x-show="count > 0" x-cloak></div>
+
+      <div class="lamsa-empty" x-show="!loading && count === 0" x-cloak>
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/>
+            <path d="M12 4h6.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H12"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('pages.blog.no_articles') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('pages.blog.no_articles_desc') }}</p>
+        <a href="/shop" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm mt-1">{{ t('pages.shop.all_products') }}</a>
+      </div>
+    </div>
+
+  </div>
+</section>

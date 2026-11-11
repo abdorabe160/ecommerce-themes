@@ -1,0 +1,49 @@
+{# آراء العملاء — مطابق لكاروسيل Judge.me في mavin-wear.com: عنوان كبير في المنتصف + عدد التقييمات + بطاقات بصورة المنتج. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{#- Only reviews the merchant actually wrote: an empty block (added, never filled) is skipped. -#}
+{% set reviews = [] %}
+{% for b0 in widget.blocks | default([]) %}{% set s0 = b0.settings or b0.data or {} %}{% if s0.text or s0.title %}{% set _ = reviews.push({ settings: s0 }) %}{% endif %}{% endfor %}
+{#- Sum via a list (works whatever the engine's loop scoping is). -#}
+{% set rates = [] %}
+{% for b in reviews %}{% set _ = rates.push(b.settings.rating | default(5)) %}{% endfor %}
+{% set total = rates | sum %}
+{% set avg = wd.average_rating if wd.average_rating else ((total / (reviews | length)) if (reviews | length) else 0) %}
+{% set count = wd.reviews_count if wd.reviews_count else (reviews | length) %}
+{% set star %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8L12 2.5Z"/></svg>{% endset %}
+{% if reviews | length %}
+<section class="mw-reviews" x-data="mwScroller()">
+  <div class="container">
+    <div class="mw-reviews__head">
+      <h2 class="mw-reviews__title">{{ wd.title | default(t('reviews.title')) | default('Let customers speak for us') }}</h2>
+      {% if wd.show_rating != false %}
+        <p class="mw-reviews__summary">
+          <span class="mw-stars" aria-label="{{ avg | round(2) }} / 5">{% for i in range(1, 6) %}<span{% if i > (avg | round) %} class="is-off"{% endif %}>{{ star | safe }}</span>{% endfor %}</span>
+          {% set cn100 = count % 100 %}{% if count == 1 %}{% set countLabel = t('reviews.count_one') %}{% elif count == 2 %}{% set countLabel = t('reviews.count_two') %}{% elif cn100 >= 3 and cn100 <= 10 %}{% set countLabel = t('reviews.count_few') %}{% else %}{% set countLabel = t('reviews.count_many') %}{% endif %}
+          <span>{{ t('reviews.from') }} {{ countLabel | replace('{count}', count) }}</span>
+        </p>
+      {% endif %}
+    </div>
+    <div class="mw-scroller mw-reviews__track" x-ref="track">
+      {% for b in reviews %}{% set s = b.settings %}
+        <article class="mw-review">
+          {#- The merchant's photo only — a stock demo picture beside a real review would show a product the customer never bought. -#}
+          {% set img = s.image.fileUrl if (s.image and s.image.fileUrl) else '' %}
+          {% if img %}
+            <div class="mw-review__media"><img src="{{ img }}" alt="{{ s.product | default('') }}" loading="lazy" decoding="async" width="460" height="460"/></div>
+          {% endif %}
+          <div class="mw-review__body">
+            <span class="mw-stars" aria-label="{{ s.rating | default(5) }} / 5">{% for i in range(1, 6) %}<span{% if i > (s.rating | default(5)) %} class="is-off"{% endif %}>{{ star | safe }}</span>{% endfor %}</span>
+            <p class="mw-review__name">
+              {{ s.name | default('Anonymous') }}
+              {% if s.verified %}<svg viewBox="0 0 24 24" fill="none" aria-label="{{t('reviews.verified') | default('Verified') }}"><rect x="2" y="2" width="20" height="20" rx="3" fill="currentColor"/><path d="m7 12.5 3.2 3L17 8.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}
+            </p>
+            {% if s.title %}<p class="mw-review__title" dir="auto">{{ s.title }}</p>{% endif %}
+            {% if s.text %}<p class="mw-review__text" dir="auto">{{ s.text }}</p>{% endif %}
+            {% if s.product %}<p class="mw-review__product">{{ s.product }}</p>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

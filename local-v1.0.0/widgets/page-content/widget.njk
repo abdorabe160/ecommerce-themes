@@ -1,0 +1,107 @@
+{# ============================================================================
+   LOCAL · PAGE CONTENT — the custom/static page body
+   ----------------------------------------------------------------------------
+   Renders /pages/{slug} — about, contact, terms, privacy, shipping policy…
+
+   ⚠️  UNVERIFIED FIELD NAME. `docs/qalab/variables.md` documents `page.title`,
+   `page.type` and `page.url` — and nothing else. It never says where a custom
+   page's BODY lives, and there is no example in this theme to copy. So instead
+   of betting on one name, this reads the plausible ones in order:
+
+       context.page.content → .body → .description → .html
+       page.content         → .body → .description
+       the widget's own fallback_text setting
+
+   The first non-empty one wins. If every one of them is empty the widget shows
+   a setup hint rather than an empty page — a silently blank /pages/terms is
+   exactly the kind of thing nobody notices until a customer does. Once the real
+   field is confirmed, collapse this to that single lookup and delete the rest.
+
+   The measure is narrow by default: a policy page set to the shop's full
+   1440px runs ~200 characters a line and stops being readable.
+   Styling: style.css → "15.28 STATIC PAGE".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set width = d.width | default('narrow') %}
+{% set bg = d.background | default('white') %}
+{% set fallbackText = d.fallback_text | default('', true) %}
+{% set showUpdated = d.show_updated | default(false) %}
+
+{# ---- the page record: context.page if the runtime provides one, else the global ---- #}
+{% set cp = context.page | default({}) %}
+
+{# ---- title: setting wins, then the page record, then the global ---- #}
+{% set pageTitle = d.title_override | default('', true) %}
+{% if not pageTitle %}{% set pageTitle = cp.title | default('', true) %}{% endif %}
+{% if not pageTitle %}{% set pageTitle = page.title | default('', true) %}{% endif %}
+
+{# ---- body: first non-empty source wins ---- #}
+{% set body = cp.content | default('', true) %}
+{% if not body %}{% set body = cp.body | default('', true) %}{% endif %}
+{% if not body %}{% set body = cp.description | default('', true) %}{% endif %}
+{% if not body %}{% set body = cp.html | default('', true) %}{% endif %}
+{% if not body %}{% set body = page.content | default('', true) %}{% endif %}
+{% if not body %}{% set body = page.body | default('', true) %}{% endif %}
+{% if not body %}{% set body = page.description | default('', true) %}{% endif %}
+{% if not body %}{% set body = fallbackText %}{% endif %}
+
+{% set updated = cp.updatedAt | default(cp.createdAt) | default('', true) %}
+
+
+<section id="lc-pg-{{ id }}" class="lc-pg {{ 'lc-pg--well' if bg == 'well' }}">
+  <div class="lc-container {{ 'lc-container--narrow' if width == 'narrow' }}">
+
+    {% if showBreadcrumb %}
+      <nav class="lc-crumbs" aria-label="{{ t('common.home') }}">
+        <a href="/">{{ t('common.home') }}</a>
+        <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+        </svg>
+        <span aria-current="page">{{ pageTitle | default(t('common.home'), true) }}</span>
+      </nav>
+    {% endif %}
+
+    {% if showTitle and pageTitle %}
+      <header class="lc-pg-head">
+        {% if eyebrow %}<span class="lc-pg-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="lc-pg-title">{{ pageTitle }}</h1>
+        {% if showUpdated and updated %}
+          <p class="lc-pg-updated">
+            {{ t('pages.about.last_updated') }}
+            <time datetime="{{ updated }}" data-lc-date>{{ (updated | string).slice(0, 10) }}</time>
+          </p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if body %}
+      {# `.lcb-prose` is the shared typography for authored HTML — headings,
+         lists, quotes, tables. It is generic and also used by the article body;
+         renaming it would touch merchant content that already exists. #}
+      <div class="lcb-prose lc-pg-body">{{ body | safe }}</div>
+    {% else %}
+      {# never let a custom page render as a blank slab #}
+      <div class="lc-empty lc-pg-empty">
+        <span class="lc-pg-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
+          </svg>
+        </span>
+        <span class="lc-empty-title">{{ t('pages.page.empty_title') }}</span>
+        <p class="lc-pg-empty-text lc-builder-only">{{ t('pages.page.empty_desc') }}</p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#lc-pg-' ~ id, c=d %}

@@ -1,0 +1,73 @@
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set links = wd.footer_menu or [] -%}
+{%- set support = wd.support_menu or [] -%}
+{#- both menus default to the same one: never print the same links twice -#}
+{%- set seenLinks = [] -%}
+{%- for item in links -%}{%- if seenLinks.push(item.url) -%}{%- endif -%}{%- endfor -%}
+{%- set helpLinks = [] -%}
+{%- for item in support -%}{%- if not (item.url in seenLinks) and helpLinks.push(item) -%}{%- endif -%}{%- endfor -%}
+{%- set hasSocial = settings.socialInstagram or settings.socialFacebook or settings.socialTiktok or settings.socialX or settings.socialYoutube or settings.socialWhatsapp -%}
+<footer class="dc-footer">
+  <div class="shell">
+    <div class="dc-footer__main">
+      <div class="dc-footer__brand">
+        {% ui "brand-logo.njk", size="lg", cls="dc-footer__logo" %}
+        <p>{{ t('footer.description') }}</p>
+        {%- if settings.contactAddress or settings['contactAddress' + L] %}
+        <p class="dc-footer__contact">{% ui "icon.njk", name="pin", size=17 %}<span>{{ settings['contactAddress' + L] or settings.contactAddress }}</span></p>
+        {%- endif %}
+        {%- if settings.contactEmail %}
+        <a class="dc-footer__contact" href="mailto:{{ settings.contactEmail }}">{% ui "icon.njk", name="mail", size=17 %}<span>{{ settings.contactEmail }}</span></a>
+        {%- endif %}
+        {%- if settings.contactPhone %}
+        <a class="dc-footer__contact" href="tel:{{ settings.contactPhone }}">{% ui "icon.njk", name="phone", size=17 %}<span dir="ltr">{{ settings.contactPhone }}</span></a>
+        {%- endif %}
+      </div>
+
+      <div class="dc-footer__column">
+        <h2>{{ t('footer.explore') }}</h2>
+        <ul>
+          {%- if links.length %}
+            {%- for item in links %}<li><a href="{{ item.url or '#' }}">{{ item.title }}</a></li>{%- endfor %}
+          {%- else %}
+            <li><a href="/shop">{{ t('nav.shop') }}</a></li><li><a href="/collections">{{ t('nav.coffee_types') }}</a></li><li><a href="/latest">{{ t('nav.latest') }}</a></li>
+          {%- endif %}
+        </ul>
+      </div>
+
+      {%- if helpLinks.length or not support.length %}
+      <div class="dc-footer__column">
+        <h2>{{ t('footer.help') }}</h2>
+        <ul>
+          {%- if helpLinks.length %}
+            {%- for item in helpLinks %}<li><a href="{{ item.url or '#' }}">{{ item.title }}</a></li>{%- endfor %}
+          {%- else %}
+            <li><a href="/search">{{ t('search.submit') }}</a></li><li><a href="/cart">{{ t('cart.title') }}</a></li><li><a href="/collections">{{ t('nav.collections') }}</a></li>
+          {%- endif %}
+        </ul>
+      </div>
+      {%- endif %}
+
+      {%- if hasSocial %}
+      <div class="dc-footer__column dc-footer__social">
+        <h2>{{ t('footer.follow') }}</h2>
+        <div class="dc-social-links">
+          {%- if settings.socialInstagram %}<a href="{{ settings.socialInstagram }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">{% ui "icon.njk", name="instagram", size=19 %}</a>{%- endif %}
+          {%- if settings.socialFacebook %}<a href="{{ settings.socialFacebook }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">{% ui "icon.njk", name="facebook", size=19 %}</a>{%- endif %}
+          {%- if settings.socialTiktok %}<a href="{{ settings.socialTiktok }}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">{% ui "icon.njk", name="tiktok", size=19 %}</a>{%- endif %}
+          {%- if settings.socialX %}<a href="{{ settings.socialX }}" target="_blank" rel="noopener noreferrer" aria-label="X">{% ui "icon.njk", name="x", size=19 %}</a>{%- endif %}
+          {%- if settings.socialYoutube %}<a href="{{ settings.socialYoutube }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube">{% ui "icon.njk", name="youtube", size=19 %}</a>{%- endif %}
+          {%- if settings.socialWhatsapp %}<a href="{{ settings.socialWhatsapp }}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">{% ui "icon.njk", name="whatsapp", size=19 %}</a>{%- endif %}
+        </div>
+        <p class="dc-footer__note">{{ t('footer.social_note') }}</p>
+      </div>
+      {%- endif %}
+    </div>
+
+    <div class="dc-footer__bottom">
+      <span>© {{ store.name or settings.brandWordmark or 'DECAFE' }} · {{ t('footer.rights') }}</span>
+      <a href="/shop">{{ t('footer.back_to_shop') }} {% ui "icon.njk", name="arrow", size=15 %}</a>
+    </div>
+  </div>
+</footer>

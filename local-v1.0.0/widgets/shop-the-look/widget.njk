@@ -1,0 +1,126 @@
+{# ============================================================================
+   LOCAL · SHOP THE LOOK — تسوّقي الإطلالة
+   ----------------------------------------------------------------------------
+     Shop Hot Meals
+     ╭──────────────────────────────────────────────────────────────────╮
+     │  the picture fills the whole panel      ┌────────┐ ┌────────┐   │
+     │                                         │  card  │ │  card  │   │
+     │                                         └────────┘ └────────┘   │
+     │                                              ‹  ▬▬ • •  ›       │
+     ╰──────────────────────────────────────────────────────────────────╯
+
+   One photograph as the panel's BACKGROUND, and a product slider sitting on
+   it on one side (`slider_side`, logical — "end" is left in Arabic). The
+   cards are ui/lc-product-card.njk, the same card the product rows use.
+
+   Products: the picker; empty → the catalogue via LocalCard.fill() (main.js),
+   ordered by `auto_sort`.
+
+   Phones: the picture keeps the top of the panel and the slider sits under
+   it, still on the panel's ground.
+
+   Styling: assets/style.css → "15.5.8 SHOP THE LOOK · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set side = d.slider_side | default('end') %}
+
+{% set products = d.products | default([], true) %}
+{% set hasPicked = (products | length) > 0 %}
+{% set perView = d.columns | default(2, true) %}
+{% set action = d.button_action | default('add') %}
+{% set rating = 'on' if (d.show_rating | default(true)) else 'off' %}
+{% set badges = 'on' if (d.show_badges | default(true)) else 'off' %}
+{% set quick = 'on' if (d.show_quick_view | default(true)) else 'off' %}
+
+<section id="lc-stl-{{ id }}"
+         class="lc-stl lc-stl--{{ side }}"
+         style="--lc-stl-bg: {{ d.bg_color | default('var(--color-bg-tertiary)', true) }}; --lc-stl-h: {{ d.min_height | default(560) }}px;
+                padding-block: {{ d.padding_top | default(48) }}px {{ d.padding_bottom | default(48) }}px;">
+  <div class="lc-hwrap">
+    {% if d.title %}<h2 class="lc-sec-title">{{ d.title }}</h2>{% endif %}
+
+    <div class="lc-stl-panel">
+      {% if (img | length) > 0 %}
+        <picture class="lc-stl-media">
+          {% if (imgM | length) > 0 %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+          <img src="{{ img }}" alt="" loading="lazy"/>
+        </picture>
+      {% else %}
+        <span class="lc-stl-noimg"><svg class="lc-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false"><circle class="lc-ph-fill" cx="64" cy="74" r="30"/><circle class="lc-ph-fill" cx="106" cy="58" r="32"/><circle class="lc-ph-fill" cx="146" cy="78" r="26"/><path class="lc-ph-fill" d="M16 92h168a4 4 0 0 1 4 4c0 30-38 54-88 54S12 126 12 96a4 4 0 0 1 4-4Z"/><rect class="lc-ph-tint" x="40" y="104" width="120" height="12" rx="6"/></svg></span>
+      {% endif %}
+
+      <div class="lc-stl-rail">
+        <div class="swiper" id="lc-stlSw-{{ id }}">
+          <div class="swiper-wrapper" id="lc-stlList-{{ id }}">
+            {% if hasPicked %}
+              {% for item in products %}
+                {% ui "lc-product-card.njk", product=item, action=action, rating=rating, badges=badges, quick_view=quick, ratio='1x1', wrap='swiper-slide' %}
+              {% endfor %}
+            {% else %}
+              {% for i in range(perView) %}
+                <div class="swiper-slide lc-pcard lc-pcard--ph" data-lc-ph aria-hidden="true" style="--lc-pcard-ratio: 1 / 1;">
+                  <span class="lc-pcard-media"><span class="lc-pcard-noimg"></span></span>
+                  <div class="lc-pcard-body">
+                    <span class="lc-ph-line" style="width: 30%;"></span>
+                    <span class="lc-ph-line lc-ph-line--lg" style="width: 70%;"></span>
+                    <span class="lc-pcard-btn" style="visibility: hidden;">·</span>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="lc-pager lc-stl-pager">
+          <button type="button" class="lc-pager-arrow" id="lc-stlPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+          </button>
+          <div class="lc-pager-dots" id="lc-stlDots-{{ id }}"></div>
+          <button type="button" class="lc-pager-arrow" id="lc-stlNext-{{ id }}" aria-label="{{ t('common.next') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  LocalReady(function () {
+    var sw = LocalSlider({
+      root: 'lc-stl-{{ id }}',
+      el: 'lc-stlSw-{{ id }}',
+      prev: '#lc-stlPrev-{{ id }}',
+      next: '#lc-stlNext-{{ id }}',
+      dots: '#lc-stlDots-{{ id }}',
+      desk: {{ perView | default(2, true) }},
+      mob: 1.3,
+      gap: 20
+    });
+
+    {% if not hasPicked %}
+    LocalCard.fill(document.getElementById('lc-stlList-{{ id }}'), {
+      limit: {{ d.auto_limit | default(6, true) }},
+      sort: '{{ d.auto_sort | default("created-desc") }}',
+      swiper: sw,
+      card: {
+        action: '{{ action }}',
+        rating: {{ 'true' if rating == 'on' else 'false' }},
+        badges: {{ 'true' if badges == 'on' else 'false' }},
+        quickView: {{ 'true' if quick == 'on' else 'false' }},
+        ratio: '1x1',
+        wrap: 'swiper-slide'
+      }
+    });
+    {% endif %}
+  });
+</script>
+
+{% ui "section-colors.njk", scope='#lc-stl-' ~ id, c=d %}

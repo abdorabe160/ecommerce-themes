@@ -1,0 +1,164 @@
+{# ============================================================================
+   HYPER · PLACEHOLDER CARD
+   ----------------------------------------------------------------------------
+   What a section shows on a fresh install, before the merchant has picked any
+   products / collections / articles. Without it a new store opens on rows of
+   empty white space and the merchant cannot tell whether the section is broken
+   or simply unfilled.
+
+   ⚠️  It borrows the REAL card's classes — `.hy-pcard-*`, `.hy-coll-tile`,
+   `.hy-post` — so the placeholder occupies exactly the space the real thing
+   will, and the merchant is looking at the true layout while they work. Only
+   `--ph` modifiers differ.
+
+   ⚠️  Inert on purpose:
+     · no `x-data`, so no cart component is created for a product that has no id
+     · every link is `href="#"` with `@click.prevent`, so a click cannot land on
+       a 404 or leave the page
+     · `aria-hidden="true"` and `data-hy-placeholder`, so screen readers skip it
+       and no script can ever mistake it for stock
+
+   Locals:
+     kind        'product' (default) · 'collection' · 'article'
+     count       how many to draw (default 4)
+     image_ratio '2x3' | '3x4' | '4x5' | '1x1' — product/collection only
+     variant     'compact' | 'catalog' — passes through to the product card
+                 layout, so the placeholder matches whatever the real row uses
+     price       the dummy price line, already formatted (default '—')
+     wrap        class for a wrapper around each card — 'swiper-slide' when the
+                 host is a Swiper, which needs every child to be a slide
+
+   Styling: assets/style.css → "15.29 PLACEHOLDERS".
+   ========================================================================= #}
+
+{% set kind = data.kind | default('product', true) %}
+{% set count = data.count | default(4, true) | int %}
+{% set variant = data.variant | default('', true) %}
+{% set phPrice = data.price | default('', true) %}
+{% set wrap = data.wrap | default('', true) %}
+
+{% set ratio = data.image_ratio | default('2x3', true) %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% else %}{% set ratioVal = '2 / 3' %}{% endif %}
+
+
+{# ---------------------------------------------------------------------------
+   The piece. Flat, two tones off the theme's own neutrals, no photograph — it
+   has to read as "nothing here yet" at a glance, which a stock photo never
+   does. Four shapes so a row of four is not four copies of one; `n` picks by
+   index.
+
+   MUHARRIK: the four subjects are car care and accessories — a wheel, a jerry
+   can, a detailing spray bottle and a wrench — drawn square-cornered like the
+   rest of the theme (true circles excepted).
+
+   The viewBox is 200×170 — WIDE, and the four subjects were chosen to suit it.
+   `.hy-ph-art` sizes by HEIGHT (15.29), so a tall narrow subject drawn here
+   would come out no wider than a thumb while the piece beside it filled the
+   frame, and the row would read as a rendering fault rather than as a set.
+
+   Both tones are translucent, so two shapes of ONE tone darken where they
+   cross — pieces are built so that overlaps are always fill-under-tint (the
+   wheel's hub, the can's label), never fill-on-fill.
+   -------------------------------------------------------------------------- #}
+{% macro piece(n) %}
+  <svg class="hy-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false">
+    {% set i = n % 4 %}
+    {% if i == 0 %}
+      {# إطار — a wheel, face on: tyre, rim, hub. Concentric, fill under tint
+         under fill — the tint ring is the rim, not a hole. #}
+      <circle class="hy-ph-fill" cx="100" cy="85" r="72"/>
+      <circle class="hy-ph-tint" cx="100" cy="85" r="44"/>
+      <circle class="hy-ph-fill" cx="100" cy="85" r="14"/>
+      <rect class="hy-ph-tint" x="96" y="18" width="8" height="18"/>
+      <rect class="hy-ph-tint" x="96" y="134" width="8" height="18"/>
+      <rect class="hy-ph-tint" x="33" y="81" width="18" height="8"/>
+      <rect class="hy-ph-tint" x="149" y="81" width="18" height="8"/>
+    {% elif i == 1 %}
+      {# جالون زيت — a jerry can. Body, a raised neck with its cap, a side
+         handle, and a label band across the middle. #}
+      <rect class="hy-ph-fill" x="48" y="58" width="104" height="94"/>
+      <rect class="hy-ph-fill" x="60" y="34" width="34" height="26"/>
+      <rect class="hy-ph-tint" x="54" y="22" width="46" height="14"/>
+      <rect class="hy-ph-fill" x="104" y="40" width="44" height="12"/>
+      <rect class="hy-ph-fill" x="136" y="40" width="12" height="20"/>
+      <rect class="hy-ph-tint" x="60" y="94" width="80" height="24"/>
+    {% elif i == 2 %}
+      {# بخاخ تنظيف — a detailing spray bottle: a wide body, a narrow neck, the
+         trigger head set sideways across the top, and a label. #}
+      <rect class="hy-ph-fill" x="64" y="76" width="72" height="78"/>
+      <rect class="hy-ph-fill" x="86" y="52" width="28" height="26"/>
+      <rect class="hy-ph-tint" x="70" y="26" width="76" height="22"/>
+      <rect class="hy-ph-tint" x="76" y="48" width="10" height="24"/>
+      <rect class="hy-ph-fill" x="146" y="30" width="14" height="10"/>
+      <rect class="hy-ph-tint" x="74" y="98" width="52" height="30"/>
+    {% else %}
+      {# مفتاح — an open-ended wrench lying on the diagonal: shaft, the open
+         jaw at one end (a tint notch on the head), a ring at the other. #}
+      <g transform="rotate(-32 100 85)">
+        <rect class="hy-ph-fill" x="70" y="77" width="69" height="16"/>
+        <circle class="hy-ph-fill" cx="44" cy="85" r="27"/>
+        <rect class="hy-ph-tint" x="12" y="78" width="30" height="14"/>
+        <circle class="hy-ph-fill" cx="160" cy="85" r="22"/>
+        <circle class="hy-ph-tint" cx="160" cy="85" r="9"/>
+      </g>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+{% for n in range(0, count) %}
+{% if wrap %}<div class="{{ wrap }}">{% endif %}
+
+  {# ═══════════════ product ═══════════════ #}
+  {% if kind == 'product' %}
+    <article class="hy-pcard hy-pcard--ph {{ 'hy-pcard--compact' if variant == 'compact' }} {{ 'hy-pcard--catalog' if variant == 'catalog' }}"
+             style="--pcard-ratio: var(--hy-card-ratio, {{ ratioVal }});"
+             data-hy-placeholder aria-hidden="true">
+      <div class="hy-pcard-frame">
+        <a href="#" @click.prevent class="hy-pcard-media hy-ph-media" tabindex="-1">
+          {{ piece(n) }}
+        </a>
+      </div>
+      <div class="hy-pcard-info">
+        {# The catalog card leads with a category line. The order of the three
+           is a flex `order` in 15.9.1, not this markup order — same rule as the
+           real card, so the placeholder cannot drift out of step with it. #}
+        {% if variant == 'catalog' %}
+          <span class="hy-pcard-eyebrow">{{ t('common.placeholder_collection') }}</span>
+        {% endif %}
+        <div class="hy-pcard-prices">
+          <span class="hy-price">{{ phPrice if phPrice else t('common.placeholder_price') }}</span>
+        </div>
+        <span class="hy-pcard-name hy-clamp-2">{{ t('common.placeholder_product') }}</span>
+      </div>
+    </article>
+
+  {# ═══════════════ collection ═══════════════ #}
+  {% elif kind == 'collection' %}
+    <a href="#" @click.prevent class="hy-coll-tile hy-coll-tile--ph"
+       style="--coll-ratio: {{ ratioVal }};"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <span class="hy-ph-media">{{ piece(n) }}</span>
+      <div class="hy-coll-foot">
+        <span class="hy-coll-name">{{ t('common.placeholder_collection') }}</span>
+      </div>
+    </a>
+
+  {# ═══════════════ article ═══════════════ #}
+  {% else %}
+    <a href="#" @click.prevent class="hy-post hy-post--stacked hy-post--ph"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <div class="hy-post-media hy-ph-media">{{ piece(n) }}</div>
+      <div class="hy-post-body">
+        <div class="hy-post-meta"><span>{{ t('common.placeholder_date') }}</span></div>
+        <h3 class="hy-post-title hy-clamp-2">{{ t('common.placeholder_article') }}</h3>
+        <p class="hy-post-excerpt hy-clamp-2">{{ t('common.placeholder_excerpt') }}</p>
+      </div>
+    </a>
+  {% endif %}
+
+{% if wrap %}</div>{% endif %}
+{% endfor %}

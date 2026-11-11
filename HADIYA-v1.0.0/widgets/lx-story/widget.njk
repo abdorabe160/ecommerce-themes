@@ -1,0 +1,42 @@
+{# ============================================================================
+   HADIYA · Luxe · جملة البراند  (lx-story)
+   ----------------------------------------------------------------------------
+   ┌──────────────────────────────────────────────────────┐
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ photograph, full bleed ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓      ── فن الإهداء ──     ▓▓▓▓▓▓▓▓▓▓▓│
+   │▓▓▓▓▓▓▓▓▓   «الهدية مش في اللي جوّه العلبة،  ▓▓▓▓▓▓▓▓▓│
+   │▓▓▓▓▓▓▓▓▓▓▓   الهدية في إنك افتكرت.»        ▓▓▓▓▓▓▓▓▓│
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓      اكتشف المجموعة →      ▓▓▓▓▓▓▓▓▓▓│
+   └──────────────────────────────────────────────────────┘
+   One sentence, set large, over a dark photograph — the brand speaking
+   between two product sections. The photo is darkened by an overlay so the
+   statement reads at AA on any upload, and drifts slowly on scroll (CSS only,
+   off for prefers-reduced-motion).
+
+   Styling: assets/theme.css → "LUXE · lx-story".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set img = mediaUrl(d.image) | trim %}
+{% set img = img if (img | length) else ('slot-story.jpg' | assets) %}
+
+<section id="lx-story-{{ id }}" class="lx-story" aria-labelledby="lx-story-t-{{ id }}">
+  <img class="lx-story-bg" src="{{ img }}" alt="" loading="lazy"/>
+  <div class="lx-story-copy">
+    {% if d.eyebrow %}<p class="lx-eyebrow lx-eyebrow--center">{{ d.eyebrow }}</p>{% endif %}
+    <p id="lx-story-t-{{ id }}" class="lx-story-quote">{{ d.title }}</p>
+    {% if d.text %}<div class="lx-story-text">{{ d.text | safe }}</div>{% endif %}
+    {% if d.link_text %}
+      <a class="lx-link" href="{{ d.link_url | default('/shop', true) }}">{{ d.link_text }}
+        <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  #lx-story-{{ id }} { --lx-story-h: {{ d.height | default(620) }}px; }
+</style>
+
+{% ui "section-colors.njk", scope='#lx-story-' ~ id, c=d %}

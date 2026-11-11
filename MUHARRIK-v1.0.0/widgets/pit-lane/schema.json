@@ -1,0 +1,160 @@
+{
+  "name": "الأكثر طلبًا — حارة الصيانة",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر", "en": "Small line above the title — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان الكبير — فارغ = «الأكثر طلبًا»", "en": "Giant title — empty = “Pit lane bestsellers”" },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": { "ar": "سطر وصفي تحت العنوان — فارغ = النص الافتراضي", "en": "One line under the title — empty = default text" },
+      "default": ""
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": { "ar": "▸ رابط «عرض الكل» + بلاطة النهاية", "en": "▸ “View all” link + end-cap tile" },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص «عرض الكل» — فارغ = النص الافتراضي بلغة الزائر", "en": "“View all” label — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط «عرض الكل» — فارغ = صفحة التصنيف المختار أو /shop", "en": "“View all” link — empty = the chosen collection or /shop" },
+      "default": ""
+    },
+    "show_readout": {
+      "type": "boolean",
+      "label": { "ar": "▸ عدّاد التقدّم «03 / 12» وشريط التقدّم", "en": "▸ Progress readout “03 / 12” and bar" },
+      "default": true
+    },
+    "show_numbers": {
+      "type": "boolean",
+      "label": { "ar": "▸ الأرقام الكبيرة المجوّفة خلف المنتجات", "en": "▸ Giant outline index numbers behind the cards" },
+      "default": true
+    },
+    "products": {
+      "type": "products",
+      "label": { "ar": "▸ المنتجات — اختر يدويًا، أو اتركها فارغة", "en": "▸ Products — pick by hand, or leave empty" }
+    },
+    "collection": {
+      "type": "collections",
+      "label": { "ar": "التصنيف — يُعرض لو لم تختر منتجات (يؤخذ أول تصنيف)", "en": "Collection — used when no products are picked (the first one is used)" }
+    },
+    "use_demo": {
+      "type": "select",
+      "label": { "ar": "المنتجات التجريبية (إكسسوارات سيارات بصورها)", "en": "Demo products (car accessories with their own pictures)" },
+      "default": "auto",
+      "options": [
+        { "value": "auto", "label": { "ar": "تلقائي — تظهر فقط لو لم يُختر شيء والمتجر فارغ", "en": "Auto — only when nothing is picked and the store is empty" } },
+        { "value": "always", "label": { "ar": "دائمًا — ما لم تختر منتجات يدويًا", "en": "Always — unless products are picked by hand" } }
+      ]
+    },
+    "limit": {
+      "type": "range",
+      "label": { "ar": "أقصى عدد منتجات من التصنيف أو الأحدث أو التجريبية", "en": "Max products from the collection / newest / demo" },
+      "default": 12,
+      "min": 4,
+      "max": 16,
+      "step": 1
+    },
+    "card_width": {
+      "type": "select",
+      "label": { "ar": "عرض البطاقة — كمبيوتر", "en": "Card width — desktop" },
+      "default": "medium",
+      "options": [
+        { "value": "narrow", "label": { "ar": "ضيّقة", "en": "Narrow" } },
+        { "value": "medium", "label": { "ar": "متوسطة", "en": "Medium" } },
+        { "value": "wide", "label": { "ar": "عريضة", "en": "Wide" } }
+      ]
+    },
+    "image_fit": {
+      "type": "select",
+      "label": { "ar": "طريقة عرض صورة المنتج", "en": "Product image fit" },
+      "default": "cover",
+      "options": [
+        { "value": "contain", "label": { "ar": "كاملة داخل الإطار", "en": "Whole, inside the frame" } },
+        { "value": "cover", "label": { "ar": "تملأ الإطار", "en": "Fill the frame" } }
+      ]
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": { "ar": "التقييم بالنجوم", "en": "Star rating" },
+      "default": true
+    },
+    "show_stock": {
+      "type": "boolean",
+      "label": { "ar": "حالة المخزون", "en": "Stock status" },
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": { "ar": "زر العرض السريع", "en": "Quick view button" },
+      "default": true
+    },
+    "show_atc": {
+      "type": "boolean",
+      "label": { "ar": "زر الإضافة للسلة", "en": "Add to cart button" },
+      "default": true
+    },
+    "show_sale_badge": {
+      "type": "boolean",
+      "label": { "ar": "▸ شارة المنتجات المخفّضة", "en": "▸ Badge on discounted products" },
+      "default": true
+    },
+    "sale_badge": {
+      "type": "string",
+      "label": { "ar": "نص شارة المنتجات المخفّضة — فارغ = النص الافتراضي بلغة الزائر", "en": "Discounted-product badge text — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "show_low_badge": {
+      "type": "boolean",
+      "label": { "ar": "▸ شارة الكمية المحدودة", "en": "▸ Low-stock badge" },
+      "default": true
+    },
+    "low_badge": {
+      "type": "string",
+      "label": { "ar": "نص شارة الكمية المحدودة (5 قطع أو أقل) — فارغ = النص الافتراضي بلغة الزائر", "en": "Low-stock badge text (5 or fewer) — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية (موبايل)", "en": "Top spacing (mobile)" },
+      "default": 48,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية (موبايل)", "en": "Bottom spacing (mobile)" },
+      "default": 48,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "خلفية القسم", "en": "Section background" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون العناوين", "en": "Title colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون النص", "en": "Text colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز (الأصفر)", "en": "Accent (the yellow)" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الخطوط", "en": "Hairline colour" }, "default": "" }
+  },
+  "presets": [
+    { "category": "المنتجات", "name": "الأكثر طلبًا — حارة الصيانة" }
+  ]
+}

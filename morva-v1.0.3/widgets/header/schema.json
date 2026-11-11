@@ -1,0 +1,103 @@
+{
+  "name": "الهيدر",
+  "settings": {
+    "logo": {
+      "type": "media",
+      "label": {
+        "ar": "الشعار — اتركه فارغاً لاستخدام شعار المتجر",
+        "en": "Logo — leave empty to use the store logo"
+      }
+    },
+    "use_theme_logo": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدام شعار مورفا الأحمر إن لم يكن للمتجر شعار",
+        "en": "Fall back to the red Morva mark when the store has no logo"
+      },
+      "default": false
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "default": 26,
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "unit": "px"
+    },
+    "menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط الهيدر (التصنيفات)",
+        "en": "Header links (categories)"
+      },
+      "default": "header-menu"
+    },
+    "show_language": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر تبديل اللغة (EN / ع)",
+        "en": "Language toggle (EN / ع)"
+      },
+      "default": true
+    },
+    "search_popular": {
+      "type": "string",
+      "label": {
+        "ar": "كلمات البحث الشائعة — افصل بينها بفاصلة",
+        "en": "Popular searches — separated by commas"
+      },
+      "default": "هودي, تيشيرت, كارجو, تانك"
+    },
+    "shop_label": {
+      "type": "string",
+      "label": {
+        "ar": "قائمة الموبايل — نص أول رابط (المتجر)",
+        "en": "Mobile menu — first link label (shop)"
+      },
+      "default": ""
+    },
+    "quick_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "قائمة الموبايل — روابط سريعة",
+        "en": "Mobile menu — quick links"
+      },
+      "default": "footer-menu"
+    },
+    "menu_products": {
+      "type": "products",
+      "label": {
+        "ar": "قائمة الموبايل — أبرز المنتجات",
+        "en": "Mobile menu — featured drops"
+      }
+    },
+    "cart_free_shipping": {
+      "type": "number",
+      "label": {
+        "ar": "الحقيبة — حد الشحن المجاني (0 لإخفاء الشريط)",
+        "en": "Bag — free-shipping threshold (0 hides the bar)"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 1
+    },
+    "cart_note": {
+      "type": "string",
+      "label": {
+        "ar": "الحقيبة — ملاحظة أسفل المجموع",
+        "en": "Bag — note under the subtotal"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر"
+    }
+  ]
+}

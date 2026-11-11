@@ -1,0 +1,47 @@
+{
+  "name": "صفحة غير موجودة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "404",
+        "title": "الصفحة مش موجودة",
+        "message": "الرابط اللي فتحته مش موجود أو اتغيّر. جرّب البحث أو ابدأ من المنيو.",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/"
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "المنيو كامل",
+          "settings": {
+            "label": "المنيو كامل",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "عروض اليوم",
+          "settings": {
+            "label": "عروض اليوم",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "الأكثر طلباً",
+          "settings": {
+            "label": "الأكثر طلباً",
+            "url": "/shop"
+          }
+        }
+      ]
+    }
+  ]
+}

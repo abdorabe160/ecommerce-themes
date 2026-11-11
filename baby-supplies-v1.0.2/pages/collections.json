@@ -1,0 +1,26 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة التصنيفات",
+      "widget": "collections-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "تصفّحي",
+        "title": "",
+        "description": "اختاري القسم اللي يناسب عمر طفلك ومناسبته.",
+        "show_count": true,
+        "card_ratio": "3x4",
+        "columns_desktop": "3",
+        "columns_mobile": "2",
+        "meta_label": "تصنيف",
+        "more_text": "تسوّق",
+        "background": "white",
+        "colors_enabled": false
+      }
+    }
+  ]
+}

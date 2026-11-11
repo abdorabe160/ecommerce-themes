@@ -1,0 +1,39 @@
+{
+  "name": "قائمة المقالات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "المدونة"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Blog"
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "مستوى العنوان (H1 في صفحة المدونة، H2 كقسم في صفحة أخرى)",
+        "en": "Heading level (H1 on the blog page, H2 as a section elsewhere)"
+      },
+      "default": "h2",
+      "options": [
+        { "value": "h1", "label": "H1 — عنوان الصفحة / Page title" },
+        { "value": "h2", "label": "H2 — عنوان قسم / Section title" }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "قائمة المقالات"
+    }
+  ]
+}

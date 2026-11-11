@@ -1,0 +1,470 @@
+{# ============================================================================
+   NAKHA FOOTER
+   ----------------------------------------------------------------------------
+   Rows:
+     1. main      brand + description + social · link columns · contact block
+     2. payments  the merchant's payment-methods artwork
+     3. bottom    © year · legal links · VAT / CR numbers · back-to-top
+
+   The contact block is deliberately the widest non-brand column: in this
+   category the question the footer has to answer is "can someone tell me
+   whether this size runs small before I order it?".
+
+   Colours all come from the --color-footer-* vars, so the Theme Editor can
+   repaint the whole block without touching this file.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# Link columns. Two columns bound to the same menu would print every link twice,
+   so a column whose menu repeats an earlier one is dropped, and so is a column
+   with no menu (it would print a heading over nothing). #}
+{% set columns = [] %}
+{% set _seenMenus = [] %}
+{% for _b in widget.blocks | default([]) %}
+  {% set _m = _b.data.menu if _b.data else null %}
+  {% set _mk = (_m | dump) if _m else '' %}
+  {% if _mk and not (_mk in _seenMenus) %}
+    {% set _p1 = columns.push(_b) %}
+    {% set _p2 = _seenMenus.push(_mk) %}
+  {% endif %}
+{% endfor %}
+
+{% set storeName = (store.name or 'NAKHA') | trim %}{% set _sw = (storeName | replace('  ', ' ')).split(' ') %}{% set storeShort = (_sw.slice(0, 3).join(' ') ~ '…') if (_sw | length) > 3 else storeName %}
+
+{# Logo resolution — same order the header uses: the widget's own upload wins,
+   then the logo already set on the store, and only then the wordmark. Note the
+   footer sits on near-black, so a dark store logo will disappear there; that is
+   what the widget's own "footer logo" upload is for. #}
+{% set logo = d.footer_logo if d.footer_logo and d.footer_logo.fileUrl else store.logo %}
+{% set logoH = d.footer_logo_height | default(30) %}
+{% set description = d.footer_description | default('') %}
+
+{% set contactHeading = d.contact_heading | default(t('defaults.contact_us'), true) %}
+{% set phone = d.contact_phone | default('') %}
+{% set whatsapp = d.contact_whatsapp | default('') %}
+{% set email = d.contact_email | default('') %}
+{% set hours = d.contact_hours | default('') %}
+{% set hasContact = phone or whatsapp or email or hours %}
+
+{% set socialHeading = d.social_heading | default(t('defaults.follow_us'), true) %}
+{% set sInstagram = d.footer_social_instagram | default('') %}
+{% set sX = d.footer_social_x | default('') %}
+{% set sTiktok = d.footer_social_tiktok | default('') %}
+{% set sYoutube = d.footer_social_youtube | default('') %}
+{% set sSnapchat = d.footer_social_snapchat | default('') %}
+{% set sLinkedin = d.footer_social_linkedin | default('') %}
+{% set sFacebook = d.footer_social_facebook | default('') %}
+{% set hasSocial = sInstagram or sX or sTiktok or sYoutube or sSnapchat or sLinkedin or sFacebook %}
+
+{% set payImg = d.payment_image.fileUrl if d.payment_image and d.payment_image.fileUrl else '' %}
+{% set payHeading = d.payment_heading | default(t('defaults.payment_methods'), true) %}
+
+{# the bottom row repeating a link column is the same duplication — drop it then #}
+{% set bottomMenu = null if (d.bottom_menu and ((d.bottom_menu | dump) in _seenMenus)) else d.bottom_menu %}
+{% set taxNumber = d.tax_number | default('') %}
+{% set commercialReg = d.commercial_reg | default('') %}
+{% set backToTop = d.show_back_to_top | default(true) %}
+
+
+{# ---------------- social icon ---------------- #}
+{% macro social(url, name, label) %}
+  {% if url %}
+    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="nakha-ft-social" aria-label="{{ label }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"
+           {% if name == 'x' or name == 'tiktok' or name == 'snapchat' %}fill="currentColor"{% else %}fill="none" stroke="currentColor" stroke-width="1.7"{% endif %}>
+        {% if name == 'instagram' %}
+          <rect x="3" y="3" width="18" height="18" rx="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/>
+        {% elif name == 'x' %}
+          <path d="M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L4.7 21H1.5l7.5-8.6L1.2 3h6.6l4.5 5.6zM16.4 19.2h1.8L7.7 4.7H5.8z"/>
+        {% elif name == 'tiktok' %}
+          <path d="M16.2 2h-3v13.1a2.9 2.9 0 1 1-2.4-2.85V9.2a6 6 0 1 0 5.4 5.96V8.7a6.7 6.7 0 0 0 3.9 1.25V6.9a3.9 3.9 0 0 1-3.9-3.9V2Z"/>
+        {% elif name == 'youtube' %}
+          <rect x="2.5" y="5.5" width="19" height="13" rx="4"/>
+          <path d="m10.2 9.4 5 2.6-5 2.6z" fill="currentColor" stroke="none"/>
+        {% elif name == 'snapchat' %}
+          <path d="M12 2.4c2.9 0 4.6 2.1 4.6 4.8 0 .8-.06 1.6-.1 2.2.5.2.9.05 1.4-.15.5-.2 1.1.1 1.1.6 0 .6-.9.9-1.6 1.2-.4.2-.7.35-.7.65 0 .8 2.2 3.5 4 3.9.3.06.4.25.4.45 0 .6-1.4 1-2.4 1.15-.15.25-.2.9-.35 1.15-.1.2-.3.25-.6.2a6 6 0 0 0-1.2-.1c-1 0-1.5.2-2.2.7-.7.5-1.4 1.05-2.4 1.05s-1.7-.55-2.4-1.05c-.7-.5-1.2-.7-2.2-.7a6 6 0 0 0-1.2.1c-.3.05-.5 0-.6-.2-.15-.25-.2-.9-.35-1.15C4.2 17.2 2.8 16.8 2.8 16.2c0-.2.1-.4.4-.45 1.8-.4 4-3.1 4-3.9 0-.3-.3-.45-.7-.65-.7-.3-1.6-.6-1.6-1.2 0-.5.6-.8 1.1-.6.5.2.9.35 1.4.15-.05-.6-.1-1.4-.1-2.2 0-2.7 1.7-4.8 4.6-4.8Z"/>
+        {% elif name == 'linkedin' %}
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <path stroke-linecap="round" d="M7.5 10.5v6M7.5 7.6v.01M11.8 16.5v-6M11.8 13.2c0-1.5.9-2.4 2.2-2.4s2.2.9 2.2 2.4v3.3"/>
+        {% elif name == 'facebook' %}
+          <path d="M14.5 8.5h2.2V5.6h-2.4c-2.3 0-3.8 1.5-3.8 3.9v1.6H8.2v3h2.3V21h3.2v-6.9h2.3l.5-3h-2.8V9.9c0-.9.3-1.4 1.3-1.4Z"/>
+        {% endif %}
+      </svg>
+    </a>
+  {% endif %}
+{% endmacro %}
+
+{# ---------------- one contact line ----------------
+   The icon is picked by name rather than passed in as markup: Nunjucks' {% call %}
+   block has no precedent anywhere in this theme, and a four-branch switch is
+   cheaper than introducing a construct nobody else here uses. #}
+{% macro contactLine(href, label, value, icon, dirLtr) %}
+  {% if value %}
+    <a href="{{ href }}" class="nakha-ft-contact">
+      <span class="nakha-ft-contact-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          {% if icon == 'phone' %}
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5C4 4.67 4.67 4 5.5 4h2.1c.7 0 1.3.48 1.46 1.16l.7 3a1.5 1.5 0 0 1-.75 1.67l-1.3.7a12.5 12.5 0 0 0 5.76 5.76l.7-1.3a1.5 1.5 0 0 1 1.67-.75l3 .7c.68.16 1.16.76 1.16 1.46v2.1c0 .83-.67 1.5-1.5 1.5h-1A14.5 14.5 0 0 1 4 6.5v-1Z"/>
+          {% elif icon == 'whatsapp' %}
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.5 20.5l1.3-4.2A8.4 8.4 0 1 1 8 19.4l-4.5 1.1Z"/>
+            <path stroke-linecap="round" d="M9 9.2c0 3 2.4 5.4 5.4 5.4"/>
+          {% elif icon == 'email' %}
+            <rect x="2.5" y="5" width="19" height="14" rx="2.4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="m3.5 7 8.5 5.8L20.5 7"/>
+          {% else %}
+            <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 7.2V12l3.4 2"/>
+          {% endif %}
+        </svg>
+      </span>
+      <span class="flex flex-col min-w-0">
+        <span class="nakha-ft-contact-label">{{ label }}</span>
+        <span class="nakha-ft-contact-value {{ 'nakha-num' if dirLtr }}" {% if dirLtr %}dir="ltr"{% endif %}>{{ value }}</span>
+      </span>
+    </a>
+  {% endif %}
+{% endmacro %}
+
+
+<style>
+  #nakha-ft-{{ id }} {
+    background: var(--color-footer);
+    color: var(--color-footer-text);
+  }
+
+  /* ================= main grid ================= */
+  .nakha-ft-{{ id }}-main {
+    display: grid;
+    gap: 36px;
+    padding-block: 60px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 640px) {
+    .nakha-ft-{{ id }}-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    /* brand is widest, then one track per link column, then contact */
+    .nakha-ft-{{ id }}-main {
+      grid-template-columns: 1.6fr repeat({{ columns | length if (columns | length) > 0 else 1 }}, 1fr) 1.3fr;
+      gap: 40px;
+      padding-block: 72px;
+    }
+  }
+  @media (max-width: 767px) {
+    .nakha-ft-{{ id }}-main { padding-block: 44px; gap: 30px; }
+  }
+
+  /* ================= brand ================= */
+  /* The shared wordmark primitive, repainted for the footer surface. */
+  #nakha-ft-{{ id }} .nakha-wordmark { color: var(--color-footer-heading); }
+
+  .nakha-ft-{{ id }}-desc {
+    margin: 16px 0 0;
+    max-width: 42ch;
+    font-size: 0.8125rem;
+    line-height: 1.8;
+    color: var(--color-footer-text-muted);
+  }
+
+  /* ================= headings + links =================
+     `letter-spacing` is LTR-only. Tracking an Arabic word severs the joins
+     between its letters — the heading stops being a word and becomes a row of
+     disconnected glyphs. `text-transform` is safe in both (Arabic has no case)
+     and is what gives the Latin headings their shout. */
+  .nakha-ft-{{ id }}-h {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-transform: var(--display-case);
+    color: var(--color-footer-heading);
+  }
+  html[dir="ltr"] .nakha-ft-{{ id }}-h { letter-spacing: 0.12em; }
+
+  .nakha-ft-{{ id }}-link {
+    display: block;
+    padding-block: 6px;
+    font-size: 0.8125rem;
+    color: var(--color-footer-text);
+    transition: color var(--t-fast) var(--ease-out), padding-inline-start var(--t-fast) var(--ease-out);
+  }
+  .nakha-ft-{{ id }}-link:hover { color: var(--color-appetite); padding-inline-start: 5px; }
+
+  /* ================= contact ================= */
+  .nakha-ft-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 7px;
+    color: var(--color-footer-text);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .nakha-ft-contact:hover { color: var(--color-footer-heading); }
+  .nakha-ft-contact-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-appetite-wash);
+    color: var(--color-appetite);
+  }
+  .nakha-ft-contact-label {
+    font-size: 0.625rem;
+    text-transform: var(--display-case);
+    color: var(--color-footer-text-muted);
+    line-height: 1.3;
+  }
+  html[dir="ltr"] .nakha-ft-contact-label { letter-spacing: 0.09em; }
+  .nakha-ft-contact-value {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  /* ================= social ================= */
+  .nakha-ft-social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--color-footer-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-footer-text);
+    transition: border-color var(--t-fast) var(--ease-out),
+                background var(--t-fast) var(--ease-out),
+                color var(--t-fast) var(--ease-out);
+  }
+  .nakha-ft-social:hover {
+    border-color: var(--color-appetite);
+    background: var(--color-appetite);
+    color: #FFFFFF;
+  }
+
+  /* ================= payments ================= */
+  .nakha-ft-{{ id }}-pay {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 22px;
+    border-top: 1px solid var(--color-footer-border);
+  }
+  .nakha-ft-{{ id }}-pay img {
+    max-height: 30px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* ================= bottom ================= */
+  .nakha-ft-{{ id }}-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 20px;
+    border-top: 1px solid var(--color-footer-border);
+    font-size: 0.75rem;
+    color: var(--color-footer-text-muted);
+  }
+  .nakha-ft-{{ id }}-bottom a { transition: color var(--t-fast) var(--ease-out); }
+  .nakha-ft-{{ id }}-bottom a:hover { color: var(--color-appetite); }
+
+  .nakha-ft-{{ id }}-legal {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.6875rem;
+  }
+
+  .nakha-ft-{{ id }}-totop {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border: 1px solid var(--color-footer-border);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--color-footer-text);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .nakha-ft-{{ id }}-totop:hover { border-color: var(--color-appetite); color: var(--color-appetite); }
+</style>
+
+
+<footer id="nakha-ft-{{ id }}">
+  <div class="nakha-container">
+
+    {# ═════════════════ main ═════════════════ #}
+    <div class="nakha-ft-{{ id }}-main">
+
+      {# ---- brand ---- #}
+      <div class="min-w-0">
+        <a href="/" aria-label="{{ storeName }}" class="inline-flex items-center">
+          {# checks fileUrl, not just `logo` — store.logo can come back as an
+             object with no file, which would render <img src=""> #}
+          {% if logo and logo.fileUrl %}
+            {# width follows the aspect ratio, but stays capped so a wide logo
+               cannot push past the column it sits in #}
+            <img src="{{ logo.fileUrl }}" alt="{{ storeName }}"
+                 style="height: {{ logoH }}px; width: auto; max-width: min(220px, 60vw); object-fit: contain;"/>
+          {% else %}
+            <span class="nakha-wordmark" title="{{ storeName }}">{{ storeShort }}</span>
+          {% endif %}
+        </a>
+
+        {% if description %}
+          <p class="nakha-ft-{{ id }}-desc">{{ description }}</p>
+        {% endif %}
+
+        {% if hasSocial %}
+          <div class="mt-6">
+            {% if socialHeading %}
+              <span class="nakha-ft-{{ id }}-h" style="margin-bottom: 10px;">{{ socialHeading }}</span>
+            {% endif %}
+            <div class="flex items-center gap-2 flex-wrap">
+              {{ social(sInstagram, 'instagram', 'Instagram') }}
+              {{ social(sX, 'x', 'X') }}
+              {{ social(sTiktok, 'tiktok', 'TikTok') }}
+              {{ social(sYoutube, 'youtube', 'YouTube') }}
+              {{ social(sSnapchat, 'snapchat', 'Snapchat') }}
+              {{ social(sLinkedin, 'linkedin', 'LinkedIn') }}
+              {{ social(sFacebook, 'facebook', 'Facebook') }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {# ---- link columns ---- #}
+      {% for block in columns %}
+        {% set col = block.data %}
+        <div class="min-w-0">
+          {% if col.title %}<span class="nakha-ft-{{ id }}-h">{{ col.title }}</span>{% endif %}
+          {% if col.menu %}
+            <nav aria-label="{{ col.title | default('') }}">
+              {% for item in (col.menu.items if col.menu.items else col.menu) %}
+                <a href="{{ item.url | default('#') }}" class="nakha-ft-{{ id }}-link">{{ item.title }}</a>
+                {# sub-items arrive under `item.menu` (measured), not `children` #}
+                {% for s in (item.menu or item.children or []) %}
+                  <a href="{{ s.url | default('#') }}" class="nakha-ft-{{ id }}-link" style="padding-inline-start: .75rem; font-size: .9em;">{{ s.title }}</a>
+                  {% for s3 in (s.menu or s.children or []) %}
+                    <a href="{{ s3.url | default('#') }}" class="nakha-ft-{{ id }}-link" style="padding-inline-start: 1.5rem; font-size: .85em;">{{ s3.title }}</a>
+                  {% endfor %}
+                {% endfor %}
+              {% endfor %}
+            </nav>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      {# ---- contact ---- #}
+      {% if hasContact %}
+        <div class="min-w-0">
+          {% if contactHeading %}<span class="nakha-ft-{{ id }}-h">{{ contactHeading }}</span>{% endif %}
+
+          {{ contactLine('tel:' ~ phone, t('footer.call_us'), phone, 'phone', true) }}
+          {{ contactLine('https://wa.me/' ~ whatsapp, t('footer.whatsapp'), whatsapp, 'whatsapp', true) }}
+          {{ contactLine('mailto:' ~ email, t('common.email'), email, 'email', true) }}
+
+          {% if hours %}
+            <div class="nakha-ft-contact" style="cursor: default;">
+              <span class="nakha-ft-contact-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 7.2V12l3.4 2"/>
+                </svg>
+              </span>
+              <span class="flex flex-col min-w-0">
+                <span class="nakha-ft-contact-label">{{ t('footer.working_hours') }}</span>
+                <span class="nakha-ft-contact-value">{{ hours }}</span>
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# ═════════════════ payments ═════════════════ #}
+    {% if payImg %}
+      <div class="nakha-ft-{{ id }}-pay">
+        {% if payHeading %}
+          <span class="nakha-ft-{{ id }}-h" style="margin-bottom: 0;">{{ payHeading }}</span>
+        {% endif %}
+        <img src="{{ payImg }}" alt="{{ payHeading | default(t('footer.payments'), true) }}" loading="lazy"/>
+      </div>
+    {% endif %}
+
+    {# ═════════════════ bottom ═════════════════ #}
+    <div class="nakha-ft-{{ id }}-bottom">
+
+      <span>
+        © <span data-nakha-year>2026</span> {{ storeShort }} · {{ t('footer.rights') }}
+      </span>
+
+      {% if bottomMenu %}
+        <nav class="flex items-center gap-4 flex-wrap" aria-label="{{ t('footer.rights') }}">
+          {% for item in (bottomMenu.items if bottomMenu.items else bottomMenu) %}
+            <a href="{{ item.url | default('#') }}">{{ item.title }}</a>
+          {% endfor %}
+        </nav>
+      {% endif %}
+
+      {% if taxNumber or commercialReg %}
+        <div class="nakha-ft-{{ id }}-legal">
+          {% if taxNumber %}
+            <span>{{ t('footer.tax_number') }}: <bdi dir="ltr">{{ taxNumber }}</bdi></span>
+          {% endif %}
+          {% if commercialReg %}
+            <span>{{ t('footer.commercial_reg') }}: <bdi dir="ltr">{{ commercialReg }}</bdi></span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if backToTop %}
+        <button type="button" class="nakha-ft-{{ id }}-totop" data-nakha-totop>
+          {{ t('footer.back_to_top') }}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0-5.5 5.5M12 5l5.5 5.5"/>
+          </svg>
+        </button>
+      {% endif %}
+
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    /* Year is stamped client-side — a hard-coded year in the template silently
+       goes stale on 1 January and nobody notices. */
+    document.querySelectorAll('[data-nakha-year]').forEach(function (el) {
+      el.textContent = new Date().getFullYear();
+    });
+
+    document.querySelectorAll('[data-nakha-totop]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('nakha-no-motion');
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      });
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-ft-' ~ id, c=d %}

@@ -1,0 +1,49 @@
+{
+  "name": "المتجر",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المتجر",
+      "widget": "shop-page",
+      "settings": {
+        "title": "كل المنتجات",
+        "description": "كل منتجاتنا في مكان واحد، من المخبز إلى السوق.",
+        "show_breadcrumb": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "3x4",
+        "columns_tablet": "3",
+        "show_count": true
+      }
+    },
+    {
+      "name": "منتجات المتجر",
+      "widget": "shop-products",
+      "settings": {}
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "title": "",
+        "layout": "inline",
+        "dividers": true,
+        "background": "none",
+        "icon_size": 30,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

@@ -1,0 +1,428 @@
+{
+  "name": "البانر الرئيسي",
+  "settings": {
+    "stage_width": {
+      "type": "select",
+      "label": {
+        "ar": "▸ عرض البانر",
+        "en": "▸ Stage width"
+      },
+      "default": "inset",
+      "options": [
+        {
+          "value": "inset",
+          "label": {
+            "ar": "بهوامش وزوايا دائرية (موصى به)",
+            "en": "Inset with rounded corners (recommended)"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "عرض الشاشة بالكامل",
+            "en": "Edge to edge"
+          }
+        }
+      ]
+    },
+    "text_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "button_shape": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الأزرار",
+        "en": "Button shape"
+      },
+      "default": "pill",
+      "options": [
+        {
+          "value": "pill",
+          "label": {
+            "ar": "دائري بالكامل",
+            "en": "Pill"
+          }
+        },
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "theme",
+          "label": {
+            "ar": "حسب إعدادات الثيم",
+            "en": "Follow theme setting"
+          }
+        }
+      ]
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ التنقل التلقائي بين الشرائح",
+        "en": "▸ Autoplay slides"
+      },
+      "default": true
+    },
+    "autoplay_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدة عرض الشريحة",
+        "en": "Seconds per slide"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s"
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "show_dots": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مؤشر الشرائح",
+        "en": "Show the slide indicator"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية (تظهر قبل تحميل الصورة)",
+        "en": "Background (shows before the image loads)"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الأزرار",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الأزرار",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "image_mobile": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الموبايل (اختيارية — تُستخدم بدل الصورة الأصلية)",
+            "en": "Mobile image (optional — replaces the main image)"
+          }
+        },
+        "image_position": {
+          "type": "select",
+          "label": {
+            "ar": "تركيز الصورة",
+            "en": "Image focus"
+          },
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": {
+                "ar": "المنتصف",
+                "en": "Centre"
+              }
+            },
+            {
+              "value": "top",
+              "label": {
+                "ar": "الأعلى (للوجوه)",
+                "en": "Top (for faces)"
+              }
+            },
+            {
+              "value": "bottom",
+              "label": {
+                "ar": "الأسفل",
+                "en": "Bottom"
+              }
+            }
+          ]
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر التمهيدي",
+            "en": "Eyebrow"
+          },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        },
+        "text_tone": {
+          "type": "select",
+          "label": {
+            "ar": "لون نص الشريحة",
+            "en": "Slide text colour"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "فاتح — للصور الداكنة",
+                "en": "Light — for dark images"
+              }
+            },
+            {
+              "value": "dark",
+              "label": {
+                "ar": "داكن — للصور الفاتحة",
+                "en": "Dark — for light images"
+              }
+            }
+          ]
+        },
+        "scrim": {
+          "type": "select",
+          "label": {
+            "ar": "تعتيم الصورة خلف النص",
+            "en": "Darken the image behind the text"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            },
+            {
+              "value": "light",
+              "label": {
+                "ar": "خفيف (موصى به)",
+                "en": "Light (recommended)"
+              }
+            },
+            {
+              "value": "medium",
+              "label": {
+                "ar": "متوسط",
+                "en": "Medium"
+              }
+            },
+            {
+              "value": "strong",
+              "label": {
+                "ar": "قوي",
+                "en": "Strong"
+              }
+            }
+          ]
+        },
+        "cta1_text": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الأول — النص",
+            "en": "Button 1 — label"
+          },
+          "default": ""
+        },
+        "cta1_url": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الأول — الرابط · الصفحات المتاحة: / · /shop · /collections · /blogs · /cart",
+            "en": "Button 1 — URL · available routes: / · /shop · /collections · /blogs · /cart"
+          },
+          "default": "/shop"
+        },
+        "cta1_style": {
+          "type": "select",
+          "label": {
+            "ar": "الزر الأول — الشكل",
+            "en": "Button 1 — style"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "أبيض مملوء",
+                "en": "Filled white"
+              }
+            },
+            {
+              "value": "solid",
+              "label": {
+                "ar": "داكن مملوء",
+                "en": "Filled dark"
+              }
+            },
+            {
+              "value": "light-outline",
+              "label": {
+                "ar": "إطار أبيض",
+                "en": "White outline"
+              }
+            },
+            {
+              "value": "outline",
+              "label": {
+                "ar": "إطار داكن",
+                "en": "Dark outline"
+              }
+            }
+          ]
+        },
+        "cta2_text": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الثاني — النص",
+            "en": "Button 2 — label"
+          },
+          "default": ""
+        },
+        "cta2_url": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الثاني — الرابط",
+            "en": "Button 2 — URL"
+          },
+          "default": "/shop"
+        },
+        "cta2_style": {
+          "type": "select",
+          "label": {
+            "ar": "الزر الثاني — الشكل",
+            "en": "Button 2 — style"
+          },
+          "default": "light-outline",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "أبيض مملوء",
+                "en": "Filled white"
+              }
+            },
+            {
+              "value": "solid",
+              "label": {
+                "ar": "داكن مملوء",
+                "en": "Filled dark"
+              }
+            },
+            {
+              "value": "light-outline",
+              "label": {
+                "ar": "إطار أبيض",
+                "en": "White outline"
+              }
+            },
+            {
+              "value": "outline",
+              "label": {
+                "ar": "إطار داكن",
+                "en": "Dark outline"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "البانر الرئيسي"
+    }
+  ]
+}

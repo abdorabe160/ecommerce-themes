@@ -1,0 +1,167 @@
+{# ============================================================================
+   HYPER · PLACEHOLDER CARD
+   ----------------------------------------------------------------------------
+   What a section shows on a fresh install, before the merchant has picked any
+   products / collections / articles. Without it a new store opens on rows of
+   empty white space and the merchant cannot tell whether the section is broken
+   or simply unfilled.
+
+   ⚠️  It borrows the REAL card's classes — `.hy-pcard-*`, `.hy-coll-tile`,
+   `.hy-post` — so the placeholder occupies exactly the space the real thing
+   will, and the merchant is looking at the true layout while they work. Only
+   `--ph` modifiers differ.
+
+   ⚠️  Inert on purpose:
+     · no `x-data`, so no cart component is created for a product that has no id
+     · every link is `href="#"` with `@click.prevent`, so a click cannot land on
+       a 404 or leave the page
+     · `aria-hidden="true"` and `data-hy-placeholder`, so screen readers skip it
+       and no script can ever mistake it for stock
+
+   Locals:
+     kind        'product' (default) · 'collection' · 'collection_disc' · 'article'
+     count       how many to draw (default 4)
+     image_ratio '2x3' | '3x4' | '4x5' | '1x1' — product/collection only
+     variant     'compact' | 'catalog' — passes through to the product card
+                 layout, so the placeholder matches whatever the real row uses
+     price       the dummy price line, already formatted (default '—')
+     wrap        class for a wrapper around each card — 'swiper-slide' when the
+                 host is a Swiper, which needs every child to be a slide
+
+   Styling: assets/style.css → "15.29 PLACEHOLDERS".
+   ========================================================================= #}
+
+{% set kind = data.kind | default('product') %}
+{% set count = data.count | default(4) | int %}
+{% set variant = data.variant | default('') %}
+{% set phPrice = data.price | default('') %}
+{% set wrap = data.wrap | default('') %}
+
+{% set ratio = data.image_ratio | default('2x3') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% else %}{% set ratioVal = '2 / 3' %}{% endif %}
+
+
+{# ---------------------------------------------------------------------------
+   The piece. Flat, two tones off the theme's own neutrals, no photograph — it
+   has to read as "nothing here yet" at a glance, which a stock photo never
+   does. Four shapes so a row of four is not four copies of one; `n` picks by
+   index.
+
+   The viewBox is 200×170 — WIDE. Furniture is a wide subject and `.hy-ph-art`
+   sizes by HEIGHT, so a portrait viewBox here would draw a sofa no wider than a
+   chair and the whole row would read as one shape. See 15.29.
+   -------------------------------------------------------------------------- #}
+{% macro piece(n) %}
+  <svg class="hy-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false">
+    {% set i = n % 4 %}
+    {% if i == 0 %}
+      {# sofa — three seats #}
+      <rect class="hy-ph-fill" x="36" y="126" width="10" height="20" rx="3"/>
+      <rect class="hy-ph-fill" x="154" y="126" width="10" height="20" rx="3"/>
+      <rect class="hy-ph-fill" x="26" y="32" width="148" height="60" rx="14"/>
+      <rect class="hy-ph-tint" x="30" y="88" width="140" height="38" rx="10"/>
+      <rect class="hy-ph-fill" x="8" y="60" width="32" height="68" rx="14"/>
+      <rect class="hy-ph-fill" x="160" y="60" width="32" height="68" rx="14"/>
+    {% elif i == 1 %}
+      {# armchair #}
+      <rect class="hy-ph-fill" x="56" y="124" width="9" height="22" rx="3"/>
+      <rect class="hy-ph-fill" x="135" y="124" width="9" height="22" rx="3"/>
+      <rect class="hy-ph-fill" x="52" y="26" width="96" height="66" rx="18"/>
+      <rect class="hy-ph-tint" x="54" y="86" width="92" height="38" rx="10"/>
+      <rect class="hy-ph-fill" x="36" y="58" width="28" height="66" rx="13"/>
+      <rect class="hy-ph-fill" x="136" y="58" width="28" height="66" rx="13"/>
+    {% elif i == 2 %}
+      {# dining chair — spindle back.
+         The back has to be TALLER than the legs or the shape reads as a table:
+         a short back over long legs is a tabletop with a rail. Back 14→92,
+         legs 104→150. The stiles down each side are what close it into a
+         frame — spindles alone floated. #}
+      <rect class="hy-ph-fill" x="54" y="14" width="92" height="13" rx="6"/>
+      <rect class="hy-ph-fill" x="54" y="20" width="9" height="76" rx="4"/>
+      <rect class="hy-ph-fill" x="137" y="20" width="9" height="76" rx="4"/>
+      <rect class="hy-ph-tint" x="74" y="30" width="8" height="60" rx="4"/>
+      <rect class="hy-ph-tint" x="96" y="30" width="8" height="60" rx="4"/>
+      <rect class="hy-ph-tint" x="118" y="30" width="8" height="60" rx="4"/>
+      <rect class="hy-ph-fill" x="44" y="90" width="112" height="16" rx="7"/>
+      <rect class="hy-ph-fill" x="52" y="104" width="10" height="46" rx="4"/>
+      <rect class="hy-ph-fill" x="138" y="104" width="10" height="46" rx="4"/>
+      <rect class="hy-ph-tint" x="52" y="128" width="96" height="8" rx="4"/>
+    {% else %}
+      {# round stool #}
+      <rect class="hy-ph-fill" x="62" y="104" width="9" height="42" rx="3"/>
+      <rect class="hy-ph-fill" x="129" y="104" width="9" height="42" rx="3"/>
+      <ellipse class="hy-ph-tint" cx="100" cy="102" rx="52" ry="15"/>
+      <rect class="hy-ph-tint" x="48" y="70" width="104" height="32"/>
+      <ellipse class="hy-ph-fill" cx="100" cy="70" rx="52" ry="16"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+{% for n in range(0, count) %}
+{% if wrap %}<div class="{{ wrap }}">{% endif %}
+
+  {# ═══════════════ product ═══════════════ #}
+  {% if kind == 'product' %}
+    <article class="hy-pcard hy-pcard--ph {{ 'hy-pcard--compact' if variant == 'compact' }} {{ 'hy-pcard--catalog' if variant == 'catalog' }}"
+             style="--pcard-ratio: var(--hy-card-ratio, {{ ratioVal }});"
+             data-hy-placeholder aria-hidden="true">
+      <div class="hy-pcard-frame">
+        <a href="#" @click.prevent class="hy-pcard-media hy-ph-media" tabindex="-1">
+          {{ piece(n) }}
+        </a>
+      </div>
+      <div class="hy-pcard-info">
+        {# The catalog card leads with a category line. The order of the three
+           is a flex `order` in 15.9.1, not this markup order — same rule as the
+           real card, so the placeholder cannot drift out of step with it. #}
+        {% if variant == 'catalog' %}
+          <span class="hy-pcard-eyebrow">{{ t('common.placeholder_collection') }}</span>
+        {% endif %}
+        <div class="hy-pcard-prices">
+          <span class="hy-price">{{ phPrice if phPrice else t('common.placeholder_price') }}</span>
+        </div>
+        <span class="hy-pcard-name hy-clamp-2">{{ t('common.placeholder_product') }}</span>
+      </div>
+    </article>
+
+  {# ═══════════════ collection · circular tile ═══════════════
+     Matches widgets/collections-section's ruled grid rather than the
+     photographic tile below, so the empty state occupies exactly the cell the
+     real thing will. Borrows `.hy-cgrid-*` for the same reason the others
+     borrow their host's classes. #}
+  {% elif kind == 'collection_disc' %}
+    <span class="hy-cgrid-cell" data-hy-placeholder aria-hidden="true">
+      <span class="hy-cgrid-disc hy-ph-media">{{ piece(n) }}</span>
+      <span class="hy-cgrid-label">{{ t('common.placeholder_collection') }}</span>
+    </span>
+
+  {# ═══════════════ collection ═══════════════ #}
+  {% elif kind == 'collection' %}
+    <a href="#" @click.prevent class="hy-coll-tile hy-coll-tile--ph"
+       style="--coll-ratio: {{ ratioVal }};"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <span class="hy-ph-media">{{ piece(n) }}</span>
+      <div class="hy-coll-foot">
+        <span class="hy-coll-name">{{ t('common.placeholder_collection') }}</span>
+      </div>
+    </a>
+
+  {# ═══════════════ article ═══════════════ #}
+  {% else %}
+    <a href="#" @click.prevent class="hy-post hy-post--stacked hy-post--ph"
+       data-hy-placeholder aria-hidden="true" tabindex="-1">
+      <div class="hy-post-media hy-ph-media">{{ piece(n) }}</div>
+      <div class="hy-post-body">
+        <div class="hy-post-meta"><span>{{ t('common.placeholder_date') }}</span></div>
+        <h3 class="hy-post-title hy-clamp-2">{{ t('common.placeholder_article') }}</h3>
+        <p class="hy-post-excerpt hy-clamp-2">{{ t('common.placeholder_excerpt') }}</p>
+      </div>
+    </a>
+  {% endif %}
+
+{% if wrap %}</div>{% endif %}
+{% endfor %}

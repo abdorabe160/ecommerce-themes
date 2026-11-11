@@ -1,0 +1,136 @@
+{# ============================================================================
+   LOCAL · BLOG PAGE — /blogs/<handle>
+   ----------------------------------------------------------------------------
+   The article list for one blog.
+
+   Cards come from ui/article-card.njk, which is the same `.lc-post-*` object
+   the homepage post grid uses. The optional lead article is that card at a
+   larger size — not a second design, just the first cell spanning the grid.
+
+   Styling: style.css → "15.18 POST GRID" for the card, "15.27 BLOG" for the
+   page around it.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}) %}
+{% set articles = context.articles | default(blog.articles) | default([], true) %}
+{% set count = articles | length %}
+{# the blog route has sent both spellings: {totalPages,currentPage,totalItems} and {pages,page,total} #}
+{% set pg = context.pagination %}
+{% set pgPages = (pg.totalPages or pg.pages or 1) if pg else 1 %}
+{% set pgCur = (pg.currentPage or pg.page or 1) if pg else 1 %}
+{% set pgTotal = (pg.totalItems or pg.total or 0) if pg else 0 %}
+
+{% set showHero = d.show_hero | default(true) %}
+{# strings, not booleans: see the note in ui/product-card.njk — `{% ui %}` does
+   not carry boolean literals, so every on/off local in this theme travels as
+   'on' / 'off'. #}
+{% set showDate = 'on' if (d.show_date | default(true)) else 'off' %}
+{% set showExcerpt = 'on' if (d.show_excerpt | default(true)) else 'off' %}
+{% set featureFirst = d.feature_first | default(true) %}
+{% set cols = d.columns | default('3', true) %}
+{# no card alone on the last row: count what is left after the lead article #}
+{% set cD = cols | int %}
+{% set rest = (count - 1) if (featureFirst and count > 1) else count %}
+{% if rest > cD and rest % cD == 1 and cD > 2 and rest % (cD - 1) != 1 %}{% set cD = cD - 1 %}
+{% elif rest < cD and rest > 0 %}{% set cD = 2 if rest < 2 else rest %}{% endif %}
+{% set bg = d.background | default('white') %}
+
+{% set heroImg = blog.image.fileUrl or blog.image.url or blog.imageUrl if (blog.image or blog.imageUrl) else '' %}
+{% if blog.image is string %}{% set heroImg = blog.image %}{% endif %}
+{% set blogTitle = blog.title | default(t('pages.blog.title'), true) %}
+
+<section id="lc-blog-{{ id }}"
+         class="lc-blogpage {{ 'lc-blogpage--well' if bg == 'well' }}"
+         style="--blog-cols: {{ cD }};">
+  <div class="lc-container">
+
+    <nav class="lc-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <a href="/blogs">{{ t('pages.blog.title') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <span aria-current="page">{{ blogTitle }}</span>
+    </nav>
+
+    {% if showHero and heroImg %}
+      <div class="lc-blog-hero">
+        <img src="{{ heroImg }}" alt="{{ blogTitle }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    <div class="lc-blog-head">
+      <span class="lc-blog-eyebrow">{{ t('pages.blog.title') }}</span>
+      <h1 class="lc-blog-title">{{ blogTitle }}</h1>
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+           HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+           the outer one and the content becomes a SIBLING, so every style on
+           this class stops reaching the text. Inner margins are reset in the CSS. #}
+      {% if blog.description %}<div class="lc-blog-desc">{{ blog.description | safe }}</div>{% endif %}
+      {% if pgTotal %}
+        <span class="lc-blog-count">
+          {{ t('pages.blog.articles_count') }}: <bdi>{{ pgTotal }}</bdi>
+        </span>
+      {% endif %}
+    </div>
+
+    {# ═════════════ articles ═════════════ #}
+    {% if count > 0 %}
+      <div class="lc-blog-grid {{ 'lc-blog-grid--lead' if featureFirst and count > 1 }}" data-lc-bc="{{ cD }}" data-lc-pages="{{ pgPages }}">
+        {% for article in articles %}
+          {% ui "article-card.njk", article=article, show_date=showDate, show_excerpt=showExcerpt %}
+        {% endfor %}
+      </div>
+
+      {# plain links: this page is server-paginated, so a link is the whole
+         feature. Same .lc-pagination as the shop and collections pages. #}
+      {% if pgPages > 1 %}
+        <nav class="lc-pagination" aria-label="{{ t('common.next') }}">
+          {% if pgCur > 1 %}
+            <a href="?page={{ pgCur - 1 }}" class="lc-pagination-btn" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pgPages + 1) %}
+            {% if n == pgCur %}
+              <span class="lc-pagination-btn is-active" aria-current="page">{{ n }}</span>
+            {% elif n == 1 or n == pgPages or (n >= pgCur - 1 and n <= pgCur + 1) %}
+              <a href="?page={{ n }}" class="lc-pagination-btn">{{ n }}</a>
+            {% elif n == pgCur - 2 or n == pgCur + 2 %}
+              <span class="lc-pagination-gap">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pgCur < pgPages %}
+            <a href="?page={{ pgCur + 1 }}" class="lc-pagination-btn" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="lc-builder-only">
+        <div class="lc-blog-grid">
+          {% ui "placeholder.njk", kind='article', count=cols %}
+        </div>
+      </div>
+      <div class="lc-empty lc-blog-empty">
+        <span class="lc-empty-title">{{ t('pages.blog.no_articles_desc') }}</span>
+        <a href="/shop" class="lc-btn lc-btn--outline lc-btn--sm">{{ t('pages.shop.all_products') }}</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#lc-blog-' ~ id, c=d %}

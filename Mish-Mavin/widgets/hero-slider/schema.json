@@ -1,0 +1,183 @@
+{
+  "name": "hero-slider",
+  "settings": {
+    "height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع البانر على الديسكتوب",
+        "en": "Desktop height"
+      },
+      "default": 55,
+      "min": 40,
+      "max": 100,
+      "step": 5,
+      "unit": "vh"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "تشغيل تلقائي (عند وجود أكثر من شريحة)",
+        "en": "Autoplay (multiple slides)"
+      },
+      "default": true
+    },
+    "interval": {
+      "type": "number",
+      "label": {
+        "ar": "مدة الشريحة (ثانية)",
+        "en": "Slide duration (s)"
+      },
+      "default": 8,
+      "min": 2,
+      "max": 15,
+      "step": 1
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "عنوان الصفحة الرئيسي (H1)",
+        "en": "Page main heading (H1)"
+      },
+      "default": "h1",
+      "options": [
+        {
+          "value": "h1",
+          "label": {
+            "ar": "عنوان أول شريحة = H1 (أو اسم المتجر مخفي)",
+            "en": "First slide heading = H1 (or hidden store name)"
+          }
+        },
+        {
+          "value": "h2",
+          "label": {
+            "ar": "H2 (لو فيه قسم تاني عليه H1)",
+            "en": "H2 (another section holds the H1)"
+          }
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الديسكتوب",
+            "en": "Desktop image"
+          }
+        },
+        "mobile_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الموبايل (اختياري)",
+            "en": "Mobile image (optional)"
+          }
+        },
+        "focal": {
+          "type": "select",
+          "label": {
+            "ar": "موضع الصورة",
+            "en": "Image position"
+          },
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": "وسط / Center"
+            },
+            {
+              "value": "top",
+              "label": "أعلى / Top"
+            },
+            {
+              "value": "bottom",
+              "label": "أسفل / Bottom"
+            }
+          ]
+        },
+        "alt": {
+          "type": "string",
+          "label": {
+            "ar": "وصف الصورة",
+            "en": "Image alt text"
+          },
+          "default": "New collection"
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "سطر علوي",
+            "en": "Eyebrow"
+          },
+          "default": ""
+        },
+        "heading": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Heading"
+          },
+          "default": "New collection"
+        },
+        "show_heading": {
+          "type": "boolean",
+          "label": {
+            "ar": "إظهار العنوان فوق الصورة",
+            "en": "Show heading on image"
+          },
+          "default": false
+        },
+        "sub": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Subtitle"
+          },
+          "default": ""
+        },
+        "button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر",
+            "en": "Button text"
+          },
+          "default": "Shop Sale"
+        },
+        "button_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر",
+            "en": "Button URL"
+          },
+          "default": "/collections"
+        },
+        "button_style": {
+          "type": "select",
+          "label": {
+            "ar": "شكل الزر",
+            "en": "Button style"
+          },
+          "default": "outlined",
+          "options": [
+            {
+              "value": "outlined",
+              "label": "محدد شفاف / Outlined"
+            },
+            {
+              "value": "filled",
+              "label": "أبيض / Filled"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "hero-slider"
+    }
+  ]
+}

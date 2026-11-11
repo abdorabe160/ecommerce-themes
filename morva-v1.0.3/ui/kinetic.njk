@@ -1,0 +1,37 @@
+{# ============================================================================
+   KINETIC STRIP — one word, two rows drifting in opposite directions
+   ----------------------------------------------------------------------------
+   Each row is TWO identical groups side by side, and each GROUP is what moves
+   (translateX 0 → -100% of its own width). Group B follows group A exactly,
+   so the loop is seamless.
+
+   NOTE: Why two groups and not one long track: a single 8,000px-wide track is
+   ~16,000 device pixels on a retina screen — past what Chrome will raster as
+   one animated layer, and the row simply did not paint. Each group here is
+   only a little wider than the viewport; main.js (MorvaStrip) adds copies to
+   both groups when a wide screen needs more.
+
+   Locals:
+     text     the word or phrase (required)
+     muted    'on' → smaller, panel-coloured (the newsletter's closing strip)
+     single   'on' → one row only
+     color    optional colour override
+     speed    seconds for one loop of the first row (default 28)
+   Flags are STRINGS: a bare boolean does not survive Qalab's {% ui %} tag.
+   ========================================================================= #}
+{% set word = data.text | default('') | trim %}
+{% if word %}
+  {% set dur = data.speed | default(28) %}
+  {% set isMuted = (data.muted | default('') | string) in ['on', 'true'] %}
+  {% set isSingle = (data.single | default('') | string) in ['on', 'true'] %}
+  <div class="mv-strip{{ ' mv-strip--muted' if isMuted }}{{ ' mv-strip--single' if isSingle }}" aria-hidden="true" data-mv-strip
+       style="--strip-dur-a: {{ dur }}s; --strip-dur-b: {{ (dur * 0.786) | round(1) }}s;{% if data.color %} --strip-color: {{ data.color }};{% endif %}">
+    {% for row in ['fwd', 'rev'] %}
+      <div class="mv-strip-track mv-strip-{{ row }}">
+        {% for g in range(0, 2) %}
+          <div class="mv-strip-group">{% for i in range(0, 4) %}<span>{{ word }}</span>{% endfor %}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

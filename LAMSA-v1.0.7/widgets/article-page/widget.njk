@@ -1,0 +1,208 @@
+{# ============================================================================
+   LAMSA ARTICLE PAGE — /articles/<handle>
+   A single post: hero, meta, prose body, share, then related articles.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set a = context.article | default({}, true) %}
+{% set related = context.related_articles | default(a.relatedArticles, true) | default(a.related, true) | default([], true) %}
+
+{% set showHero = d.show_hero | default(true) %}
+{% set showMeta = d.show_meta | default(true) %}
+{% set showShare = d.show_share | default(true) %}
+{% set showTags = d.show_tags | default(true) %}
+{% set showRelated = d.show_related | default(true) %}
+{% set relatedTitle = d.related_title | default(t('pages.blog.related_articles'), true) %}
+{% set relatedLimit = d.related_limit | default(3) %}
+
+{% if a.image and a.image.fileUrl and not a.image.notFound %}{% set heroImg = a.image.fileUrl %}{% elif a.imageUrl %}{% set heroImg = a.imageUrl %}{% elif a.image and (a.image is string) and a.image.indexOf('/') > -1 %}{% set heroImg = a.image %}{% else %}{% set heroImg = '' %}{% endif %}
+{# Qumra links an article to its blog CATEGORY (article.category — an object,
+   printed bare it showed "[object Object]"); `blog` is the legacy shape. #}
+{% set cat = a.category if (a.category and a.category.title) else (a.blog if (a.blog and a.blog.title) else null) %}
+{% set blogHandle = (cat.handle | default(cat.slug) | default(cat._id)) if cat else '' %}
+{% set excerpt = a.excerpt | default(a.description, true) | default('', true) %}
+{# same trap as category: an author object would print "[object Object]" #}
+{% if a.author and a.author is string %}{% set authorName = a.author %}
+{% elif a.author %}{% set authorName = a.author.name | default(a.author.title) | default(((a.author.firstName | default('')) ~ ' ' ~ (a.author.lastName | default(''))) | trim) %}
+{% else %}{% set authorName = '' %}{% endif %}
+
+
+<style>
+  .lamsa-ap-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.24;
+    letter-spacing: -0.008em;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-ap-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-ap-{{ id }}-title { line-height: 1.38; letter-spacing: 0; }
+
+  /* the body is authored HTML — .lamsa-prose styles headings, lists, quotes… */
+  .lamsa-ap-{{ id }}-body { max-width: none; }
+  .lamsa-ap-{{ id }}-body img { border-radius: var(--radius-lg); margin-block: 1.6em; }
+
+  .lamsa-ap-{{ id }}-share {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 20px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+</style>
+
+
+<article id="lamsa-ap-{{ id }}" class="lamsa-section" style="background: var(--color-bg-primary);"
+         x-data="{ copied: false,
+                   async share() {
+                     var url = window.location.href;
+                     if (navigator.share) {
+                       try { await navigator.share({ title: document.title, url: url }); return; }
+                       catch (e) { /* dismissed — fall through to copy */ }
+                     }
+                     try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+                     this.copied = true;
+                     var self = this;
+                     setTimeout(function () { self.copied = false; }, 2000);
+                   } }">
+
+  <div class="lamsa-container lamsa-container--narrow">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+      <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <a href="/blogs" class="hover:text-accent transition-colors">{{ t('pages.blog.title') }}</a>
+      {% if cat %}
+        <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <a href="/blogs/{{ blogHandle }}" class="hover:text-accent transition-colors line-clamp-1">{{ cat.title }}</a>
+      {% endif %}
+    </nav>
+
+    {# ═════════════ header ═════════════ #}
+    <header class="flex flex-col gap-4 mb-8">
+      {% if cat %}
+        <a href="/blogs/{{ blogHandle }}" class="lamsa-eyebrow self-start"><span class="lamsa-eyebrow-dot"></span>{{ cat.title }}</a>
+      {% elif a.category and a.category is string %}
+        <span class="lamsa-eyebrow self-start"><span class="lamsa-eyebrow-dot"></span>{{ a.category }}</span>
+      {% endif %}
+
+      <h1 class="lamsa-ap-{{ id }}-title">{{ a.title }}</h1>
+
+      {% if excerpt %}
+        <p class="lamsa-lead m-0">{{ excerpt | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('<br>', ' ') | striptags }}</p>
+      {% endif %}
+
+      {% if showMeta %}
+        <div class="lamsa-article-meta">
+          {% if authorName %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="3.75"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>
+              </svg>
+              {{ authorName }}
+            </span>
+          {% endif %}
+          {% if a.createdAt %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/>
+              </svg>
+              {# formatted client-side: Nunjucks has no date filter #}
+              <time class="font-num" x-data x-init="$el.textContent =
+                      new Date('{{ a.createdAt }}').toLocaleDateString('{{ localization.language | default('ar') }}',
+                        { year: 'numeric', month: 'long', day: 'numeric' })">{{ a.createdAt }}</time>
+            </span>
+          {% endif %}
+          {% if a.views %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12S18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+                <circle cx="12" cy="12" r="2.75"/>
+              </svg>
+              <span class="font-num">{{ a.views }}</span> {{ t('pages.blog.views') }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </header>
+
+    {# ═════════════ hero ═════════════ #}
+    {% if showHero and heroImg %}
+      <div class="lamsa-article-hero mb-9">
+        <img src="{{ heroImg }}" alt="{{ a.title }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    {# ═════════════ body ═════════════ #}
+    {% if a.content %}
+      <div class="lamsa-prose lamsa-ap-{{ id }}-body">{{ a.content | safe }}</div>
+    {% endif %}
+
+    {# ═════════════ tags ═════════════ #}
+    {% if showTags and a.tags and (a.tags | length) > 0 %}
+      <div class="flex flex-wrap gap-2 mt-9">
+        {% for tag in a.tags %}
+          {#- Live tags are objects ({ name, displayName… }); printed raw they read «[object Object]». -#}
+          {% if tag is string %}{% set tagText = tag %}{% elif tag.displayName %}{% set tagText = tag.displayName %}{% elif tag.name %}{% set tagText = tag.name %}{% elif tag.title %}{% set tagText = tag.title %}{% elif tag.label %}{% set tagText = tag.label %}{% elif tag.value %}{% set tagText = tag.value %}{% else %}{% set tagText = '' %}{% endif %}
+          {% if tagText %}<span class="lamsa-tag lamsa-tag--rose">{{ tagText }}</span>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ share ═════════════ #}
+    {% if showShare %}
+      <div class="lamsa-ap-{{ id }}-share mt-10">
+        <span class="lamsa-label m-0">{{ t('pages.blog.share_article') }}</span>
+        <button type="button" @click="share()" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/>
+            <path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>
+          </svg>
+          <span x-text="copied ? '{{ t('pages.blog.copied') }}' : '{{ t('common.share') }}'">{{ t('common.share') }}</span>
+        </button>
+      </div>
+    {% endif %}
+
+    {# ═════════════ back ═════════════ #}
+    <div class="mt-9">
+      <a href="{{ ('/blogs/' ~ blogHandle) if blogHandle else '/blogs' }}" class="lamsa-link font-body">
+        <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+        </svg>
+        {{ t('pages.blog.back_to_articles') }}
+      </a>
+    </div>
+
+  </div>
+
+  {# ═════════════ related ═════════════ #}
+  {% if showRelated and (related | length) > 0 %}
+    <div class="lamsa-container" style="margin-top: var(--section-py);">
+      <div class="lamsa-head lamsa-head--center">
+        <h2 class="lamsa-ap-{{ id }}-title" style="font-size: clamp(1.375rem, 2.6vw, 1.875rem);">{{ relatedTitle }}</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for ra in related %}
+          {% if loop.index <= relatedLimit %}
+            {% ui "article-card.njk", article=ra, show_date=true, show_excerpt=false %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</article>

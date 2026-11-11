@@ -1,0 +1,204 @@
+{
+  "name": "أبرز المنتجات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": "الأكثر رواجاً"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Heading"
+      },
+      "default": "تسوّقي طقم الشتاء"
+    },
+    "body": {
+      "type": "text",
+      "label": {
+        "ar": "نص تحت العنوان",
+        "en": "Copy under the heading"
+      },
+      "default": "أقمشة دافئة ولطيفة على البشرة، مصمّمة لتُلبَس طوال اليوم وتُغسَل كل يوم."
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر — اتركيه فارغاً لإخفائه",
+        "en": "Button label — leave empty to hide it"
+      },
+      "default": "تسوّقي الآن"
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "Button link · available pages: / · /shop · /collections · /blogs"
+      },
+      "default": "/shop"
+    },
+    "media_image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الوسيط الكبير — صورة أو مقطع فيديو (mp4 / webm) · مشهد، وليس منتجاً على خلفية بيضاء",
+        "en": "▸ The large media — an image or a video clip (mp4 / webm) · a scene, not a product on white"
+      }
+    },
+    "show_shot": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وسيط المنتج فوق الوسيط الكبير",
+        "en": "Show the product media over the large media"
+      },
+      "default": true
+    },
+    "shot_image": {
+      "type": "media",
+      "label": {
+        "ar": "وسيط المنتج العائم — صورة أو مقطع · يتوسّط الوسيط الكبير تلقائياً",
+        "en": "The floating product media — image or clip · it centres itself on the large media"
+      }
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة الكبيرة",
+        "en": "Which side the large image sits on"
+      },
+      "default": "end",
+      "options": [
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (يسار في العربية)",
+            "en": "End (left in Arabic)"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربية)",
+            "en": "Start (right in Arabic)"
+          }
+        }
+      ]
+    },
+    "media_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض الصورة الكبيرة — نسبة من عرض القسم · المرجع ٥٢٪",
+        "en": "Large image width — share of the section · the reference is 52%"
+      },
+      "default": 52,
+      "min": 40,
+      "max": 62,
+      "step": 1,
+      "unit": "%"
+    },
+    "media_height": {
+      "type": "range",
+      "label": {
+        "ar": "طول الصورة — نسبة من عرضها · ١٠٠ = مربّع · المرجع ١١٨",
+        "en": "Media height — share of its width · 100 = square · the reference is 118"
+      },
+      "default": 105,
+      "min": 80,
+      "max": 140,
+      "step": 1,
+      "unit": "%"
+    },
+    "column_gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين العمودين — نسبة من عرض القسم · المرجع ٨٪",
+        "en": "Space between the two columns — share of the section · the reference is 8%"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "%"
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات — منتج واحد في كل شريحة، والتنقّل بالأسهم (اتركيها فارغة لإخفاء الشريط)",
+        "en": "Products — one per slide, moved with the arrows (leave empty to hide the strip)"
+      }
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "أبرز المنتجات"
+    }
+  ]
+}

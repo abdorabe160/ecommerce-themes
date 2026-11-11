@@ -1,0 +1,162 @@
+{# =========================================================
+   Dark Blood - كارت منتج مشترك
+   الاستخدام: {% ui "blk-product-card.njk", product=product %}
+   اختياري: hide_quick_view=true, hide_rating=true, hide_stock=true, hide_second_image=true, badge="جديد"
+   نفس الكارت بالظبط في الـ JS: blkRenderProductCard في assets/pages.js — أي تعديل هنا يتعمل هناك كمان
+   الكارت بيعرض بيانات المنتج اللي فوق بس (مفيش أي بيانات طلب/سلة)، فشكله مابيتغيّرش بعد إنشاء أوردر
+   ========================================================= #}
+{% set product = data.product %}
+
+{% if product %}
+  {# لينك المنتج: صفحة المنتج بتاعة المنصة /products/<slug> (عنوان ووصف وصورة مشاركة لكل منتج — PRD-21 / PRD-17).
+     المنتجات التجريبية (المعاينة بس) مالهاش صفحة في المنصة، فبتتفتح فوق صفحة الشوب (/shop?product=demo-xx) #}
+  {% set productSlug = product.slug or product.handle or (product.seo.slug if product.seo else '') %}
+  {% set isDemoCard = 'demo-' in (product._id | string) %}
+  {% if isDemoCard %}
+    {% set productUrl = '/shop?product=' + (productSlug | urlencode) %}
+  {% else %}
+    {% set productUrl = ('/products/' + (productSlug | urlencode)) if productSlug else ('/shop?product-id=' + product._id) %}
+  {% endif %}
+  {% set price = product.pricing.price | default(0) if product.pricing else 0 %}
+  {% set oldPrice = product.pricing.compareAtPrice | default(0) if product.pricing else 0 %}
+  {# أسعار المتجر بالجنيه زي المنتجات التجريبية، فمفيش تحويل (ونسيج مابيقبلش .indexOf جوه القوالب) #}
+  {% set isDemoPrice = false %}
+
+  {# القسم بيظهر بس لو مش متعطّل (نفس شروط blkIsCollectionVisible في pages.js) #}
+  {% set cat = product.category %}
+  {% set catHidden = cat and (cat.active === false or cat.isActive === false or cat.published === false or cat.isPublished === false or cat.visible === false or cat.isVisible === false or cat.availableForSale === false or cat.enabled === false or cat.salesEnabled === false or cat.hidden === true or cat.deleted === true or (cat.salesChannels and cat.salesChannels.onlineStore === false) or cat.isHidden === true or (((cat.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}
+  {% set category = '' if catHidden else (cat.title | default('') if cat else '') %}
+
+  {# المخزون: نفس قاعدة blkStockState/blkProductQty في main.js
+     0 = نفد · 1 لـ 3 = أوشك على النفاد · أكتر أو مش متتبَّع = متوفر. لو كل النسخ المتتبَّعة خلصت يبقى نفد #}
+  {% set LOW_STOCK = (settings.lowStockThreshold or 3) | int %}
+  {% set ownQty = product.quantity if (product.quantity === 0 or product.quantity > 0 or product.quantity < 0) else null %}
+  {% set variantQtys = [] %}
+  {% for v in product.variants or [] %}
+    {% if v and (v.quantity === 0 or v.quantity > 0 or v.quantity < 0) %}{% if variantQtys.push(v.quantity if v.quantity > 0 else 0) %}{% endif %}{% endif %}
+  {% endfor %}
+  {% set variantTotal = variantQtys | sum %}
+  {# بيانات النسخ لو موجودة هي الأصدق: كمية الأب بتيجي 0 في منتجات بمقاسات متاحة #}
+  {% if (variantQtys | length) > 0 %}
+    {% set stockQty = variantTotal %}
+  {% elif ownQty !== null %}
+    {% set stockQty = ownQty %}
+  {% else %}
+    {% set stockQty = null %}
+  {% endif %}
+  {# «احترام مخزون المنتجات» مقفول: المنتج متاح دايمًا #}
+  {% if settings.followProductStock == false %}{% set stockQty = null %}{% endif %}
+  {# مخزون مش معروف: القوايم بتبعت المنتج بكمية 0 من غير variants حتى لو مقاساته متاحة، فده مش «نفد».
+     الكارت بيعرض «عرض المنتج»، و pages.js بيتأكد من /ajax/product (data-needs-check) #}
+  {% set simpleKnown = product.variantsCount === 0 or (product.variants and product.variants.length is defined and (product.variants | length) == 0 and not (product.variantsCount > 0)) %}
+  {% set stockUnknown = settings.followProductStock != false and ownQty !== null and ownQty <= 0 and (variantQtys | length) == 0 and not simpleKnown and not isDemoCard %}
+  {% if stockUnknown %}{% set stockQty = null %}{% endif %}
+  {% set isOutOfStock = stockQty !== null and stockQty <= 0 %}
+  {% set isLowStock = stockQty !== null and stockQty > 0 and stockQty <= LOW_STOCK %}
+  {% set showButtons = settings.showCardButtons !== false %}
+  {# وسوم key:value (زي brand:قمرة) بتبقى فلاتر في صفحة المنتجات لو مفيش فلاتر من لوحة التحكم #}
+  {% set cardTags = [] %}
+  {#- الوسم نص أو object ({ name … }) -#}
+  {% for tg in product.tags or [] %}{% set tgName = tg if (tg is string) else ((tg.name or tg.title or tg.label or tg.value or '') if tg else '') %}{% if tgName and (tgName is string) and cardTags.push(tgName) %}{% endif %}{% endfor %}
+  {% set needsOptions = (product.variants and (product.variants | length) > 1) or product.variantsCount > 1 or stockUnknown %}
+
+  {% if isOutOfStock %}
+    {% set addLabel = t('product.out_of_stock') %}
+  {% elif stockUnknown %}
+    {% set addLabel = t('product.view_product') %}
+  {% elif needsOptions %}
+    {% set addLabel = t('product.choose_options') %}
+  {% else %}
+    {% set addLabel = t('product.add_to_cart') %}
+  {% endif %}
+
+  <div class="blk-prod-card{% if isOutOfStock %} is-out{% endif %}{% if not showButtons %} no-buttons{% endif %}" data-id="{{ product._id }}" data-category="{{ category }}" data-price="{{ price }}" data-url="{{ productUrl }}" data-created="{{ product.createdAt }}" data-out="{{ '1' if isOutOfStock else '0' }}" data-tags="{{ cardTags | join('|') }}"{% if stockUnknown and productSlug %} data-needs-check="{{ productSlug }}"{% endif %}>
+
+    <div class="blk-prod-media">
+      <div class="blk-prod-badges">
+        {% if data.badge %}
+          <span class="blk-badge-glass blk-badge-new">{{ data.badge }}</span>
+        {% endif %}
+        {% if oldPrice > price %}
+          {# بالتقريب لتحت عشان نسبة الخصم ماتبانش أكبر من الحقيقي (500 بدل 800 = 37%) #}
+          {% set discount = ((oldPrice - price) / oldPrice * 100) | round(0, 'floor') %}
+          <span class="blk-badge-glass blk-badge-discount">-{{ discount }}%</span>
+        {% endif %}
+        {% if isOutOfStock %}
+          <span class="blk-badge-glass blk-badge-out">{{t('product.out_of_stock')}}</span>
+        {% elif 'hot' in cardTags %}
+          <span class="blk-badge-glass blk-badge-hot">{{t('common.hot')}}</span>
+        {% endif %}
+      </div>
+
+      {% if settings.showWishlist !== false %}
+        <button type="button" class="blk-wish-toggle" data-wish-toggle="{{ product._id }}" aria-pressed="false" aria-label="{{t('product.wishlist_add')}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+      {% endif %}
+
+      <a href="{{ productUrl }}" class="blk-prod-img-link" tabindex="-1" aria-hidden="true">
+        {% if product.images and (product.images | length) > 0 %}
+          <img src="{{ product.images[0].fileUrl }}" alt="{{ product.title }}" class="blk-prod-img blk-img-primary" loading="lazy" decoding="async" width="600" height="690" />
+          {% if product.images[1] and not data.hide_second_image %}
+            <img src="{{ product.images[1].fileUrl }}" alt="{{ product.title }} - {{t('common.preview')}}" class="blk-prod-img blk-img-secondary" loading="lazy" decoding="async" width="600" height="690" />
+          {% endif %}
+        {% else %}
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 700'%3E%3Crect width='600' height='700' fill='%23141414'/%3E%3Cg fill='none' stroke='%23555' stroke-width='10' transform='translate(240 290)'%3E%3Crect x='0' y='0' width='120' height='120' rx='12'/%3E%3Ccircle cx='40' cy='40' r='12'/%3E%3Cpath d='m120 80-40-40-80 80'/%3E%3C/g%3E%3C/svg%3E" alt="{{ product.title }}" class="blk-prod-img blk-img-primary" loading="lazy" decoding="async" width="600" height="690" />
+        {% endif %}
+      </a>
+
+      {% if showButtons %}
+      <div class="blk-prod-actions">
+        {% if not data.hide_quick_view %}
+          <button type="button" class="blk-action-btn blk-btn-quickview" title="{{t('common.quick_view')}}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>{{t('common.preview')}}</span>
+          </button>
+        {% endif %}
+
+        {# data-stock: الإضافة السريعة مابتعدّيش المتاح (المخزون - اللي في السلة). فاضي = مش متتبَّع #}
+        <button type="button" class="blk-action-btn blk-btn-addcart" data-product-id="{{ product._id }}" data-stock="{{ stockQty if stockQty !== null else '' }}" aria-label="{{ addLabel }}" {% if needsOptions %}data-needs-options{% endif %}{% if product.variants and (product.variants | length) == 1 %} data-variant-id="{{ product.variants[0]._id }}"{% endif %} {% if isOutOfStock %}disabled aria-disabled="true"{% endif %}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span>{{ addLabel }}</span>
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="blk-prod-details">
+      <div class="blk-prod-meta">
+        <span class="blk-prod-cat">{{ category }}</span>
+        {% if not data.hide_rating and product.reviewsCount > 0 %}
+          <div class="blk-prod-rating" title="{{ product.averageRating }} {{t('common.out_of_5')}}">
+            <span class="blk-stars">{% for i in range(5) %}{{ '★' if i < (product.averageRating | round) else '☆' }}{% endfor %}</span>
+            <span class="blk-rating-count">({{ product.reviewsCount }})</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <h3 class="blk-prod-title">
+        <a href="{{ productUrl }}">{{ product.title }}</a>
+      </h3>
+
+      {% if not data.hide_stock and isLowStock %}
+        <div class="blk-stock-urgency">
+          <div class="blk-stock-bar">
+            <div class="blk-stock-progress" style="width: {{ (stockQty / LOW_STOCK * 34) | round }}%;"></div>
+          </div>
+          <span class="blk-stock-text"><strong>{{ t('product.low_stock_count') | replace(':count', stockQty) }}</strong></span>
+        </div>
+      {% endif %}
+
+      <div class="blk-prod-footer">
+        <div class="blk-prod-price">
+          <span class="blk-price-current">{% ui "blk-price.njk", amount=price, free="1", major=isDemoPrice %}</span>
+          {% if oldPrice > price %}
+            <span class="blk-price-old">{% ui "blk-price.njk", amount=oldPrice, major=isDemoPrice %}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endif %}

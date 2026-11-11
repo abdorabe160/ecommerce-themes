@@ -1,0 +1,17 @@
+{
+  "layout": "layout",
+  "name": "صفحة التصنيف",
+  "title": "صفحة التصنيف",
+  "widgets": [
+    {
+      "name": "منتجات التصنيف",
+      "widget": "collection-products",
+      "settings": {
+        "show_header": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns": "3"
+      }
+    }
+  ]
+}

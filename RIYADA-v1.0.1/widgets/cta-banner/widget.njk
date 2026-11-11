@@ -1,0 +1,425 @@
+{# ============================================================================
+   RIYADA CTA BANNER — the offer block
+   ----------------------------------------------------------------------------
+   Three layouts: card (inset) · full (edge-to-edge strip) · split (image + text).
+   Carries an optional live countdown and a click-to-copy coupon code.
+
+   The countdown reads the merchant's date as the VISITOR's local time — no
+   trailing Z — because "the sale ends at midnight" means midnight where the
+   shopper is, not UTC.
+
+   Countdown and coupon both use the shared primitives in style.css
+   (.riyada-timer · .riyada-coupon), so they look identical wherever else the
+   theme reuses them.
+
+   ── Colour ────────────────────────────────────────────────────────────────
+   Two of the backgrounds change what "readable" means, and each redefines the
+   TOKENS for the panel rather than repainting elements one by one:
+     flame   white text on the accent — the timer and coupon go translucent
+     light   .riyada-invert, the whole panel flips to paper
+   A background photo forces the flame treatment too, whatever colour was set:
+   over a photograph the theme's own text colours are a coin toss.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set layout = d.layout | default('card', true) %}
+{% set isFull = layout == 'full' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('flame', true) %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{% set imgSplit = d.image_split.fileUrl if d.image_split and d.image_split.fileUrl else '' %}
+{# Out of the box: a bundled demo photo until the merchant picks one — split side only; the colour panels stay as designed (docs/demo-images.md) #}
+{% if not imgSplit %}{% set imgSplit = 'demo-cta-split.jpg' | assets %}{% endif %}
+{% set scrim = d.scrim | default('medium', true) %}
+{% set showMotif = d.show_speed_motif | default(true) %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set subtitle = d.subtitle | default('') %}
+
+{% set align = d.text_alignment | default('center', true) %}
+{% set isCenter = align == 'center' and not isSplit %}
+
+{% set height = d.height | default('medium', true) %}
+{% if height == 'small' %}{% set pad = '40px' %}
+{% elif height == 'large' %}{% set pad = '92px' %}
+{% else %}{% set pad = '64px' %}{% endif %}
+
+{% set showCd = d.show_countdown | default(false) %}
+{% set hideOnExpire = d.hide_on_expire | default(false) %}
+
+{# ---- deadline: a date field plus an hour dropdown ----------------------------
+   Split on purpose. `date` gives the Theme Editor a chance to render a real
+   picker, and the hour is a `select` so there is no format left to mistype at
+   all. Older configs stored one combined "YYYY-MM-DD HH:MM" string; if the date
+   still carries a space it is used verbatim and the time dropdown is ignored,
+   so nothing breaks on upgrade. #}
+{% set cdRaw = d.countdown_date | default('', true) %}
+{% set cdTime = d.countdown_time | default('23:59', true) %}
+{% if ' ' in cdRaw %}
+  {% set cdDate = cdRaw %}
+{% elif cdRaw %}
+  {% set cdDate = cdRaw ~ ' ' ~ cdTime %}
+{% else %}
+  {% set cdDate = '' %}
+{% endif %}
+{% set coupon = d.coupon_code | default('') %}
+
+{% set btnText = d.button_text | default(t('defaults.shop_offer'), true) %}
+{% set btnLink = d.button_link | default('/shop', true) %}
+{% set btn2Text = d.button2_text | default('') %}
+{% set btn2Link = d.button2_link | default('/shop', true) %}
+
+{# ---- background ---- #}
+{% set onPhoto = img and scrim != 'none' %}
+{% set isLight = bg == 'light' and not onPhoto %}
+{% set isFlame = (bg == 'flame' or onPhoto) and not isLight %}
+
+{% if bg == 'void' %}{% set bgVal = 'var(--color-media)' %}
+{% elif bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'canvas' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif isLight %}{% set bgVal = 'var(--color-light)' %}
+{% else %}{% set bgVal = 'var(--color-flame-solid)' %}{% endif %}
+
+
+<style>
+  /* ================= shell ================= */
+  .riyada-cta-{{ id }}-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: {{ bgVal }};
+    padding-block: {{ pad }};
+    {% if not isFull %}border-radius: var(--radius-card);{% endif %}
+    {% if not isFlame %}border: 1px solid var(--color-border);{% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-cta-{{ id }}-panel { padding-block: calc({{ pad }} * 0.68); }
+  }
+
+  {% if isFlame %}
+  /* Token overrides for the whole panel, not per-element repainting — the
+     shared timer and coupon primitives then invert themselves. */
+  .riyada-cta-{{ id }}-panel {
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #FFFFFF;
+    --color-text-tertiary: rgba(255, 255, 255, 0.92);
+    --color-border: rgba(255, 255, 255, 0.28);
+    /* also needed: .riyada-btn--outline borders on --color-border-strong, which
+       would otherwise stay dark grey and vanish against the flame */
+    --color-border-strong: rgba(255, 255, 255, 0.5);
+    --color-flame: #FFFFFF;
+    --color-flame-wash: rgba(255, 255, 255, 0.14);
+    --color-surface: rgba(255, 255, 255, 0.12);
+  }
+
+  /* The <em> word rides on --color-flame everywhere else, but here that token
+     is white — so the "highlight" would be the same colour as the rest of the
+     headline and highlight nothing. On flame the emphasis goes to black. */
+  .riyada-cta-{{ id }}-panel .riyada-h1 em,
+  .riyada-cta-{{ id }}-panel .riyada-h1 i { color: var(--color-media); }
+  {% endif %}
+
+  {% if img %}
+  .riyada-cta-{{ id }}-bg { position: absolute; inset: 0; z-index: -2; }
+  .riyada-cta-{{ id }}-bg img { width: 100%; height: 100%; object-fit: cover; }
+  {% endif %}
+
+  {% if showMotif and (isFlame or bg == 'void') and not img %}
+  /* speed lines — the brand motif. Never over a photo: the photograph already
+     carries the texture, and the two hatchings fight. Same gate the newsletter
+     uses, so the motif appears on the flame AND the black panel. */
+  .riyada-cta-{{ id }}-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      115deg, rgba(255, 255, 255, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  html[dir="rtl"] .riyada-cta-{{ id }}-panel::before {
+    background-image: repeating-linear-gradient(
+      65deg, rgba(255, 255, 255, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  {% endif %}
+
+  /* ================= split row ================= */
+  .riyada-cta-{{ id }}-row {
+    display: grid;
+    align-items: center;
+    gap: 36px;
+    {% if isSplit %}grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+  }
+  @media (max-width: 1023px) {
+    .riyada-cta-{{ id }}-row { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+
+  .riyada-cta-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-media);
+    aspect-ratio: 4 / 3;
+  }
+  .riyada-cta-{{ id }}-media img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ================= text ================= */
+  .riyada-cta-{{ id }}-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+    {% if isCenter %}align-items: center; text-align: center;{% else %}align-items: flex-start;{% endif %}
+  }
+
+  .riyada-cta-{{ id }}-sub {
+    margin: 0;
+    max-width: 56ch;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+  }
+
+  {% if isFlame %}
+  /* On the flame panel the timer cells are white-on-white — go translucent. */
+  .riyada-cta-{{ id }}-panel .riyada-timer-cell {
+    background: rgba(0, 0, 0, 0.18);   /* darker cell keeps white digits ≥4.5:1 */
+    border-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .riyada-cta-{{ id }}-panel .riyada-coupon { background: rgba(0, 0, 0, 0.18); }   /* white code ≥4.5:1 */
+  .riyada-cta-{{ id }}-panel .riyada-timer-num { color: #FFFFFF; }
+  .riyada-cta-{{ id }}-panel .riyada-timer-label { color: #FFFFFF; }
+  {% endif %}
+
+  .riyada-cta-{{ id }}-expired {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+  }
+</style>
+
+
+<section id="riyada-cta-{{ id }}"
+         class="{{ 'riyada-section' if not isFull else '' }} {{ 'riyada-invert' if isLight }}"
+         x-data="riyadaCta{{ id }}()"
+         x-show="!hidden"
+         {% if hideOnExpire %}x-cloak{% endif %}>
+
+  <div class="{{ 'riyada-container' if not isFull }}">
+    <div class="riyada-cta-{{ id }}-panel">
+
+      {% if img %}
+        <div class="riyada-cta-{{ id }}-bg">
+          <img src="{{ img }}" alt="" loading="lazy"/>
+        </div>
+        {# The scrim is its OWN element, never a class on the panel.
+           .riyada-scrim is `position:absolute; inset:0; pointer-events:none` —
+           put it on the panel and the panel leaves the flow and stops taking
+           clicks, which silently kills every button inside it. #}
+        {% if onPhoto %}
+          <span class="riyada-scrim riyada-scrim--{{ scrim }}" style="z-index: -1;"></span>
+        {% endif %}
+      {% endif %}
+
+      <div class="riyada-container" style="position: relative; z-index: 2;">
+        <div class="riyada-cta-{{ id }}-row">
+
+          {# ═══════════════ text ═══════════════ #}
+          <div class="riyada-cta-{{ id }}-body">
+
+            {% if eyebrow %}
+              <span class="riyada-eyebrow {{ 'riyada-eyebrow--light' if isFlame }}">{{ eyebrow }}</span>
+            {% endif %}
+
+            {% if title %}
+              <div class="riyada-h1">{{ title | safe }}</div>
+            {% endif %}
+
+            {% if subtitle %}
+              <p class="riyada-cta-{{ id }}-sub">{{ subtitle | safe }}</p>
+            {% endif %}
+
+            {# ---- countdown ---- #}
+            {% if showCd and cdDate %}
+              <div x-show="!expired && !invalid" x-cloak class="riyada-timer">
+                <span class="riyada-timer-cell">
+                  <span class="riyada-timer-num" x-text="pad(days)">00</span>
+                  <span class="riyada-timer-label">{{ t('common.days') }}</span>
+                </span>
+                <span class="riyada-timer-cell">
+                  <span class="riyada-timer-num" x-text="pad(hours)">00</span>
+                  <span class="riyada-timer-label">{{ t('common.hours') }}</span>
+                </span>
+                <span class="riyada-timer-cell">
+                  <span class="riyada-timer-num" x-text="pad(minutes)">00</span>
+                  <span class="riyada-timer-label">{{ t('common.minutes') }}</span>
+                </span>
+                <span class="riyada-timer-cell">
+                  <span class="riyada-timer-num" x-text="pad(seconds)">00</span>
+                  <span class="riyada-timer-label">{{ t('common.seconds') }}</span>
+                </span>
+              </div>
+
+              <span x-show="expired && !invalid" x-cloak class="riyada-cta-{{ id }}-expired">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 7.2V12l3.4 2"/>
+                </svg>
+                {{ t('cta.expired') }}
+              </span>
+            {% endif %}
+
+            {# ---- coupon ---- #}
+            {% if coupon %}
+              <button type="button" @click="copy()" class="riyada-coupon" aria-label="{{ t('cta.copy_code') }}">
+                <span>{{ coupon }}</span>
+                <span x-show="!copied">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="8.5" y="8.5" width="12" height="12" rx="2.2"/>
+                    <path stroke-linecap="round" d="M15.5 5.5v-.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h.5"/>
+                  </svg>
+                </span>
+                <span x-show="copied" x-cloak>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                  </svg>
+                </span>
+              </button>
+            {% endif %}
+
+            {# ---- buttons ---- #}
+            {% if btnText or btn2Text %}
+              <div class="flex items-center gap-3 flex-wrap {{ 'justify-center' if isCenter }}">
+                {% if btnText %}
+                  <a href="{{ btnLink }}" class="riyada-btn riyada-btn--lg {{ 'riyada-btn--light' if isFlame else 'riyada-btn--primary' }}">
+                    {{ btnText }}
+                    <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                    </svg>
+                  </a>
+                {% endif %}
+                {% if btn2Text %}
+                  <a href="{{ btn2Link }}" class="riyada-btn riyada-btn--lg riyada-btn--outline">{{ btn2Text }}</a>
+                {% endif %}
+              </div>
+            {% endif %}
+
+          </div>
+
+          {# ═══════════════ side image ═══════════════ #}
+          {% if isSplit and imgSplit %}
+            <div class="riyada-cta-{{ id }}-media">
+              <img src="{{ imgSplit }}" alt="{{ title | default('', true) | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('alpine:init', function () {
+    Alpine.data('riyadaCta{{ id }}', function () {
+      return {
+        days: 0, hours: 0, minutes: 0, seconds: 0,
+        expired: false,
+        invalid: false,   /* deadline unreadable — hide the timer, keep the banner */
+        hidden: false,
+        copied: false,
+        _timer: null,
+
+        pad: function (n) { return String(n).padStart(2, '0'); },
+
+        init() {
+          {% if not showCd %}return;{% endif %}
+
+          /* 'YYYY-MM-DD HH:MM' → 'YYYY-MM-DDTHH:MM' so Safari parses it too.
+             No trailing Z on purpose: the merchant means the VISITOR's local time. */
+          var target = new Date('{{ cdDate }}'.replace(' ', 'T')).getTime();
+
+          /* An unparseable date used to set `expired = true`, which made a typo
+             render as "انتهى العرض" — the banner actively told shoppers the sale
+             was over. A date we cannot read means we know nothing about the
+             deadline, so the countdown simply does not appear and the rest of
+             the banner (title, coupon, button) keeps working. */
+          if (isNaN(target)) {
+            this.invalid = true;
+            console.warn('[cta-banner] unreadable countdown date:', '{{ cdDate }}');
+            return;
+          }
+
+          var self = this;
+          var tick = function () {
+            var diff = target - Date.now();
+            if (diff <= 0) {
+              self.days = self.hours = self.minutes = self.seconds = 0;
+              self.expired = true;
+              {% if hideOnExpire %}self.hidden = true;{% endif %}
+              clearInterval(self._timer);
+              self._timer = null;
+              return;
+            }
+            self.days    = Math.floor(diff / 86400000);
+            self.hours   = Math.floor((diff % 86400000) / 3600000);
+            self.minutes = Math.floor((diff % 3600000) / 60000);
+            self.seconds = Math.floor((diff % 60000) / 1000);
+          };
+
+          tick();
+          this._timer = setInterval(tick, 1000);
+        },
+
+        /* Alpine calls this when the element is torn down (the Theme Editor
+           re-renders sections constantly) — without it the interval leaks
+           and you end up with several timers fighting over the same state. */
+        destroy() {
+          if (this._timer) { clearInterval(this._timer); this._timer = null; }
+        },
+
+        async copy() {
+          var code = {{ coupon | dump | safe }};
+          if (!code) return;
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch (e) {
+            /* clipboard API needs https + permission — fall back to a temp field */
+            var el = document.createElement('textarea');
+            el.value = code;
+            el.setAttribute('readonly', '');
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
+            document.body.appendChild(el);
+            el.select();
+            try { document.execCommand('copy'); } catch (e2) { /* nothing else to try */ }
+            document.body.removeChild(el);
+          }
+          this.copied = true;
+          if (window.Qumra) Qumra.toast.success({{ t('cta.copied') | dump | safe }});
+          var self = this;
+          setTimeout(function () { self.copied = false; }, 2200);
+        }
+      };
+    });
+  });
+</script>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-cta-' ~ id, c=d %}

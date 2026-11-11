@@ -1,0 +1,264 @@
+{#
+  ============================================================================
+  SITE FOOTER · الفوتر الجديد
+  ----------------------------------------------------------------------------
+  Dark footer:
+    · logo + a row of top links (a menu);
+    · help column (three icon + line + bold link items), three link columns
+      (menus) and the newsletter with the social icons;
+    · up to three category rows (title + a menu laid out inline);
+    · bottom bar: language switch, copyright, payment marks.
+
+  Every menu falls back to demo links in the visitor's language when it has
+  no items, and every text to locales → sfoot.*, so a fresh install never
+  shows an empty footer. Language uses the real Qumra lang form.
+
+  MUHARRIK: a kinetic outline wordmark band (store name, solid / outline,
+  drifting) opens the footer. Decorative, aria-hidden; the primitive is
+  .mh-marquee from assets/muharrik.css (two identical tracks = one seamless
+  loop in either direction).
+
+  Styles: assets/sections.css → "SITE FOOTER", re-voiced in assets/mh-chrome.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set currentLang = localization.language | default('ar', true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+
+{% macro cIcon(k) %}
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if k == 'phone' %}<path d="M6.6 3.5h2.6l1.5 4.2-2 1.3a11 11 0 0 0 6.3 6.3l1.3-2 4.2 1.5v2.6A2.1 2.1 0 0 1 18.3 19.5 15.8 15.8 0 0 1 4.5 5.7 2.1 2.1 0 0 1 6.6 3.5Z"/><path d="M14.5 3.8a6 6 0 0 1 5.7 5.7M14.3 6.9a3 3 0 0 1 2.8 2.8"/>
+  {% elif k == 'headset' %}<path d="M4.5 13.5v-1.5a7.5 7.5 0 0 1 15 0v1.5"/><rect x="3" y="13" width="4" height="5.5" rx="1.5"/><rect x="17" y="13" width="4" height="5.5" rx="1.5"/><path d="M19 18.5v.5a2.5 2.5 0 0 1-2.5 2.5H13"/>
+  {% elif k == 'chat' %}<path d="M4 5.5h13.5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z"/><path d="M7 10h8M7 13h5"/>
+  {% elif k == 'mail' %}<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>
+  {% elif k == 'pin' %}<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.4"/>
+  {% elif k == 'whatsapp' %}<path d="M4 20l1.2-3.7A8 8 0 1 1 8 19Z"/><path d="M9 9.5c.3 1.6 1.9 3.3 3.6 3.9l1-1 1.8.8-.4 1.5c-3 .2-6.4-3-6.4-6l1.5-.4.8 1.8Z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% macro social(kind) %}
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if kind == 'facebook' %}<path d="M15 3.5h-2.2A3.8 3.8 0 0 0 9 7.3V10H6.5v3.4H9v7.1h3.4v-7.1h2.6l.5-3.4h-3.1V7.6c0-.6.4-.9 1-.9H15Z"/>
+    {% elif kind == 'x' %}<path d="m4 4 16 16M20 4 4 20" stroke-width="1.7"/>
+    {% elif kind == 'pinterest' %}<circle cx="12" cy="12" r="8.5"/><path d="M11 9.5c-1.6.4-2.4 1.8-2 3.2M12.2 8c2.4 0 4.1 1.6 4.1 3.7 0 2.4-1.5 4.1-3.4 4.1-.9 0-1.5-.5-1.7-1.1M11.8 11 10 20"/>
+    {% elif kind == 'instagram' %}<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r=".8" fill="currentColor"/>
+    {% elif kind == 'tiktok' %}<path d="M14 3.5v11.2a3.3 3.3 0 1 1-3.3-3.3M14 3.5c.4 2.3 2 4 4.5 4.3"/>
+    {% elif kind == 'youtube' %}<rect x="2.5" y="5.5" width="19" height="13" rx="3.5"/><path d="m10 9.2 5 2.8-5 2.8Z"/>
+    {% elif kind == 'snapchat' %}<path d="M12 3.5c2.6 0 4.3 1.9 4.3 4.4v2.3l1.9-.4c.5.4.3 1-.6 1.4l-1.4.6c.7 1.9 2 3 3.3 3.4-.3.8-1.4 1-2.4 1.1-.2.6-.3 1.2-.7 1.2-.6 0-1.4-.3-2.3 0-.8.3-1.3 1.2-2.1 1.2s-1.3-.9-2.1-1.2c-.9-.3-1.7 0-2.3 0-.4 0-.5-.6-.7-1.2-1-.1-2.1-.3-2.4-1.1 1.3-.4 2.6-1.5 3.3-3.4l-1.4-.6c-.9-.4-1.1-1-.6-1.4l1.9.4V7.9c0-2.5 1.7-4.4 4.3-4.4Z"/>
+    {% elif kind == 'whatsapp' %}<path d="M4 20l1.2-3.7A8 8 0 1 1 8 19Z"/><path d="M9 9.5c.3 1.6 1.9 3.3 3.6 3.9l1-1 1.8.8-.4 1.5c-3 .2-6.4-3-6.4-6l1.5-.4.8 1.8Z"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{# ---- logo ---- #}
+{% set logoUrl = mediaUrl(d.logo) | trim %}
+{% if (logoUrl | length) == 0 and store.logo and store.logo.fileUrl %}{% set logoUrl = store.logo.fileUrl %}{% endif %}
+
+{# ---- demo links (when a menu has no items) ---- #}
+{# Only routes every Qumra store has. 'tel' / 'wa' = the links of help items 1 and 3. #}
+{% set demoUrls = [
+  ['/', '/shop', '/collections', '/shop'],
+  ['/shop', '/shop', '/shop', '/shop', '/shop', '/collections'],
+  ['/cart', '/blogs', 'tel', 'wa']
+] %}
+{% set rowCounts = [4, 4, 5] %}
+{% set socials = ['facebook', 'x', 'pinterest', 'instagram', 'tiktok', 'youtube', 'snapchat', 'whatsapp'] %}
+{% set payKeys = (d.payments | default('visa,mastercard,applepay,mada', true) | replace(' ', '') | lower).split(',') %}
+{% set defIcons = ['phone', 'headset', 'chat'] %}
+{% set sep = '،' if currentLang != 'en' else ',' %}
+
+{% set bandText = (d.band_text | default('', true) | trim) or (store.name | default('Store', true)) %}
+
+<footer id="hx-ft-{{ id }}" class="hx-ft"
+        style="--ft-bg: {{ d.bg or 'var(--color-footer, #070808)' }}; --ft-fg: {{ d.text_color or 'color-mix(in srgb, var(--hx-footer-fg, #F2F1EC) 72%, var(--color-footer, #070808))' }}; --ft-title: {{ d.title_color or 'var(--hx-footer-fg, #F2F1EC)' }}; --ft-accent: {{ d.accent or 'var(--color-accent)' }};">
+
+  {# ═══ kinetic wordmark band ═══ #}
+  {% if d.band_enabled != false %}
+    <div class="hx-ft-band mh-marquee" aria-hidden="true">
+      {% for rep in [1, 2] %}
+        <div class="mh-marquee-track">
+          {% for i in range(0, 8) %}
+            <span class="hx-ft-word {{ 'is-outline' if (i % 2) == 1 }}">{{ bandText }}</span><span class="hx-ft-tick">//</span>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="hx-ft-wrap">
+
+    {# ═══ logo + top links ═══ #}
+    <div class="hx-ft-top">
+      <a href="/" class="hx-ft-logo" aria-label="{{ store.name }}">
+        {% if (logoUrl | length) > 0 %}<img src="{{ logoUrl }}" alt="{{ store.name }}" style="height: {{ d.logo_height | default(40, true) }}px;"/>
+        {% else %}<span class="hx-ft-logotext">{{ store.name | default('Store', true) }}</span>{% endif %}
+      </a>
+      {% set tm = d.top_menu %}
+      {% set tItems = (tm.items if tm and tm.items else tm) | default([], true) %}
+      {% if (tItems | length) > 0 %}
+        <nav class="hx-ft-toplinks" aria-label="{{ t('footer.menu') }}">
+          {% for it in tItems %}<a href="{{ it.url }}"{{ extAttrs(it.url) }}>{{ it.title }}</a>{% endfor %}
+        </nav>
+      {% endif %}
+    </div>
+
+    {# ═══ main grid ═══ #}
+    <div class="hx-ft-grid">
+      {#- Contact items need the merchant's own value (phone, e-mail, chat
+          link). The locale used to supply «01000000000» and «24/7» promises,
+          so every new store showed a fake number. No value → no item, and no
+          values at all → no column. -#}
+      {% set hasContact = d.c1_value or d.c2_value or d.c3_value %}
+      {% if d.show_contact != false and hasContact %}
+        <div class="hx-ft-col">
+          <h2 class="hx-ft-h">{{ (d.contact_title or t('sfoot.contact_title')) | safe }}</h2>
+          <ul class="hx-ft-help" role="list">
+            {% for n in [1, 2, 3] %}
+              {% set ic = d['c' ~ n ~ '_icon'] | default(defIcons[n - 1]) %}
+              {% set line = d['c' ~ n ~ '_line'] or t('sfoot.c' ~ n ~ '.line') %}
+              {% set val = d['c' ~ n ~ '_value'] | default('', true) %}
+              {% set url = d['c' ~ n ~ '_url'] | default('', true) %}
+              {% if url == '/pages/contact' %}{% set url = '' %}{% endif %}
+              {% if val %}
+                <li class="hx-ft-hitem">
+                  {% if ic != 'none' %}<span class="hx-ft-hico">{{ cIcon(ic) }}</span>{% endif %}
+                  <span class="hx-ft-htxt">
+                    {% if line %}<span>{{ line | safe }}</span>{% endif %}
+                    {% if val %}{% if url %}<a href="{{ url }}" class="hx-ft-hval"{{ extAttrs(url) }}><bdi>{{ val | safe }}</bdi></a>{% else %}<b class="hx-ft-hval"><bdi>{{ val | safe }}</bdi></b>{% endif %}{% endif %}
+                  </span>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {#- Two columns or rows bound to the same menu would print its links twice:
+          each menu shows once, and links identified by their URLs. -#}
+      {% set seenMenus = [] %}
+      {% for n in [1, 2, 3] %}
+        {% set m = d['menu' ~ n] if d['menu' ~ n ~ '_use'] else null %}
+        {% set items = (m.items if m and m.items else m) | default([], true) %}
+        {% set ttl = d['menu' ~ n ~ '_title'] or t('sfoot.m' ~ n ~ '.title') %}
+        {% set sigParts = [] %}{% for it in items %}{% set _ = sigParts.push(it.url) %}{% endfor %}
+        {% set sig = sigParts | join('|') %}
+        {% set repeated = sig and seenMenus.indexOf(sig) > -1 %}
+        {% if sig %}{% set _ = seenMenus.push(sig) %}{% endif %}
+        {% if not repeated %}
+        {#- The second sample column names categories this store may not have, and
+            they all lead to /shop: editor only. The others are real routes. -#}
+        <div class="hx-ft-col{{ ' hy-editor-only' if (items | length) == 0 and n == 2 }}" x-data="{ open: false }">
+          <h2 class="hx-ft-h">
+            <button type="button" class="hx-ft-acc" @click="open = !open" :aria-expanded="open">{{ ttl | safe }}
+              <svg class="hx-ft-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </h2>
+          <ul class="hx-ft-links" :class="{ 'is-open': open }" role="list">
+            {% if (items | length) > 0 %}
+              {% for it in items %}<li><a href="{{ it.url }}"{{ extAttrs(it.url) }}>{{ it.title }}</a></li>{% endfor %}
+            {% else %}
+              {% for u in demoUrls[n - 1] %}
+                {#- «اتصل بنا» / «واتساب» only when the merchant set those links —
+                    they used to fall back to /cart under a contact label. -#}
+                {% set href = (d.c3_url or '') if u == 'wa' else ((d.c1_url or '') if u == 'tel' else u) %}
+                {% if href %}<li><a href="{{ href }}"{{ extAttrs(href) }}>{{ t('sfoot.m' ~ n ~ '.links.l' ~ loop.index) }}</a></li>{% endif %}
+              {% endfor %}
+            {% endif %}
+          </ul>
+        </div>
+        {% endif %}
+      {% endfor %}
+
+      {% if d.show_newsletter != false %}
+        <div class="hx-ft-col hx-ft-nl" x-data="{ sent: false, err: '' }">
+          {#- No list-provider URL = the form would only pretend to subscribe:
+              heading, text and field stay in the editor; the socials stay. -#}
+          <div class="{{ 'hy-editor-only' if not d.nl_action }}">
+          <h2 class="hx-ft-h">{{ (d.nl_title or t('sfoot.nl_title')) | safe }}</h2>
+          <p class="hx-ft-nltext">{{ (d.nl_text or t('sfoot.nl_text')) | safe }}</p>
+          <form class="hx-ft-form" novalidate x-show="!sent"
+                data-err-empty="{{ t('newsletter.error_empty') }}" data-err-format="{{ t('newsletter.error_format') }}"
+                {% if d.nl_action %}action="{{ d.nl_action }}" method="post" target="_blank" rel="noopener"{% endif %}
+                @submit="
+                  const f = $el.querySelector('input[type=email]');
+                  if (!f.checkValidity() || !f.value.trim()) { $event.preventDefault(); err = f.value.trim() === '' ? $el.dataset.errEmpty : $el.dataset.errFormat; f.focus(); return; }
+                  err = ''; {% if not d.nl_action %}$event.preventDefault(); {% endif %}sent = true;
+                ">
+            <input type="email" name="{{ d.nl_field | default('EMAIL', true) }}" required autocomplete="email" inputmode="email"
+                   placeholder="{{ t('sfoot.nl_ph') }}" aria-label="{{ t('common.email') }}" @input="err = ''"/>
+            <button type="submit">{{ (d.nl_button or t('sfoot.nl_btn')) | safe }}</button>
+            <span class="hx-ft-hp" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);"><input type="text" name="hy_hp" tabindex="-1" autocomplete="off"/></span>
+          </form>
+          <p class="hx-ft-err" x-show="err" x-text="err" x-cloak role="alert"></p>
+          <p class="hx-ft-ok" x-show="sent" x-cloak role="status">{{ t('sfoot.nl_ok') }}</p>
+          </div>
+          <div class="hx-ft-social">
+            {% for k in socials %}
+              {% if d['social_' ~ k] %}<a href="{{ d['social_' ~ k] }}" target="_blank" rel="noopener noreferrer" aria-label="{{ k }}">{{ social(k) }}</a>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {# ═══ category rows ═══ #}
+    <div class="hx-ft-rows">
+      {% for n in [1, 2, 3] %}
+        {% if d['row' ~ n ~ '_enabled'] != false %}
+          {% set m = d['row' ~ n ~ '_menu'] if d['row' ~ n ~ '_menu_use'] else null %}
+          {% set items = (m.items if m and m.items else m) | default([], true) %}
+          {% set sigParts = [] %}{% for it in items %}{% set _ = sigParts.push(it.url) %}{% endfor %}
+          {% set sig = sigParts | join('|') %}
+          {% set repeated = sig and seenMenus.indexOf(sig) > -1 %}
+          {% if sig %}{% set _ = seenMenus.push(sig) %}{% endif %}
+          {#- With no menu picked the row shows sample categories — useful in
+              the editor, invented on a live store. -#}
+          {% if not repeated %}
+          <div class="hx-ft-row{{ ' hy-editor-only' if (items | length) == 0 }}">
+            <h2 class="hx-ft-h">{{ (d['row' ~ n ~ '_title'] or t('sfoot.r' ~ n ~ '.title')) | safe }}</h2>
+            <ul class="hx-ft-inline" role="list">
+              {% if (items | length) > 0 %}
+                {% for it in items %}<li><a href="{{ it.url }}"{{ extAttrs(it.url) }}>{{ it.title }}</a></li>{% endfor %}
+              {% else %}
+                {% for k in range(1, rowCounts[n - 1] + 1) %}<li><a href="{{ '/collections' if k == rowCounts[n - 1] else '/shop' }}">{{ t('sfoot.r' ~ n ~ '.links.l' ~ k) }}</a></li>{% endfor %}
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# ═══ bottom bar ═══ #}
+    <div class="hx-ft-bottom">
+      <div class="hx-ft-lang">
+        {% if d.show_language != false %}
+          <div class="hx-ft-langbox" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" @click="open = !open" :aria-expanded="open">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5S9.6 5.9 12 3.5Z"/></svg>
+              <span>{{ 'العربية' if currentLang == 'ar' else 'English' }}{% if localization.currency and localization.currency.currencyCode %} ({{ localization.currency.currencyCode }}){% endif %}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="hx-ft-langdrop" x-show="open" x-cloak>
+              {% form 'lang' %}
+                <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>العربية</button>
+                <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>English</button>
+              {% endform %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <p class="hx-ft-copy">{% if d.copyright %}{{ d.copyright | safe }}{% else %}© <span data-hx-year>2026</span>{{ sep }} <a href="/">{{ store.name | default('', true) }}</a>. {{ t('sfoot.rights') }}{% endif %}</p>
+      <div class="hx-ft-pay">
+        {% for k in payKeys %}{% if k %}{% ui "payment-icons.njk", key=k, label=k %}{% endif %}{% endfor %}
+      </div>
+    </div>
+  </div>
+</footer>
+<script>(function(){var y=document.querySelectorAll('#hx-ft-{{ id }} [data-hx-year]');for(var i=0;i<y.length;i++)y[i].textContent=new Date().getFullYear();})();</script>

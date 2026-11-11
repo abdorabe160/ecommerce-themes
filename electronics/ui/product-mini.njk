@@ -1,0 +1,66 @@
+{# بطاقة منتج مدمجة — الاستخدام: {% ui "product-mini.njk", product=item %} #}
+{% set p = data.product %}
+{% if p %}
+{% set price = p.pricing.price | default(0, true) %}
+{% set compare = p.pricing.compareAtPrice | default(0, true) %}
+{# نفس منطق المخزون في product-card.njk و productOut في main.js #}
+{% set tracked = not (settings.followProductStock == true and (p.trackQuantity == false or p.allowBackorder)) %}
+{% set hasVariants = p.variants and (p.variants | length) > 0 %}
+{% set hasOptions = (p.options and (p.options | length) > 0) or p.variantsCount > 0 or hasVariants %}
+{% set knownSimple = not hasOptions and (p.variantsCount == 0 or p.variants) %}
+{% if tracked and hasVariants %}
+  {% set avail = [] %}
+  {% for v in p.variants %}{% if not ((v.quantity or v.quantity == 0) and v.quantity <= 0) %}{% if avail.push(v) %}{% endif %}{% endif %}{% endfor %}
+  {% set outOfStock = (avail | length) == 0 %}
+{% else %}
+  {% set outOfStock = tracked and (p.quantity or p.quantity == 0) and p.quantity <= 0 and knownSimple %}
+{% endif %}
+{% set stockUnknown = tracked and (p.quantity or p.quantity == 0) and p.quantity <= 0 and not hasVariants and not knownSimple %}
+{# تحذير المخزون القليل — نفس product-card.njk #}
+{% set lowMax = (settings.lowStockThreshold | default(3, true)) | int %}
+{% set vq = [] %}
+{% if hasVariants %}{% for v in p.variants %}{% if v.quantity or v.quantity == 0 %}{% if vq.push(v.quantity if v.quantity > 0 else 0) %}{% endif %}{% endif %}{% endfor %}{% endif %}
+{% set totalQty = (vq | sum) if (hasVariants and (vq | length) == (p.variants | length)) else (p.quantity if (p.quantity or p.quantity == 0) else -1) %}
+{% set lowQty = totalQty if (tracked and not outOfStock and totalQty >= 1 and totalQty <= lowMax) else 0 %}
+{# حد الكمية في السلة (addToCart) + handle لو الخيارات مش معروفة — نفس product-card.njk #}
+{% set optParts = [] %}
+{% if not tracked %}{% if optParts.push('stock: null') %}{% endif %}{% elif p.quantity or p.quantity == 0 %}{% if optParts.push('stock: ' + p.quantity) %}{% endif %}{% endif %}
+{% if not (hasOptions or knownSimple) %}{% if optParts.push('handle: ' + ((p.slug or p.handle or '') | dump)) %}{% endif %}{% endif %}
+{% set cartOpts = (', { ' + (optParts | join(', ')) + ' }') if (optParts | length) else '' %}
+{% set cardState = 'out' if outOfStock else ('check' if stockUnknown else ('options' if hasOptions else 'buy')) %}
+{% set url = '/products/' + (p.slug or p.handle or p._id) %}
+{% set img = p.images[0].fileUrl if (p.images and p.images | length) else '' %}
+<article class="lg-mini glass glass-hover relative">
+  <a href="{{ url }}" class="lg-mini__media" tabindex="-1" aria-hidden="true">
+    {% if img %}
+      <img src="{{ img }}" alt="" loading="lazy" decoding="async" width="76" height="76">
+    {% else %}
+      <span class="text-muted">{% ui "icon.njk", name="device", cls="w-8 h-8 opacity-40" %}</span>
+    {% endif %}
+  </a>
+  <div class="flex-1 min-w-0">
+    <h3 class="text-[.82rem] font-semibold leading-snug line-clamp-2">
+      <a href="{{ url }}" class="hover:text-primary after:absolute after:inset-0">{{ p.title }}</a>
+    </h3>
+    <div class="flex flex-wrap items-baseline gap-x-1.5 mt-1">
+      <span class="text-sm font-bold">{% if price == 0 %}{{t('product.free')}}{% else %}{{ price | money }}{% endif %}</span>
+      {% if compare > price %}<span class="lg-price--old">{{ compare | money }}</span>{% endif %}
+    </div>
+    {% if stockUnknown %}
+      <p class="lg-stock lg-stock--out !text-xs mt-1" x-show="cardInfo['{{ p._id }}'] === 'out'" x-cloak>{{t('product.out_of_stock')}}</p>
+    {% elif outOfStock %}
+      <p class="lg-stock lg-stock--out !text-xs mt-1">{{t('product.out_of_stock')}}</p>
+    {% elif lowQty %}
+      <p class="lg-stock lg-stock--low !text-xs mt-1" role="status">{{ t('product.low_stock_left') | replace('%n', lowQty) }}</p>
+    {% elif p.reviewsCount and p.reviewsCount > 0 %}
+      {% set rating = p.averageRating | default(0) | round %}
+      <div class="flex items-center gap-1 text-[11px] text-muted mt-1">
+        <span class="lg-stars">{% for i in range(1, 6) %}{% ui "icon.njk", name="star", cls="w-3 h-3 fill-current" + ('' if i <= rating else ' is-empty') %}{% endfor %}</span>
+        <span>({{ p.reviewsCount }})</span>
+      </div>
+    {% endif %}
+  </div>
+  {# زرّا "أضف إلى السلة" و"اشترِ الآن" — صف كامل أسفل البطاقة المدمجة #}
+  {% ui "card-actions.njk", id=p._id, url=url, state=cardState, handle=(p.slug or p.handle or ''), opts=cartOpts, cls="lg-mini__actions" %}
+</article>
+{% endif %}

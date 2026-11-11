@@ -1,0 +1,4 @@
+{#- MORVA count: منتج واحد · منتجان · 3 منتجات · 11 منتج. Twin: Utils.countText() in main.js. Local: n -#}
+{%- set n = data.n | default(0, true) -%}
+{%- set tens = n % 100 -%}
+{%- if n == 1 -%}{{ t('morva.count_one') }}{%- elif n == 2 -%}{{ t('morva.count_two') }}{%- elif tens >= 3 and tens <= 10 -%}<b>{{ n }}</b> {{ t('morva.count_few') }}{%- else -%}<b>{{ n }}</b> {{ t('morva.count_many') }}{%- endif -%}

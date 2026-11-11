@@ -1,0 +1,367 @@
+{
+  "name": "واجهة سينمائية — Hero Drive",
+  "settings": {
+    "height": {
+      "type": "select",
+      "label": {
+        "ar": "▸ ارتفاع المشهد",
+        "en": "▸ Scene height"
+      },
+      "default": "full",
+      "options": [
+        {
+          "value": "full",
+          "label": {
+            "ar": "ملء الشاشة (تحت الهيدر)",
+            "en": "Full screen (below the header)"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        }
+      ]
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة (كمبيوتر) — يفضّل ١٩٢٠×١٠٨٠ · فارغ = صورة السيارة الليلية من الثيم",
+        "en": "Image (desktop) — 1920×1080 recommended · empty = the theme's night car photo"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الموبايل — يفضّل ١٠٨٠×١٣٥٠ · فارغ = قصّة الموبايل من الثيم",
+        "en": "Mobile image — 1080×1350 recommended · empty = the theme's mobile crop"
+      }
+    },
+    "image_position": {
+      "type": "select",
+      "label": {
+        "ar": "تركيز الصورة عند القص",
+        "en": "Image focus when cropped"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "left",
+          "label": {
+            "ar": "اليسار",
+            "en": "Left"
+          }
+        },
+        {
+          "value": "right",
+          "label": {
+            "ar": "اليمين",
+            "en": "Right"
+          }
+        },
+        {
+          "value": "top",
+          "label": {
+            "ar": "الأعلى",
+            "en": "Top"
+          }
+        },
+        {
+          "value": "bottom",
+          "label": {
+            "ar": "الأسفل",
+            "en": "Bottom"
+          }
+        }
+      ]
+    },
+    "overlay": {
+      "type": "range",
+      "label": {
+        "ar": "تعتيم الصورة خلف النص",
+        "en": "Image darkening behind the text"
+      },
+      "default": 55,
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%"
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "▸ السطر الصغير — مثال: قطع غيار · إكسسوارات · عناية (فارغ = نص الثيم بلغة الزائر)",
+        "en": "▸ Kicker — e.g. PARTS · ACCESSORIES · CARE (empty = theme copy in the visitor's language)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — السطر الأول (فارغ = نص الثيم)",
+        "en": "Title — first line (empty = theme copy)"
+      },
+      "default": ""
+    },
+    "title_hl": {
+      "type": "string",
+      "label": {
+        "ar": "الكلمة المميزة — تبدأ السطر الثاني بلون الهوية",
+        "en": "Highlighted word — starts the second line in the accent colour"
+      },
+      "default": ""
+    },
+    "title_tail": {
+      "type": "string",
+      "label": {
+        "ar": "بقية السطر الثاني (بعد الكلمة المميزة)",
+        "en": "Rest of the second line (after the highlighted word)"
+      },
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "label": {
+        "ar": "النص القصير",
+        "en": "Short text"
+      },
+      "default": ""
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الأساسي (فارغ = نص الثيم)",
+        "en": "Primary button label (empty = theme copy)"
+      },
+      "default": ""
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الأساسي — مثال: /shop أو /shop/<التشكيلة>",
+        "en": "Primary button link — e.g. /shop or /shop/<collection>"
+      },
+      "default": "/shop"
+    },
+    "button2_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الثاني (فارغ = نص الثيم)",
+        "en": "Secondary button label (empty = theme copy)"
+      },
+      "default": ""
+    },
+    "button2_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الثاني — مثال: /collections",
+        "en": "Secondary button link — e.g. /collections"
+      },
+      "default": "/collections"
+    },
+    "show_hud": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ إظهار إطار الزوايا (HUD) ومؤشر LIVE",
+        "en": "▸ Show the HUD corner frame and LIVE readout"
+      },
+      "default": true
+    },
+    "show_dash": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط لوحة القيادة (الأرقام)",
+        "en": "Show the dashboard strip (the numbers)"
+      },
+      "default": true
+    },
+    "show_scroll_cue": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مؤشر التمرير SCROLL",
+        "en": "Show the SCROLL cue"
+      },
+      "default": true
+    },
+    "dash_lift": {
+      "type": "range",
+      "label": {
+        "ar": "رفع شريط لوحة القيادة عن الحافة السفلية — يترك مساحة من الصورة تتداخل معها لوحة «اختار عربيتك» (0 = على الحافة)",
+        "en": "Lift the dashboard strip off the bottom edge — leaves photo for the Vehicle Finder to overlap (0 = flush)"
+      },
+      "default": 72,
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px"
+    },
+    "show_sweep": {
+      "type": "boolean",
+      "label": {
+        "ar": "لمعة ضوء تمرّ على الصورة عند التحميل",
+        "en": "Light sweep across the photo on load"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم (لون التعتيم)",
+        "en": "Section background (the shade colour)"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون الهوية (الكلمة المميزة، الزوايا، المؤشر)",
+        "en": "Accent colour (highlight word, ticks, cue)"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخطوط الفاصلة",
+        "en": "Hairline colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر الأساسي",
+        "en": "Primary button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر الأساسي",
+        "en": "Primary button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "stat": {
+      "name": "رقم في لوحة القيادة",
+      "settings": {
+        "value": {
+          "type": "string",
+          "label": {
+            "ar": "▸ القيمة — رقم فقط ليُعدّ تصاعديًا (مثال: 12000) أو أي نص",
+            "en": "▸ Value — digits only to count up (e.g. 12000), or any text"
+          },
+          "default": ""
+        },
+        "prefix": {
+          "type": "string",
+          "label": {
+            "ar": "قبل الرقم (مثال: +)",
+            "en": "Before the number (e.g. +)"
+          },
+          "default": ""
+        },
+        "suffix": {
+          "type": "string",
+          "label": {
+            "ar": "بعد الرقم (مثال: % أو H)",
+            "en": "After the number (e.g. % or H)"
+          },
+          "default": ""
+        },
+        "decimals": {
+          "type": "range",
+          "label": {
+            "ar": "عدد الخانات العشرية",
+            "en": "Decimal places"
+          },
+          "default": 0,
+          "min": 0,
+          "max": 2,
+          "step": 1
+        },
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان تحت الرقم (مثال: عميل راضٍ)",
+            "en": "Label under the number (e.g. Happy drivers)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الواجهة",
+      "name": "واجهة سينمائية — Hero Drive"
+    }
+  ]
+}

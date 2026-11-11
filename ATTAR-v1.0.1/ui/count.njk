@@ -1,0 +1,10 @@
+{#- Number + noun with Arabic plural forms: منتج واحد، منتجان، 3 منتجات، 11 منتج (JS twin: Utils.count).
+    data.kind: product | article | collection -#}
+{%- set _n = (data.n or 0) | int -%}
+{%- set _k = 'common.count_' ~ (data.kind or 'product') -%}
+{%- set _r = _n - ((_n / 100) | int) * 100 -%}
+{%- if _n == 1 -%}{{ t(_k ~ '_one') }}
+{%- elif _n == 2 -%}{{ t(_k ~ '_two') }}
+{%- elif _r >= 3 and _r <= 10 -%}{{ _n }} {{ t(_k ~ '_few') }}
+{%- else -%}{{ _n }} {{ t(_k ~ '_many') }}
+{%- endif -%}

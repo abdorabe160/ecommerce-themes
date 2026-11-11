@@ -1,0 +1,12 @@
+{#- GEN-17: placeholder cards while a product row loads (same footprint as .p-card, so nothing jumps).
+    {% ui "card-skeleton.njk", count=4 %} — wrap in an element that hides once items arrive. -#}
+{%- for i in range(0, (data.count | default(4)) | int) %}
+<div class="p-card dc-card-skeleton" aria-hidden="true">
+  <div class="p-card__media skeleton"></div>
+  <div class="p-card__body">
+    <span class="skeleton dc-sk-line" style="width:70%"></span>
+    <span class="skeleton dc-sk-line" style="width:40%"></span>
+    <span class="skeleton dc-sk-line dc-sk-btn"></span>
+  </div>
+</div>
+{%- endfor %}

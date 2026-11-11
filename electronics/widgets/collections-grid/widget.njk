@@ -1,0 +1,60 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set items = [] %}
+{% for c in wd.collections | default([]) %}
+  {# إخفاء التصنيفات المعطّل عنها البيع (REG-01..04) #}
+  {# قسم من غير عنوان أو رابط، وقسم النظام home-page: مايتعرضوش #}
+  {% if c and c.title and (c.handle or c.slug) and (c.handle or c.slug) != 'home-page' and c.status != 'inactive' and c.status != 'draft' and c.active != false and c.isActive != false and c.deleted != true and not (c.salesChannels and c.salesChannels.onlineStore == false) and c.published != false %}
+    {% if items.push(c) %}{% endif %}
+  {% endif %}
+{% endfor %}
+{% set n = items | length %}
+{# بدون تصنيفات مختارة (المعاينة فقط): تصنيفات توضيحية إن كان المتجر بلا تصنيفات، وإلا تلميح للتاجر (lgAutoCollections)؛ والقسم مخفي للعملاء #}
+<section class="lg-section" {%- if not n %} x-data="lgAutoCollections()" x-show="items.length || hint" x-cloak{% endif %}>
+  <div class="lg-container">
+    <div class="lg-section-head">
+      <div>
+        {% if (wd['title' + L] or wd.title) %}<h2 class="lg-title">{{ (wd['title' + L] or wd.title) }}</h2>{% endif %}
+        {% if (wd['subtitle' + L] or wd.subtitle) %}<p class="lg-subtitle">{{ (wd['subtitle' + L] or wd.subtitle) }}</p>{% endif %}
+      </div>
+      {% if wd.show_view_all %}
+        <a href="/collections" class="btn-link shrink-0">
+          {{t('common.view_all')}} {% ui "icon.njk", name="arrow", cls="w-3.5 h-3.5 lg-flip-rtl" %}
+        </a>
+      {% endif %}
+    </div>
+
+    {% if n %}
+      <ul class="lg-cat-grid grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4 {% if n == 8 %}lg-cats-8{% elif n >= 7 %}lg:grid-cols-7{% elif n == 6 %}lg:grid-cols-6{% elif n == 5 %}lg:grid-cols-5{% endif %}">
+        {% for c in items %}
+          <li>
+            <a href="/collections/{{ c.handle or c.slug }}" class="lg-cat glass glass-hover">
+              {% if c.image and c.image.fileUrl and not c.image.notFound %}
+                <img src="{{ c.image.fileUrl }}" alt="" loading="lazy" decoding="async" width="120" height="120">
+              {% else %}
+                <span class="lg-cat__ph text-primary">{% ui "icon.njk", name="grid", cls="w-9 h-9" %}</span>
+              {% endif %}
+              <span>{{ c.title }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      {# المعاينة فقط: المتجر فيه بيانات حقيقية ولم يُختر شيء لهذا القسم #}
+      <p x-show="hint" x-cloak class="lg-editor-hint">{{ t('preview.pick_collections') }}</p>
+      <ul class="lg-cat-grid grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4" :class="items.length == 8 && 'lg-cats-8'">
+        <template x-for="c in items" :key="c._id">
+          <li>
+            <a :href="collectionUrl(c)" class="lg-cat glass glass-hover">
+              <img :src="c.image" alt="" loading="lazy" decoding="async" width="120" height="120">
+              <span x-text="c.title"></span>
+            </a>
+          </li>
+        </template>
+      </ul>
+      {% ui "demo-data.njk", kind="collections" %}
+    {% endif %}
+  </div>
+</section>

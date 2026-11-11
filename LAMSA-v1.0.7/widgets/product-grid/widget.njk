@@ -1,0 +1,211 @@
+{# ===== ATTAR PRODUCT GRID — Fragrance boutique (square, dark) ===== #}
+{% set products = widget.data.featuredCollection | default([]) %}
+{% set title = widget.data.title | safe %}
+{% set subtitle = widget.data.subtitle | safe %}
+{% set viewAllUrl = widget.data.view_all_url %}
+{% set id = widget.id %}
+{% set cardRatio = widget.data.card_image_ratio | default('square') %}
+
+{% set displayMode = widget.data.display_mode | default('slider') %}
+{% set columns = widget.data.columns | default(4, true) | int %}
+{% set rows = widget.data.rows | default(1, true) | int %}
+{% set tabletCols = 3 if columns > 3 else columns %}
+{% set gridLimit = columns * rows %}
+{% set isSlider = displayMode == 'slider' %}
+
+<style>
+  .anaqa-pg-{{ id }} .anaqa-pg-title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  html[dir="rtl"] .anaqa-pg-{{ id }} .anaqa-pg-title { line-height: 1.25; font-weight: 600; }
+  .anaqa-pg-{{ id }} .anaqa-pg-subtitle { color: var(--color-text-secondary); font-size: 0.95rem; max-width: 520px; }
+
+  .anaqa-pg-arrow {
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--color-border);
+    color: var(--color-text-primary); cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-pg-arrow:hover { background: var(--color-text-primary); border-color: var(--color-text-primary); color: var(--color-bg-primary); }
+  .anaqa-pg-arrow.swiper-button-disabled { opacity: 0.3; cursor: default; background: transparent; border-color: var(--color-border); color: var(--color-text-tertiary); }
+
+  .anaqa-pg-scrollbar { display: none !important; }
+  .anaqa-pg-scrollbar .swiper-scrollbar-drag { background: var(--color-text-primary); border-radius: 0; cursor: grab; height: 100%; }
+  #pgSwiper-{{ id }} > .swiper-scrollbar:not(.anaqa-pg-scrollbar) { display: none !important; }
+
+  /* Grid layout mode */
+  .anaqa-pg-grid-{{ id }} {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px; row-gap: 56px;
+  }
+  @media (min-width: 768px) {
+    .anaqa-pg-grid-{{ id }} { grid-template-columns: repeat({{ tabletCols }}, minmax(0, 1fr)); column-gap: 28px; row-gap: 72px; }
+  }
+  @media (min-width: 1024px) {
+    .anaqa-pg-grid-{{ id }} { grid-template-columns: repeat({{ columns }}, minmax(0, 1fr)); column-gap: 32px; row-gap: 80px; }
+  }
+
+  {% if rows == 1 %}
+  #pgSwiper-{{ id }} .swiper-wrapper { align-items: stretch; }
+  #pgSwiper-{{ id }} .swiper-slide { height: auto !important; display: flex; }
+  #pgSwiper-{{ id }} .swiper-slide > * { width: 100%; }
+  {% else %}
+  #pgSwiper-{{ id }} .swiper-slide { display: flex; }
+  #pgSwiper-{{ id }} .swiper-slide > * { width: 100%; }
+  {% endif %}
+
+  @media (max-width: 640px) {
+    .anaqa-pg-arrow { width: 40px; height: 40px; }
+    .anaqa-pg-grid-{{ id }} { row-gap: 44px; }
+  }
+</style>
+
+<section id="{{ id }}" class="anaqa-pg-{{ id }} py-24 max-sm:py-14" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ===== Header ===== #}
+    {% set hasServerProducts = products and (products | length) > 0 %}
+    {% if isSlider %}
+      {% if title or subtitle %}
+      <div class="flex items-end justify-between gap-6 mb-12 max-sm:mb-8 max-sm:flex-col max-sm:items-start max-sm:gap-5">
+        <div class="min-w-0">
+          {% if title %}<h2 class="anaqa-pg-title font-heading-ar">{{ title }}</h2>{% endif %}
+          {% if subtitle %}<p class="anaqa-pg-subtitle font-body-ar mt-3">{{ subtitle }}</p>{% endif %}
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button id="pgPrev-{{ id }}" class="anaqa-pg-arrow" aria-label="{{ t('common.back') | default('السابق') }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M15 19l-7-7 7-7{% else %}M9 5l7 7-7 7{% endif %}"/></svg>
+          </button>
+          <button id="pgNext-{{ id }}" class="anaqa-pg-arrow" aria-label="{{ t('common.continue') | default('التالي') }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M9 5l7 7-7 7{% else %}M15 19l-7-7 7-7{% endif %}"/></svg>
+          </button>
+        </div>
+      </div>
+      {% endif %}
+    {% else %}
+      {% if title or subtitle %}
+      <div class="text-center mb-16 max-sm:mb-10">
+        {% if title %}<h2 class="anaqa-pg-title font-heading-ar">{{ title }}</h2>{% endif %}
+        {% if subtitle %}<p class="anaqa-pg-subtitle font-body-ar mt-4 mx-auto">{{ subtitle }}</p>{% endif %}
+      </div>
+      {% endif %}
+    {% endif %}
+
+    {# ===== Products ===== #}
+    {% if not isSlider %}
+    <div class="anaqa-pg-grid-{{ id }}" id="pgGrid-{{ id }}" data-lone-m="2" data-lone-t="{{ tabletCols }}" data-lone-d="{{ columns }}">
+      {% if hasServerProducts %}
+        {% for product in products %}
+          {% if loop.index <= gridLimit %}
+            {% ui "product-card.njk", product=product, image_ratio=cardRatio %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="swiper" id="pgSwiper-{{ id }}">
+      <div class="swiper-wrapper" id="pgWrapper-{{ id }}">
+        {% if hasServerProducts %}
+          {% for product in products %}
+          <div class="swiper-slide" style="height: auto;">
+            {% ui "product-card.njk", product=product, image_ratio=cardRatio %}
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="anaqa-pg-scrollbar swiper-scrollbar" id="pgScroll-{{ id }}" {% if not hasServerProducts %}style="display: none;"{% endif %}></div>
+    {% endif %}
+
+    {# View All #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-16 max-sm:mt-10" id="pgViewAll-{{ id }}" {% if not hasServerProducts %}style="display: none;"{% endif %}>
+        <a href="{{ viewAllUrl }}" class="anaqa-btn font-body-ar">
+          {{ t('common.view_all') | default('عرض الكل') }}
+        </a>
+      </div>
+    {% endif %}
+
+    {# Empty State #}
+    <div id="pgEmpty-{{ id }}" class="text-center py-20" style="display: none;">
+      <p style="color: var(--color-text-tertiary);" class="text-[15px] font-body-ar">{{ t('products.no_products') | default('لا توجد منتجات بعد') }}</p>
+    </div>
+
+    <script>
+      (() => {
+        const isSlider = {{ 'true' if isSlider else 'false' }};
+        const hasServerProducts = {{ 'true' if hasServerProducts else 'false' }};
+        const gridLimit = {{ gridLimit | int }};
+        const sliderRows = {{ rows | int }};
+        const sliderLimit = {{ (columns * rows * 3) | int }};
+
+        function initSlider() {
+          return new Swiper('#pgSwiper-{{ id }}', {
+            slidesPerView: 2,
+            spaceBetween: 20,
+            grid: { rows: sliderRows, fill: 'row' },
+            navigation: { prevEl: '#pgPrev-{{ id }}', nextEl: '#pgNext-{{ id }}' },
+            scrollbar: { el: '#pgScroll-{{ id }}', draggable: true, hide: false },
+            breakpoints: {
+              640: { slidesPerView: 2, spaceBetween: 24 },
+              768: { slidesPerView: {{ tabletCols | int }}, spaceBetween: 28 },
+              1024: { slidesPerView: {{ columns | int }}, spaceBetween: 32 }
+            }
+          });
+        }
+
+        if (hasServerProducts) { if (isSlider) initSlider(); return; }
+
+        // ===== Fallback: fetch latest products =====
+        // Cards are rendered by LamsaCard — the single JS card renderer.
+        const cardOpts = { imageRatio: '{{ cardRatio }}' };
+
+
+        async function loadFallback() {
+          try {
+            const res = await fetch('/ajax/search/products?q=&sort=created-desc');
+            const data = await res.json();
+            const lim = isSlider ? sliderLimit : gridLimit;
+            const products = (data.products || data.items || data.data || []).slice(0, lim);
+
+            const emptyEl = document.getElementById('pgEmpty-{{ id }}');
+            if (!products.length) { if (emptyEl) emptyEl.style.display = 'block'; return; }
+
+            const viewAllEl = document.getElementById('pgViewAll-{{ id }}');
+            if (viewAllEl) viewAllEl.style.display = '';
+
+            if (!isSlider) {
+              const grid = document.getElementById('pgGrid-{{ id }}');
+              grid.innerHTML = products.map((p) => LamsaCard.build(p, cardOpts)).join('');
+              if (window.Alpine) grid.querySelectorAll('[x-data]').forEach((el) => Alpine.initTree(el));
+            } else {
+              const wrapper = document.getElementById('pgWrapper-{{ id }}');
+              wrapper.innerHTML = products.map((p) => '<div class="swiper-slide" style="height:auto;">' + LamsaCard.build(p, cardOpts) + '</div>').join('');
+              if (window.Alpine) wrapper.querySelectorAll('[x-data]').forEach((el) => Alpine.initTree(el));
+              const scrollEl = document.getElementById('pgScroll-{{ id }}');
+              if (scrollEl) scrollEl.style.display = '';
+              initSlider();
+            }
+          } catch (e) {
+            console.error('[product-grid] fallback load failed', e);
+            const emptyEl = document.getElementById('pgEmpty-{{ id }}');
+            if (emptyEl) emptyEl.style.display = 'block';
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', loadFallback);
+        } else {
+          loadFallback();
+        }
+      })();
+    </script>
+
+  </div>
+</section>

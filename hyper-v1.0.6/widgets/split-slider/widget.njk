@@ -1,0 +1,251 @@
+{# ============================================================================
+   HYPER · شريط تمرير متعدد الأعمدة  (split slider)
+   ----------------------------------------------------------------------------
+     ┌───────────────────────┐ ┌───────────┬───────────┐
+     │ غرفة الطعام والمطبخ    │ │   مصباح   │   بنش     │
+     │ الفرق في              │ │           │           │
+     │ التفاصيل              │ ├───────────┼───────────┤
+     │ ( تسوّق الآن )        │ │  طاولة    │  تابوريه  │
+     │      ‹  ·▬·  ›        │ │           │           │
+     └───────────────────────┘ └───────────┴───────────┘
+
+   ── Why the tiles are fixed slots and the slides are blocks ──
+   The carousel takes a variable number of slides, so it is `blocks`. The grid
+   is exactly four tiles, so those are widget-level settings.
+
+   ⚠️  They are NOT a second block type. No original widget in this theme
+   declares two, so a `blocks` object with both `slide` and `tile` in it is
+   unproven — and an unproven schema shape has already cost this build a broken
+   settings panel once. Four fixed slots use only what is known to work.
+
+   ── Reused, not rebuilt ──
+   The carousel's controls are the HERO's: `.hy-hero-controls` /
+   `.hy-hero-arrow` / `.hy-hero-dots` from 15.5. Same object, same job — white
+   controls on a photograph with the active dot stretched into a bar.
+
+   Styling lives in assets/style.css → "15.13.5 SPLIT SLIDER" and "15.5 HERO".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set gap = d.gap | default(16) %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 12 %}
+{% set minH = d.slider_height | default(420) %}
+{% set bg = d.background | default('white') %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showDots = d.show_dots | default(true) %}
+{% set animationsOn = settings.enableAnimations != false %}
+{% set autoplay = animationsOn and d.autoplay | default(true) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+{% set mediaPos = d.media_position | default('start') %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{# The four tiles, listed once so the loop below stays in step with the schema. #}
+{% set tiles = [
+  { image: d.tile1_image, title: d.tile1_title, note: d.tile1_note, url: d.tile1_url },
+  { image: d.tile2_image, title: d.tile2_title, note: d.tile2_note, url: d.tile2_url },
+  { image: d.tile3_image, title: d.tile3_title, note: d.tile3_note, url: d.tile3_url },
+  { image: d.tile4_image, title: d.tile4_title, note: d.tile4_note, url: d.tile4_url }
+] %}
+
+{% macro phIcon(size) %}
+  <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.75" cy="9" r="1.5"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+  </svg>
+{% endmacro %}
+
+
+{# The root background is INLINE so it beats every stylesheet rule — see the
+   note in the other sections. #}
+<section id="hy-sp-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-split-sec"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <style>
+    #hy-sp-{{ id }} {
+      --hy-sp-gap: {{ gap }}px;
+      --hy-sp-radius: {{ radius }}px;
+      --hy-sp-min: {{ minH }}px;
+      --hy-sp-min-sm: {{ (minH * 0.85) | round | int }}px;
+    }
+  </style>
+
+  <div class="hy-container">
+    {# ⚠️  A MODIFIER CLASS, not an inline `style="order:1"` on the slider.
+       An inline declaration beats every stylesheet rule no matter how specific
+       — the same trap `--hy-sec-bg` exists to avoid in ui/section-colors.njk —
+       so the mobile rule that makes the carousel lead could never win against
+       it, and `media_position: end` silently kept the carousel BELOW the tiles
+       on a phone. Half the configurations lost the documented mobile order.
+       This is also how the other three widgets with this setting do it
+       (.hy-imgtext--media-end, .hy-ctabs--media-start, .hy-fav--media-end). #}
+    <div class="hy-split {{ 'hy-split--media-end' if mediaPos == 'end' }}">
+
+      {# ═══════════════ the carousel ═══════════════ #}
+      <div class="hy-split-slider">
+        {# `dir` is load-bearing — Swiper reads it off the element, it has no
+           `rtl` init option. #}
+        <div id="hy-spSw-{{ id }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+          <div class="swiper-wrapper">
+
+            {% if count == 0 %}
+              {# Nothing added yet — the real stage at its real height with the
+                 copy sketched in. A preset cannot seed blocks. See "15.29.1". #}
+              <div class="swiper-slide">
+                <div class="hy-split-slide" data-hy-placeholder aria-hidden="true">
+                  <span class="hy-split-media hy-split-noimg">{{ phIcon(42) }}</span>
+                  <div class="hy-split-body">
+                    <div class="hy-ph-stack" style="max-width: 15ch;">
+                      <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 46%;"></span>
+                      <span class="hy-ph-line hy-ph-line--lg"></span>
+                      <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 62%;"></span>
+                    </div>
+                    <span class="hy-ph-hint">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+                      </svg>
+                      {{ t('common.placeholder_add') }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            {% for block in slides %}
+              {% set b = block.data %}
+              {% set img = mediaUrl(b.image) | trim %}
+              {# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+              {% if not (img | length) %}{% set img = ['demo-split-1.jpg', 'demo-split-2.jpg'][loop.index0 % 2] | assets %}{% endif %}
+              {# `| length`, not truthiness — a macro returns a SafeString OBJECT. #}
+              {% set hasImg = (img | length) > 0 %}
+
+              <div class="swiper-slide">
+                <div class="hy-split-slide">
+                  {% if hasImg %}
+                    <div class="hy-split-media">
+                      <img src="{{ img }}" alt="{{ b.title | default('', true) }}"
+                           {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                    </div>
+                    <span class="hy-split-scrim" aria-hidden="true"></span>
+                  {% else %}
+                    <span class="hy-split-media hy-split-noimg">{{ phIcon(42) }}</span>
+                  {% endif %}
+
+                  <div class="hy-split-body">
+                    {% if b.eyebrow %}<p class="hy-split-eyebrow">{{ b.eyebrow }}</p>{% endif %}
+                    {% if b.title %}<h3 class="hy-split-title">{{ b.title }}</h3>{% endif %}
+                    {% if b.text %}
+                      {# ⚠️  A <div>, NOT a <p>: a `text` field returns block HTML
+                         and a <p> cannot contain a <p>. #}
+                      <div class="hy-split-text">{{ b.text | safe }}</div>
+                    {% endif %}
+                    {% if b.cta_text %}
+                      <a href="{{ b.cta_url | default('/shop') }}"
+                         class="hy-btn hy-btn--pill hy-btn--light">{{ b.cta_text }}</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        {# The hero's controls — see the note at the top. #}
+        {% if count > 1 and (showArrows or showDots) %}
+          <div class="hy-hero-controls">
+            {% if showArrows %}
+              <button type="button" id="hy-spPrev-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.prev') }}">
+                <svg class="rtl-flip" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+                </svg>
+              </button>
+            {% endif %}
+            {% if showDots %}
+              <div id="hy-spDots-{{ id }}" class="hy-hero-dots"></div>
+            {% endif %}
+            {% if showArrows %}
+              <button type="button" id="hy-spNext-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.next') }}">
+                <svg class="rtl-flip" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+                </svg>
+              </button>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# ═══════════════ the tile grid ═══════════════ #}
+      <div class="hy-split-grid">
+        {% for tl in tiles %}
+          {% set tImg = mediaUrl(tl.image) | trim %}
+          {# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+          {% if not (tImg | length) %}{% set tImg = ['demo-tile-1.jpg', 'demo-tile-2.jpg', 'demo-tile-3.jpg', 'demo-tile-4.jpg'][loop.index0 % 4] | assets %}{% endif %}
+          {% set tHas = (tImg | length) > 0 %}
+          <a href="{{ tl.url | default('/shop') }}" class="hy-split-tile">
+            <span class="hy-split-tile-media">
+              {% if tHas %}
+                <img src="{{ tImg }}" alt="{{ tl.title | default('') }}" loading="lazy"/>
+              {% else %}
+                <span class="hy-split-tile-noimg">{{ phIcon(34) }}</span>
+              {% endif %}
+            </span>
+            {% if tl.title %}
+              <span class="hy-split-tile-title">{{ tl.title }}</span>
+            {% else %}
+              <span class="hy-ph-line" style="--ph-line-w: 64%;" data-hy-placeholder aria-hidden="true"></span>
+            {% endif %}
+            {% if tl.note %}
+              <span class="hy-split-tile-note">{{ tl.note }}</span>
+            {% else %}
+              <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 42%;" data-hy-placeholder aria-hidden="true"></span>
+            {% endif %}
+          </a>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var el = document.getElementById('hy-spSw-{{ id }}');
+    /* Nothing added yet — the wrapper holds a skeleton, not slides. */
+    if (!el || {{ count }} < 2 || typeof Swiper === 'undefined') return;
+
+    new Swiper(el, {
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      speed: 600,
+      loop: true,
+      {% if autoplay %}
+      autoplay: { delay: {{ (speed | float) * 1000 }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#hy-spPrev-{{ id }}', nextEl: '#hy-spNext-{{ id }}' },
+      {% endif %}
+      {% if showDots %}
+      pagination: { el: '#hy-spDots-{{ id }}', clickable: true },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-sp-' ~ id, c=d %}

@@ -1,0 +1,283 @@
+{
+  "name": "بطاقات قابلة للتمرير: متراكبة",
+  "settings": {
+    "card_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض البطاقة",
+        "en": "Card width"
+      },
+      "default": 396,
+      "min": 280,
+      "max": 640,
+      "step": 4,
+      "unit": "px"
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة البطاقة",
+        "en": "Card ratio"
+      },
+      "default": "4x5",
+      "options": [
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥ — طولية (مثل التصميم)",
+            "en": "4:5 — portrait"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤ — أطول",
+            "en": "3:4 — taller"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        }
+      ]
+    },
+    "stack_step": {
+      "type": "range",
+      "label": {
+        "ar": "إزاحة كل بطاقة عن اللي قبلها · يُعرض حتى ٦ بطاقات، وما بعدها لا يظهر",
+        "en": "How far each card sits below the one before it · up to 6 cards are shown, the rest are not"
+      },
+      "default": 18,
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px"
+    },
+    "shrink": {
+      "type": "range",
+      "label": {
+        "ar": "كم تصغر البطاقة كلما دخلت خلف التي بعدها",
+        "en": "How much a card shrinks as the next one covers it"
+      },
+      "default": 13.5,
+      "min": 0,
+      "max": 25,
+      "step": 0.5,
+      "unit": "%"
+    },
+    "top_offset": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين أعلى الشاشة وأول بطاقة تثبت",
+        "en": "The gap between the top of the screen and the first card that stops"
+      },
+      "default": 20,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "hold": {
+      "type": "range",
+      "label": {
+        "ar": "كم تبقى آخر بطاقة ثابتة قبل أن يمضي القسم — نسبة من ارتفاع البطاقة",
+        "en": "How long the last card stays before the section moves on — a share of the card height"
+      },
+      "default": 45,
+      "min": 0,
+      "max": 120,
+      "step": 5,
+      "unit": "%"
+    },
+    "gap": {
+      "type": "range",
+      "label": {
+        "ar": "مسافة التمرير بين بطاقة وأخرى — نسبة من ارتفاع البطاقة",
+        "en": "Scroll distance between one card and the next — a share of the card height"
+      },
+      "default": 0,
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%"
+    },
+    "radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة زوايا البطاقة",
+        "en": "Card corner radius"
+      },
+      "default": 20,
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px"
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق القسم كله — اتركيه فارغاً كما في التصميم",
+        "en": "A small line above the whole section — leave it empty as the design does"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم — اتركيه فارغاً كما في التصميم",
+        "en": "Section heading — leave it empty as the design does"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان خاصة بهذا القسم",
+        "en": "Colours just for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Headings"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body text"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Borders"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "بطاقة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "▸ صورة البطاقة — تملأ البطاقة كاملة",
+            "en": "▸ Card photo — it fills the whole card"
+          }
+        },
+        "image_focus": {
+          "type": "select",
+          "label": {
+            "ar": "أي جزء من الصورة يبقى عند القص",
+            "en": "Which part of the photo survives the crop"
+          },
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": {
+                "ar": "الوسط",
+                "en": "Middle"
+              }
+            },
+            {
+              "value": "top",
+              "label": {
+                "ar": "الأعلى — للوجوه",
+                "en": "Top — for faces"
+              }
+            },
+            {
+              "value": "bottom",
+              "label": {
+                "ar": "الأسفل",
+                "en": "Bottom"
+              }
+            }
+          ]
+        },
+        "bg_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون البطاقة — يظهر خلف الصورة وأثناء تحميلها",
+            "en": "Card colour — it shows behind the photo and while it loads"
+          },
+          "default": ""
+        },
+        "badge": {
+          "type": "string",
+          "label": {
+            "ar": "الشارة أعلى البطاقة",
+            "en": "The pill at the top of the card"
+          },
+          "default": ""
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير فوق العنوان",
+            "en": "The small line above the headline"
+          },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Headline"
+          },
+          "default": ""
+        },
+        "cta_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر — اتركيه فارغاً فتصبح البطاقة كلها رابطاً بلا زر",
+            "en": "Button label — leave it empty and the whole card is the link, with no button"
+          },
+          "default": "تسوّقي الآن"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — / · /shop · /collections",
+            "en": "Link"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "بطاقات قابلة للتمرير: متراكبة"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{# ترقيم الصفحات — الاستخدام: {% ui "pagination.njk", pagination=collection.pagination %} #}
+{% set pg = data.pagination or {} %}
+{% set current = pg.currentPage | default(pg.page) | default(1) %}
+{% set total = pg.totalPages | default(pg.pages) | default(1) %}
+{% if total > 1 %}
+<nav class="flex justify-center py-8" aria-label="{{t('common.pagination')}}">
+  <div class="glass glass-pill inline-flex items-center gap-1 p-1.5">
+    {% if current > 1 %}
+      <a href="?page={{ current - 1 }}" :href="lgPageUrl({{ current - 1 }})" rel="prev" class="btn btn-glass btn-icon" aria-label="{{t('common.previous')}}">
+        {% ui "icon.njk", name="prev", cls="w-4 h-4 lg-flip-rtl" %}
+      </a>
+    {% endif %}
+
+    {% for i in range(1, total + 1) %}
+      {% if i == 1 or i == total or (i >= current - 1 and i <= current + 1) %}
+        {% if i == current %}
+          <span class="w-11 h-11 grid place-items-center rounded-full bg-primary text-[color:var(--color-on-primary)] font-bold" aria-current="page">{{ i }}</span>
+        {% else %}
+          <a href="?page={{ i }}" :href="lgPageUrl({{ i }})" class="w-11 h-11 grid place-items-center rounded-full hover:bg-black/5 font-medium">{{ i }}</a>
+        {% endif %}
+      {% elif i == current - 2 or i == current + 2 %}
+        <span class="px-1 text-muted">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if current < total %}
+      <a href="?page={{ current + 1 }}" :href="lgPageUrl({{ current + 1 }})" rel="next" class="btn btn-glass btn-icon" aria-label="{{t('common.next')}}">
+        {% ui "icon.njk", name="chevron", cls="w-4 h-4 lg-flip-rtl" %}
+      </a>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}

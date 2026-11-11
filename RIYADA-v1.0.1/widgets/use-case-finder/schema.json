@@ -1,0 +1,453 @@
+{
+  "name": "تسوّق حسب الهدف",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — ضع <em>كلمة</em> لتلوينها بالبرتقالي",
+        "en": "Title — wrap a word in <em> to set it in flame"
+      },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير",
+        "en": "Short Description"
+      },
+      "default": ""
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "goals",
+      "options": [
+        {
+          "value": "goals",
+          "label": {
+            "ar": "بطاقات بصور (موصى به)",
+            "en": "Photo tiles (recommended)"
+          }
+        },
+        {
+          "value": "tiles",
+          "label": {
+            "ar": "بطاقات بأيقونات — بدون صور",
+            "en": "Icon tiles — no photography needed"
+          }
+        },
+        {
+          "value": "rail",
+          "label": {
+            "ar": "شريط أفقي",
+            "en": "Horizontal rail"
+          }
+        }
+      ]
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد الصورة (لتقسيم البطاقات)",
+        "en": "Image Ratio (cards layout)"
+      },
+      "default": "4x5",
+      "options": [
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولي خفيف (موصى به)",
+            "en": "Portrait (recommended)"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولي",
+            "en": "Tall portrait"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x3",
+          "label": {
+            "ar": "عرضي",
+            "en": "Landscape"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "canvas",
+      "options": [
+        {
+          "value": "canvas",
+          "label": {
+            "ar": "خلفية الموقع (موصى به)",
+            "en": "Page background (recommended)"
+          }
+        },
+        {
+          "value": "alt",
+          "label": {
+            "ar": "خلفية متبادلة",
+            "en": "Alternating"
+          }
+        },
+        {
+          "value": "surface",
+          "label": {
+            "ar": "لون البطاقات",
+            "en": "Card surface"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "غائرة",
+            "en": "Well"
+          }
+        },
+        {
+          "value": "void",
+          "label": {
+            "ar": "أسود صافٍ",
+            "en": "True black"
+          }
+        },
+        {
+          "value": "light",
+          "label": {
+            "ar": "شريط أبيض — يقلب ألوان القسم كله",
+            "en": "White band — inverts the whole section"
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥ أعمدة",
+            "en": "5"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "٦ أعمدة",
+            "en": "6"
+          }
+        }
+      ]
+    },
+    "header_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Header Alignment"
+      },
+      "default": "split",
+      "options": [
+        {
+          "value": "split",
+          "label": {
+            "ar": "العنوان في البداية والرابط في النهاية",
+            "en": "Title start · link end"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "في الوسط",
+            "en": "Centered"
+          }
+        }
+      ]
+    },
+    "show_descriptions": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وصف كل بطاقة",
+        "en": "Show Card Descriptions"
+      },
+      "default": true
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (اتركه فارغاً لإخفائه)",
+        "en": "View All URL (leave empty to hide)"
+      },
+      "default": "/shop"
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل",
+        "en": "View All Text"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "usecase": {
+      "name": "هدف",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الاسم",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "string",
+          "label": {
+            "ar": "وصف قصير",
+            "en": "Short Description"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "URL"
+          },
+          "default": "/shop"
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الهدف (لبطاقات الصور — بدونها تظهر الأيقونة)",
+            "en": "Goal photo (photo tiles — falls back to the icon)"
+          }
+        },
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة (تُستخدم بدون صورة)",
+            "en": "Icon (used when there is no image)"
+          },
+          "default": "muscle",
+          "options": [
+            {
+              "value": "muscle",
+              "label": "بناء عضل"
+            },
+            {
+              "value": "burn",
+              "label": "حرق دهون"
+            },
+            {
+              "value": "run",
+              "label": "جري"
+            },
+            {
+              "value": "crossfit",
+              "label": "كروسفت"
+            },
+            {
+              "value": "yoga",
+              "label": "يوجا ومرونة"
+            },
+            {
+              "value": "football",
+              "label": "كرة قدم"
+            },
+            {
+              "value": "basketball",
+              "label": "كرة سلة"
+            },
+            {
+              "value": "swim",
+              "label": "سباحة"
+            },
+            {
+              "value": "cycle",
+              "label": "دراجات"
+            },
+            {
+              "value": "boxing",
+              "label": "ملاكمة"
+            },
+            {
+              "value": "homegym",
+              "label": "جيم البيت"
+            },
+            {
+              "value": "recovery",
+              "label": "استشفاء"
+            },
+            {
+              "value": "strength",
+              "label": "قوة وأداء"
+            },
+            {
+              "value": "budget",
+              "label": "أفضل سعر"
+            },
+            {
+              "value": "star",
+              "label": "عام"
+            }
+          ]
+        },
+        "tint": {
+          "type": "select",
+          "label": {
+            "ar": "لون الأيقونة (لبطاقات الأيقونات والشريط فقط)",
+            "en": "Icon tint (icon tiles & rail only)"
+          },
+          "default": "flame",
+          "options": [
+            {
+              "value": "flame",
+              "label": {
+                "ar": "ناري",
+                "en": "Flame"
+              }
+            },
+            {
+              "value": "light",
+              "label": {
+                "ar": "محايد فاتح",
+                "en": "Neutral light"
+              }
+            },
+            {
+              "value": "neutral",
+              "label": {
+                "ar": "غائر",
+                "en": "Well"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "تسوّق حسب الهدف"
+    }
+  ]
+}

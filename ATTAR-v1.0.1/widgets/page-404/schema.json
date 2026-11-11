@@ -1,0 +1,36 @@
+{
+  "name": "صفحة 404",
+  "icon": "file-x",
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "message": {
+      "type": "textarea",
+      "label": {
+        "ar": "الرسالة",
+        "en": "Message"
+      },
+      "default": ""
+    },
+    "home_url": {
+      "type": "text",
+      "label": {
+        "ar": "رابط الصفحة الرئيسية",
+        "en": "Home URL"
+      },
+      "default": "/"
+    }
+  },
+  "presets": [
+    {
+      "category": "Pages",
+      "name": "صفحة 404"
+    }
+  ]
+}

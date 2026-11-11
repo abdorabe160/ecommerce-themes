@@ -1,0 +1,88 @@
+{
+  "name": "صفحة المتجر",
+  "settings": {
+    "title_size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم العنوان",
+        "en": "Title Size"
+      },
+      "default": "large",
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "ar": "صغير",
+            "en": "Small"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        }
+      ]
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": "إظهار البحث",
+      "default": true
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": "إظهار خيارات الترتيب",
+      "default": true
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": "إظهار الفلاتر",
+      "default": true
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صورة الكارت",
+        "en": "Card Image Ratio"
+      },
+      "default": "portrait",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "مستطيل",
+            "en": "Landscape"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المتجر",
+      "name": "صفحة المتجر"
+    }
+  ]
+}

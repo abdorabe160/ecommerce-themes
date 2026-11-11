@@ -1,0 +1,174 @@
+{
+  "name": "اختار عربيتك — Vehicle Finder",
+  "settings": {
+    "mode": {
+      "type": "select",
+      "label": { "ar": "▸ طريقة الاختيار", "en": "▸ Picker mode" },
+      "default": "selects",
+      "options": [
+        { "value": "selects", "label": { "ar": "ماركة ← موديل ← سنة (قوائم مترابطة)", "en": "Make → Model → Year (linked selects)" } },
+        { "value": "chips", "label": { "ar": "الماركات فقط (أسماء كبيرة قابلة للنقر)", "en": "Makes only (clickable wordmarks)" } }
+      ]
+    },
+    "overlap": {
+      "type": "range",
+      "label": { "ar": "تداخل اللوحة مع أسفل الواجهة (0 = بدون)", "en": "Overlap into the hero above (0 = none)" },
+      "default": 56,
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px"
+    },
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير (فارغ = نص الثيم بلغة الزائر)", "en": "Kicker (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (فارغ = اختار عربيتك)", "en": "Title (empty = Find parts for your car)" },
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "label": { "ar": "النص القصير (فارغ = نص الثيم)", "en": "Short text (empty = theme copy)" },
+      "default": ""
+    },
+    "button_text": {
+      "type": "string",
+      "label": { "ar": "نص الزر (فارغ = عرض القطع)", "en": "Button label (empty = Show parts)" },
+      "default": ""
+    },
+    "fallback_url": {
+      "type": "string",
+      "label": { "ar": "الرابط عندما لا تكون للسيارة تشكيلة — مثال: /shop", "en": "Link when the car has no collection — e.g. /shop" },
+      "default": "/shop"
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": { "ar": "إظهار سطر «يتم حفظ اختيارك على هذا الجهاز»", "en": "Show the 'selection is saved on this device' line" },
+      "default": true
+    },
+    "show_hud": {
+      "type": "boolean",
+      "label": { "ar": "إظهار زوايا HUD على اللوحة", "en": "Show HUD corner ticks on the panel" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 40,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": { "ar": "خلفية اللوحة", "en": "Panel background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (الزوايا، المؤشر)", "en": "Accent colour (ticks, LED)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية الزر", "en": "Button background" },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": { "ar": "نص الزر", "en": "Button text" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "make": {
+      "name": "ماركة",
+      "settings": {
+        "name": {
+          "type": "string",
+          "label": { "ar": "▸ اسم الماركة — كما سيظهر (مثال: Toyota)", "en": "▸ Make name — as shown (e.g. Toyota)" },
+          "default": ""
+        },
+        "collection": {
+          "type": "collections",
+          "label": { "ar": "تشكيلة الماركة (اختيارية) — يُفتح رابطها عندما لا تكون للموديل تشكيلة", "en": "Make collection (optional) — opened when the model has none" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "أو رابط يدوي — مثال: /shop/toyota", "en": "Or a manual link — e.g. /shop/toyota" },
+          "default": ""
+        }
+      }
+    },
+    "model": {
+      "name": "موديل",
+      "settings": {
+        "make": {
+          "type": "string",
+          "label": { "ar": "▸ اسم الماركة التي ينتمي لها — يجب أن يطابق بلوك الماركة (مثال: Toyota)", "en": "▸ The make it belongs to — must match a make block (e.g. Toyota)" },
+          "default": ""
+        },
+        "name": {
+          "type": "string",
+          "label": { "ar": "اسم الموديل (مثال: Corolla)", "en": "Model name (e.g. Corolla)" },
+          "default": ""
+        },
+        "years": {
+          "type": "string",
+          "label": { "ar": "السنوات — مدى مثل 2018-2024 أو قائمة مثل 2019, 2021 (فارغ = بدون اختيار سنة)", "en": "Years — a range like 2018-2024 or a list like 2019, 2021 (empty = no year step)" },
+          "default": ""
+        },
+        "collection": {
+          "type": "collections",
+          "label": { "ar": "تشكيلة الموديل — تُفتح عند الضغط على عرض القطع", "en": "Model collection — opened on Show parts" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "أو رابط يدوي — مثال: /shop/toyota-corolla", "en": "Or a manual link — e.g. /shop/toyota-corolla" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الواجهة", "name": "اختار عربيتك — Vehicle Finder" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "قائمة المقالات",
+  "description": "كروت المقالات بنفس هوية Dark Blood، وأول مقال بيتعرض أكبر",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "العنوان (اختياري)",
+      "default": ""
+    },
+    "feature_first": {
+      "type": "boolean",
+      "label": "عرض أول مقال بشكل أكبر",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "name": "قائمة المقالات (Dark Blood)",
+      "category": "المدونة"
+    }
+  ]
+}

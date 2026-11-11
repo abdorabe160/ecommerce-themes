@@ -1,0 +1,201 @@
+{
+  "common": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "search": "Search",
+    "view_all": "View All",
+    "close": "Close",
+    "error": "An error occurred",
+    "back": "Back",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "on_sale": "Sale",
+    "free": "Free",
+    "share": "Share",
+    "menu": "Menu",
+    "remove": "Remove",
+    "language": "Language",
+    "email": "Email",
+    "prev": "Previous",
+    "next": "Next",
+    "placeholder_product": "Product title",
+    "placeholder_price": "—",
+    "placeholder_collection": "Collection title",
+    "placeholder_article": "Article title",
+    "placeholder_excerpt": "A short excerpt from the article appears here once it is added.",
+    "placeholder_date": "Publish date",
+    "placeholder_note": "Sample content — pick your products in the Theme Editor to replace it.",
+    "placeholder_add": "Add items in the section settings",
+    "reviews_count": "{count} reviews",
+    "back_to_top": "Back to top"
+  },
+  "header": {
+    "cart": "Cart",
+    "search": "Search",
+    "search_placeholder": "Search for…",
+    "quick_link": "Quick link",
+    "menu_close": "Close menu",
+    "more": "More"
+  },
+  "products": {
+    "no_products": "No products yet",
+    "new": "New",
+    "popular": "Popular",
+    "hot": "Hot",
+    "selling_fast": "Selling Fast",
+    "shop": "Shop",
+    "add": "Add"
+  },
+  "categories": {
+    "no_categories_desc": "Collections will appear here once added."
+  },
+  "newsletter": {
+    "placeholder": "Enter your email",
+    "button": "Subscribe Now",
+    "success": "Subscribed successfully!",
+    "error_empty": "Please enter your email address",
+    "error_format": "That address looks incomplete — check for the @ and the domain",
+    "setup_hint": "To switch the newsletter on, paste your provider’s form action URL (Mailchimp, Klaviyo, …) into this widget’s settings. The form stays hidden until then, so no address is ever collected and lost."
+  },
+  "pages": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+      "back_home": "Back to Home",
+      "browse_shop": "Browse Shop",
+      "try_these": "Try these"
+    },
+    "collections": {
+      "title": "Collections",
+      "count": "Collections"
+    },
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "added_to_cart": "Added to Cart",
+      "buy_now": "Buy Now",
+      "out_of_stock": "Out of Stock",
+      "in_stock": "In Stock",
+      "in_stock_count": "In stock · {count} available",
+      "all_in_cart": "All available units are already in your cart",
+      "low_stock": "Almost gone — only {{count}} left",
+      "sku": "SKU",
+      "reviews_count": "{count} reviews",
+      "share": "Share Product",
+      "select_option": "Select {{option}}",
+      "choose_options": "Choose Options",
+      "view_product": "View product",
+      "added": "Added!",
+      "view_full_details": "View full details",
+      "quick_view": "Quick View",
+      "related": "Recommended products",
+      "select_options_first": "Please choose {options} before adding this product to your cart.",
+      "combo_unavailable": "That combination isn't available right now — try another.",
+      "max_qty": "Only {count} left of this option.",
+      "variant_sold_out": "Sold out",
+      "you_save": "you save {amount}",
+      "zoom": "Zoom image"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+      "empty_title": "Your cart is empty",
+      "empty_subtitle": "Discover something you love",
+      "continue_shopping": "Continue Shopping",
+      "checkout": "Check Out",
+      "blocked_sold_out": "Remove the sold-out items to continue",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "discount": "Discount",
+      "savings": "You saved",
+      "remove_item": "Remove Item",
+      "remove_confirm": "Remove this item?",
+      "clear": "Clear Cart",
+      "unit_price": "Unit price",
+      "order_summary": "Order Summary",
+      "view_cart": "View Cart",
+      "shipping": "Shipping",
+      "calculated_at_checkout": "Calculated at checkout",
+      "free_shipping_left": "Spend {amount} more to reach free shipping!",
+      "free_shipping_earned": "You’ve earned free shipping",
+      "max_stock": "Only {count} of this item are available.",
+      "needs_variant": "This item has options — open its page and choose what suits you.",
+      "line_sold_out": "This option is sold out.",
+      "free_shipping_done": "You’ve unlocked free shipping",
+      "empty_hint": "Not sure where to start? Try these collections:",
+      "continue": "Continue Shopping",
+      "estimated_total": "Estimated total",
+      "tax_note": "Taxes and shipping calculated at checkout.",
+      "discount_applied": "Discount applied"
+    },
+    "collection": {
+      "sort": "Sort"
+    },
+    "shop": {
+      "search_placeholder": "Search products...",
+      "all_products": "All Products"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search for products...",
+      "suggestions": "Search Suggestions",
+      "products": "Products",
+      "view_all": "View All",
+      "no_results": "No results found",
+      "try_different": "Try different search terms",
+      "results_for": "Search results for",
+      "sort_by": "Sort by",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "newest": "Newest",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "price_negative": "Prices cannot be negative — set to zero",
+      "price_swapped": "Swapped the two so the lower comes first",
+      "apply": "Apply",
+      "filter": "Filter",
+      "clear_all": "Clear all",
+      "clear": "Clear",
+      "related": "Related Products"
+    },
+    "about": {
+      "last_updated": "Last updated"
+    },
+    "blog": {
+      "title": "Blog",
+      "articles_count": "Articles",
+      "no_blogs_desc": "Blogs will appear here soon",
+      "all": "All",
+      "no_articles_desc": "Articles will appear here soon",
+      "back_to_articles": "Back to articles",
+      "views": "views",
+      "share_article": "Share this article",
+      "related_articles": "Related Articles",
+      "copied": "Copied"
+    },
+    "page": {
+      "empty_title": "This page has no content yet",
+      "empty_desc": "Add the page content from the store dashboard, or write fallback text in this section’s settings."
+    }
+  },
+  "cart": {
+    "out_of_stock": "Can't add to cart — this product is out of stock"
+  },
+  "footer": {
+    "payments": "Payment methods",
+    "cod": "Cash on delivery"
+  },
+  "collections": {
+    "items_count": "{count} Items"
+  },
+  "videos": {
+    "shop_product": "Shop the product",
+    "play": "Play video",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "add_video": "Add a video"
+  },
+  "events": {
+    "none": "No upcoming events right now — check back soon."
+  }
+}

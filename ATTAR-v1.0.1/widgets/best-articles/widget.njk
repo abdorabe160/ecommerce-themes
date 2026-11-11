@@ -1,0 +1,145 @@
+{# ===== ATTAR Best Articles ===== #}
+{% set articles = widget.data.articles | default([]) %}
+{% set columns = widget.data.columns | default('3') %}
+{% set show_date = widget.data.show_date if widget.data.show_date is defined else true %}
+{% set show_excerpt = widget.data.show_excerpt if widget.data.show_excerpt is defined else true %}
+{% set hasArticles = articles and articles.length %}
+{% set gridColsClass = 'lg:grid-cols-4 attar-fit-4 attar-fit-span' if columns == '4' else ('lg:grid-cols-2 attar-fit-span attar-lone-lg2' if columns == '2' else 'lg:grid-cols-3 attar-fit-3 attar-fit-span') %}
+
+<section id="best-articles" class="{{ 'attar-demo-only ' if not hasArticles }}py-16 lg:py-24" style="background: var(--color-bg-secondary);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+
+    {# —— Section Header —— #}
+    {% if widget.data.title or widget.data.subtitle %}
+      <div class="text-center mb-12 md:mb-16 reveal">
+        {% if widget.data.title %}
+          <h2 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.2; color: var(--color-text-primary);">{{ widget.data.title }}</h2>
+        {% endif %}
+        <span class="editorial-rule block max-w-[64px] mx-auto mt-6"></span>
+        {% if widget.data.subtitle %}
+          <p class="text-base leading-relaxed mt-6 font-body-ar" style="max-width: 50ch; margin-inline: auto; color: var(--color-text-secondary);">{{ widget.data.subtitle }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ===== Articles ===== #}
+    {% if hasArticles %}
+
+      {% if widget.data.layout == 'slider' %}
+      {# —— Slider Layout —— #}
+      <div class="swiper swiper-outside-pagination reveal" x-data x-init="$nextTick(() => {
+        var slideCount = $el.querySelectorAll('.swiper-slide').length;
+        new Swiper($el, {
+          slidesPerView: 1,
+          spaceBetween: 32,
+          loop: slideCount > {{ columns }},
+          pagination: {
+            el: $el.querySelector('.swiper-pagination'),
+            clickable: true
+          },
+          breakpoints: {
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: {{ columns }} }
+          }
+        });
+      })">
+        <div class="swiper-wrapper">
+          {% for article in articles %}
+          <div class="swiper-slide h-auto">
+            <article class="group flex flex-col h-full font-body-ar">
+              <a href="/articles/{{ article.handle or article.slug }}" class="block relative aspect-[4/3] w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+                {% if article.image and article.image.fileUrl %}
+                  <img src="{{ article.image.fileUrl }}" alt="{{ article.title }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-[1.04]" style="filter: saturate(1.03) contrast(1.02);" loading="lazy">
+                {% else %}
+                  <div class="attar-mark" aria-hidden="true"></div>
+                {% endif %}
+              </a>
+              <div class="flex flex-col flex-1 mt-5">
+                {% if show_date and article.createdAt %}
+                  <time class="text-[11px] tabular-nums mb-3" style="color: var(--color-text-tertiary);" x-data x-init="$el.textContent = new Date('{{ article.createdAt }}').toLocaleDateString('{{ localization.language }}', { year: 'numeric', month: 'short', day: 'numeric' })"></time>
+                {% endif %}
+                <h3 class="font-heading-ar text-[19px] leading-snug line-clamp-2 transition-colors duration-300" style="color: var(--color-text-primary); font-weight: 600;">
+                  <a href="/articles/{{ article.handle or article.slug }}" class="transition-colors duration-300 group-hover:[color:var(--color-accent)]">{{ article.title }}</a>
+                </h3>
+                {% if show_excerpt and article.description %}
+                  <p class="text-[13.5px] leading-relaxed line-clamp-2 mt-2.5" style="color: var(--color-text-secondary);">
+                    {{ article.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | truncate(120) }}
+                  </p>
+                {% endif %}
+                <a href="/articles/{{ article.handle or article.slug }}" class="mt-4 inline-flex items-center gap-1.5 self-start pb-[3px] text-[12px] font-medium border-b border-solid transition-colors duration-300 [color:var(--color-text-primary)] [border-color:var(--color-border)] group-hover:[color:var(--color-accent)] group-hover:[border-color:var(--color-accent)]">
+                  {{t('pages.blog.read_more') | default('اقرئي المزيد')}}
+                  <svg class="w-3.5 h-3.5 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </a>
+              </div>
+            </article>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="swiper-pagination mt-8"></div>
+      </div>
+
+      {% else %}
+      {# —— Grid Layout —— #}
+      <div class="grid grid-cols-1 sm:grid-cols-2 {{ gridColsClass }} gap-x-6 gap-y-12">
+        {% for article in articles %}
+        <div class="reveal" style="animation-delay: {{ loop.index0 * 80 }}ms;">
+          <article class="group flex flex-col h-full font-body-ar">
+            <a href="/articles/{{ article.handle or article.slug }}" class="block relative aspect-[4/3] w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+              {% if article.image and article.image.fileUrl %}
+                <img src="{{ article.image.fileUrl }}" alt="{{ article.title }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-[1.04]" style="filter: saturate(1.03) contrast(1.02);" loading="lazy">
+              {% else %}
+                <div class="attar-mark" aria-hidden="true"></div>
+              {% endif %}
+            </a>
+            <div class="flex flex-col flex-1 mt-5">
+              {% if show_date and article.createdAt %}
+                <time class="text-[11px] tabular-nums mb-3" style="color: var(--color-text-tertiary);" x-data x-init="$el.textContent = new Date('{{ article.createdAt }}').toLocaleDateString('{{ localization.language }}', { year: 'numeric', month: 'short', day: 'numeric' })"></time>
+              {% endif %}
+              <h3 class="font-heading-ar text-[19px] leading-snug line-clamp-2 transition-colors duration-300" style="color: var(--color-text-primary); font-weight: 600;">
+                <a href="/articles/{{ article.handle or article.slug }}" class="transition-colors duration-300 group-hover:[color:var(--color-accent)]">{{ article.title }}</a>
+              </h3>
+              {% if show_excerpt and article.description %}
+                <p class="text-[13.5px] leading-relaxed line-clamp-2 mt-2.5" style="color: var(--color-text-secondary);">
+                  {{ article.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | truncate(120) }}
+                </p>
+              {% endif %}
+              <a href="/articles/{{ article.handle or article.slug }}" class="mt-4 inline-flex items-center gap-1.5 self-start pb-[3px] text-[12px] font-medium border-b border-solid transition-colors duration-300 [color:var(--color-text-primary)] [border-color:var(--color-border)] group-hover:[color:var(--color-accent)] group-hover:[border-color:var(--color-accent)]">
+                {{t('pages.blog.read_more') | default('اقرئي المزيد')}}
+                <svg class="w-3.5 h-3.5 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </a>
+            </div>
+          </article>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    {% else %}
+    {# ===== Preview / Empty State ===== #}
+    <div class="grid grid-cols-1 sm:grid-cols-2 {{ gridColsClass }} gap-x-6 gap-y-12">
+      {% for i in range(0, columns | int) %}
+      <div class="flex flex-col">
+        <div class="aspect-[4/3] flex items-center justify-center" style="background: var(--color-bg-primary); border: 1px solid var(--color-border);">
+          <svg class="w-12 h-12" style="color: var(--color-text-tertiary); opacity: 0.25;" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+          </svg>
+        </div>
+        <div class="mt-5">
+          <div class="h-3 w-20 mb-4" style="background: var(--color-bg-primary);"></div>
+          <div class="space-y-2.5">
+            <div class="h-4 w-full" style="background: var(--color-bg-primary);"></div>
+            <div class="h-4 w-3/4" style="background: var(--color-bg-primary);"></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="text-center text-sm mt-8 font-body-ar" style="color: var(--color-text-tertiary);">{{t('articles.add_articles') | default('أضيفي مقالات من البيلدر')}}</p>
+    {% endif %}
+
+  </div>
+</section>

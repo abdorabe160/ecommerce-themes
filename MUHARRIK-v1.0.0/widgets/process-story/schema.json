@@ -1,0 +1,116 @@
+{
+  "name": "قصة العملية (خطوات)",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير — مثال: العملية (فارغ = نص الثيم بلغة الزائر)", "en": "Kicker — e.g. THE PROCESS (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (فارغ = نص الثيم)", "en": "Title (empty = theme copy)" },
+      "default": ""
+    },
+    "title_hl": {
+      "type": "string",
+      "label": { "ar": "الكلمة المميزة — تُضاف بعد العنوان بلون الهوية", "en": "Highlighted word — appended to the title in the accent colour" },
+      "default": ""
+    },
+    "media_side": {
+      "type": "select",
+      "label": { "ar": "▸ مكان الصور (كمبيوتر)", "en": "▸ Image side (desktop)" },
+      "default": "start",
+      "options": [
+        { "value": "start", "label": { "ar": "بداية السطر", "en": "Line start" } },
+        { "value": "end", "label": { "ar": "نهاية السطر", "en": "Line end" } }
+      ]
+    },
+    "show_hud": {
+      "type": "boolean",
+      "label": { "ar": "إظهار إطار الزوايا (HUD) على الصور", "en": "Show the HUD corner frame on the images" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية (يفضّل 0 لأن القسم يثبت بارتفاع الشاشة)", "en": "Top spacing (keep 0: the section pins at viewport height)" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (الخط الرأسي، الأرقام، الكلمة المميزة)", "en": "Accent colour (progress line, numbers, highlight word)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "step": {
+      "name": "خطوة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": { "ar": "▸ الصورة — يفضّل ١٠٨٠×١٣٥٠ (٤:٥) · فارغ = صورة الثيم", "en": "▸ Image — 1080×1350 (4:5) recommended · empty = theme photo" }
+        },
+        "title": {
+          "type": "string",
+          "label": { "ar": "عنوان الخطوة — مثال: الغسيل (فارغ = نص الثيم)", "en": "Step title — e.g. WASH (empty = theme copy)" },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": { "ar": "نص الخطوة", "en": "Step text" },
+          "default": ""
+        },
+        "link_text": {
+          "type": "string",
+          "label": { "ar": "نص الرابط — مثال: تسوّق المنتج (فارغ = نص الثيم)", "en": "Link label — e.g. Shop the product (empty = theme copy)" },
+          "default": ""
+        },
+        "link_url": {
+          "type": "string",
+          "label": { "ar": "رابط الخطوة — مثال: /products/<المنتج> أو /shop/<التشكيلة>", "en": "Step link — e.g. /products/<slug> or /shop/<collection>" },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "القصة", "name": "قصة العملية (خطوات)" }
+  ]
+}

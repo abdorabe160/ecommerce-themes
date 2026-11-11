@@ -1,0 +1,11 @@
+{# شريط الشحن المجاني (إعدادات الثيم ← المنتجات والسلة ← freeShippingThreshold بعملة المتجر). 0 = لا يُرسم شيء أبداً،
+   فلا تظهر أي رسالة شحن مجاني بدون عرض يضبطه التاجر (REG-19). المبلغ نفسه يجب أن يطابق عرض الشحن المجاني في لوحة التحكم (REG-20).
+   الاستخدام داخل qumraApp: {% ui "ship-meter.njk" %} #}
+{% set fst = (settings.freeShippingThreshold | default(0)) | float %}
+{% if fst > 0 %}
+  <div class="lg-ship-meter" x-show="cartItems.length" role="status" aria-live="polite">
+    <p x-show="(cart.totalPrice || 0) < {{ fst }}" x-text="{{ t('cart.free_shipping_left') | dump | escape }}.replace('{amount}', formatMoney({{ fst }} - (cart.totalPrice || 0)))"></p>
+    <p x-show="(cart.totalPrice || 0) >= {{ fst }}" x-cloak class="lg-ship-meter__done">{{ t('cart.free_shipping_unlocked') }}</p>
+    <div class="lg-ship-meter__bar" aria-hidden="true"><span :style="'width:' + Math.min(100, Math.max(0, (cart.totalPrice || 0) / {{ fst }} * 100)) + '%'"></span></div>
+  </div>
+{% endif %}

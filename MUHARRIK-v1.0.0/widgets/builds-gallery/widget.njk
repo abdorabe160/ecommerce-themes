@@ -1,0 +1,169 @@
+{#
+  ============================================================================
+  MUHARRIK · BUILDS GALLERY · عربيات عملائنا
+  ----------------------------------------------------------------------------
+     — CUSTOMER BUILDS                         +2,400 PHOTOS   [ SHARE YOURS ]
+     OUR DRIVERS' CARS
+     ┌───────────────┬───────┬───────┐
+     │               │  02   │  03   │        A 4-column bento, 8 tiles per
+     │      01       ├───────┤       │        pattern:  A A B C
+     │               │  04   │       │                  A A D C
+     ├───────┬───────┤       ├───────┤                  E F D G
+     │  05   │  06   │       │  07   │                  E H H G
+     │       ├───────┴───────┤       │
+     │       │      08       │       │
+     └───────┴───────────────┴───────┘
+
+  Blocks: photo (defaults mh-build-1..8.jpg), car name, a mono spec line
+  ("Camry 2022 · LED + Ceramic") and an optional link to the parts. Each
+  photo parallaxes at its own speed (`data-mh-parallax`, eight values cycling),
+  the caption slides up on hover (always shown on touch), and a click opens
+  GLightbox (deferred in the layout; initialised here on DOMContentLoaded the
+  way product-main does). The head carries a counter (`data-mh-count`) and a
+  "share your build" CTA (a link setting, e.g. Instagram).
+
+  No blocks → eight default builds in the visitor's language.
+
+  Styles: assets/mh-w-c.css → "BUILDS GALLERY".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{% set kicker = d.kicker or ('المجتمع · عربيات عملائنا' if isAr else 'Community · Customer builds') %}
+{% set title = d.title or ('عربيات عملائنا' if isAr else 'Our drivers’ builds') %}
+{% set countN = d.count_number if d.count_number is defined and d.count_number is not none else 2400 %}
+{% set countText = d.count_text or ('صورة من عملائنا' if isAr else 'photos from our customers') %}
+{% set shareText = d.share_text or ('شارك عربيتك' if isAr else 'Share your build') %}
+{% set shareUrl = d.share_url | default('', true) %}
+{% set linkTextAll = 'تسوّق القطع' if isAr else 'Shop the parts' %}
+{% set lightbox = d.lightbox != false %}
+{% set parallax = d.parallax != false %}
+
+{% if isAr %}
+  {% set DEMO = [
+    { car: 'كامري 2022', spec: 'LED H7 + Ceramic' },
+    { car: 'لاند كروزر 2021', spec: 'Floor mats + 4K Dash cam' },
+    { car: 'إلنترا 2023', spec: 'Ambient light kit' },
+    { car: 'سبورتاج 2022', spec: 'Ceramic coating 9H' },
+    { car: 'أكسنت 2020', spec: 'Leather seat covers' },
+    { car: 'باترول 2019', spec: 'Tyre inflator + Cover' },
+    { car: 'كورولا 2021', spec: 'Snow foam + Tyre shine' },
+    { car: 'توسان 2024', spec: 'Wireless mount + OBD2' }
+  ] %}
+{% else %}
+  {% set DEMO = [
+    { car: 'Camry 2022', spec: 'LED H7 + Ceramic' },
+    { car: 'Land Cruiser 2021', spec: 'Floor mats + 4K Dash cam' },
+    { car: 'Elantra 2023', spec: 'Ambient light kit' },
+    { car: 'Sportage 2022', spec: 'Ceramic coating 9H' },
+    { car: 'Accent 2020', spec: 'Leather seat covers' },
+    { car: 'Patrol 2019', spec: 'Tyre inflator + Cover' },
+    { car: 'Corolla 2021', spec: 'Snow foam + Tyre shine' },
+    { car: 'Tucson 2024', spec: 'Wireless mount + OBD2' }
+  ] %}
+{% endif %}
+
+{# eight parallax speeds, cycling, so neighbours never move alike #}
+{% set SPEEDS = ['-0.08', '-0.16', '-0.1', '-0.2', '-0.06', '-0.14', '-0.12', '-0.18'] %}
+
+{#- A gallery titled «عربيات عملائنا» filled with the theme's stock photos and
+    invented captions («كامري 2022») presents strangers' cars as this store's
+    customers. Until the merchant uploads at least one real build photo the
+    section stays in the editor only. -#}
+{% set ownPhotos = [] %}
+{% for b in blocks %}{% if (mediaUrl((b.settings | default({}, true)).image) | trim | length) > 0 %}{% set _ = ownPhotos.push(1) %}{% endif %}{% endfor %}
+{% set tiles = [] %}
+{% if (blocks | length) > 0 %}
+  {% for b in blocks %}
+    {% set s = b.settings | default({}, true) %}
+    {% set fb = DEMO[loop.index0 % 8] %}
+    {# macro output is a SafeString — empty is still truthy, so test length #}
+    {% set img = mediaUrl(s.image) | trim %}
+    {% set _ = tiles.push({
+      img: img if (img | length) > 0 else (('mh-build-' ~ ((loop.index0 % 8) + 1) ~ '.jpg') | assets),
+      car: s.car or fb.car, spec: s.spec or fb.spec, url: s.url | default('', true), linkText: s.link_text or linkTextAll
+    }) %}
+  {% endfor %}
+{% else %}
+  {% for fb in DEMO %}
+    {% set _ = tiles.push({ img: ('mh-build-' ~ loop.index ~ '.jpg') | assets, car: fb.car, spec: fb.spec, url: '', linkText: linkTextAll }) %}
+  {% endfor %}
+{% endif %}
+
+{# "+2,400" — the first paint and the no-motion fallback; the count-up
+   animation overwrites it while it runs #}
+{# thousands grouping without calling JS methods (Qalab refuses method calls on primitives) #}
+{% set cInt = countN | int %}{% set th = (cInt / 1000) | int %}{% set rem = cInt - th * 1000 %}{% set countFmt = (th ~ ',' ~ ('00' if rem < 10 else ('0' if rem < 100 else '')) ~ rem) if th > 0 else (cInt ~ '') %}
+
+<section id="mh-bg-{{ id }}"{% if (ownPhotos | length) == 0 %} data-hy-empty{% endif %}
+         class="mh-bg{{ ' has-lightbox' if lightbox }}"
+         style="--pt: {{ d.padding_top | default(64) }}px; --pb: {{ d.padding_bottom | default(64) }}px;">
+  <div class="mh-bg-wrap">
+    <header class="mh-head mh-bg-head">
+      <div class="mh-head-main">
+        <p class="mh-kicker" data-mh-reveal="fade">{{ kicker | safe }}</p>
+        <h2 class="mh-h" data-mh-split>{{ title | safe }}</h2>
+      </div>
+      <div class="mh-bg-side" data-mh-reveal="fade" data-mh-delay="0.2">
+        {% if d.show_counter != false %}
+          <p class="mh-bg-count">
+            <b class="mh-mono" dir="ltr" data-mh-count="{{ countN }}" data-mh-prefix="+">+{{ countFmt }}</b>
+            <span>{{ countText | safe }}</span>
+          </p>
+        {% endif %}
+        {% if shareUrl %}
+          {% set ext = ('http' in (shareUrl | string)) %}
+          <a href="{{ shareUrl }}" class="mh-viewall mh-bg-share"{% if ext %} target="_blank" rel="noopener"{% endif %}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M17.5 6.5h.01"/></svg>
+            {{ shareText | safe }}
+          </a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="mh-bg-grid" data-mh-stagger>
+      {% for tl in tiles %}
+        <figure class="mh-bg-tile mh-hud mh-hud--hover" data-mh-item>
+          {# the wrapper carries the parallax (GSAP writes an inline transform
+             there); the image keeps its own CSS hover scale #}
+          {% if lightbox %}
+            <a href="{{ tl.img }}" class="mh-bg-link glightbox" data-gallery="mh-bg-{{ id }}" data-title="{{ tl.car }}" data-description="{{ tl.spec }}" aria-label="{{ tl.car }} — {{ tl.spec }}"{% if parallax %} data-mh-parallax="{{ SPEEDS[loop.index0 % 8] }}"{% endif %}>
+          {% else %}
+            <span class="mh-bg-link"{% if parallax %} data-mh-parallax="{{ SPEEDS[loop.index0 % 8] }}"{% endif %}>
+          {% endif %}
+            <img class="mh-bg-img" src="{{ tl.img }}" alt="{{ tl.car }} — {{ tl.spec }}" loading="lazy"/>
+          {% if lightbox %}</a>{% else %}</span>{% endif %}
+          <span class="mh-bg-n mh-mono" aria-hidden="true">{{ pad(loop.index) | trim }}</span>
+          <figcaption class="mh-bg-cap">
+            <span class="mh-bg-car">{{ tl.car | safe }}</span>
+            <span class="mh-bg-spec mh-mono">{{ tl.spec | safe }}</span>
+            {% if tl.url %}<a href="{{ tl.url }}" class="mh-bg-shop">{{ tl.linkText | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+          </figcaption>
+        </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if lightbox %}
+<script>
+  (function () {
+    /* GLightbox is `defer` in the layout, so it exists by DOMContentLoaded —
+       same boot as product-main's gallery zoom. One instance per section. */
+    function boot() {
+      if (!window.GLightbox || window.__mhBgLb_{{ id }}) return;
+      window.__mhBgLb_{{ id }} = GLightbox({ selector: '.glightbox[data-gallery="mh-bg-{{ id }}"]', touchNavigation: true, loop: true });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#mh-bg-' ~ id, c=d %}

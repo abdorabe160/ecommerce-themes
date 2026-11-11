@@ -1,0 +1,24 @@
+{# MORVA article / blog tile — the gallery-cell look: image · hairline ·
+   title + date · optional excerpt.
+   Locals: article (required) · show_excerpt 'off'
+   NOTE: No nested {% ui %} in here — Qalab has no precedent for it. #}
+{% set a = data.article %}
+{% if a %}
+  {% set aHandle = a.handle or a.slug or a._id %}
+  {% set url = ('/articles/' ~ aHandle) if aHandle else '/blogs' %}
+  {#- the cover arrives as { fileUrl }, as imageUrl or as a plain string -#}
+  {% if a.image and a.image.fileUrl %}{% set img = a.image.fileUrl %}{% elif a.imageUrl %}{% set img = a.imageUrl %}{% elif a.image is string %}{% set img = a.image %}{% else %}{% set img = '' %}{% endif %}
+  {% set body = a.excerpt or a.description or '' %}
+  <a href="{{ url }}" class="mv-tile" data-date="{{ a.publishedAt or a.createdAt or '' }}">
+    <div class="mv-tile-img">
+      {% if img %}<img class="mv-fill" src="{{ img }}" alt="{{ a.title }}" loading="lazy"/>{% else %}<span class="mv-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/><path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span>{% endif %}
+    </div>
+    <div class="mv-tile-cap">
+      <span class="mv-tile-name">{{ a.title }}</span>
+      {% if a.createdAt %}
+        <time class="mv-tile-date" datetime="{{ a.createdAt }}" data-hy-date>{{ (a.createdAt | string).slice(0, 10) }}</time>
+      {% endif %}
+    </div>
+    {% if body and not ((data.show_excerpt | default('') | string) in ['off', 'false']) %}<p class="mv-tile-ex">{{ body | replace('</p>', '</p> ') | replace('</li>', '</li> ') | replace('</h2>', '</h2> ') | replace('<br', ' <br') | striptags }}</p>{% endif %}
+  </a>
+{% endif %}

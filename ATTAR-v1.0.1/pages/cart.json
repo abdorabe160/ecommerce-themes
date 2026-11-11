@@ -1,0 +1,19 @@
+{
+  "name": "السلة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة السلة",
+      "widget": "cart-page",
+      "settings": {
+        "show_coupon": true,
+        "show_savings": true,
+        "continue_shopping_url": "/",
+        "checkout_url": "/checkout"
+      }
+    }
+  ]
+}

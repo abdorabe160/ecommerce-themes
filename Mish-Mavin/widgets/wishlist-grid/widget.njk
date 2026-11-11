@@ -1,0 +1,28 @@
+{# صفحة المفضلة (/wishlist) — المنتجات من المنصة (wishlist.products)، والحذف بيتشال من الشبكة فوراً من غير تحديث #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set ctx = context or {} %}
+{% set wl = wishlist or ctx.wishlist or {} %}
+{% set items = wl.products or ctx.products or [] %}
+<section class="mw-page" x-data>
+  <div class="container">
+    <div class="mw-collection-hero">
+      <h1 class="mw-collection-hero__title">{{ wd.title or t('wishlist.title') }}</h1>
+    </div>
+    {% if items | length %}
+      <div class="mw-products mw-products--wish">
+        {% for it in items %}{% set prod = it.product if (it and it.product) else it %}{% if prod and prod._id %}
+          <div class="mw-wish-cell" x-show="$store.mw.isWished('{{ prod._id }}')">{% ui "product-card.njk", product=prod %}</div>
+        {% endif %}{% endfor %}
+      </div>
+      <div class="mw-empty-state" x-show="!$store.mw.wish.length" x-cloak>
+        <p>{{ t('wishlist.empty') }}</p>
+        <a href="/shop" class="mw-btn mw-btn--filled">{{ t('cart.explore') }}</a>
+      </div>
+    {% else %}
+      <div class="mw-empty-state">
+        <p>{{ t('wishlist.empty') }}</p>
+        <a href="/shop" class="mw-btn mw-btn--filled">{{ t('cart.explore') }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>

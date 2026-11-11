@@ -1,0 +1,36 @@
+{#
+  FEATURE CARDS · مميزات بارزة — a (dark) band of two-up cards: picture on one
+  side, title + text on the other. Blocks; with none, four demo cards (CC0).
+  Styles: assets/sections.css → "FEATURE CARDS".
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set cards = [] %}
+{% for block in widget.blocks | default([]) %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% if b.title or b.text %}{% set _ = cards.push({ img: mediaUrl(b.image) | trim, title: b.title | default(''), text: b.text | default('') }) %}{% endif %}
+{% endfor %}
+{% set hxDemo = (cards | length) == 0 %}
+{% if (cards | length) == 0 %}
+  {% set demoImgs = ['pg-demo-5.jpg', 'pg-demo-2.jpg', 'hx-demo-6.jpg', 'pg-demo-4.jpg'] %}
+  {% for n in [1, 2, 3, 4] %}{% set _ = cards.push({ img: demoImgs[n - 1] | assets, title: t('extra.cards.c' ~ n ~ '.title'), text: t('extra.cards.c' ~ n ~ '.text') }) %}{% endfor %}
+{% endif %}
+{% set title = (d.title or t('extra.feat')) if d.show_title != false else '' %}
+<section id="hx-fe-{{ id }}" {% if hxDemo %}data-hx-demo{% endif %} class="hx-fe {{ 'is-dark' if d.dark != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.bg %} --fe-bg: {{ d.bg }};{% endif %}">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}<h2 class="hx-sec-h">{{ title | safe }}</h2>{% endif %}
+    <ul class="hx-fe-grid" role="list">
+      {% for c in cards %}
+        <li class="hx-fe-card">
+          {% if (c.img | length) > 0 %}<span class="hx-fe-media"><img src="{{ c.img }}" alt="" loading="lazy"/></span>{% endif %}
+          <span class="hx-fe-body">
+            {% if c.title %}<h3 class="hx-fe-title">{{ c.title | safe }}</h3>{% endif %}
+            {% if c.text %}<span class="hx-fe-text hx-rte">{{ c.text | safe }}</span>{% endif %}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>

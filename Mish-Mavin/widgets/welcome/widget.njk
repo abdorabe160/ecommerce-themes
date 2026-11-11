@@ -1,0 +1,12 @@
+{# نص ترحيبي — عنوان + وصف + زر اختياري. heading_tag = h1 لو السكشن هو عنوان الصفحة (H1 واحد فقط في الصفحة). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set htag = 'h1' if wd.heading_tag == 'h1' else 'h2' %}
+{% if wd.title or wd.description %}
+<section class="mw-section mw-intro">
+  <div class="container container--narrow mw-align-{{ wd.heading_align | default('center') }}">
+    {% if wd.title %}<{{ htag }} class="mw-section__title" dir="auto">{{ wd.title }}</{{ htag }}>{% endif %}
+    {% if wd.description %}<div class="mw-intro__text mw-rte" dir="auto">{{ wd.description | safe }}</div>{% endif %}
+    {% if wd.buttonText and wd.buttonUrl %}<a href="{{ wd.buttonUrl }}" class="mw-btn mw-btn--filled">{{ wd.buttonText }}</a>{% endif %}
+  </div>
+</section>
+{% endif %}

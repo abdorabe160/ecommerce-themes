@@ -1,0 +1,76 @@
+{
+  "name": "الأكثر مبيعاً",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "الأكثر مبيعاً"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Best sellers"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": "الأكثر طلبًا في متجرنا"
+    },
+    "subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي (إنجليزي)",
+        "en": "Subtitle (English)"
+      },
+      "default": "Most ordered in our store"
+    },
+    "collection": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيف القسم — اختره مرة واحدة: يظهر منه عدد المنتجات المحدد بالأسفل، و\"عرض الكل\" يفتح صفحته ببقية المنتجات",
+        "en": "Section category — pick it once: the section shows the number of products set below, and \"View all\" opens its page with the rest"
+      }
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "أو اختر منتجات بعينها (تُستخدم إذا لم تختر تصنيفاً)",
+        "en": "Or pick specific products (used when no category is chosen)"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات المعروضة (من التصنيف أو التوضيحية)",
+        "en": "Products to show (from the category, or demo products)"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 24,
+      "step": 1
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (إذا لم تختر تصنيفاً — مع التصنيف يفتح صفحته تلقائياً)",
+        "en": "View all link (when no category is chosen — with a category it opens its page)"
+      },
+      "default": "/collections"
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "الأكثر مبيعاً (بطاقات مدمجة)"
+    }
+  ]
+}

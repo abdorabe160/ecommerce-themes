@@ -1,0 +1,610 @@
+{#
+  ============================================================================
+  PRODUCT MAIN · تفاصيل المنتج   (pages/product.json)
+  ----------------------------------------------------------------------------
+  Slim banner · breadcrumb · gallery (two-up on desktop, swipe on touch,
+  thumbnails, zoom, badges) with spec row + description under it · a sticky
+  info column (brand line, title, stars, price, key points, note, options,
+  real stock, qty + add + buy now, services, delivery estimate, collapsible
+  panels, pay-with, share) · full-width panels · a sticky add-to-cart bar.
+
+  Buy logic is main.js HayatVariants (same engine as the quick view and the
+  card's quick add): Qumra.cart.add(id, qty, optionValueIds), buyNow().
+  Every merchant text falls back to locales → pdp.*; the panels and the spec
+  row fall back to store-wide demo content (never product claims).
+
+  Styles: assets/sections.css → "PRODUCT MAIN", re-voiced by
+  assets/mh-commerce.css → "PRODUCT PAGE" (MUHARRIK skin: mono crumb, display
+  title, mono readouts, HUD gallery frame, square chips, stock LED).
+
+  Later: "التوافق / Compatibility" and "المواصفات / Specs" tabs plug into the
+  `.mh-pd-tabs` slot marked below, just before the wide panels. The tab strip
+  (.mh-pd-tabs / .mh-pd-tab / .mh-pd-tabpanel) is already styled in
+  mh-commerce.css; no logic lives here yet.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set p = context.product %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro sIcon(k) %}
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if k == 'globe' %}<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5S9.6 5.9 12 3.5Z"/>
+  {% elif k == 'truck' %}<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>
+  {% elif k == 'card' %}<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 9.5h19M6 14.5h4"/>
+  {% elif k == 'check' %}<path d="M12 3 14.3 4.7 17.2 4.6 18.1 7.3 20.4 9 19.5 11.7 20.4 14.4 18.1 16.1 17.2 18.8 14.3 18.7 12 20.4 9.7 18.7 6.8 18.8 5.9 16.1 3.6 14.4 4.5 11.7 3.6 9 5.9 7.3 6.8 4.6 9.7 4.7Z"/><path d="m9 11.8 2.1 2.1 4-4.2"/>
+  {% elif k == 'shield' %}<path d="M12 3 19 5.6v5.2c0 4.4-2.9 7.9-7 9.2-4.1-1.3-7-4.8-7-9.2V5.6L12 3Z"/><path d="m9.2 11.8 2 2 3.8-4"/>
+  {% elif k == 'returns' %}<path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6"/><path d="M17.9 3.4v3.2h-3.2M6.1 20.6v-3.2h3.2"/>
+  {% elif k == 'gift' %}<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12"/>
+  {% elif k == 'support' %}<path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="3" y="12.5" width="4" height="5.5" rx="1.5"/><rect x="17" y="12.5" width="4" height="5.5" rx="1.5"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% if p %}
+{% set images = p.images | default([], true) %}
+{% set imgCount = images | length %}
+{% set price = p.pricing.price | default(0, true) %}
+{% set priceKnown = p.pricing.price or p.pricing.price == 0 or (p.variants and (p.variants | length) > 0) %}
+{% set was = p.pricing.compareAtPrice | default(0, true) %}
+{% set onSale = was and was > price %}
+{% set pct = (((was - price) / was * 100) | int) if onSale else 0 %}
+{% set slug = p.slug | default(p.handle, true) | default(p._id, true) %}
+{% set url = '/products/' ~ slug %}
+{% set cols = p.collections | default([], true) %}
+{% set c0 = cols[0] if (cols | length) > 0 and cols[0] and not (cols[0] is string) else null %}
+{% set brandSrc = d.brand_source | default('collection', true) %}
+{% set brand = (c0.title if c0 else '') if brandSrc == 'collection' else (store.name if brandSrc == 'store' else '') %}
+{% set avg = p.averageRating | default(0, true) %}
+{% set qtyNow = p.quantity | default(0, true) %}
+{% set totals = [] %}
+{% for variant in p.variants | default([], true) %}{% set av = variant.inventoryLevel.available %}{% set _ = totals.push((av if (av or av == 0) else variant.quantity) | default(0, true)) %}{% endfor %}
+
+{# ---- badges: sale, low stock, and tags the merchant chose to surface ---- #}
+{% set badgeTags = ((d.badge_tags | default('', true) | lower).split(',')) %}
+{#- tags arrive as objects on live stores; `join` gave «[object object]» -#}
+{% set ptags = [] %}
+{% for tg in p.tags | default([], true) %}{% if tg is string %}{% set tgText = tg %}{% elif tg.name %}{% set tgText = tg.name %}{% elif tg.displayName %}{% set tgText = tg.displayName %}{% elif tg.title %}{% set tgText = tg.title %}{% elif tg.label %}{% set tgText = tg.label %}{% elif tg.value %}{% set tgText = tg.value %}{% else %}{% set tgText = '' %}{% endif %}{% if tgText %}{% set _ = ptags.push(tgText | string | trim | lower) %}{% endif %}{% endfor %}
+
+{# ---- blocks → specs / side panels / wide panels (flat lists, Nasij-safe) ---- #}
+{% set specs = [] %}{% set sides = [] %}{% set wides = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% set kind = block.type | default(block.block, true) | default('', true) %}
+  {% if not kind %}{% set kind = 'spec' if (b.value is defined or b.icon is defined) else 'panel' %}{% endif %}
+  {% if kind == 'spec' %}{% if b.title or b.value %}{% set _ = specs.push(b) %}{% endif %}
+  {% elif b.title %}{% if b.place == 'wide' %}{% set _ = wides.push(b) %}{% else %}{% set _ = sides.push(b) %}{% endif %}{% endif %}
+{% endfor %}
+{#- No blocks → sample specs and panels (warranty, returns, «مضمونة 100%»)
+    so the merchant sees the layout. They are claims about THIS store, so on
+    the live store they stay hidden until the merchant writes real ones. -#}
+{% set demoPanels = (blocks | length) == 0 %}
+{% if demoPanels %}
+  {% for n in [1, 2, 3] %}{% set _ = specs.push({ icon: t('pdp.specs.s' ~ n ~ '.icon'), title: t('pdp.specs.s' ~ n ~ '.title'), value: t('pdp.specs.s' ~ n ~ '.value') }) %}{% endfor %}
+  {% for n in [1, 2, 3, 4] %}{% set _ = sides.push({ title: t('pdp.panels.p' ~ n ~ '.title'), text: t('pdp.panels.p' ~ n ~ '.text') }) %}{% endfor %}
+  {% for n in [1, 2, 3] %}{% set _ = wides.push({ title: t('pdp.wide.w' ~ n ~ '.title'), text: t('pdp.wide.w' ~ n ~ '.text') }) %}{% endfor %}
+{% endif %}
+
+{% set svcIcons = ['globe', 'truck', 'card', 'check'] %}
+{% set bImg = mediaUrl(d.banner_image) | trim %}
+{% set bImg = bImg if (bImg | length) > 0 else ('mh-hero-2.jpg' | assets) %}
+{% set payKeys = (d.payments | default('visa,mastercard,applepay,mada,cod', true) | replace(' ', '') | lower).split(',') %}
+
+{# The picture ground: the merchant's picker only when they switched it on,
+   otherwise the theme's dark panel (a light grey square would punch a hole in
+   the graphite page). #}
+{% set pdImgBg = (d.image_bg | default('var(--color-bg-tertiary)', true)) if d.image_bg_custom else 'var(--color-bg-tertiary)' %}
+
+<section id="hx-pd-{{ id }}" class="hx-pd is-fit-{{ d.image_fit | default('contain', true) }} is-g-{{ (d.gallery_layout | default('two', true)) if imgCount > 1 else 'one' }}"
+         style="--pd-img-bg: {{ pdImgBg }}; --pt: {{ d.padding_top if d.padding_top is defined else 16 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;"
+         x-data="hxProduct_{{ id }}()" x-init="init()">
+  <div class="hx-pd-wrap">
+
+    {% if d.show_banner != false %}
+      {# same band as the shop / collections pages (.hx-shop-banner), restyled
+         as a dark carbon strip with HUD corners (.mh-band) #}
+      <a href="{{ d.banner_url | default('/shop', true) }}" class="hx-shop-banner hx-pd-band mh-band mh-hud">
+        <img src="{{ bImg }}" alt="" fetchpriority="high"/>
+        <span class="hx-shop-banner-txt">
+          <b>{{ (d.banner_title or t('pdp.banner_title')) | safe }}</b>
+          <span>{{ (d.banner_text or t('pdp.banner_text')) | safe }}</span>
+        </span>
+        <span class="mh-band-arrow mh-arrow" aria-hidden="true">→</span>
+      </a>
+    {% endif %}
+
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-pd-crumbs mh-crumb" aria-label="breadcrumb">
+        <a href="/">{{ t('pdp.home') }}</a>
+        {% if c0 %}<span class="mh-crumb-sep" aria-hidden="true">/</span><a href="/shop/{{ c0.handle | default(c0.slug, true) | default(c0._id, true) }}">{{ c0.title }}</a>{% endif %}
+        <span class="mh-crumb-sep" aria-hidden="true">/</span><span aria-current="page">{{ p.title }}</span>
+      </nav>
+    {% endif %}
+
+    <div class="hx-pd-grid">
+      {# ═════════ left: gallery, specs, description ═════════ #}
+      <div class="hx-pd-main">
+        <div class="hx-pd-gallery">
+          {# the frame carries the HUD corners; arrows, badges and zoom are
+             positioned against it, so they centre on the pictures, not on
+             pictures + thumbnails #}
+          <div class="hx-pd-frame mh-hud">
+          <div class="hx-pd-track" x-ref="track" @scroll.debounce.80ms="onScroll()">
+            {% if imgCount > 0 %}
+              {% for img in images %}
+                <figure class="hx-pd-slide" data-i="{{ loop.index0 }}">
+                  {% if d.show_zoom != false %}<a href="{{ img.fileUrl }}" class="glightbox" data-gallery="pd-{{ id }}" aria-label="{{ p.title }}">{% endif %}
+                    <img src="{{ img.fileUrl }}" alt="{{ p.title if loop.first else '' }}" {% if loop.index0 < 2 %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                  {% if d.show_zoom != false %}</a>{% endif %}
+                </figure>
+              {% endfor %}
+            {% else %}
+              <figure class="hx-pd-slide is-empty" aria-hidden="true"></figure>
+            {% endif %}
+          </div>
+
+          {% if d.show_badges != false %}
+            <div class="hx-pd-badges">
+              {% if onSale %}<span class="hx-badge-tag is-sale mh-tag mh-tag--deal">{{ (d.badge_sale or t('pdp.sale')) | safe }}{% if pct > 0 %} −{{ pct }}%{% endif %}</span>{% endif %}
+              {% for tg in badgeTags %}{% set tg = tg | trim %}{% if tg and tg in ptags %}<span class="hx-badge-tag is-tag mh-tag mh-tag--ghost">{{ tg }}</span>{% endif %}{% endfor %}
+              <span class="hx-badge-tag is-low mh-tag" x-show="lowLeft() > 0" x-cloak>{{ (d.badge_low or t('pdp.low')) | safe }}</span>
+            </div>
+          {% endif %}
+
+          {% if imgCount > 1 %}
+            <button type="button" class="hx-pd-arrow is-prev" @click="go(cur - 1)" :disabled="cur <= 0" aria-label="{{ t('common.prev') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/></svg></button>
+            <button type="button" class="hx-pd-arrow is-next" @click="go(cur + 1)" :disabled="cur >= lastStart()" aria-label="{{ t('common.next') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></button>
+            {# mono frame counter: 01 / 06 #}
+            <span class="hx-pd-counter mh-mono" aria-hidden="true"><b x-text="String(cur + 1).padStart(2, '0')">01</b> / {{ ('0' ~ imgCount) if imgCount < 10 else imgCount }}</span>
+          {% endif %}
+          {% if d.show_zoom != false and imgCount > 0 %}
+            <button type="button" class="hx-pd-zoom" @click="zoom()" aria-label="zoom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path stroke-linecap="round" d="m20 20-4.4-4.4M11 8.5v5M8.5 11h5"/></svg></button>
+          {% endif %}
+          </div>{# /hx-pd-frame #}
+
+          {% if imgCount > 1 %}
+            <div class="hx-pd-thumbs" role="group" aria-label="{{ p.title }}">
+              {% for img in images %}
+                <button type="button" class="hx-pd-thumb" :class="{ 'is-on': cur === {{ loop.index0 }} || (perView() > 1 && cur + 1 === {{ loop.index0 }}) }"
+                        @click="go({{ loop.index0 }})" aria-label="{{ t('common.image') }} {{ loop.index }}"><img src="{{ img.fileUrl }}" alt="" loading="lazy"/></button>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if (specs | length) > 0 %}
+          {# the spec strip: a hairline row of mono readouts under the pictures #}
+          <ul class="hx-pd-specs{{ ' hy-editor-only' if demoPanels }}" role="list">
+            {% for sp in specs %}
+              <li><span class="hx-pd-spec-ico">{{ sIcon(sp.icon | default('check', true)) }}</span><b>{{ sp.title | safe }}</b><span>{{ sp.value | safe }}</span></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+      </div>
+
+      {# ═════════ right: info ═════════ #}
+      <aside class="hx-pd-info">
+        {# kicker: collection/brand as the mono label above the display title #}
+        {% if brand %}<p class="hx-pd-brand mh-kicker">{{ brand }}</p>{% endif %}
+        <h1 class="hx-pd-title mh-h">{{ p.title }}</h1>
+
+        {# mono readout: SKU (follows the chosen variant) · rating #}
+        <div class="hx-pd-readout mh-mono">
+          <span class="hx-pd-sku" x-show="currentSku" {% if not p.sku %}x-cloak{% endif %}>
+            <span class="hx-pd-readout-k">{{ t('pages.product.sku') }}</span>
+            <bdi x-text="currentSku">{{ p.sku | default('', true) }}</bdi>
+          </span>
+          {% if d.show_rating != false %}
+            <div class="hx-card-rating hx-pd-rating">
+              <span class="hx-stars" style="--hx-stars:{{ (avg / 5 * 100) if avg <= 5 else 100 }}%">
+                <span class="hx-stars-bg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+                <span class="hx-stars-fg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+              </span>
+              <span class="hx-card-count">({{ p.reviewsCount | default(0, true) }})</span>
+            </div>
+          {% endif %}
+        </div>
+
+        {# price as a mono readout; the sale price reads in deal red #}
+        <div class="hx-pd-prices mh-price">
+          <span class="hx-pd-price" :class="hasDiscount() && 'is-sale'" x-text="{{ 'displayUnitPrice()' if priceKnown else "''" }}">{% if not priceKnown %}{% elif price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+          <s class="hx-pd-was" x-show="hasDiscount()" x-text="unitComparePrice ? fm(unitComparePrice) : ''" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ was | money }}{% endif %}</s>
+          <span class="hx-card-off mh-tag mh-tag--deal" x-show="hasDiscount() && discountPercent > 0" x-text="'-' + discountPercent + '%'" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}-{{ pct }}%{% endif %}</span>
+        </div>
+
+        {% if d.show_short != false %}
+          <div class="hx-pd-points" x-show="points.length" x-cloak>
+            <p class="hx-pd-points-h">{{ (d.short_title or t('pdp.short')) | safe }}</p>
+            <ul><template x-for="pt in points" :key="pt"><li x-text="pt"></li></template></ul>
+          </div>
+        {% endif %}
+
+        {#- The stock line («منتج رائج! … قبل نفاد الكمية») was a fixed urgency
+            message on every product — it now needs the merchant's own text. -#}
+        {% set pdNote = d.note_text or t('pdp.note') %}
+        {% if d.show_note != false and pdNote %}
+          <p class="hx-pd-note"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.6.8-2.6 1.6-3.4M10 21h4"/></svg><span>{{ pdNote | safe }}</span></p>
+        {% endif %}
+
+        {% for option in p.options %}
+          {% if (option.values | length) > 0 %}
+            <div class="hx-qv-opt hx-pd-opt">
+              <p class="hx-opt-name"><span>{{ option.name }}</span> <b data-opt="{{ option.name }}" x-text="selectedLabels[$el.dataset.opt] || ''"></b></p>
+              <div class="hx-opt-vals" role="group" aria-label="{{ option.name }}">
+                {% for v in option.values %}
+                  {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+                  {% set vHex = v.value if (v.type == 'color' and v.value) else '' %}
+                  <button type="button" class="hx-opt {{ 'is-swatch' if (vImg or vHex) }}"
+                          data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                          :class="{ 'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val, 'is-off': valueDisabled($el.dataset.opt, $el.dataset.val) }"
+                          :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                          @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)"
+                          title="{{ v.label }}" aria-label="{{ v.label }}">
+                    {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% elif vHex %}<i style="background: {{ vHex }};"></i>{% else %}<span>{{ v.label }}</span>{% endif %}
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if d.show_stock != false %}
+          {# status LED: green in stock · amber low · red out (is-out / is-low
+             are set by the variant engine; the dot is the .mh-led ::before) #}
+          <p class="hx-card-stock hx-pd-stock mh-led" :class="{ 'is-out': isOutOfStock, 'is-low': lowLeft() > 0 }">
+            <span x-text="stockText()">{{ t('common.in_stock') }}</span>
+          </p>
+        {% endif %}
+
+        <div class="hx-qv-buy hx-pd-buy" x-ref="buy">
+          <div class="hx-qty mh-mono">
+            <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
+            <span x-text="qty">1</span>
+            <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+          {# the yellow one is ADD TO CART; buy now is the hairline ghost below #}
+          <button type="button" class="hx-btn-soft mh-btn" @click="addToCart()" :disabled="addDisabled()">
+            <span x-show="addingToCart" class="hx-spin" x-cloak></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+            <span x-show="!addingToCart && !addedSuccess" x-text="isOutOfStock ? '{{ t('pages.product.out_of_stock') }}' : '{{ t('pages.product.add_to_cart') }}'">{{ t('pages.product.add_to_cart') }}</span>
+          </button>
+        </div>
+        {% if d.show_buy_now != false %}
+          <button type="button" class="hx-btn-solid hx-pd-now mh-btn mh-btn--ghost mh-btn--block" @click="buyNow()" :disabled="addDisabled()" x-show="!isOutOfStock">{{ t('pages.product.buy_now') }} <span class="mh-arrow" aria-hidden="true">→</span></button>
+        {% endif %}
+        <p class="hy-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+        {# wishlist + compare: hairline ghost tools under the buy buttons.
+           Wishlist is main.js WishlistManager (Qumra.wishlist.toggle) and the
+           `wishlist` Alpine store; compare is the hx.js `hxCompare` store with
+           the SAME payload shape the card sends (id, slug, title, price, was, img). #}
+        {% if d.show_tools != false %}
+          {% set cmpPayload = { id: p._id, slug: slug, title: p.title, price: price, was: was, img: (images[0].fileUrl if imgCount > 0 else '') } %}
+          <div class="hx-pd-tools">
+            <button type="button" class="hx-pd-tool hx-pd-wish"
+                    :class="{ 'is-on': $store.wishlist && $store.wishlist.has('{{ p._id }}') }"
+                    :aria-pressed="$store.wishlist && $store.wishlist.has('{{ p._id }}') ? 'true' : 'false'"
+                    :disabled="wishBusy" @click="toggleWish()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5 4.3 12.9a4.6 4.6 0 0 1 6.5-6.5L12 7.6l1.2-1.2a4.6 4.6 0 0 1 6.5 6.5L12 20.5Z"/></svg>
+              <span x-text="$store.wishlist && $store.wishlist.has('{{ p._id }}') ? '{{ 'في المفضلة' if isAr else 'In your wishlist' }}' : '{{ 'حفظ في المفضلة' if isAr else 'Save to wishlist' }}'">{{ 'حفظ في المفضلة' if isAr else 'Save to wishlist' }}</span>
+            </button>
+            <button type="button" class="hx-pd-tool hx-pd-cmp"
+                    data-cmp='{{ cmpPayload | dump | replace("'", "&#39;") }}'
+                    :class="{ 'is-on': $store.hxCompare && $store.hxCompare.has('{{ p._id }}') }"
+                    :aria-pressed="$store.hxCompare && $store.hxCompare.has('{{ p._id }}') ? 'true' : 'false'"
+                    @click="$store.hxCompare && $store.hxCompare.toggle(JSON.parse($el.dataset.cmp))">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M8 20h8M5 7h14M12 4.5 5 7M12 4.5 19 7"/><path d="M5 7 2.5 13a2.5 2.5 0 0 0 5 0L5 7ZM19 7l-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z"/></svg>
+              <span x-text="$store.hxCompare && $store.hxCompare.has('{{ p._id }}') ? '{{ 'في المقارنة' if isAr else 'In compare' }}' : '{{ t('compare.add') | replace("'", "\\'") }}'">{{ t('compare.add') }}</span>
+            </button>
+            <em class="hx-pd-tool-msg" x-show="wishMsg" x-cloak x-text="wishMsg" role="status"></em>
+          </div>
+        {% endif %}
+
+        {% if d.show_services != false %}
+          <ul class="hx-pd-svcs" role="list">
+            {% for n in [1, 2, 3, 4] %}
+              {% set ic = d['svc' ~ n ~ '_icon'] | default(svcIcons[n - 1]) %}
+              {#- the sample service lines (official warranty, 30-day satisfaction,
+                  24/7 support) are editor-only until the merchant types their own -#}
+              {% set own = d['svc' ~ n ~ '_text'] | default('', true) %}
+              {% set tx = own or t('pdp.svc.' ~ ic) %}
+              {% if tx %}<li{% if not own %} class="hy-editor-only"{% endif %}><span class="hx-pd-svc-ico">{{ sIcon(ic) }}</span><span>{{ tx | safe }}</span></li>{% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {#- «التوصيل المتوقع بين …» promises THIS store's delivery days — off until the merchant turns it on and sets min/max -#}{% if d.show_delivery == true %}
+          <p class="hx-pd-eta" x-show="eta" x-cloak><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span x-html="eta"></span></p>
+        {% endif %}
+
+        {% if (sides | length) > 0 %}
+          <div class="hx-pd-panels{{ ' hy-editor-only' if demoPanels }}">
+            {% for pn in sides %}
+              <div class="hx-pd-panel" x-data="{ o: {{ 'true' if pn.open else 'false' }} }" :class="{ 'is-open': o }">
+                <button type="button" class="hx-pd-panel-h" @click="o = !o" :aria-expanded="o">{{ pn.title | safe }}
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 0v12M0 6h12"/></svg></button>
+                <div class="hx-pd-panel-b" x-show="o" x-collapse x-cloak><div class="hx-rte">{{ pn.text | safe }}</div></div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if d.show_payments != false and (payKeys | length) > 0 and payKeys[0] %}
+          <div class="hx-pd-pay mh-panel">
+            <p class="hx-pd-pay-h">{{ t('pdp.pay') }}</p>
+            <div class="hx-pd-pay-marks">{% for k in payKeys %}{% if k %}{% ui "payment-icons.njk", key=k, label=k %}{% endif %}{% endfor %}</div>
+            {% set payNote = d.payments_note or t('pdp.pay_note') %}
+            {% if payNote %}<p class="hx-pd-pay-note">{{ payNote | safe }}</p>{% endif %}
+          </div>
+        {% endif %}
+
+        {% if d.show_share != false %}
+          <div class="hx-pd-share">
+            <span>{{ t('pdp.share') }}:</span>
+            <a :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href)" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M15 3.5h-2.2A3.8 3.8 0 0 0 9 7.3V10H6.5v3.4H9v7.1h3.4v-7.1h2.6l.5-3.4h-3.1V7.6c0-.6.4-.9 1-.9H15Z"/></svg></a>
+            <a :href="'https://twitter.com/intent/tweet?url=' + encodeURIComponent(location.href)" target="_blank" rel="noopener noreferrer" aria-label="X"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m4 4 16 16M20 4 4 20"/></svg></a>
+            <a :href="'https://wa.me/?text=' + encodeURIComponent(document.title + ' ' + location.href)" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 20l1.2-3.7A8 8 0 1 1 8 19Z"/></svg></a>
+            <button type="button" @click="copyLink()" aria-label="copy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+            <em x-show="copied" x-cloak>{{ t('pdp.copied') }}</em>
+          </div>
+        {% endif %}
+      </aside>
+
+    </div>
+
+    {% if d.show_description != false and p.description %}
+        <div class="hx-pd-descwrap" x-data="{ more: false, long: false }" x-init="$nextTick(() => { long = $refs.dt.scrollHeight > $refs.dt.clientHeight + 4 })">
+          <div class="hx-pd-desc hx-rte" x-ref="dt" :class="{ 'is-open': more }">{{ p.description | safe }}</div>
+          <button type="button" class="hx-pd-more" x-show="long" x-cloak @click="more = !more" x-text="more ? '{{ t('pdp.less') }}' : '{{ t('pdp.more') }}'"></button>
+        </div>
+      {% endif %}
+
+    {# ── SLOT · "التوافق / Compatibility" + "المواصفات / Specs" tabs ──────────
+       Full-width, under the description and above the wide panels. When the
+       feature lands, render here:
+         <div class="mh-pd-tabs" x-data="{ tab: 'specs' }">
+           <div class="mh-pd-tablist" role="tablist">
+             <button class="mh-pd-tab" role="tab" :class="tab === 'specs' && 'is-active'" @click="tab = 'specs'">…</button>
+             <button class="mh-pd-tab" role="tab" :class="tab === 'fit' && 'is-active'" @click="tab = 'fit'">…</button>
+           </div>
+           <div class="mh-pd-tabpanel" role="tabpanel" x-show="tab === 'specs'">…spec table (.mh-pd-spectable)…</div>
+           <div class="mh-pd-tabpanel" role="tabpanel" x-show="tab === 'fit'">…make / model / year readout…</div>
+         </div>
+       The classes are styled in assets/mh-commerce.css → "PDP TABS (reserved)".
+       No logic yet, by design. ───────────────────────────────────────────── #}
+
+    {% if (wides | length) > 0 %}
+      <div class="hx-pd-wides{{ ' hy-editor-only' if demoPanels }}">
+        {% for pn in wides %}
+          <div class="hx-pd-panel is-wide" x-data="{ o: {{ 'true' if pn.open else 'false' }} }" :class="{ 'is-open': o }">
+            <button type="button" class="hx-pd-panel-h" @click="o = !o" :aria-expanded="o">{{ pn.title | safe }}
+              <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 0v12M0 6h12"/></svg></button>
+            <div class="hx-pd-panel-b" x-show="o" x-collapse x-cloak><div class="hx-rte">{{ pn.text | safe }}</div></div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if d.show_sticky != false %}
+    <div class="hx-pd-bar" :class="{ 'is-on': bar }" aria-hidden="true" x-cloak>
+      {% if imgCount > 0 %}<img src="{{ images[0].fileUrl }}" alt="" loading="lazy"/>{% endif %}
+      <span class="hx-pd-bar-txt"><b>{{ p.title }}</b><span class="mh-mono" x-text="{{ 'displayUnitPrice()' if priceKnown else "''" }}">{% if priceKnown %}{{ price | money }}{% endif %}</span></span>
+      <button type="button" class="hx-btn-solid mh-btn" @click="barAdd()" :disabled="addingToCart || isOutOfStock" tabindex="-1">
+        <span x-show="!addingToCart && !addedSuccess">{{ t('pages.product.add_to_cart') }}</span>
+        <span x-show="addingToCart" class="hx-spin" x-cloak></span>
+        <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+      </button>
+    </div>
+  {% endif %}
+
+  <template x-ref="descsrc">{{ p.description | default('', true) | safe }}</template>
+</section>
+
+<script>
+  (function () {
+    window['hxProduct_{{ id }}'] = function () {
+      return Object.assign(window.HayatVariants({
+        productId: '{{ p._id }}',
+        sku: {{ (p.sku | default('', true)) | dump | safe }},
+        price: {{ price | default(0, true) }},
+        compareAtPrice: {{ was | default(0, true) }},
+        quantity: {{ qtyNow | default(0, true) }},
+        trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+        allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+        groups: [
+          {% for option in p.options %}{% if (option.values | length) > 0 %}
+          { name: {{ option.name | dump | safe }},
+            values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ v.label | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+          {% endif %}{% endfor %}
+        ],
+        variants: [
+          {% for variant in p.variants %}
+          {% set vRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else '' %}
+          {% set vImgId = (vRaw._id if vRaw._id else vRaw) | string %}
+          {% set hit = [] %}
+          {% for img in images %}{% if vImgId and (img._id | string) == vImgId %}{% set _ = hit.push(loop.index0) %}{% endif %}{% endfor %}
+          {
+            id: '{{ variant._id }}',
+            imageIndex: {{ hit[0] if (hit | length) > 0 else -1 }},
+            {#- a variant's own price counts even at 0: the cart charges it -#}
+            {% set vp = variant.pricing.price %}{% set av = variant.inventoryLevel.available %}
+            price: {{ (vp if (vp or vp == 0) else price) | default(0, true) }},
+            compareAtPrice: {{ (variant.pricing.compareAtPrice or was) | default(0, true) }},
+            sku: {{ (variant.sku | default('', true)) | dump | safe }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            available: {{ av if (av or av == 0) else 'null' }},
+            trackQuantity: {{ 'false' if variant.trackQuantity == false else 'true' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            options: {{ variant.options | default([], true) | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+        strings: {
+          selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+          comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+          maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+          outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+          variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+          addError:           {{ t('common.error') | dump | safe }},
+          listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+        }
+      }), {
+        totalAvail: {{ totals | sum if (totals | length) > 0 else 'null' }},
+        cur: 0,
+        count: {{ imgCount | default(0, true) }},
+        points: [],
+        eta: '',
+        bar: false,
+        copied: false,
+        fm: function (v) { return window.formatMoney ? window.formatMoney(v) : v; },
+
+        init() {
+          var self = this;
+          this.initVariants();
+          var st = window.__hxStock || {};
+          this._st = st;
+
+          /* key points: the description's first list, else its first lines */
+          var tpl = this.$refs.descsrc, n = {{ d.short_count | default(4, true) }};
+          if (tpl) {
+            var box = document.createElement('div'); box.appendChild(tpl.content.cloneNode(true));
+            var li = [].map.call(box.querySelectorAll('li'), function (x) { return x.textContent.trim(); }).filter(Boolean);
+            if (!li.length) {
+              box.querySelectorAll('br').forEach(function (b) { b.replaceWith('\n'); });
+              li = [].map.call(box.querySelectorAll('p, div'), function (x) { return x.textContent; }).join('\n').split('\n')
+                .map(function (x) { return x.trim(); }).filter(function (x) { return x && x.length < 140; });
+              if (!li.length) li = box.textContent.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+            }
+            var seen = {}; this.points = li.filter(function (x) { if (seen[x]) return false; seen[x] = 1; return true; }).slice(0, n);
+          }
+
+          /* delivery window, in the visitor's language */
+          {% if d.show_delivery == true %}
+          var a = {{ (d.delivery_min if (d.delivery_min or d.delivery_min == 0) else 2) | default(0, true) }}, b = {{ (d.delivery_max if (d.delivery_max or d.delivery_max == 0) else 5) | default(0, true) }};
+          if (b < a) b = a;
+          var lang = document.documentElement.lang || 'ar';
+          var f = function (k) { var dt = new Date(); dt.setDate(dt.getDate() + k); return dt.toLocaleDateString(lang === 'en' ? 'en-GB' : 'ar-EG', { day: 'numeric', month: 'long' }); };
+          this.eta = {{ t('pdp.eta') | dump | safe }}.replace('{from}', '<b>' + f(a) + '</b>').replace('{to}', '<b>' + f(b) + '</b>');
+          {% endif %}
+
+          this.$watch('currentVariantId', function (id) { self.syncImg(id); });
+          /* keep "what is left for this shopper" live: re-read the cart lines
+             whenever the cart changes (here, in the drawer, anywhere) */
+          window.addEventListener('cart:updated', function (e) {
+            var d = e.detail || {}; if (d.items) { self.cartLines = d.items; return; }
+            Qumra.cart.get().then(function (c) { self.cartLines = (c && c.items) || []; }).catch(function () {});
+          });
+          Qumra.cart.get().then(function (d) { self.cartLines = (d && d.items) || []; }).catch(function () { self.cartLines = []; });
+
+          /* sticky bar: on once the buy row has scrolled above the viewport */
+          var buy = this.$refs.buy;
+          if (buy && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (es) { var e = es[0]; self.bar = !e.isIntersecting && e.boundingClientRect.top < 0; }).observe(buy);
+          }
+          if (window.GLightbox && !window.__hxPdLb) window.__hxPdLb = GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true });
+          else document.addEventListener('DOMContentLoaded', function () { if (window.GLightbox && !window.__hxPdLb) window.__hxPdLb = GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true }); });
+        },
+
+        /* gallery */
+        perView() { var tr = this.$refs.track; if (!tr || !tr.firstElementChild) return 1; return Math.max(1, Math.round(tr.clientWidth / tr.firstElementChild.getBoundingClientRect().width)); },
+        lastStart() { return Math.max(0, this.count - this.perView()); },
+        go(i) {
+          var tr = this.$refs.track; if (!tr) return;
+          i = Math.max(0, Math.min(i, this.count - 1));
+          var sl = tr.children[i]; if (!sl) return;
+          var rtl = getComputedStyle(tr).direction === 'rtl';
+          var tb = tr.getBoundingClientRect(), sb = sl.getBoundingClientRect();
+          tr.scrollBy({ left: rtl ? sb.right - tb.right : sb.left - tb.left, behavior: 'smooth' });
+          this.cur = Math.min(i, this.lastStart());
+        },
+        onScroll() {
+          var tr = this.$refs.track, rtl = getComputedStyle(tr).direction === 'rtl', tb = tr.getBoundingClientRect(), best = 0, bd = 1e9;
+          [].forEach.call(tr.children, function (sl, k) { var sb = sl.getBoundingClientRect(); var dd = Math.abs(rtl ? sb.right - tb.right : sb.left - tb.left); if (dd < bd) { bd = dd; best = k; } });
+          this.cur = best;
+        },
+        syncImg(id) { var v = (this._variants || []).find(function (x) { return x.id === id; }); if (v && v.imageIndex >= 0) this.go(v.imageIndex); },
+        zoom() { var a = this.$refs.track.querySelectorAll('.glightbox')[this.cur]; if (a) a.click(); },
+
+        /* stock */
+        _avail() { var n = this.availableNow ? this.availableNow() : null; if ((n === null || n === undefined) && !this.currentVariantId && this.totalAvail !== null) n = this.totalAvail; return n; },
+        lowLeft() { var n = this._avail(); return (n !== null && n > 0 && n <= {{ (settings.lowStockThreshold or 3) | int }}) ? n : 0; },
+        stockText() {
+          var st = this._st || {};
+          if (this.isOutOfStock) return st.out || '';
+          var n = this._avail();
+          if (n !== null && n > 0) return String((n <= {{ (settings.lowStockThreshold or 3) | int }} ? st.low : st['in']) || st.plain).replace('{count}', n);
+          return st.plain || '';
+        },
+
+        barAdd() {
+          if (this.missingOptions && this.missingOptions().length) { this.$refs.buy.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+          this.addToCart();
+        },
+
+        /* wishlist: the store answers "is it saved"; the manager flips it and
+           re-broadcasts, so the header count and every heart follow. A guest
+           store may refuse — the refusal is shown next to the button, not
+           swallowed. */
+        wishBusy: false,
+        wishMsg: '',
+        toggleWish() {
+          var self = this, pid = '{{ p._id }}';
+          if (this.wishBusy || !window.Qumra || !Qumra.wishlist) return;
+          var on = !!(Alpine.store('wishlist') && Alpine.store('wishlist').has(pid));
+          this.wishBusy = true; this.wishMsg = '';
+          Qumra.wishlist.toggle(pid, on).then(function () {
+            self.wishMsg = on ? {{ ('أُزيل من المفضلة' if isAr else 'Removed from your wishlist') | dump | safe }} : {{ ('تم الحفظ في المفضلة' if isAr else 'Saved to your wishlist') | dump | safe }};
+          }).catch(function (e) {
+            self.wishMsg = (e && e.message) || {{ t('common.error') | dump | safe }};
+          }).finally(function () {
+            self.wishBusy = false;
+            setTimeout(function () { self.wishMsg = ''; }, 2200);
+          });
+        },
+        copyLink() {
+          var self = this;
+          (navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject()).then(function () { self.copied = true; setTimeout(function () { self.copied = false; }, 1800); }).catch(function () {});
+        }
+      });
+    };
+  })();
+</script>
+{#- Structured data for search results (price, stock). Prices are already in
+    major units on Qumra — no /100. `| dump` escapes every merchant string. -#}
+{% set ldImgs = p.images | default([], true) %}
+{% set ldStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ p.title | default('', true) | dump | safe }},
+  {% if (ldImgs | length) > 0 %}"image": [{% for img in ldImgs %}{{ (img.fileUrl | default('', true)) | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": {{ (p.description | default('', true) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags | truncate(300)) | dump | safe }},
+  {% if p.sku %}"sku": {{ p.sku | dump | safe }},{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "url": {{ ((store.url | default('', true)) ~ '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true))) | dump | safe }},
+    "priceCurrency": {{ (localization.currency.currencyCode | default('EGP', true)) | dump | safe }},
+    "price": "{{ p.pricing.price | default(0, true) }}",
+    "availability": "https://schema.org/{{ 'InStock' if ldStock else 'OutOfStock' }}"
+  }
+}
+</script>
+{% else %}
+{#- No product in the context (deleted, unpublished, or a mistyped link): the
+    page still gets its one H1 and a way back to the shop. -#}
+<section class="hx-pd hx-pd--missing" style="padding-block: 96px; text-align: center;">
+  <div class="mh-wrap" style="max-width: 640px; margin-inline: auto; padding-inline: 20px;">
+    <h1 class="mh-h">{{ t('pages.404.title') }}</h1>
+    <p style="margin-block: 14px 28px; color: var(--color-text-secondary, #9a9a9a);">{{ t('pages.404.message') }}</p>
+    <a class="mh-btn hy-btn--solid" href="/shop">{{ t('pages.404.browse_shop') }}</a>
+  </div>
+</section>
+{% endif %}

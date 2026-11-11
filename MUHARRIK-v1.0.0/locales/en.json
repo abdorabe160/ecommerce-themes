@@ -1,0 +1,819 @@
+{
+  "common": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "search": "Search",
+    "view_all": "View All",
+    "close": "Close",
+    "error": "An error occurred",
+    "back": "Back",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "on_sale": "Sale",
+    "free": "Free",
+    "share": "Share",
+    "menu": "Menu",
+    "remove": "Remove",
+    "language": "Language",
+    "email": "Email",
+    "prev": "Previous",
+    "next": "Next",
+    "placeholder_product": "Product title",
+    "placeholder_price": "—",
+    "placeholder_collection": "Collection title",
+    "placeholder_article": "Article title",
+    "placeholder_excerpt": "A short excerpt from the article appears here once it is added.",
+    "placeholder_date": "Publish date",
+    "placeholder_note": "Sample content — pick your products in the Theme Editor to replace it.",
+    "image": "Image",
+    "in_stock": "In stock",
+    "play": "Play",
+    "pause": "Pause",
+    "placeholder_add": "Add items in the section settings",
+    "reviews_count": "{count} reviews",
+    "back_to_top": "Back to top"
+  },
+  "header": {
+    "cart": "Cart",
+    "search": "Search",
+    "search_placeholder": "What are you looking for?",
+    "quick_link": "Quick link",
+    "menu_close": "Close menu",
+    "more": "More",
+    "menu": "Menu",
+    "announcements": "Announcements",
+    "all_categories": "All categories",
+    "voice_search": "Voice search",
+    "most_searched": "Most searched products",
+    "explore_collections": "Explore our collections",
+    "dark_mode": "Dark mode",
+    "dr_shop_all": "Shop all",
+    "dr_view_all": "View all",
+    "dr_quick": "Quick links",
+    "dr_shop": "Shop",
+    "dr_all_word": "all "
+  },
+  "products": {
+    "no_products": "No products yet",
+    "new": "New",
+    "popular": "Popular",
+    "hot": "Hot",
+    "selling_fast": "Almost gone",
+    "shop": "Shop",
+    "add": "Add"
+  },
+  "categories": {
+    "no_categories_desc": "Collections will appear here once added."
+  },
+  "newsletter": {
+    "placeholder": "Enter your email",
+    "button": "Subscribe Now",
+    "success": "Subscribed successfully!",
+    "error_empty": "Please enter your email address",
+    "error_format": "That address looks incomplete — check for the @ and the domain",
+    "setup_hint": "To switch the newsletter on, paste your provider’s form action URL (Mailchimp, Klaviyo, …) into this widget’s settings. The form stays hidden until then, so no address is ever collected and lost."
+  },
+  "pages": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+      "back_home": "Back to Home",
+      "browse_shop": "Browse Shop",
+      "try_these": "Try these"
+    },
+    "collections": {
+      "title": "Collections",
+      "count": "collections"
+    },
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "added_to_cart": "Added to Cart",
+      "buy_now": "Buy Now",
+      "out_of_stock": "Out of Stock",
+      "in_stock": "In Stock",
+      "in_stock_count": "In stock · {count} available",
+      "all_in_cart": "All available units are already in your cart",
+      "low_stock": "Only {{count}} left!",
+      "sku": "SKU",
+      "reviews_count": "{count} reviews",
+      "share": "Share Product",
+      "select_option": "Select {{option}}",
+      "choose_options": "Choose Options",
+      "added": "Added!",
+      "view_full_details": "View full details",
+      "quick_view": "Quick View",
+      "related": "Recommended products",
+      "select_options_first": "Please choose {options} before adding this product to your cart.",
+      "combo_unavailable": "That combination isn't available right now — try another.",
+      "max_qty": "Only {count} left of this option.",
+      "variant_sold_out": "Sold out"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+      "empty_title": "Your cart is empty",
+      "empty_subtitle": "Discover something you love",
+      "continue_shopping": "Continue Shopping",
+      "checkout": "Check Out",
+      "blocked_sold_out": "Remove the sold-out items to continue",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "discount": "Discount",
+      "savings": "You saved",
+      "remove_item": "Remove Item",
+      "remove_confirm": "Remove this item?",
+      "clear": "Clear Cart",
+      "unit_price": "Unit price",
+      "order_summary": "Order Summary",
+      "view_cart": "View Cart",
+      "shipping": "Shipping",
+      "calculated_at_checkout": "Calculated at checkout",
+      "free_shipping_left": "Spend {amount} more to reach free shipping!",
+      "free_shipping_earned": "You’ve earned free shipping",
+      "max_stock": "Only {count} of this item are available.",
+      "needs_variant": "This item has options — open its page and choose a size or colour.",
+      "line_sold_out": "This option is sold out.",
+      "free_shipping_done": "Your order qualifies for free shipping",
+      "empty_hint": "Not sure where to start? Try these collections:",
+      "continue": "Continue Shopping",
+      "estimated_total": "Estimated total",
+      "tax_note": "Taxes and shipping calculated at checkout.",
+      "discount_applied": "Discount applied"
+    },
+    "collection": {
+      "sort": "Sort"
+    },
+    "shop": {
+      "search_placeholder": "Search products...",
+      "all_products": "All Products"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search for products...",
+      "suggestions": "Search Suggestions",
+      "products": "Products",
+      "view_all": "View All",
+      "no_results": "No results found",
+      "try_different": "Try different search terms",
+      "results_for": "Search results for",
+      "sort_by": "Sort by",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "newest": "Newest",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "price_negative": "Prices cannot be negative — set to zero",
+      "price_swapped": "Swapped the two so the lower comes first",
+      "apply": "Apply",
+      "filter": "Filter",
+      "clear_all": "Clear all",
+      "clear": "Clear",
+      "related": "Related Products"
+    },
+    "about": {
+      "last_updated": "Last updated"
+    },
+    "blog": {
+      "title": "Blog",
+      "articles_count": "articles",
+      "no_blogs_desc": "Blogs will appear here soon",
+      "no_articles_desc": "Articles will appear here soon",
+      "back_to_articles": "Back to articles",
+      "views": "views",
+      "share_article": "Share this article",
+      "related_articles": "Related Articles",
+      "copied": "Copied"
+    },
+    "page": {
+      "empty_title": "This page has no content yet",
+      "empty_desc": "Add the page content from the store dashboard, or write fallback text in this section’s settings."
+    }
+  },
+  "cart": {
+    "out_of_stock": "Can't add to cart — this product is out of stock",
+    "upsell_title": "You'll love this too"
+  },
+  "footer": {
+    "payments": "Payment methods",
+    "cod": "Cash on delivery",
+    "menu": "Footer links"
+  },
+  "collections": {
+    "items_count": "{count} Items"
+  },
+  "featured": {
+    "eyebrow": "Picks",
+    "title": "Most wanted",
+    "countdown": "Offer ends in:",
+    "sale_badge": "Special offer",
+    "low_badge": "Limited quantity",
+    "note": "",
+    "demo": {
+      "p1": "Snow Foam Shampoo 1L",
+      "p2": "Ceramic Coating Kit",
+      "p3": "4K Dash Cam",
+      "p4": "Floor Mats",
+      "p5": "Microfibre Towels ×6",
+      "p6": "Alloy Wheel Cleaner"
+    }
+  },
+  "columns": {
+    "delivery": "Door delivery",
+    "returns": "Exchanges per store policy",
+    "truck": "Delivery nationwide",
+    "shield": "Hand-picked parts",
+    "card": "Several ways to pay",
+    "hand": "Help choosing the part",
+    "support": "Contact us",
+    "gift": "Neat packing",
+    "tag": "Fresh offers",
+    "box": "Parts for every make",
+    "clock": "Quick order prep",
+    "star": "Customer reviews",
+    "g": {
+      "shield": {
+        "title": "Hand-picked parts",
+        "text": "A curated range of parts and accessories for every make."
+      },
+      "truck": {
+        "title": "Delivery",
+        "text": "Door delivery — time and cost show at checkout."
+      },
+      "card": {
+        "title": "Payment",
+        "text": "Available payment methods show at checkout."
+      },
+      "support": {
+        "title": "Got a question?",
+        "text": "Contact us and we will help you pick the right part."
+      },
+      "delivery": {
+        "title": "Delivery",
+        "text": "Delivery details show at checkout."
+      },
+      "returns": {
+        "title": "Exchanges & returns",
+        "text": "Per the store policy."
+      },
+      "hand": {
+        "title": "Help choosing",
+        "text": "Pick your car and see the parts that fit."
+      },
+      "gift": {
+        "title": "Neat packing",
+        "text": "Your order is packed with care."
+      },
+      "tag": {
+        "title": "Fresh offers",
+        "text": "Watch the offers on care products and accessories."
+      },
+      "box": {
+        "title": "Every make",
+        "text": "Parts and accessories for many makes."
+      },
+      "clock": {
+        "title": "Quick prep",
+        "text": "We get your order ready as soon as we can."
+      },
+      "star": {
+        "title": "Customer reviews",
+        "text": "Read reviews on every product page."
+      }
+    }
+  },
+  "banner": {
+    "eyebrow": "Super Offers",
+    "title": "Upgrade Your Gear & Save",
+    "link": "Discover the deals"
+  },
+  "cgroup": {
+    "save_up_to": "Save up to",
+    "off": "Off",
+    "shop_now": "Shop now",
+    "c1": {
+      "title": "Laptops",
+      "text": "Powerful processors, all-day battery and sleek designs."
+    },
+    "c2": {
+      "title": "Tablets",
+      "text": "For study, work and play — light and easy to carry."
+    },
+    "c3": {
+      "title": "Monitors",
+      "text": "Accurate colour and sharp detail for work and games."
+    },
+    "c4": {
+      "title": "Phones",
+      "text": "The latest phones with stunning cameras and fast charging."
+    },
+    "c5": {
+      "title": "Headphones",
+      "text": "Clear sound and noise cancelling for hours of listening."
+    },
+    "c6": {
+      "title": "Earbuds",
+      "text": "Light, comfortable, powerful sound and a built-in mic."
+    },
+    "col1": {
+      "heading": "Top Rated",
+      "feature": "Exclusive Offers",
+      "i1": "Earbuds",
+      "i2": "Speakers",
+      "i3": "Wired"
+    },
+    "col2": {
+      "heading": "High-end Picks",
+      "feature": "Computers & Laptops",
+      "i1": "Tablets",
+      "i2": "Monitors",
+      "i3": "Laptops"
+    },
+    "col3": {
+      "heading": "Smartphones",
+      "feature": "Deals & Promotions",
+      "i1": "Phones",
+      "i2": "Headphones",
+      "i3": "VR"
+    },
+    "col4": {
+      "heading": "Photography",
+      "feature": "Great Top Deals",
+      "i1": "Cameras",
+      "i2": "Perfumes",
+      "i3": "Drones"
+    }
+  },
+  "promo": {
+    "title": "Essentials for every car",
+    "tab1": "Care",
+    "tab2": "Lighting",
+    "tab3": "Electronics",
+    "tab4": "Accessories",
+    "demo": {
+      "p1": "OBD2 Scanner",
+      "p2": "Wireless Charger Mount",
+      "p3": "Portable Tyre Inflator",
+      "p4": "All-Weather Car Cover",
+      "p5": "Car Vacuum",
+      "p6": "Tyre Shine Gel"
+    },
+    "view_all": "View Collection",
+    "s2": {
+      "title": "Selected offers",
+      "tab1": "Best savings",
+      "tab2": "New arrivals",
+      "tab3": "Top rated",
+      "tab4": "Limited offers"
+    }
+  },
+  "stock": {
+    "in": "In stock · {count} available",
+    "low": "Almost gone · only {count} left",
+    "all_in_cart": "All available stock is in your cart"
+  },
+  "pgrid": {
+    "d1": {
+      "eyebrow": "Lighting",
+      "title": "See the road clearer."
+    },
+    "d2": {
+      "eyebrow": "Care & detailing",
+      "title": "A shine that lasts."
+    },
+    "b1": {
+      "eyebrow": "Care offers",
+      "title": "Every step of car care",
+      "text": "Wash, polish and protect — in one place.",
+      "badge_top": "New"
+    },
+    "b2": {
+      "eyebrow": "Interior accessories",
+      "title": "Comfort on every drive"
+    },
+    "b3": {
+      "title": "Dash cams"
+    },
+    "b4": {
+      "eyebrow": "Wheels & tyres",
+      "title": "Wheel and tyre care"
+    },
+    "b5": {
+      "title": "Tools & maintenance"
+    },
+    "q": {
+      "title": "Essentials for every car"
+    },
+    "q1": {
+      "title": "Lighting",
+      "text": "LED bulbs and interior lighting."
+    },
+    "q2": {
+      "title": "Care",
+      "text": "Shampoo, polish and towels."
+    },
+    "q3": {
+      "title": "Electronics"
+    },
+    "q4": {
+      "title": "Interior"
+    },
+    "q5": {
+      "title": "Exterior",
+      "text": "Covers, wipers and exterior accessories."
+    }
+  },
+  "brands": {
+    "title": "Tech Brands You Know & Love",
+    "brand": "Brand"
+  },
+  "clist": {
+    "eyebrow": "Shop by department",
+    "title": "Everything your car needs, in one place",
+    "button": "Shop now",
+    "f": {
+      "shield": "Hand-picked parts for every make",
+      "truck": "Door delivery",
+      "support": "Help choosing the part",
+      "tag": "Fresh offers",
+      "card": "Several ways to pay",
+      "returns": "Exchanges per store policy",
+      "gift": "Neat packing",
+      "star": "Reviews on every product"
+    },
+    "c": {
+      "c1": "Lighting",
+      "c2": "Care",
+      "c3": "Interior",
+      "c4": "Exterior",
+      "c5": "Electronics",
+      "c6": "Tyres",
+      "c7": "Maintenance",
+      "c8": "Accessories"
+    },
+    "strip_title": "Top departments",
+    "s": {
+      "s1": "LED bulbs",
+      "s2": "Dash cams",
+      "s3": "Shampoo",
+      "s4": "Polish",
+      "s5": "Floor mats",
+      "s6": "Covers",
+      "s7": "Wipers",
+      "s8": "Chargers"
+    }
+  },
+  "reviews": {
+    "title": "What our customers say",
+    "r1": {
+      "title": "Great foam",
+      "text": "Thick foam and the car came out clean without scratches.",
+      "name": "Customer name"
+    },
+    "r2": {
+      "title": "Clearer lights",
+      "text": "The LED bulbs made a real difference driving at night.",
+      "name": "Customer name"
+    },
+    "r3": {
+      "title": "Mats that fit",
+      "text": "The mats fit the car exactly and are easy to clean.",
+      "name": "Customer name"
+    },
+    "r4": {
+      "title": "Clear camera",
+      "text": "Clear recording day and night, and easy to fit.",
+      "name": "Customer name"
+    },
+    "r5": {
+      "title": "Lasting shine",
+      "text": "The shine lasts for weeks after washing.",
+      "name": "Customer name"
+    },
+    "r6": {
+      "title": "Steady charger",
+      "text": "The mount holds steady and charges well on the road.",
+      "name": "Customer name"
+    }
+  },
+  "deals": {
+    "p1": "Trending offers",
+    "p2": "Reduced prices",
+    "f": {
+      "delivery": "Door delivery",
+      "shield": "Hand-picked parts",
+      "truck": "Delivery nationwide",
+      "returns": "Exchanges per store policy",
+      "card": "Several ways to pay",
+      "support": "Contact us",
+      "tag": "Offer price",
+      "gift": "Neat packing"
+    },
+    "f2shield": "Hand-picked parts"
+  },
+  "posts": {
+    "title": "From the blog",
+    "read": "Read now",
+    "a1": {
+      "title": "How to wash your car without scratches",
+      "excerpt": "The right order: foam first, then rinse, then dry with a microfibre towel."
+    },
+    "a2": {
+      "title": "When to change your wipers",
+      "excerpt": "Signs your wipers need replacing before winter."
+    },
+    "a3": {
+      "title": "Choosing LED bulbs",
+      "excerpt": "How to pick the right bulb for your headlights."
+    },
+    "a4": {
+      "title": "Caring for wheels and tyres",
+      "excerpt": "Clean wheels and shiny tyres in a few simple steps."
+    }
+  },
+  "sfoot": {
+    "contact_title": "Need help",
+    "c1": {
+      "line": "Got a question? Call us",
+      "value": ""
+    },
+    "c2": {
+      "line": "Need help with an order?",
+      "value": ""
+    },
+    "c3": {
+      "line": "Chat with us on WhatsApp",
+      "value": ""
+    },
+    "m1": {
+      "title": "Shop",
+      "links": {
+        "l1": "Home",
+        "l2": "All Products",
+        "l3": "Collections",
+        "l4": "New Arrivals"
+      }
+    },
+    "m2": {
+      "title": "Popular categories",
+      "links": {
+        "l1": "Best deals",
+        "l2": "Lighting",
+        "l3": "Care & detailing",
+        "l4": "Interior accessories",
+        "l5": "New arrivals",
+        "l6": "View all"
+      }
+    },
+    "m3": {
+      "title": "Your Order",
+      "links": {
+        "l1": "Shopping Cart",
+        "l2": "Blog",
+        "l3": "Call Us",
+        "l4": "Chat on WhatsApp"
+      }
+    },
+    "nl_title": "Get exclusive Offers and Updates",
+    "nl_text": "Subscribe for parts and accessories offers and care tips for your car.",
+    "nl_ph": "Your email",
+    "nl_btn": "Subscribe",
+    "nl_ok": "Thanks for subscribing!",
+    "rights": "All rights reserved",
+    "r1": {
+      "title": "Care & detailing",
+      "links": {
+        "l1": "Shampoo & wash",
+        "l2": "Polish & protection",
+        "l3": "Towels & tools",
+        "l4": "View all"
+      }
+    },
+    "r2": {
+      "title": "Lighting & electronics",
+      "links": {
+        "l1": "LED bulbs",
+        "l2": "Dash cams",
+        "l3": "Chargers & mounts",
+        "l4": "View all"
+      }
+    },
+    "r3": {
+      "title": "Interior & exterior",
+      "links": {
+        "l1": "Floor mats",
+        "l2": "Car covers",
+        "l3": "Wipers",
+        "l4": "Organisers",
+        "l5": "View all"
+      }
+    }
+  },
+  "pdp": {
+    "banner_title": "Complete your care kit",
+    "banner_text": "See the rest of the care products and accessories.",
+    "short": "Key Features",
+    "note": "",
+    "sale": "Special offer",
+    "low": "Limited stock",
+    "pay_note": "",
+    "pay": "Pay with",
+    "share": "Share",
+    "home": "Home",
+    "eta": "Estimated delivery between {from} and {to}",
+    "copied": "Link copied",
+    "svc": {
+      "globe": "Availability shown on the page",
+      "truck": "Door delivery",
+      "card": "Several ways to pay",
+      "check": "Exchanges per store policy",
+      "shield": "Warranty details in the description",
+      "returns": "Returns per store policy",
+      "gift": "Neat packing",
+      "support": "Contact us"
+    },
+    "panels": {
+      "p1": {
+        "title": "Fit",
+        "text": "Pick your car at the top of the page, or contact us to confirm the fit."
+      },
+      "p2": {
+        "title": "Fitting",
+        "text": "Fitting steps are in the product description."
+      },
+      "p3": {
+        "title": "Payment",
+        "text": "Available payment methods show at checkout."
+      },
+      "p4": {
+        "title": "Delivery",
+        "text": "Time and cost show at checkout for your area."
+      }
+    },
+    "wide": {
+      "w1": {
+        "title": "Technical details",
+        "text": "The product specifications — sizes, materials and weight."
+      },
+      "w2": {
+        "title": "Exchanges & returns",
+        "text": "Per the store policy."
+      },
+      "w3": {
+        "title": "In the box",
+        "text": "The product and every accessory that comes with it."
+      }
+    },
+    "specs": {
+      "s1": {
+        "icon": "check",
+        "title": "Fit",
+        "value": "By model"
+      },
+      "s2": {
+        "icon": "truck",
+        "title": "Delivery",
+        "value": "To your door"
+      },
+      "s3": {
+        "icon": "shield",
+        "title": "Warranty",
+        "value": "See description"
+      }
+    },
+    "more": "Show more",
+    "less": "Show less"
+  },
+  "extra": {
+    "media": "Media & Gallery",
+    "feat": "Stand out Features",
+    "faq": "Questions & Answers",
+    "cards": {
+      "c1": {
+        "title": "Fits your car",
+        "text": "Pick your car at the top of the page to see what fits."
+      },
+      "c2": {
+        "title": "Easier fitting",
+        "text": "Fitting notes are in each product description."
+      },
+      "c3": {
+        "title": "Every make",
+        "text": "A range that covers many makes and models."
+      },
+      "c4": {
+        "title": "Ongoing care",
+        "text": "Products that help you keep your car in shape."
+      }
+    },
+    "qa": {
+      "q1": {
+        "q": "Will this part fit my car?",
+        "a": "Use “Pick your car” or check the fit in the product description — contact us if unsure."
+      },
+      "q2": {
+        "q": "How long does delivery take?",
+        "a": "Delivery time and cost show at checkout for your area."
+      },
+      "q3": {
+        "q": "Which payment methods are available?",
+        "a": "Available payment methods show on the checkout page."
+      },
+      "q4": {
+        "q": "What is the return policy?",
+        "a": "Exchange and return details are in the store policy."
+      },
+      "q5": {
+        "q": "Is there a warranty?",
+        "a": "Warranty details, where offered, are in each product description."
+      },
+      "q6": {
+        "q": "How do I track my order?",
+        "a": "Contact us with your order number and we will update you."
+      }
+    }
+  },
+  "shopx": {
+    "banner_title": "Everything your car needs",
+    "banner_text": "Parts, accessories and care for every make.",
+    "view": "View",
+    "list": "List view",
+    "grid": "Grid view"
+  },
+  "compare": {
+    "add": "Compare",
+    "title": "Compare products",
+    "go": "Compare",
+    "clear": "Clear all",
+    "full": "Compare list is full (5 products max)",
+    "table": "Product Comparison",
+    "sub": "How they are different",
+    "desc": "Description",
+    "rating": "Rating",
+    "brand": "Collection",
+    "options": "Options",
+    "stock": "Stock",
+    "details": "View full details",
+    "empty": "No products to compare"
+  },
+  "bx": {
+    "blog": "Blog",
+    "blogs_sub": "Tips, news and reviews from our team",
+    "side_title": "About our blog",
+    "side_text": "Articles and tips that help you choose what fits you and get more from what you buy.",
+    "promo_title": "Stay in the loop",
+    "promo_text": "Discover new products and offers.",
+    "promo_btn": "Shop now",
+    "related": "Related articles",
+    "tags": "Tags",
+    "share": "Share",
+    "read": "Read article",
+    "demo_cat": "Car care",
+    "demo_author": "Store team",
+    "by": "By",
+    "demo_body": "<p>Regular care keeps your car looking good and holding its value.</p><h3>The basics</h3><ul><li>Foam before you touch the paint.</li><li>Dry with microfibre towels.</li><li>Polish and protect now and then.</li></ul>",
+    "empty": "Articles will appear here soon.",
+    "all": "All"
+  },
+  "clx": {
+    "title": "All collections",
+    "sub": "Browse the store's departments and pick what suits you.",
+    "banner_title": "Discover all our departments",
+    "banner_text": "Carefully picked products in every collection.",
+    "count": "collections",
+    "products": "products",
+    "shop": "Shop",
+    "sort": "Sort by",
+    "s_def": "Default",
+    "s_az": "A–Z",
+    "s_many": "Most products",
+    "demo": {
+      "c1": "Smartphones",
+      "c2": "Headphones",
+      "c3": "Laptops",
+      "c4": "Tablets",
+      "c5": "Monitors",
+      "c6": "Accessories"
+    },
+    "empty": "No categories yet."
+  },
+  "pgx": {
+    "links": "Key pages",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service",
+    "shipping": "Shipping policy",
+    "help_title": "Ready to keep shopping?",
+    "help_text": "Browse the newest products and the best deals in the store.",
+    "help_btn": "Shop now"
+  },
+  "counts": {
+    "product_one": "1 product",
+    "product_two": "2 products",
+    "product_few": "{n} products",
+    "product_many": "{n} products",
+    "collection_one": "1 category",
+    "collection_two": "2 categories",
+    "collection_few": "{n} categories",
+    "collection_many": "{n} categories"
+  }
+}

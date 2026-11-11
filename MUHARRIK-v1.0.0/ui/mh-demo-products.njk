@@ -1,0 +1,137 @@
+{# ============================================================================
+   MUHARRIK · DEMO PRODUCTS  (shared stand-in catalogue)
+   ----------------------------------------------------------------------------
+   Sixteen car-accessory products with their own pictures (assets/mh-p01.jpg …
+   mh-p16.jpg, 800×800), bilingual names, realistic EGP prices, a few
+   compare-at prices and a few low quantities so the stock LED has something to
+   say. Shown by the selling widgets while the merchant has picked nothing —
+   see `use_demo` in pit-lane / deal-spotlight.
+
+   The order is fixed (01 … 16) so widgets can refer to an item by index:
+     01 Snow Foam Shampoo 1L        05 Leather Seat Covers    09 LED Headlight Bulbs H7   13 OBD2 Scanner
+     02 Ceramic Coating Kit         06 Car Vacuum Cleaner     10 Ambient Interior Light   14 Portable Tyre Inflator
+     03 Microfibre Towel Pack ×6    07 Wiper Blades Pair      11 4K Dash Cam              15 Alloy Wheel Cleaner
+     04 Premium Floor Mats          08 All-Weather Car Cover  12 Wireless Charger Mount   16 Tyre Shine Gel
+
+   A `{% ui %}` include renders — a `set` inside it does not reach the caller —
+   so this file RENDERS the set in one of three modes:
+
+     mode='cards' (default)  hx-card.njk for items [from, from+count), each one
+                             `demo='on'` (links to /shop, no buy buttons).
+                               wrap='class'   wraps every card in <div class>
+                               number='on'    …and stamps data-n="01" on it
+                               sale_badge / low_badge / note / rating / stock
+                               pass straight through to the card.
+     mode='json'             the array as JSON (for a <script type=application/json>).
+     mode='item'             ONE field of ONE item as text:
+                               index=1 field='title' | 'price' | 'was' | 'img'
+                               | 'qty' | 'rating' | 'reviews' | 'cat' | 'slug'
+
+   Usage:
+     {% ui "mh-demo-products.njk", from=0, count=12, wrap='mh-pl-item', number='on',
+           sale_badge=saleBadge, low_badge=lowBadge, rating='on', stock='on' %}
+   ========================================================================= #}
+
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% set catCare = 'العناية' if isAr else 'Care' %}
+{% set catInt  = 'الداخلية' if isAr else 'Interior' %}
+{% set catExt  = 'الخارجية' if isAr else 'Exterior' %}
+{% set catLight = 'الإضاءة' if isAr else 'Lighting' %}
+{% set catElec = 'الإلكترونيات' if isAr else 'Electronics' %}
+{% set catTyre = 'الإطارات والجنوط' if isAr else 'Tyres & wheels' %}
+
+{% set MH_DEMO = [
+  { _id: 'mhdemo01', slug: 'demo', title: ('شامبو رغوة كثيفة 1 لتر' if isAr else 'Snow Foam Shampoo 1L'),
+    pricing: { price: 350, compareAtPrice: 450 }, averageRating: 4.5, reviewsCount: 38, quantity: 20,
+    images: [{ fileUrl: 'mh-p01.jpg' | assets }], collections: [{ title: catCare }] },
+  { _id: 'mhdemo02', slug: 'demo', title: ('طقم طلاء سيراميك' if isAr else 'Ceramic Coating Kit'),
+    pricing: { price: 1850, compareAtPrice: 2400 }, averageRating: 5, reviewsCount: 64, quantity: 6,
+    images: [{ fileUrl: 'mh-p02.jpg' | assets }], collections: [{ title: catCare }] },
+  { _id: 'mhdemo03', slug: 'demo', title: ('فوط مايكروفايبر ×6' if isAr else 'Microfibre Towel Pack ×6'),
+    pricing: { price: 420, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 121, quantity: 30,
+    images: [{ fileUrl: 'mh-p03.jpg' | assets }], collections: [{ title: catCare }] },
+  { _id: 'mhdemo04', slug: 'demo', title: ('دواسات أرضية فاخرة' if isAr else 'Premium Floor Mats'),
+    pricing: { price: 1650, compareAtPrice: 1950 }, averageRating: 4.5, reviewsCount: 47, quantity: 12,
+    images: [{ fileUrl: 'mh-p04.jpg' | assets }], collections: [{ title: catInt }] },
+  { _id: 'mhdemo05', slug: 'demo', title: ('أغطية مقاعد جلد' if isAr else 'Leather Seat Covers'),
+    pricing: { price: 3900, compareAtPrice: 4500 }, averageRating: 4, reviewsCount: 22, quantity: 4,
+    images: [{ fileUrl: 'mh-p05.jpg' | assets }], collections: [{ title: catInt }] },
+  { _id: 'mhdemo06', slug: 'demo', title: ('مكنسة سيارة محمولة' if isAr else 'Car Vacuum Cleaner'),
+    pricing: { price: 1290, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 88, quantity: 15,
+    images: [{ fileUrl: 'mh-p06.jpg' | assets }], collections: [{ title: catInt }] },
+  { _id: 'mhdemo07', slug: 'demo', title: ('مساحات زجاج (زوج)' if isAr else 'Wiper Blades Pair'),
+    pricing: { price: 480, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 56, quantity: 40,
+    images: [{ fileUrl: 'mh-p07.jpg' | assets }], collections: [{ title: catExt }] },
+  { _id: 'mhdemo08', slug: 'demo', title: ('غطاء سيارة لكل الأجواء' if isAr else 'All-Weather Car Cover'),
+    pricing: { price: 1450, compareAtPrice: 1800 }, averageRating: 4.5, reviewsCount: 33, quantity: 9,
+    images: [{ fileUrl: 'mh-p08.jpg' | assets }], collections: [{ title: catExt }] },
+  { _id: 'mhdemo09', slug: 'demo', title: ('لمبات LED أمامية H7' if isAr else 'LED Headlight Bulbs H7'),
+    pricing: { price: 1150, compareAtPrice: 1400 }, averageRating: 5, reviewsCount: 72, quantity: 18,
+    images: [{ fileUrl: 'mh-p09.jpg' | assets }], collections: [{ title: catLight }] },
+  { _id: 'mhdemo10', slug: 'demo', title: ('إضاءة داخلية محيطية' if isAr else 'Ambient Interior Light Kit'),
+    pricing: { price: 690, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 41, quantity: 3,
+    images: [{ fileUrl: 'mh-p10.jpg' | assets }], collections: [{ title: catLight }] },
+  { _id: 'mhdemo11', slug: 'demo', title: ('كاميرا داش 4K' if isAr else '4K Dash Cam'),
+    pricing: { price: 3450, compareAtPrice: 3990 }, averageRating: 4.5, reviewsCount: 59, quantity: 7,
+    images: [{ fileUrl: 'mh-p11.jpg' | assets }], collections: [{ title: catElec }] },
+  { _id: 'mhdemo12', slug: 'demo', title: ('حامل شاحن لاسلكي' if isAr else 'Wireless Charger Mount'),
+    pricing: { price: 850, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 94, quantity: 25,
+    images: [{ fileUrl: 'mh-p12.jpg' | assets }], collections: [{ title: catElec }] },
+  { _id: 'mhdemo13', slug: 'demo', title: ('جهاز فحص OBD2' if isAr else 'OBD2 Scanner'),
+    pricing: { price: 1250, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 27, quantity: 11,
+    images: [{ fileUrl: 'mh-p13.jpg' | assets }], collections: [{ title: catElec }] },
+  { _id: 'mhdemo14', slug: 'demo', title: ('منفاخ إطارات محمول' if isAr else 'Portable Tyre Inflator'),
+    pricing: { price: 1590, compareAtPrice: 1890 }, averageRating: 5, reviewsCount: 76, quantity: 5,
+    images: [{ fileUrl: 'mh-p14.jpg' | assets }], collections: [{ title: catTyre }] },
+  { _id: 'mhdemo15', slug: 'demo', title: ('منظف جنوط' if isAr else 'Alloy Wheel Cleaner'),
+    pricing: { price: 390, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 52, quantity: 22,
+    images: [{ fileUrl: 'mh-p15.jpg' | assets }], collections: [{ title: catTyre }] },
+  { _id: 'mhdemo16', slug: 'demo', title: ('جل تلميع الإطارات' if isAr else 'Tyre Shine Gel'),
+    pricing: { price: 320, compareAtPrice: 390 }, averageRating: 4, reviewsCount: 35, quantity: 28,
+    images: [{ fileUrl: 'mh-p16.jpg' | assets }], collections: [{ title: catTyre }] }
+] %}
+
+{% set mode = data.mode | default('cards', true) %}
+
+{% if mode == 'json' %}
+{{- MH_DEMO | dump | safe -}}
+
+{% elif mode == 'item' %}
+  {% set ix = data.index | default(0, true) | int %}
+  {% set ix = ix if (ix >= 0 and ix < (MH_DEMO | length)) else 0 %}
+  {% set it = MH_DEMO[ix] %}
+  {% set f = data.field | default('title', true) %}
+  {%- if f == 'title' %}{{ it.title }}
+  {%- elif f == 'price' %}{{ it.pricing.price }}
+  {%- elif f == 'was' %}{{ it.pricing.compareAtPrice }}
+  {%- elif f == 'img' %}{{ it.images[0].fileUrl }}
+  {%- elif f == 'qty' %}{{ it.quantity }}
+  {%- elif f == 'rating' %}{{ it.averageRating }}
+  {%- elif f == 'reviews' %}{{ it.reviewsCount }}
+  {%- elif f == 'cat' %}{{ it.collections[0].title }}
+  {%- elif f == 'slug' %}{{ it.slug }}
+  {%- endif -%}
+
+{% else %}
+  {% set from = data.from | default(0, true) | int %}
+  {% set count = data.count | default(12, true) | int %}
+  {% set total = MH_DEMO | length %}
+  {% set from = from if (from >= 0 and from < total) else 0 %}
+  {% set upto = (from + count) if (from + count) <= total else total %}
+  {% set wrap = data.wrap | default('', true) %}
+  {% set numbered = (data.number | string) == 'on' if data.number is defined else false %}
+  {% set fRating = data.rating | default('on', true) %}
+  {% set fStock  = data.stock | default('on', true) %}
+  {% set saleBadge = data.sale_badge | default('', true) %}
+  {% set lowBadge  = data.low_badge | default('', true) %}
+  {% set note      = data.note | default('', true) %}
+
+  {% for i in range(from, upto) %}
+    {% set dp = MH_DEMO[i] %}
+    {% set n = loop.index %}
+    {% if wrap %}<div class="{{ wrap }}"{% if numbered %} data-n="{{ ('0' ~ n) if n < 10 else n }}"{% endif %}>{% endif %}
+      {% ui "hx-card.njk", product=dp, demo='on', sale_badge=saleBadge, low_badge=lowBadge, note=note, rating=fRating, thumbs='off', stock=fStock, quick='off', atc='off', hover='off' %}
+    {% if wrap %}</div>{% endif %}
+  {% endfor %}
+{% endif %}

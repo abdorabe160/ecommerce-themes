@@ -1,0 +1,115 @@
+{
+  "name": "بالأرقام",
+  "settings": {
+    "word": {
+      "type": "string",
+      "label": { "ar": "▸ الكلمة المتحركة خلف الأرقام — فارغ = محرّك · MUHARRIK", "en": "▸ Kinetic word behind the numbers — empty = MUHARRIK · محرّك" },
+      "default": ""
+    },
+    "show_word": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الكلمة المتحركة", "en": "Show the kinetic word" },
+      "default": true
+    },
+    "speed": {
+      "type": "range",
+      "label": { "ar": "مدة دورة الكلمة (أكبر = أبطأ)", "en": "Word loop duration (higher = slower)" },
+      "default": 40,
+      "min": 15,
+      "max": 90,
+      "step": 5,
+      "unit": "s"
+    },
+    "show_rules": {
+      "type": "boolean",
+      "label": { "ar": "خطوط فاصلة أعلى وأسفل الشريط", "en": "Hairlines above and below the band" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون الأرقام", "en": "Number colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون التسميات", "en": "Label colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (اللاحقة مثل +)", "en": "Accent colour (the suffix, e.g. +)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "stat": {
+      "name": "رقم",
+      "settings": {
+        "value": {
+          "type": "string",
+          "label": { "ar": "▸ القيمة — أرقام فقط، مثال: 12000 أو 4.9", "en": "▸ Value — digits only, e.g. 12000 or 4.9" },
+          "default": ""
+        },
+        "prefix": {
+          "type": "string",
+          "label": { "ar": "ما قبل الرقم (اختياري) — مثال: +", "en": "Prefix (optional) — e.g. +" },
+          "default": ""
+        },
+        "suffix": {
+          "type": "string",
+          "label": { "ar": "ما بعد الرقم (اختياري) — مثال: + أو %", "en": "Suffix (optional) — e.g. + or %" },
+          "default": ""
+        },
+        "decimals": {
+          "type": "range",
+          "label": { "ar": "عدد الخانات العشرية", "en": "Decimal places" },
+          "default": 0,
+          "min": 0,
+          "max": 2,
+          "step": 1
+        },
+        "label": {
+          "type": "string",
+          "label": { "ar": "التسمية — مثال: عميل", "en": "Label — e.g. Customers" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "القصة", "name": "بالأرقام" }
+  ]
+}

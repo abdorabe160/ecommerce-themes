@@ -1,0 +1,324 @@
+{
+  "name": "مجموعة مميزة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم",
+        "en": "Section title"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر الوصف تحت العنوان",
+        "en": "Supporting line under the title"
+      },
+      "default": ""
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط «عرض الكل» (اتركه فارغاً للإخفاء)",
+        "en": "\"View all\" link label (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط «عرض الكل» · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "\"View all\" URL · available routes: / · /shop · /collections · /blogs"
+      },
+      "default": "/shop"
+    },
+    "tab1_label": {
+      "type": "string",
+      "label": {
+        "ar": "التبويب 1 — الاسم (اتركه فارغاً لعرض صف واحد بلا تبويبات)",
+        "en": "Tab 1 — label (leave empty for a single row with no tabs)"
+      },
+      "default": ""
+    },
+    "tab1_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 1 — المنتجات (اتركها فارغة لعرض الأحدث تلقائياً)",
+        "en": "Tab 1 — products (leave empty to show the newest automatically)"
+      }
+    },
+    "tab2_label": {
+      "type": "string",
+      "label": {
+        "ar": "التبويب 2 — الاسم (اتركه فارغاً لإخفاء التبويب)",
+        "en": "Tab 2 — label (leave empty to hide this tab)"
+      },
+      "default": ""
+    },
+    "tab2_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 2 — المنتجات (اتركها فارغة لعرض الأحدث تلقائياً)",
+        "en": "Tab 2 — products (leave empty to show the newest automatically)"
+      }
+    },
+    "tab3_label": {
+      "type": "string",
+      "label": {
+        "ar": "التبويب 3 — الاسم (اتركه فارغاً لإخفاء التبويب)",
+        "en": "Tab 3 — label (leave empty to hide this tab)"
+      },
+      "default": ""
+    },
+    "tab3_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 3 — المنتجات (اتركها فارغة لعرض الأحدث تلقائياً)",
+        "en": "Tab 3 — products (leave empty to show the newest automatically)"
+      }
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — سطح المكتب",
+        "en": "Columns — desktop"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — الموبايل",
+        "en": "Columns — mobile"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "١",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة صورة المنتج",
+        "en": "Product image ratio"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤",
+            "en": "3:4"
+          }
+        },
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "٢:٣ (طولي)",
+            "en": "2:3 (tall)"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "رمادي فاتح",
+            "en": "Soft grey"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "show_progress": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط التقدّم",
+        "en": "Show the progress rail"
+      },
+      "default": true
+    },
+    "promo_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ بطاقة ترويجية في بداية الصف",
+        "en": "▸ Promo tile at the start of the row"
+      },
+      "default": false
+    },
+    "promo_image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة البطاقة الترويجية",
+        "en": "Promo image"
+      }
+    },
+    "promo_eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "البطاقة الترويجية — السطر التمهيدي",
+        "en": "Promo — eyebrow"
+      },
+      "default": ""
+    },
+    "promo_title": {
+      "type": "string",
+      "label": {
+        "ar": "البطاقة الترويجية — العنوان",
+        "en": "Promo — title"
+      },
+      "default": ""
+    },
+    "promo_cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "البطاقة الترويجية — نص الزر",
+        "en": "Promo — button label"
+      },
+      "default": ""
+    },
+    "promo_url": {
+      "type": "string",
+      "label": {
+        "ar": "البطاقة الترويجية — الرابط · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "Promo — URL · available routes: / · /shop · /collections · /blogs"
+      },
+      "default": "/shop"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية البطاقات",
+        "en": "Card surface"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Borders"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "مجموعة مميزة"
+    }
+  ]
+}

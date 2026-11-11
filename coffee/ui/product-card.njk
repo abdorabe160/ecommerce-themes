@@ -1,0 +1,130 @@
+{#-
+  Server-rendered product card.  {% ui "product-card.njk", product=item, eager='on' %}
+  Mirrors ui/card-js.njk (the Alpine twin used for live/AJAX/demo lists) — keep both in sync.
+  Price fields are platform units → always `| money`.
+-#}
+{%- set p = data.product -%}
+{%- if p and (p._id or p.id) -%}
+{%- set pid = p._id or p.id -%}
+{%- set slug = p.slug or p.handle -%}
+{%- set url = ('/products/' ~ slug) if slug else '#' -%}
+{%- set img = '' -%}
+{%- if p.images and p.images.length and p.images[0] -%}
+  {%- set img = p.images[0].fileUrl or p.images[0].url or p.images[0] -%}
+{%- elif p.image -%}
+  {%- set img = p.image.fileUrl or p.image -%}
+{%- endif -%}
+{%- set price = (p.pricing.price if (p.pricing and p.pricing.price != null) else p.price) | default(0, true) -%}
+{%- set compare = (p.pricing.compareAtPrice if (p.pricing and p.pricing.compareAtPrice) else p.compareAtPrice) | default(0, true) -%}
+{#- Listings usually carry no variant data (no options / variantsCount / variants). Quantity 0 then says nothing:
+    it is only «نفد» when the data proves it. Otherwise the card links to the product and main.js checks it. -#}
+{%- set variantList = p.variants if (p.variants and p.variants.length) else [] -%}
+{%- set hasOptions = (p.options and p.options.length) or (p.variantsCount and p.variantsCount > 0) or variantList.length -%}
+{%- set soldVariants = [] -%}
+{%- for v in variantList -%}{%- if v.allowBackorder != true and (v.isAvailable === false or (p.trackQuantity == true and (v.quantity is number) and v.quantity <= 0)) and soldVariants.push(1) -%}{%- endif -%}{%- endfor -%}
+{%- set knownSimple = not hasOptions and ((p.options and p.options.length == 0) or p.variantsCount === 0) -%}
+{%- set qtyEmpty = (p.quantity is number) and p.quantity <= 0 and p.allowBackorder != true -%}
+{%- set isOut = settings.followProductStock != false and p.allowBackorder != true and ((variantList.length and soldVariants.length == variantList.length) or (not hasOptions and (p.isAvailable === false or (knownSimple and p.trackQuantity == true and qtyEmpty)))) -%}
+{%- set stockUnknown = not isOut and not hasOptions and qtyEmpty -%}
+{%- set pidJs = (pid | string) | dump | escape -%}
+{#- REG-13 / PRD-22–24: same «أوشك على النفاد» rule as the product page (1…lowStockThreshold) -#}
+{%- set isLow = not isOut and settings.followProductStock != false and p.trackQuantity == true and p.allowBackorder != true and (p.quantity is number) and p.quantity > 0 and p.quantity <= (settings.lowStockThreshold | default(3) | int) -%}
+{%- set discount = (((compare - price) / compare * 100) | round(0, 'floor')) if (compare and compare > price) else 0 -%}
+
+{#- card meta line: weight option values → weight tag → origin tag -#}
+{%- set metaParts = [] -%}
+{%- for o in (p.options or []) -%}
+  {%- set on = (o.name or o.title or '') | lower -%}
+  {%- if not metaParts.length and ('weight' in on or 'size' in on or 'وزن' in on or 'حجم' in on or 'العبوة' in on) -%}
+    {%- for v in (o.values or []) -%}{%- if metaParts.push(v.label or v.value or v.name) -%}{%- endif -%}{%- endfor -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set tagWeight = [] -%}{%- set tagOrigin = [] -%}{%- set isNew = [] -%}
+{%- for tg in (p.tags or []) -%}
+  {%- set ts = (tg.name or tg.displayName or tg.title or tg.label or tg.value or tg) | string -%}
+  {%- set kv = ts.split(':') -%}
+  {%- set k = kv[0] | trim | lower -%}
+  {%- if kv.length > 1 and (k == 'weight' or k == 'الوزن' or k == 'وزن') -%}{%- if tagWeight.push(kv.slice(1).join(':') | trim) -%}{%- endif -%}{%- endif -%}
+  {%- if kv.length > 1 and (k == 'origin' or k == 'المنشأ' or k == 'منشأ') -%}{%- if tagOrigin.push(kv.slice(1).join(':') | trim) -%}{%- endif -%}{%- endif -%}
+  {%- if (ts | lower) == 'new' or ts == 'جديد' -%}{%- if isNew.push(1) -%}{%- endif -%}{%- endif -%}
+{%- endfor -%}
+{%- set meta = p.subtitle or (metaParts | join(' · ')) or (tagWeight[0] if tagWeight.length else '') or (tagOrigin[0] if tagOrigin.length else '') -%}
+
+<article class="p-card group h-full" data-reveal data-dc-card{% if stockUnknown %} x-init="watchStock($el, {{ pidJs }}, {{ (slug or '') | dump | escape }})"{% endif %}
+         data-dc-price="{{ price }}"
+         data-dc-out="{{ '1' if isOut else '0' }}"
+         data-dc-tags="{{ (p.tags or []) | dump | escape }}"
+         data-dc-options="{{ (p.options or []) | dump | escape }}">
+  <div class="p-card__media">
+    {%- if img %}
+    <img src="{{ img }}" alt="{{ p.title }}" width="550" height="440" decoding="async" {% if data.eager == 'on' %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+    {%- else %}
+    <div class="grid h-full place-items-center text-caramel/60">{% ui "icon.njk", name="bean", size=44 %}</div>
+    {%- endif %}
+
+    <div class="p-card__badges">
+      {%- if stockUnknown %}<span class="badge badge-dark" x-show="cardState({{ pidJs }}) === 'out'" x-cloak>{{ t('product.sold_out') }}</span>{% endif %}
+      {%- if isOut %}<span class="badge badge-dark">{{ t('product.sold_out') }}</span>
+      {%- elif discount > 0 %}<span class="badge badge-sale">&lrm;-{{ discount }}%</span>{% endif %}
+      {%- if isLow %}<span class="badge badge-low">{{ t('product.low_badge') }}</span>{% endif %}
+      {%- if isNew.length and not isOut %}<span class="badge badge-soft">{{ t('product.new') }}</span>{% endif %}
+    </div>
+
+  </div>
+
+  <div class="p-card__body">
+    <h3 class="p-card__title"><a href="{{ url }}">{{ p.title }}</a></h3>
+    {%- if meta %}<p class="p-card__meta">{{ meta }}</p>{% endif %}
+    <div class="mt-1 flex items-center justify-between gap-2">
+      <p class="price">
+        <span>{{ price | money }}</span>
+        {%- if compare and compare > price %}<s class="price__compare">{{ compare | money }}</s>{% endif %}
+      </p>
+      {%- if p.reviewsCount and p.reviewsCount > 0 %}
+      <span class="inline-flex items-center gap-1 text-xs text-muted-ink" aria-label="{{ t('product.rating') }} {{ p.averageRating | round(1) }}/5">
+        <span class="text-caramel">{% ui "icon.njk", name="star", size=13 %}</span>{{ p.averageRating | round(1) }}
+      </span>
+      {%- endif %}
+    </div>
+
+    {%- if settings.showCardButtons != false %}
+    <div class="p-card__actions">
+      {%- if isOut %}
+      <button type="button" class="btn btn-outline btn-sm" disabled><span class="btn__label">{{ t('product.sold_out') }}</span></button>
+      {%- elif stockUnknown %}
+      <a href="{{ url }}" class="btn btn-primary btn-sm" x-show="cardState({{ pidJs }}) !== 'out'"
+         @click="if (cardState({{ pidJs }}) === 'options') { $event.preventDefault(); quickView({{ (slug or '') | dump | escape }}, {{ url | dump | escape }}); }"
+         aria-label="{{ t('product.view_product') }}: {{ p.title }}">
+        <span class="btn__label" x-text="cardState({{ pidJs }}) === 'options' ? {{ t('product.choose_options') | dump | escape }} : {{ t('product.view_product') | dump | escape }}">{{ t('product.view_product') }}</span>
+      </a>
+      <button type="button" class="btn btn-outline btn-sm" x-show="cardState({{ pidJs }}) === 'out'" x-cloak disabled><span class="btn__label">{{ t('product.sold_out') }}</span></button>
+      {%- else %}
+      {%- if hasOptions %}
+      <button type="button" class="btn btn-primary btn-sm" @click="quickView({{ (slug or '') | dump | escape }}, {{ url | dump | escape }})"
+              :disabled="isBusy({{ ('qv:' ~ slug) | dump | escape }})" aria-label="{{ t('product.choose_options') }}: {{ p.title }}">
+        <span class="btn__icon" x-show="!isBusy({{ ('qv:' ~ slug) | dump | escape }})">{% ui "icon.njk", name="sliders", size=16 %}</span>
+        <span x-show="isBusy({{ ('qv:' ~ slug) | dump | escape }})" x-cloak class="spinner"></span>
+        <span class="btn__label">{{ t('product.choose_options') }}</span>
+      </button>
+      <button type="button" class="btn btn-dark btn-sm" @click="quickView({{ (slug or '') | dump | escape }}, {{ url | dump | escape }})"
+              :disabled="isBusy({{ ('qv:' ~ slug) | dump | escape }})" aria-label="{{ t('product.buy_now') }}: {{ p.title }}">
+        <span class="btn__label">{{ t('product.buy_now') }}</span>
+      </button>
+      {%- else %}
+      <button type="button" class="btn btn-primary btn-sm" @click="cardAdd({{ pidJs }}, {{ (slug or '') | dump | escape }}, {{ url | dump | escape }})"
+              :disabled="isBusy({{ ('add:' ~ pid) | dump | escape }})" aria-label="{{ t('product.add_to_cart') }}: {{ p.title }}">
+        <span class="btn__icon" x-show="!isBusy({{ ('add:' ~ pid) | dump | escape }})">{% ui "icon.njk", name="cart", size=16 %}</span>
+        <span x-show="isBusy({{ ('add:' ~ pid) | dump | escape }})" x-cloak class="spinner"></span>
+        <span class="btn__label">{{ t('product.add_to_cart') }}</span>
+      </button>
+      <button type="button" class="btn btn-dark btn-sm" @click="cardAdd({{ pidJs }}, {{ (slug or '') | dump | escape }}, {{ url | dump | escape }}, true)"
+              :disabled="isBusy({{ ('add:' ~ pid) | dump | escape }}) || isBusy('checkout')" aria-label="{{ t('product.buy_now') }}: {{ p.title }}">
+        <span class="btn__label">{{ t('product.buy_now') }}</span>
+      </button>
+      {%- endif %}
+      {%- endif %}
+    </div>
+    {%- endif %}
+  </div>
+</article>
+{%- endif -%}

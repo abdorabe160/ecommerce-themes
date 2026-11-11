@@ -1,0 +1,316 @@
+<!-- =========================================================
+     QMRA THEME (NUNJUCKS) - COLLECTION SHOWCASE WIDGET
+     بانر مجموعة كبير بـ parallax + منتجات من المجموعة جنبه
+     ========================================================= -->
+{% set s = widget.data or widget.settings or {} %}
+
+{# نوع collections بيرجع array حتى لو limit = 1 #}
+{% if s.collection and s.collection.length is defined %}
+  {% set col = s.collection[0] %}
+{% else %}
+  {% set col = s.collection %}
+{% endif %}
+
+{# مجموعة متعطّل عنها البيع: البانر مايوديش عليها ومايعرضش منتجاتها (نفس شروط blkIsCollectionVisible) #}
+{% set colHidden = col and (col.active === false or col.isActive === false or col.published === false or col.isPublished === false or col.visible === false or col.isVisible === false or col.availableForSale === false or col.enabled === false or col.salesEnabled === false or col.hidden === true or col.deleted === true or (col.salesChannels and col.salesChannels.onlineStore === false) or col.isHidden === true or (((col.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}
+{% if colHidden %}{% set col = null %}{% endif %}
+{% set colUrl = '/collections/' + (col.slug | default(col.handle)) if col else '/collections' %}
+{% set bannerImg = s.image.fileUrl | default(s.image) if s.image else '' %}
+{% if not bannerImg and col and col.image %}{% set bannerImg = col.image.fileUrl %}{% endif %}
+{% if not bannerImg %}{% set bannerImg = 'https://images.pexels.com/photos/29606419/pexels-photo-29606419.jpeg?auto=compress&cs=tinysrgb&w=1000' %}{% endif %}
+{% set title = s.title or (col.title if col else '') or 'مجموعة الأبطال' %}
+{% set limit = (s.products_limit | default('4')) | int %}
+
+{% set products = s.products %}
+{% set hasProducts = products and (products | length) > 0 %}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المجموعة (أو المتجر) مكان التجريبية #}
+{# الافتراضي: المنتجات الافتراضية بتاعة الثيم من غير أي طلب للسيرفر. منتجات المتجر بتتجاب بس لو التاجر فعّل "اعرض منتجات المتجر" (use_store_products؛ الاسم القديم load_store_products اتساب عشان القيمة المحفوظة منه ماترجّعش منتجات المتجر) #}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المتجر مكان التجريبية دايمًا. التجريبية بتفضل بس في معاينة البيلدر أو لو التاجر فعّل «منتجات تجريبية» (HOME-11)، وغير كده السكشن بيختفي لو المتجر فاضي #}
+{% set fetchStore = not hasProducts %}
+{% if not hasProducts %}
+  {% set products = [
+    { _id: 'demo-1', title: t('demo.prod_pro_fit_compression_tee'), slug: "demo-t1", pricing: { price: 450, compareAtPrice: 600 }, category: { title: t('demo.cat_clothing') }, quantity: 3, images: [{ fileUrl: "https://images.pexels.com/photos/30451501/pexels-photo-30451501.jpeg?auto=compress&cs=tinysrgb&w=600" }, { fileUrl: "https://images.pexels.com/photos/4325446/pexels-photo-4325446.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-2', title: t('demo.prod_flex_jogger_pants'), slug: "demo-p1", pricing: { price: 550 }, category: { title: t('demo.cat_clothing') }, quantity: 14, images: [{ fileUrl: "https://images.pexels.com/photos/11327771/pexels-photo-11327771.jpeg?auto=compress&cs=tinysrgb&w=600" }, { fileUrl: "https://images.pexels.com/photos/5602654/pexels-photo-5602654.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-3', title: t('demo.prod_blood_oversized_hoodie'), slug: "demo-h1", pricing: { price: 690, compareAtPrice: 850 }, category: { title: t('demo.cat_clothing') }, quantity: 6, images: [{ fileUrl: "https://images.pexels.com/photos/17883716/pexels-photo-17883716.jpeg?auto=compress&cs=tinysrgb&w=600" }] },
+    { _id: 'demo-4', title: t('demo.prod_pro_boxing_gloves'), slug: "demo-a2", pricing: { price: 220 }, category: { title: t('demo.cat_accessories') }, quantity: 20, images: [{ fileUrl: "https://images.pexels.com/photos/4790424/pexels-photo-4790424.jpeg?auto=compress&cs=tinysrgb&w=600" }] }
+  ] %}
+{% endif %}
+
+<section
+  class="blk-section blk-cs{% if s.banner_side == 'end' %} blk-cs--end{% endif %}"
+  id="blkCs-{{ widget.id }}"
+  {% if not hasProducts %}data-cs-demo{% endif %}>
+  <div class="blk-container">
+    <div class="blk-cs-layout{% if limit <= 2 %} blk-cs-layout--compact{% endif %}">
+
+      <a href="{{ colUrl }}{% if col and col._id %}?cid={{ col._id }}&amp;ct={{ col.title | urlencode }}{% endif %}" class="blk-cs-banner blk-cs-reveal" style="--d: 0;">
+        <div class="blk-cs-media">
+          <img src="{{ bannerImg }}" alt="{% ui "blk-t.njk", text=title %}" loading="lazy" class="blk-cs-img">
+        </div>
+        <div class="blk-cs-overlay"></div>
+        <span class="blk-cs-corner blk-cs-corner--a"></span>
+        <span class="blk-cs-corner blk-cs-corner--b"></span>
+
+        <div class="blk-cs-content">
+          {% if s.badge_text %}
+            <span class="blk-badge-glow blk-cs-reveal" style="--d: 2;">
+              <span class="blk-badge-dot"></span>
+              {% ui "blk-t.njk", text=s.badge_text %}
+            </span>
+          {% endif %}
+          <h2 class="blk-cs-title blk-cs-reveal" style="--d: 3;">{% ui "blk-t.njk", text=title %}</h2>
+          {% if s.description %}
+            <p class="blk-cs-desc blk-cs-reveal" style="--d: 4;">{% ui "blk-t.njk", text=s.description, html=true %}</p>
+          {% endif %}
+          {% if s.button_text | default('اكتشف المجموعة') %}
+            <span class="blk-btn blk-btn-primary blk-btn-shine blk-cs-btn blk-cs-reveal" style="--d: 5;">
+              {% ui "blk-t.njk", text=s.button_text, key="defaults.showcase_button" %}
+              <svg class="blk-btn-icon blk-cs-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </span>
+          {% endif %}
+        </div>
+      </a>
+
+      <div class="blk-cs-products{% if fetchStore %} blk-store-loading{% endif %}"
+        {% if fetchStore %}
+          data-blk-store-products data-limit="{{ limit }}" data-sort="{{ s.store_sort | default('') }}"
+          data-item-class="blk-cs-item" data-hide-quickview
+          {% if col and col._id %}data-collection-id="{{ col._id }}"{% endif %}
+        {% endif %}>
+        {% for product in products %}
+          {% if loop.index <= limit %}
+            <div class="blk-cs-item" style="--i: {{ loop.index0 }};">
+              {% ui "blk-product-card.njk", product=product, hide_quick_view=true %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .blk-cs { --cs-ease: cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+
+  .blk-cs-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .blk-cs-layout--compact { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .blk-cs--end .blk-cs-banner { order: 2; }
+
+  /* ---------- Banner ---------- */
+  .blk-cs-banner {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 560px;
+    border-radius: var(--blk-radius-lg);
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid var(--blk-border);
+    color: #fff;
+  }
+
+  .blk-cs-media {
+    position: absolute;
+    inset: -12% 0;
+    z-index: -2;
+    transform: translate3d(0, var(--cs-py, 0px), 0);
+    will-change: transform;
+  }
+
+  .blk-cs-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.08);
+    transition: transform 1.2s var(--cs-ease), filter 0.6s ease;
+    filter: saturate(0.85);
+  }
+
+  .blk-cs-banner:hover .blk-cs-img { transform: scale(1.14); filter: saturate(1.05); }
+
+  .blk-cs-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.45) 45%, rgba(10, 10, 10, 0.1) 100%),
+      radial-gradient(circle at 20% 100%, color-mix(in srgb, var(--blk-accent) 35%, transparent), transparent 60%);
+  }
+
+  /* زوايا حمرا بتترسم أول ما البانر يظهر */
+  .blk-cs-corner {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border: 0 solid var(--blk-accent);
+    pointer-events: none;
+    transition: width 0.9s var(--cs-ease) 0.5s, height 0.9s var(--cs-ease) 0.5s, opacity 0.4s ease 0.5s;
+  }
+
+  .blk-cs-corner--a { top: 18px; inset-inline-start: 18px; border-top-width: 3px; border-inline-start-width: 3px; }
+  .blk-cs-corner--b { bottom: 18px; inset-inline-end: 18px; border-bottom-width: 3px; border-inline-end-width: 3px; }
+
+  .blk-cs.is-armed .blk-cs-corner { width: 0; height: 0; opacity: 0; }
+  .blk-cs.is-visible .blk-cs-corner { width: 64px; height: 64px; opacity: 1; }
+
+  .blk-cs-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 40px;
+  }
+
+  .blk-cs-title {
+    margin: 0;
+    font-size: clamp(32px, 4.2vw, 56px);
+    line-height: 1.05;
+    color: #fff;
+    text-shadow: 0 0 30px color-mix(in srgb, var(--blk-primary) 30%, transparent);
+  }
+
+  .blk-cs-desc {
+    margin: 0;
+    max-width: 420px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .blk-cs-btn { margin-top: 8px; }
+  .blk-cs-banner:hover .blk-cs-arrow { transform: translateX(-5px); }
+  [dir="ltr"] .blk-cs-arrow { transform: scaleX(-1); }
+  [dir="ltr"] .blk-cs-banner:hover .blk-cs-arrow { transform: scaleX(-1) translateX(-5px); }
+
+  /* ---------- Products ---------- */
+  .blk-cs-products {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  /* منتجين بس: صف واحد في نص ارتفاع البانر بدل ما الكروت تتمط */
+  .blk-cs-layout--compact .blk-cs-products { align-content: center; }
+
+  .blk-cs-item { min-width: 0; }
+
+  .blk-cs .blk-prod-card {
+    flex: none;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blk-cs .blk-prod-details { flex: 1; display: flex; flex-direction: column; }
+  .blk-cs .blk-prod-footer { margin-top: auto; }
+
+  /* ---------- Reveal ---------- */
+  .blk-cs.is-armed .blk-cs-reveal,
+  .blk-cs.is-armed .blk-cs-item {
+    transform: translateY(24px);
+  }
+
+  .blk-cs.is-armed .blk-cs-banner.blk-cs-reveal {
+    transform: none;
+  }
+
+  .blk-cs.is-visible .blk-cs-reveal,
+  .blk-cs.is-visible .blk-cs-item {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s var(--cs-ease), transform 0.8s var(--cs-ease), clip-path 1.1s var(--cs-ease);
+    transition-delay: calc(var(--d, 0) * 0.12s);
+  }
+
+  .blk-cs.is-visible .blk-cs-item { transition-delay: calc(0.3s + var(--i, 0) * 0.12s); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1023px) {
+    .blk-cs-layout,
+    .blk-cs-layout--compact { grid-template-columns: minmax(0, 1fr); }
+    .blk-cs--end .blk-cs-banner { order: 0; }
+    .blk-cs-banner { min-height: 440px; }
+  }
+
+  @media (max-width: 768px) {
+    .blk-cs-banner { min-height: 400px; }
+    .blk-cs-content { padding: 24px; }
+    .blk-cs-products { gap: 14px; }
+    .blk-cs .blk-prod-details { padding: 12px; }
+    .blk-cs .blk-price-current { font-size: 15px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blk-cs.is-armed .blk-cs-reveal,
+    .blk-cs.is-armed .blk-cs-item { opacity: 1; transform: none; }
+    .blk-cs.is-armed .blk-cs-corner { width: 64px; height: 64px; opacity: 1; }
+    .blk-cs-media { transform: none; }
+  }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('blkCs-{{ widget.id }}');
+  if (!root || root.hasAttribute('data-cs-ready')) return;
+  root.setAttribute('data-cs-ready', '');
+
+  /* المنتجات التجريبية: main.js بيعرض رسالة بدل ما يكلّم السيرفر */
+  if (root.hasAttribute('data-cs-demo')) {
+    root.querySelectorAll('.blk-cs-products .blk-prod-card').forEach(function (card) {
+      card.setAttribute('data-dummy', '');
+      card.removeAttribute('data-url');
+      // اللينك بيفتح صفحة المنتج التجريبي للمعاينة (pages.js بيعرضه من الكتالوج التجريبي)
+      // اللينك /shop?product=demo-xx: صفحة الشوب بتعرف إنه منتج تجريبي وبتعرضه من الكتالوج
+    });
+    root.addEventListener('click', function (e) {
+      if (e.target.closest('.blk-prod-card a[href="#"]')) e.preventDefault();
+    });
+  }
+
+  /* ===== 1) Scroll reveal ===== */
+  if (!('IntersectionObserver' in window)) return;
+  root.classList.add('is-armed');
+  var revealIo = new IntersectionObserver(function (entries) {
+    if (!entries.some(function (e) { return e.isIntersecting; })) return;
+    root.classList.add('is-visible');
+    revealIo.disconnect();
+  }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
+  revealIo.observe(root);
+
+  /* ===== 2) Parallax للصورة (بيشتغل بس والبانر ظاهر) ===== */
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('blk-no-anim')) return;
+  var banner = root.querySelector('.blk-cs-banner');
+  var media = root.querySelector('.blk-cs-media');
+  var inView = false, ticking = false;
+
+  function update() {
+    ticking = false;
+    var rect = banner.getBoundingClientRect();
+    var vh = window.innerHeight;
+    // -1 لما البانر تحت الشاشة و 1 لما يطلع فوقها
+    var progress = (vh / 2 - (rect.top + rect.height / 2)) / (vh / 2 + rect.height / 2);
+    media.style.setProperty('--cs-py', (progress * rect.height * 0.1).toFixed(1) + 'px');
+  }
+
+  function onScroll() {
+    if (!inView || ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  new IntersectionObserver(function (entries) {
+    inView = entries[0].isIntersecting;
+    if (inView) onScroll();
+  }).observe(banner);
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+})();
+</script>

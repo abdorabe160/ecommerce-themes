@@ -1,0 +1,112 @@
+{
+  "name": "منتجات مميزة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "منتجات مميزة"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Featured products"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": "اختيارات مميزة من متجرنا"
+    },
+    "subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي (إنجليزي)",
+        "en": "Subtitle (English)"
+      },
+      "default": "Hand-picked from our store"
+    },
+    "collection": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيف المنتجات المميزة — اختره مرة واحدة: يظهر منه عدد المنتجات المحدد بالأسفل، و\"عرض الكل\" يفتح صفحته ببقية المنتجات",
+        "en": "Featured category — pick it once: the section shows the number of products set below, and \"View all\" opens its page with the rest"
+      }
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "أو اختر منتجات بعينها (تُستخدم إذا لم تختر تصنيفاً)",
+        "en": "Or pick specific products (used when no category is chosen)"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات المعروضة (من التصنيف أو التوضيحية)",
+        "en": "Products to show (from the category, or demo products)"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 24,
+      "step": 1
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة العرض",
+        "en": "Layout"
+      },
+      "default": "grid",
+      "options": [
+        {
+          "value": "grid",
+          "label": "شبكة / Grid"
+        },
+        {
+          "value": "carousel",
+          "label": "سلايدر / Carousel"
+        }
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (ديسكتوب)",
+        "en": "Columns (desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (إذا لم تختر تصنيفاً — مع التصنيف يفتح صفحته تلقائياً)",
+        "en": "View all link (when no category is chosen — with a category it opens its page)"
+      },
+      "default": "/collections"
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "منتجات مميزة"
+    }
+  ]
+}

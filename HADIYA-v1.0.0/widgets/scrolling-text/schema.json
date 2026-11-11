@@ -1,0 +1,235 @@
+{
+  "name": "عرض ترويجي متحرك",
+  "settings": {
+    "background_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الشريط",
+        "en": "Strip Colour"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text Colour"
+      },
+      "default": ""
+    },
+    "font": {
+      "type": "select",
+      "label": {
+        "ar": "الخط",
+        "en": "Typeface"
+      },
+      "default": "display",
+      "options": [
+        {
+          "value": "display",
+          "label": {
+            "ar": "خط العناوين (موصى به)",
+            "en": "Display serif (recommended)"
+          }
+        },
+        {
+          "value": "body",
+          "label": {
+            "ar": "خط النص",
+            "en": "Body sans"
+          }
+        }
+      ]
+    },
+    "size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم النص",
+        "en": "Text Size"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "ar": "صغير",
+            "en": "Small"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط (موصى به)",
+            "en": "Medium (recommended)"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "xlarge",
+          "label": {
+            "ar": "كبير جداً (للعروض الترويجية)",
+            "en": "Extra large (for promo strips)"
+          }
+        }
+      ]
+    },
+    "uppercase": {
+      "type": "boolean",
+      "label": {
+        "ar": "أحرف كبيرة (يؤثّر على النص اللاتيني فقط)",
+        "en": "Uppercase (affects Latin text only)"
+      },
+      "default": false
+    },
+    "speed": {
+      "type": "select",
+      "label": {
+        "ar": "سرعة الحركة",
+        "en": "Scroll Speed"
+      },
+      "default": "normal",
+      "options": [
+        {
+          "value": "slow",
+          "label": {
+            "ar": "بطيء",
+            "en": "Slow"
+          }
+        },
+        {
+          "value": "normal",
+          "label": {
+            "ar": "عادي (موصى به)",
+            "en": "Normal (recommended)"
+          }
+        },
+        {
+          "value": "fast",
+          "label": {
+            "ar": "سريع",
+            "en": "Fast"
+          }
+        }
+      ]
+    },
+    "separator": {
+      "type": "select",
+      "label": {
+        "ar": "الفاصل بين العبارات",
+        "en": "Separator"
+      },
+      "default": "star",
+      "options": [
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة رباعية",
+            "en": "Four-point star"
+          }
+        },
+        {
+          "value": "diamond",
+          "label": {
+            "ar": "معيّن",
+            "en": "Diamond"
+          }
+        },
+        {
+          "value": "dot",
+          "label": {
+            "ar": "نقطة",
+            "en": "Dot"
+          }
+        },
+        {
+          "value": "slash",
+          "label": {
+            "ar": "شرطة مائلة",
+            "en": "Slash"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "مسافة فقط",
+            "en": "Space only"
+          }
+        }
+      ]
+    },
+    "gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة حول الفاصل",
+        "en": "Space Around Separator"
+      },
+      "default": 40,
+      "min": 16,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "image_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الصور داخل الشريط",
+        "en": "Height of the images in the strip"
+      },
+      "default": 56,
+      "min": 24,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "pause_on_hover": {
+      "type": "boolean",
+      "label": {
+        "ar": "إيقاف الحركة عند مرور المؤشّر",
+        "en": "Pause on Hover"
+      },
+      "default": true
+    }
+  },
+  "blocks": {
+    "message": {
+      "name": "عبارة",
+      "settings": {
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة بعد النص (تحلّ محل الفاصل — مقصوصة بخلفية شفافة أفضل)",
+            "en": "Image after the text (replaces the separator — a cut-out works best)"
+          }
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري) · الصفحات المتاحة: / · /shop · /shop/اسم-التصنيف · /collections · /blogs · /cart",
+            "en": "Link (optional) · available: / · /shop · /shop/collection-slug · /collections · /blogs · /cart"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "عرض ترويجي متحرك"
+    }
+  ]
+}

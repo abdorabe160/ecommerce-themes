@@ -1,0 +1,575 @@
+{# =========================================================
+   Dark Blood - صفحة المنتج
+   المتغير product متاح تلقائياً في pages/product.json
+   التفاعل كله (المعرض، الخيارات، السلة، التابات...) في initProductPage بـ assets/pages.js
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# المنصة بتبعت بيانات صفحة المنتج في context.product (اتأكدنا منها على متجر حقيقي)، والمتغير العام product احتياطي #}
+{% set ctxProduct = context.product if (context and context.product and context.product._id) else null %}
+{% set product = product if (product and product._id) else ctxProduct %}
+
+{# المحرر بيفتح قالب صفحة المنتج من غير product: بنعرض منتج تجريبي عشان تشوف الصفحة كاملة.
+   في المتجر الحقيقي product دايماً موجود فالجزء ده مابيشتغلش #}
+{# المنتج اللي التاجر اختاره من متجره للمعاينة (إعداد "منتج للمعاينة") #}
+{% set previewList = s.preview_product %}
+{% if previewList and previewList.length is defined %}
+  {% set previewProduct = previewList[0] %}
+{% else %}
+  {% set previewProduct = previewList %}
+{% endif %}
+{% if not product and previewProduct and previewProduct._id %}
+  {% set product = previewProduct %}
+  {% set fromPreview = true %}
+{% endif %}
+{# لو لسه مفيش منتج: منتج تجريبي #}
+{# المنتج التجريبي والنصوص الافتراضية بلغة الصفحة #}
+{% set isAr = not (localization and localization.language and localization.language != 'ar') %}
+{% set isDemoProduct = not product %}
+{% if isDemoProduct %}
+  {% set product = {
+    _id: "demo-t1",
+    title: t('demo.prod_pro_fit_compression_tee'),
+    slug: "demo-t1",
+    sku: "BLK-TEE-01",
+    quantity: 6,
+    pricing: { price: 450, compareAtPrice: 600 },
+    category: { title: t('demo.cat_tshirts'), slug: "tshirts" },
+    tags: ["hot", t('demo.tag_gym'), t('demo.tag_training')],
+    averageRating: 4.8,
+    reviewsCount: 24,
+    description: t('demo.pdp_description'),
+    images: [
+      { fileUrl: "https://images.pexels.com/photos/30451501/pexels-photo-30451501.jpeg?auto=compress&cs=tinysrgb&w=1000" },
+      { fileUrl: "https://images.pexels.com/photos/4325446/pexels-photo-4325446.jpeg?auto=compress&cs=tinysrgb&w=1000" },
+      { fileUrl: "https://images.pexels.com/photos/802926/pexels-photo-802926.jpeg?auto=compress&cs=tinysrgb&w=1000" }
+    ],
+    options: [
+      { name: t('product.color'), values: [{ _id: "c-black", label: t('demo.color_black') }, { _id: "c-red", label: t('demo.color_red') }, { _id: "c-white", label: t('demo.color_white') }] },
+      { name: t('product.size'), values: [{ _id: "s-s", label: "S" }, { _id: "s-m", label: "M" }, { _id: "s-l", label: "L" }, { _id: "s-xl", label: "XL" }] }
+    ],
+    variants: [{ _id: "v1" }, { _id: "v2" }],
+    reviews: [
+      { name: t('demo.person_ahmed_mahmoud'), rating: 5, comment: t('demo.pdp_review_1') },
+      { name: t('demo.person_karim_adel'), rating: 5, comment: t('demo.pdp_review_2') },
+      { name: t('demo.person_youssef_tarek'), rating: 4, comment: t('demo.pdp_review_3') }
+    ]
+  } %}
+{% endif %}
+
+{% if product %}
+  {% set storeUrlLd = (store.url if (store and store.url) else '') | string %}
+  {% set isEn = localization and localization.language and localization.language != 'ar' %}
+  {% set price = product.pricing.price | default(0) if product.pricing else 0 %}
+  {% set oldPrice = product.pricing.compareAtPrice | default(0) if product.pricing else 0 %}
+  {% set hasDiscount = oldPrice > price %}
+  {% set hasOptions = product.options and (product.options | length) > 0 %}
+  {# حالة المخزون (نفس قاعدة الكارت ui/blk-product-card.njk و blkStockState في main.js):
+     0 = نفد من المخزون · من 1 لـ 3 = أوشك على النفاد · 4 أو أكتر (أو مش متتبَّع) = متوفر.
+     لو كل النسخ المتتبَّعة خلصت المنتج نفد حتى لو كمية الأب مش صفر. بعد اختيار نسخة الـ JS بيحسبها من مخزون النسخة #}
+  {% set LOW_STOCK = (settings.lowStockThreshold or 3) | int %}
+  {% set ownQty = product.quantity if (product.quantity === 0 or product.quantity > 0 or product.quantity < 0) else null %}
+  {% set variantQtys = [] %}
+  {% for v in product.variants or [] %}
+    {% if v and (v.quantity === 0 or v.quantity > 0 or v.quantity < 0) %}{% if variantQtys.push(v.quantity if v.quantity > 0 else 0) %}{% endif %}{% endif %}
+  {% endfor %}
+  {% set variantTotal = variantQtys | sum %}
+  {# بيانات النسخ لو موجودة هي الأصدق: كمية الأب بتيجي 0 في منتجات بمقاسات متاحة #}
+  {% if (variantQtys | length) > 0 %}
+    {% set stockQty = variantTotal %}
+  {% elif ownQty !== null %}
+    {% set stockQty = ownQty %}
+  {% else %}
+    {% set stockQty = null %}
+  {% endif %}
+  {% if settings.followProductStock == false %}{% set stockQty = null %}{% endif %}
+  {% set isOutOfStock = stockQty !== null and stockQty <= 0 %}
+  {% set isLowStock = stockQty !== null and stockQty > 0 and stockQty <= LOW_STOCK %}
+  {% set lowStockText = t('product.low_stock_count') | replace(':count', stockQty) %}
+  {% set images = product.images | default([]) %}
+  {% if (images | length) == 0 and product.image and product.image.fileUrl %}{% set images = [product.image] %}{% endif %}
+  {% set productSlugForUrl = product.slug or product.handle %}
+  {% set productUrl = (('/shop?product=' if isDemoProduct else '/products/') + (productSlugForUrl | urlencode)) if productSlugForUrl else ('/shop?product-id=' + product._id) %}
+  {# القسم المتعطّل مايظهرش في المسار ولا البادج ولا المواصفات (نفس شروط blkIsCollectionVisible في pages.js) #}
+  {# القسم: product.category، وإلا أول مجموعة ظاهرة من product.collections (شكل منتجات قمرة) #}
+  {% set cat = product.category %}
+  {% if not (cat and cat.title) %}
+    {% for c in product.collections or [] %}
+      {% if not (cat and cat.title) and c and c.title and not (c.active === false or c.isActive === false or c.published === false or c.visible === false or c.hidden === true or c.deleted === true or (c.salesChannels and c.salesChannels.onlineStore === false) or (((c.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}{% set cat = c %}{% endif %}
+    {% endfor %}
+  {% endif %}
+  {% set catHidden = cat and (cat.active === false or cat.isActive === false or cat.published === false or cat.isPublished === false or cat.visible === false or cat.isVisible === false or cat.availableForSale === false or cat.enabled === false or cat.salesEnabled === false or cat.hidden === true or cat.deleted === true or (cat.salesChannels and cat.salesChannels.onlineStore === false) or cat.isHidden === true or (((cat.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}
+  {% set category = cat if cat and cat.title and not catHidden else null %}
+  {% set categoryUrl = '/collections/' + (category.slug | default(category.handle)) if category and (category.slug or category.handle) else '' %}
+  {# id القسم في اللينك عشان صفحة القسم تجيب منتجاته بالظبط #}
+  {% if categoryUrl and category._id %}{% set categoryUrl = categoryUrl + '?cid=' + category._id %}{% endif %}
+  {# القسم الافتراضي بيتفتح على /shop?category= (المنصة بترجّع 500 لـ /collections/<قسم مش موجود في المتجر>) #}
+  {% if categoryUrl and isDemoProduct %}{% set categoryUrl = '/shop?category=' + (category.slug | default(category.handle)) + '&demo=1' %}{% endif %}
+  {% set rating = product.averageRating | default(0) %}
+  {% set reviewsCount = product.reviewsCount | default(0) %}
+  {% set reviews = product.reviews if product.reviews and product.reviews.length is defined else [] %}
+  {# set جوه for مش بيطلع براها في nunjucks، فبنستخدم array عشان نعرف لو فيه اختيار مقاس #}
+  {% set sizeOptions = [] %}
+  {% for option in product.options | default([]) %}
+    {% set n = option.name | default("") %}
+    {% if "مقاس" in n or "size" in (n | lower) %}{% if sizeOptions.push(n) %}{% endif %}{% endif %}
+  {% endfor %}
+  {#- جدول المقاسات من التاجر بس (الجدول التجريبي القديم مقاساته مش مقاسات منتجاته)، ومن غيره مفيش زرار -#}
+  {% set sizeGuide = '' if ((s.size_guide or '') | replace('\r', '')) == 'المقاس | الصدر (سم) | الطول (سم)\nS | 96 | 68\nM | 102 | 70\nL | 108 | 72\nXL | 114 | 74\nXXL | 120 | 76' else (s.size_guide or '') %}
+  {% set showGuide = s.show_size_guide !== false and (sizeOptions | length) > 0 and (sizeGuide | trim) %}
+
+  <section class="blk-section blk-pdp" id="blkPdp-{{ widget.id }}"
+    data-product-id="{{ product._id }}"
+    {% if isDemoProduct %}data-demo-product{% endif %}
+    {% if fromPreview %}data-preview-product data-product-slug="{{ product.slug | default(product.handle) }}"{% endif %}
+    data-options-count="{{ product.options | length if hasOptions else 0 }}"
+    {# المخزون الحالي (المنتج، وبعد اختيار نسخة الـ JS بيحطه مخزون النسخة): الإضافة مابتعدّيش المتاح #}
+    data-stock-qty="{{ stockQty if stockQty !== null else '' }}"
+    data-product-title="{{ product.title }}"
+    data-product-url="{{ productUrl }}"
+    data-product-image="{{ images[0].fileUrl if images | length else '' }}"
+    data-product-price="{{ price }}"
+    data-product-old="{{ oldPrice if hasDiscount else 0 }}"
+    {% if s.show_delivery == true %}data-delivery="{{ s.delivery_min_days | default(2) }}-{{ s.delivery_max_days | default(5) }}"{% endif %}
+    {% if s.show_recently_viewed !== false %}data-recent{% endif %}>
+    <div class="blk-container">
+
+      <nav class="blk-breadcrumb blk-pdp-crumb" aria-label="{{t('common.breadcrumb')}}">
+        <a href="/">{{t('common.home')}}</a>
+        <span class="blk-breadcrumb-sep">/</span>
+        {% if category %}
+          {% if categoryUrl %}<a href="{{ categoryUrl }}">{{ category.title }}</a>{% else %}<span>{{ category.title }}</span>{% endif %}
+          <span class="blk-breadcrumb-sep">/</span>
+        {% endif %}
+        <span aria-current="page">{{ product.title }}</span>
+      </nav>
+
+      <div class="blk-pdp-grid">
+
+        <!-- ===== Gallery ===== -->
+        <div class="blk-pdp-gallery blk-anim-fade-up">
+          <div class="blk-pdp-main" data-pdp-stage>
+            <div class="blk-prod-badges">
+              {# بالتقريب لتحت: 500 بدل 800 = 37% — موجودة دايماً عشان الـ JS يحدّثها مع كل نسخة (PRD-18) #}
+              <span class="blk-badge-glass blk-badge-discount" data-pdp-discount {% if not hasDiscount %}hidden{% endif %}>{% if hasDiscount %}-{{ ((oldPrice - price) / oldPrice * 100) | round(0, 'floor') }}%{% endif %}</span>
+              {% if isOutOfStock %}
+                <span class="blk-badge-glass blk-badge-out">{{t('product.out_of_stock')}}</span>
+              {% elif product.tags and 'hot' in product.tags %}
+                <span class="blk-badge-glass blk-badge-hot">{{t('common.hot')}}</span>
+              {% endif %}
+            </div>
+
+            <div class="blk-pdp-track" data-pdp-track>
+              {% for img in images %}
+                <div class="blk-pdp-slide" data-pdp-slide="{{ loop.index0 }}">
+                  <img src="{{ img.fileUrl }}" alt="{{ product.title }}{% if not loop.first %} - {{t('common.image')}} {{ loop.index }}{% endif %}" class="blk-pdp-main-img" width="900" height="1035" decoding="async" {% if not loop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %} draggable="false" />
+                </div>
+              {% else %}
+                <div class="blk-pdp-slide">
+                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 700'%3E%3Crect width='600' height='700' fill='%23141414'/%3E%3Cg fill='none' stroke='%23555' stroke-width='10' transform='translate(240 290)'%3E%3Crect x='0' y='0' width='120' height='120' rx='12'/%3E%3Ccircle cx='40' cy='40' r='12'/%3E%3Cpath d='m120 80-40-40-80 80'/%3E%3C/g%3E%3C/svg%3E" alt="{{ product.title }}" class="blk-pdp-main-img" />
+                </div>
+              {% endfor %}
+            </div>
+
+            {% if images | length > 1 %}
+              <button type="button" class="blk-pdp-arrow blk-pdp-arrow--prev" data-pdp-prev aria-label="{{t('product.prev_image')}}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+              <button type="button" class="blk-pdp-arrow blk-pdp-arrow--next" data-pdp-next aria-label="{{t('product.next_image')}}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <span class="blk-pdp-counter" aria-live="polite"><span data-pdp-current>1</span> / {{ images | length }}</span>
+            {% endif %}
+
+            {% if images | length > 0 %}
+              <button type="button" class="blk-pdp-expand" data-pdp-expand aria-label="{{t('product.fullscreen')}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+              </button>
+            {% endif %}
+          </div>
+
+          {% if images | length > 1 %}
+            {# نقط المعرض على الموبايل (بدل المصغرات) #}
+            <div class="blk-pdp-dots" aria-hidden="true">{% for img in images %}<span class="blk-pdp-dot{% if loop.first %} is-active{% endif %}"></span>{% endfor %}</div>
+            <div class="blk-pdp-thumbs" role="tablist" aria-label="{{t('product.images')}}">
+              {% for img in images %}
+                <button type="button" class="blk-pdp-thumb {% if loop.first %}is-active{% endif %}" data-pdp-thumb="{{ loop.index0 }}" role="tab" aria-selected="{{ 'true' if loop.first else 'false' }}" aria-label="{{t('common.image')}} {{ loop.index }}">
+                  <img src="{{ img.fileUrl }}" alt="" loading="lazy" decoding="async" width="90" height="104" />
+                </button>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- ===== Info ===== -->
+        <div class="blk-pdp-info">
+          {% if category %}
+            {% if categoryUrl %}
+              <a href="{{ categoryUrl }}" class="blk-cat-badge blk-anim-fade-up">{{ category.title }}</a>
+            {% else %}
+              <span class="blk-cat-badge blk-anim-fade-up">{{ category.title }}</span>
+            {% endif %}
+          {% endif %}
+
+          <h1 class="blk-pdp-title blk-anim-fade-up" style="--anim-delay: 0.05s;">{{ product.title }}</h1>
+
+          <a href="#blkPdpTabs-{{ widget.id }}" class="blk-pdp-rating blk-anim-fade-up" style="--anim-delay: 0.1s;" data-pdp-goto-tab="reviews">
+            <span class="blk-stars">{% for i in range(5) %}{{ '★' if i < (rating | round) else '☆' }}{% endfor %}</span>
+            {% if reviewsCount > 0 %}
+              <span>{{ rating }} ({{ reviewsCount }} {{t('product.reviews_word')}})</span>
+            {% else %}
+              <span>{{t('product.no_reviews')}}</span>
+            {% endif %}
+          </a>
+
+          <div class="blk-pdp-price blk-anim-fade-up" style="--anim-delay: 0.15s;">
+            <span class="blk-pdp-price-current" data-pdp-price>{% ui "blk-price.njk", amount=price, free="1", major=isDemoProduct %}</span>
+            <span class="blk-pdp-price-old" data-pdp-old {% if not hasDiscount %}hidden{% endif %}>{% if hasDiscount %}{% ui "blk-price.njk", amount=oldPrice, major=isDemoProduct %}{% endif %}</span>
+            <span class="blk-pdp-save" data-pdp-save {% if not hasDiscount %}hidden{% endif %}>
+              {% if hasDiscount %}{{t('product.save')}} {% set saveAmount = oldPrice - price %}{% ui "blk-price.njk", amount=saveAmount, major=isDemoProduct %}{% endif %}
+            </span>
+          </div>
+
+          {# الحالة مكتوبة نص (مش لون بس)، و aria-live عشان تتقري لما تتغير مع اختيار النسخة #}
+          <div class="blk-pdp-stock-wrap blk-anim-fade-up" style="--anim-delay: 0.2s;">
+            <div class="blk-pdp-stock is-{{ 'out' if isOutOfStock else ('low' if isLowStock else 'in') }}" data-pdp-stock role="status" aria-live="polite">
+              {% if isOutOfStock %}
+                <span class="blk-stock-dot is-out" aria-hidden="true"></span> <span data-pdp-stock-text>{{t('product.out_of_stock')}}</span>
+              {% elif isLowStock %}
+                <span class="blk-stock-dot is-low" aria-hidden="true"></span> <span data-pdp-stock-text>{{ lowStockText }}</span>
+              {% else %}
+                <span class="blk-stock-dot" aria-hidden="true"></span> <span data-pdp-stock-text>{{t('product.in_stock')}}</span>
+              {% endif %}
+            </div>
+            <div class="blk-pdp-stock-bar" data-pdp-stock-bar {% if not isLowStock %}hidden{% endif %}>
+              <span style="width: {{ ((stockQty / LOW_STOCK * 34) | round) if isLowStock else 0 }}%;"></span>
+            </div>
+          </div>
+
+          {% if hasOptions %}
+            <div class="blk-pdp-options blk-anim-fade-up" style="--anim-delay: 0.25s;">
+              {% for option in product.options %}
+                {% set optName = option.name | default('') %}
+                {% set optLower = optName | lower %}
+                {% set isColor = 'لون' in optName or 'color' in optLower or 'colour' in optLower %}
+                {% set isSize = 'مقاس' in optName or 'size' in optLower %}
+                <div class="blk-pdp-option{% if isColor %} is-color{% endif %}" data-pdp-option="{{ loop.index0 }}">
+                  <div class="blk-pdp-option-head">
+                    <span class="blk-pdp-option-name">{{ optName }}</span>
+                    <span class="blk-pdp-option-value" data-pdp-option-label>{{t('product.choose')}} {{ optName }}</span>
+                    {% if isSize and showGuide %}
+                      <button type="button" class="blk-pdp-guide-btn" data-pdp-guide-open>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 8.7 15.3 2.7a1 1 0 0 0-1.4 0L2.7 13.9a1 1 0 0 0 0 1.4l6 6a1 1 0 0 0 1.4 0L21.3 10.1a1 1 0 0 0 0-1.4zM7.5 10.5l2 2M10.5 7.5l2 2M13.5 4.5l2 2M4.5 13.5l2 2"/></svg>
+                        {{t('product.size_guide')}}
+                      </button>
+                    {% endif %}
+                  </div>
+                  <div class="blk-pdp-option-values" role="radiogroup" aria-label="{{ optName }}">
+                    {% for value in option.values %}
+                      {% set swatch = value.color or value.hex or (value.value if value.value and value.value[0] == '#' else '') %}
+                      <button type="button" class="blk-pdp-chip{% if isColor %} blk-pdp-swatch{% endif %}" role="radio" aria-checked="false"
+                        data-value-id="{{ value._id }}" data-value-label="{{ value.label }}"
+                        {% if isColor %}title="{{ value.label }}" data-swatch="{{ swatch }}"{% endif %}>
+                        {% if isColor %}<span class="blk-pdp-swatch-dot"></span><span class="blk-pdp-swatch-label">{{ value.label }}</span>{% else %}{{ value.label }}{% endif %}
+                      </button>
+                    {% endfor %}
+                  </div>
+                  {# رسالة "اختر ..." تحت الخيار نفسه لما العميل يضغط أضف للسلة من غير ما يختار (الـ JS بيكتبها) #}
+                  <p class="blk-pdp-option-error" data-pdp-option-error role="alert" hidden></p>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="blk-pdp-buy blk-anim-fade-up" style="--anim-delay: 0.3s;">
+            <div class="blk-qty" data-pdp-qty>
+              <button type="button" class="blk-qty-btn" data-qty-step="1" aria-label="{{t('product.qty_increase')}}" {% if isOutOfStock %}disabled{% endif %}>+</button>
+              {# الكمية القصوى = المخزون المتاح، ومعطّلة لما المنتج ينفد #}
+              <input type="number" class="blk-qty-input" value="1" min="1" {% if stockQty !== null and stockQty > 0 %}max="{{ stockQty }}"{% endif %} aria-label="{{t('product.quantity')}}" data-qty-input {% if isOutOfStock %}disabled{% endif %} />
+              <button type="button" class="blk-qty-btn" data-qty-step="-1" aria-label="{{t('product.qty_decrease')}}" {% if isOutOfStock %}disabled{% endif %}>−</button>
+            </div>
+
+            <button type="button" class="blk-btn blk-btn-primary blk-btn-shine blk-pdp-add" data-pdp-add data-pdp-add-main {% if isOutOfStock %}disabled{% endif %}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <span data-pdp-add-label>{{t('product.out_of_stock') if isOutOfStock else t('product.add_to_cart')}}</span>
+            </button>
+          </div>
+          <p class="blk-pdp-qty-note" data-pdp-qty-note hidden></p>
+
+          {% if s.show_buy_now !== false %}
+            <button type="button" class="blk-btn blk-btn-outline blk-pdp-buynow blk-anim-fade-up" style="--anim-delay: 0.32s;" data-pdp-add data-pdp-buynow {% if isOutOfStock %}disabled{% endif %}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>{{t('product.buy_now')}}</span>
+            </button>
+          {% endif %}
+
+          {% set deliveryNote = (settings.deliveryNote_en if (isEn and settings.deliveryNote_en) else settings.deliveryNote) %}
+          {% if deliveryNote %}
+            <p class="blk-pdp-delivery-note blk-anim-fade-up" style="--anim-delay: 0.33s;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              <span>{{ deliveryNote }}</span>
+            </p>
+          {% endif %}
+          {% if s.show_delivery == true %}
+            <p class="blk-pdp-delivery blk-anim-fade-up" style="--anim-delay: 0.34s;" data-pdp-delivery hidden>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span>{{t('product.delivery_between')}} <strong data-pdp-delivery-range></strong></span>
+            </p>
+          {% endif %}
+
+          {% if s.show_trust !== false %}
+            <ul class="blk-pdp-trust blk-anim-fade-up" style="--anim-delay: 0.36s;">
+              <li>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                <span>{% ui "blk-t.njk", text=s.shipping_text, key="defaults.pdp_shipping" %}</span>
+              </li>
+              <li>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>{% ui "blk-t.njk", text=s.returns_text, key="defaults.pdp_returns" %}</span>
+              </li>
+              <li>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>{% ui "blk-t.njk", text=s.secure_text, key="defaults.pdp_secure" %}</span>
+              </li>
+            </ul>
+          {% endif %}
+
+          <dl class="blk-pdp-meta blk-anim-fade-up" style="--anim-delay: 0.4s;">
+            <div {% if not product.sku %}hidden{% endif %} data-pdp-sku-row>
+              <dt>{{t('product.sku')}}</dt><dd data-pdp-sku>{{ product.sku }}</dd>
+            </div>
+            {% if category %}
+              <div>
+                <dt>{{t('product.category')}}</dt>
+                <dd>{% if categoryUrl %}<a href="{{ categoryUrl }}">{{ category.title }}</a>{% else %}{{ category.title }}{% endif %}</dd>
+              </div>
+            {% endif %}
+            {% set visibleTags = [] %}
+            {#- الوسم على المنصة ممكن ييجي نص أو object ({ name … }): بناخد الاسم كنص (مايطلعش [object Object]) -#}
+            {% for tag in product.tags | default([]) %}{% set tagName = tag if (tag is string) else ((tag.name or tag.title or tag.label or tag.value or '') if tag else '') %}{% if tagName and tagName != 'hot' %}{% if visibleTags.push(tagName) %}{% endif %}{% endif %}{% endfor %}
+            {% if visibleTags | length %}
+              <div>
+                <dt>{{t('product.tags')}}</dt>
+                <dd class="blk-pdp-tags">{% for tag in visibleTags %}{% set tagLabel = (tag | string).split(':') | last %}<a href="/search?q={{ tagLabel | trim | urlencode }}">#{{ tagLabel | trim }}</a>{% endfor %}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if s.show_share !== false %}
+            <div class="blk-pdp-share blk-anim-fade-up" style="--anim-delay: 0.44s;">
+              <span>{{t('product.share')}}</span>
+              <button type="button" data-pdp-share="native" hidden aria-label="{{t('product.share_native')}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+              </button>
+              <a href="#" data-pdp-share="whatsapp" target="_blank" rel="noopener noreferrer" aria-label="{{t('product.share_whatsapp')}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-1 1.2-.4.2-.7.1a8 8 0 0 1-2.4-1.5 9 9 0 0 1-1.6-2c-.2-.3 0-.5.1-.6l.5-.6.3-.5v-.5l-1-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 6 6 0 0 0 1.2 3.1 13.4 13.4 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3.1 3.1 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3zM12 21.8a9.9 9.9 0 0 1-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6zm8.4-18.2A11.8 11.8 0 0 0 1.8 17.8L.2 23.8l6.1-1.6a11.8 11.8 0 0 0 5.7 1.4 11.8 11.8 0 0 0 8.4-20z"/></svg>
+              </a>
+              <a href="#" data-pdp-share="facebook" target="_blank" rel="noopener noreferrer" aria-label="{{t('product.share_facebook')}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z"/></svg>
+              </a>
+              <button type="button" data-pdp-share="copy" aria-label="{{t('product.copy_link')}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ===== Tabs: الوصف / المواصفات / الشحن / التقييمات ===== -->
+      <div class="blk-pdp-tabs" id="blkPdpTabs-{{ widget.id }}">
+        <div class="blk-pdp-tablist" role="tablist" aria-label="{{t('product.details')}}">
+          <button type="button" class="blk-pdp-tab is-active" role="tab" aria-selected="true" data-pdp-tab="desc">{{t('product.tab_desc')}}</button>
+          <button type="button" class="blk-pdp-tab" role="tab" aria-selected="false" data-pdp-tab="specs">{{t('product.tab_specs')}}</button>
+          <button type="button" class="blk-pdp-tab" role="tab" aria-selected="false" data-pdp-tab="shipping">{{t('product.tab_shipping')}}</button>
+          <button type="button" class="blk-pdp-tab" role="tab" aria-selected="false" data-pdp-tab="reviews">{{t('product.tab_reviews')}} ({{ reviewsCount }})</button>
+          <span class="blk-pdp-tab-indicator" aria-hidden="true"></span>
+        </div>
+
+        <button type="button" class="blk-pdp-acc-head" data-pdp-acc="desc" aria-expanded="true">{{t('product.tab_desc')}}</button>
+        <div class="blk-pdp-panel is-active" role="tabpanel" data-pdp-panel="desc">
+          {% if product.description %}
+            <div class="blk-rich-text">{{ product.description | safe }}</div>
+          {% else %}
+            <p class="blk-pdp-panel-empty">{{t('product.no_description')}}</p>
+          {% endif %}
+        </div>
+
+        <button type="button" class="blk-pdp-acc-head" data-pdp-acc="specs" aria-expanded="false">{{t('product.tab_specs')}}</button>
+        <div class="blk-pdp-panel" role="tabpanel" data-pdp-panel="specs" hidden>
+          <table class="blk-pdp-specs">
+            <tbody>
+              {% if category %}<tr><th>{{t('product.category')}}</th><td>{{ category.title }}</td></tr>{% endif %}
+              {% if hasOptions %}
+                {% for option in product.options %}
+                  <tr>
+                    <th>{{ option.name }}</th>
+                    <td>{% for value in option.values %}{{ value.label }}{% if not loop.last %}{{ '، ' if isAr else ', ' }}{% endif %}{% endfor %}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
+              {% if product.sku %}<tr><th>{{t('product.sku')}}</th><td>{{ product.sku }}</td></tr>{% endif %}
+              {# المواصفات من التاجر بس: النص التجريبي القديم (قطن 95%…) مابيظهرش للعميل #}
+              {% set specsText = ('' if ((s.specs | replace('\r', '')) == 'الخامة: قطن 95% - سباندكس 5%\nالقَصّة: رياضية مريحة\nالعناية: غسيل على 30 درجة، ماتتكويش على الطباعة') else s.specs) if s.specs else '' %}
+              {% if specsText %}
+                {# من غير regex (محرك قمرة مابيقبلوش): split على \n والـ trim تحت بيشيل \r #}
+                {% for line in specsText.split('\n') %}
+                  {% set parts = line.split(':') %}
+                  {% if (parts | length) > 1 and parts[0] | trim %}
+                    <tr><th>{{ parts[0] | trim | safe }}</th><td>{{ parts.slice(1).join(':') | trim | safe }}</td></tr>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              <tr><th>{{t('product.status')}}</th><td data-pdp-spec-stock>{{ t('product.out_of_stock') if isOutOfStock else (lowStockText if isLowStock else t('product.in_stock')) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" class="blk-pdp-acc-head" data-pdp-acc="shipping" aria-expanded="false">{{t('product.tab_shipping')}}</button>
+        <div class="blk-pdp-panel" role="tabpanel" data-pdp-panel="shipping" hidden>
+          <ul class="blk-pdp-ship-list">
+            {% set shipText = s.shipping_details if (s.shipping_details and (s.shipping_details | replace('\r', '')) != 'بنشحن لكل محافظات مصر خلال 2 لـ 5 أيام عمل.\nتقدر تستبدل أو ترجّع المنتج خلال 14 يوم من الاستلام طالما بحالته الأصلية وبالتيكت.\nالدفع عند الاستلام متاح.' and (s.shipping_details | replace('\r', '')) != 'مصاريف الشحن بتتحسب في صفحة الدفع حسب عنوانك.\nالاستبدال والاسترجاع حسب سياسة المتجر.\nطرق الدفع المتاحة بتظهر في صفحة الدفع.') else t('defaults.pdp_shipping_details') %}
+            {% for line in shipText.split('\n') %}
+              {% if line | trim %}<li>{{ line | trim | safe }}</li>{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+
+        <button type="button" class="blk-pdp-acc-head" data-pdp-acc="reviews" aria-expanded="false">{{t('product.tab_reviews')}} ({{ reviewsCount }})</button>
+        <div class="blk-pdp-panel" role="tabpanel" data-pdp-panel="reviews" hidden>
+          <div class="blk-pdp-reviews-summary">
+            <span class="blk-pdp-reviews-score">{{ rating if reviewsCount > 0 else '—' }}</span>
+            <div>
+              <span class="blk-stars blk-pdp-reviews-stars">{% for i in range(5) %}{{ '★' if i < (rating | round) else '☆' }}{% endfor %}</span>
+              <p>{% if reviewsCount > 0 %}{{t('product.based_on')}} {{ reviewsCount }} {{t('product.reviews_word')}}{% else %}{{t('product.no_reviews_long')}}{% endif %}</p>
+            </div>
+          </div>
+          {% if reviews | length %}
+            <ul class="blk-pdp-reviews">
+              {% for r in reviews %}
+                {% set rName = r.name or r.author or r.customerName or t('common.customer') %}
+                <li class="blk-pdp-review">
+                  <div class="blk-pdp-review-head">
+                    <span class="blk-pdp-review-avatar">{{ rName[0] }}</span>
+                    <strong>{{ rName }}</strong>
+                    <span class="blk-stars">{% for i in range(5) %}{{ '★' if i < (r.rating | default(5)) else '☆' }}{% endfor %}</span>
+                  </div>
+                  <p>{{ r.comment or r.content or r.text or r.body }}</p>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if s.show_recently_viewed !== false %}
+        <!-- بيتملى بالـ JS من المنتجات اللي العميل فتحها قبل كده -->
+        <div class="blk-pdp-recent" data-pdp-recent-wrap hidden>
+          <h2 class="blk-section-title">{{t('product.recently_viewed')}}</h2>
+          <div class="blk-pdp-recent-list" data-pdp-recent-list></div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ===== Lightbox ===== -->
+    {% if images | length > 0 %}
+      <div class="blk-pdp-lightbox" data-pdp-lightbox hidden role="dialog" aria-modal="true" aria-label="{{t('product.images')}}">
+        <button type="button" class="blk-pdp-lb-close" data-pdp-lb-close aria-label="{{t('common.close')}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button>
+        {% if images | length > 1 %}
+          <button type="button" class="blk-pdp-lb-nav blk-pdp-lb-prev" data-pdp-lb-prev aria-label="{{t('product.prev_image')}}">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <button type="button" class="blk-pdp-lb-nav blk-pdp-lb-next" data-pdp-lb-next aria-label="{{t('product.next_image')}}">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+        {% endif %}
+        <div class="blk-pdp-lb-stage" data-pdp-lb-stage><img class="blk-pdp-lb-img" data-pdp-lb-img alt="{{ product.title }}" /></div>
+        <span class="blk-pdp-lb-count" data-pdp-lb-count></span>
+      </div>
+    {% endif %}
+
+    <!-- ===== Size guide ===== -->
+    {% if showGuide %}
+      {% set guide = sizeGuide %}
+      {% if guide %}
+        <div class="blk-pdp-modal" data-pdp-guide hidden role="dialog" aria-modal="true" aria-labelledby="blkPdpGuideTitle-{{ widget.id }}">
+          <div class="blk-pdp-modal-box">
+            <div class="blk-pdp-modal-head">
+              <h3 id="blkPdpGuideTitle-{{ widget.id }}">{{t('product.size_guide')}}</h3>
+              <button type="button" class="blk-pdp-modal-close" data-pdp-guide-close aria-label="{{t('common.close')}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+            <table class="blk-pdp-specs blk-pdp-guide-table">
+              {# أول سطر عناوين الأعمدة، وأول خانة في كل سطر هي المقاس #}
+              {% for line in guide.split('\n') %}
+                {% if line | trim %}
+                  {% set isHead = loop.first %}
+                  <tr{% if isHead %} class="is-head"{% endif %}>
+                    {% for cell in line.split('|') %}
+                      {% if isHead or loop.first %}
+                        <th scope="{{ 'col' if isHead else 'row' }}">{{ cell | trim | safe }}</th>
+                      {% else %}
+                        <td>{{ cell | trim | safe }}</td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </table>
+            <p class="blk-pdp-modal-note">{{t('product.size_note')}}</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% if s.show_sticky_bar !== false and not isOutOfStock %}
+      <!-- شريط الشراء الثابت على الموبايل -->
+      <div class="blk-pdp-sticky" data-pdp-sticky>
+        {% if images | length %}<img class="blk-pdp-sticky-img" src="{{ images[0].fileUrl }}" alt="" loading="lazy" />{% endif %}
+        <div class="blk-pdp-sticky-info">
+          <span class="blk-pdp-sticky-title">{{ product.title }}</span>
+          <span class="blk-pdp-sticky-price" data-pdp-price>{% ui "blk-price.njk", amount=price, free="1", major=isDemoProduct %}</span>
+        </div>
+        <button type="button" class="blk-btn blk-btn-primary" data-pdp-add><span data-pdp-add-label>{{t('product.add_to_cart')}}</span></button>
+      </div>
+    {% endif %}
+
+    {# نسخ المنتج (variants): الـ JS بيختار منها لو المنتج ليه نسخة واحدة أو مالوش اختيارات ظاهرة #}
+    {# مكتوبة بإيدينا مش بـ dump للأوبجكت كله: بيانات المنصة ممكن يبقى فيها مراجع متداخلة تكسر dump وتوقّع الصفحة كلها.
+       القيم النصية بـ dump لوحدها عشان أي " أو \ في الاسم مايكسرش الـ JSON. السعر والـ SKU عشان الـ JS يحدّثهم لو السيرفر مارجّعش النسخة #}
+    <script type="application/json" data-pdp-variants>[{% for v in product.variants or [] %}{% if v and v._id %}{% set vPrice = v.price if (v.price === 0 or v.price > 0) else (v.pricing.price if v.pricing and (v.pricing.price === 0 or v.pricing.price > 0) else null) %}{% set vOld = v.compareAtPrice if v.compareAtPrice > 0 else (v.pricing.compareAtPrice if v.pricing and v.pricing.compareAtPrice > 0 else null) %}{"_id":{{ (v._id | string) | dump | safe }},"quantity":{{ v.quantity if (v.quantity === 0 or v.quantity > 0 or v.quantity < 0) else "null" }},"price":{{ vPrice if vPrice !== null else "null" }},"compareAtPrice":{{ vOld if vOld !== null else "null" }},"sku":{{ (v.sku or '') | dump | safe }},"image":{{ (v.image.fileUrl if (v.image and v.image.fileUrl) else '') | dump | safe }},"options":[{% for o in v.options or [] %}{{ ((o._id or o.value or o.label or o) | string) | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}]}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}]</script>
+
+    {% set crumbs = [{ '@type': 'ListItem', 'position': 1, 'name': t('common.home'), 'item': (storeUrlLd + '/') }] %}
+    {% if category and categoryUrl %}{% if crumbs.push({ '@type': 'ListItem', 'position': 2, 'name': category.title, 'item': (storeUrlLd + categoryUrl) }) %}{% endif %}{% endif %}
+    {% if crumbs.push({ '@type': 'ListItem', 'position': (crumbs | length) + 1, 'name': product.title, 'item': (storeUrlLd + productUrl) }) %}{% endif %}
+    <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': crumbs } | dump | replace('</', '<\\/') | safe }}</script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": {{ product.title | dump | safe }},
+        "sku": {{ (product.sku | default('', true)) | dump | safe }},
+        "image": [{% for img in images %}{{ img.fileUrl | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}],
+        {% if category %}"category": {{ category.title | dump | safe }},{% endif %}
+        {% if reviewsCount > 0 %}
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "{{ rating }}", "reviewCount": "{{ reviewsCount }}" },
+        {% endif %}
+        {# عملة المتجر بس: من غير كود عملة مانكتبش offer بعملة متخمّنة #}
+        {% if localization and localization.currency and localization.currency.currencyCode %}
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "{{ localization.currency.currencyCode }}",
+          "price": "{{ price | round(2) }}",
+          "availability": "https://schema.org/{{ 'OutOfStock' if isOutOfStock else ('LimitedAvailability' if isLowStock else 'InStock') }}"
+        },
+        {% endif %}
+        {% if product.description %}"description": {{ (product.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(300)) | dump | safe }},{% endif %}
+        "url": {{ (storeUrlLd + productUrl) | dump | safe }}
+      }
+    </script>
+  </section>
+{% else %}
+  <section class="blk-section">
+    <div class="blk-container">
+      {% set emptyTitle = t('product.not_found_title') %}{% set emptyText = t('product.not_found_text') %}{% set emptyBtn = t('product.shop_all') %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/collections", icon="box" %}
+    </div>
+  </section>
+{% endif %}

@@ -1,0 +1,235 @@
+{# ============================================================================
+   HYPER · صورة مع نص  (image + text)
+   ----------------------------------------------------------------------------
+     ┌───────────────────────┐   تعرّف على فريقنا
+     │                  ╭──╮ │   العقول المبدعة
+     │      صورة        │◠◡│ │   خلف الاستوديو
+     │                  ╰──╯ │   سطر أو سطرين وصف.
+     │                       │   ⌖ تُصنع محلياً
+     │                       │   ☺ تقييم ٤٫٨
+     │                       │   ▣ أكثر من ٥٠ منتجاً
+     └───────────────────────┘   ( تواصل معنا )
+
+   ── The seal ──
+   Its ring of text is a real SVG `<textPath>` on a circle.
+
+   ⚠️  NOT VERIFIED IN A BROWSER. macOS `qlmanage`, which is what the previews
+   in this build were rendered with, draws `<textPath>` in a standalone .svg
+   file but never in inline SVG inside HTML — proved against five variants
+   including plain Latin, so it is the renderer, not this markup. Every real
+   browser has supported inline `<textPath>` for over a decade. If the ring ever
+   comes up blank on a live store, check here first.
+
+   The failure mode is benign either way: with no ring the seal is still a
+   coloured disc with its icon, which is a finished object rather than a hole.
+
+   ⚠️  NOT one rotated <span> per character, which is the usual way this effect
+   is done. Per-letter rotation breaks Arabic outright: the shaping engine needs
+   the run intact to join the letters, and splitting it hands every letter its
+   isolated form — «تصنيف» comes out as «ت ص ن ي ف». A textPath keeps the run
+   whole and lets the font shape it, then bends the result along the path.
+
+   The RING spins and the icon does not; they are two elements for that reason,
+   because a spinning icon reads as a loading spinner.
+
+   ── The proof rows ──
+   `fact` blocks: an icon from a fixed list plus a line of text. The icon list is
+   fixed because each entry is a hardcoded path here — a free-form field would
+   let a merchant name an icon that renders nothing.
+
+   ── RTL ──
+   `media_position` is start/end, and the seal is pinned with `inset-inline-*`,
+   so it hangs off the corner FACING the copy in both directions.
+
+   Styling lives in assets/style.css → "15.13.3 IMAGE + TEXT".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set facts = widget.blocks | default([]) %}
+
+{% set mediaPos = d.media_position | default('start') %}
+{% set ratio = d.image_ratio | default('1x1') %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 14 %}
+{% set bg = d.background | default('white') %}
+
+{% set sealOn = d.seal_enabled | default(true) %}
+{% set sealText = d.seal_text | default('', true) %}
+{% set sealSize = d.seal_size | default(150) %}
+{% set sealSpin = d.seal_spin | default(true) %}
+{% set sealIcon = d.seal_icon | default('chair') %}
+
+{% if ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% elif ratio == '4x3' %}{% set ratioVal = '4 / 3' %}
+{% else %}{% set ratioVal = '1 / 1' %}{% endif %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set img = mediaUrl(d.image) | trim %}
+{# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+{% if not (img | length) %}{% set img = 'demo-studio.jpg' | assets %}{% endif %}
+{# `| length`, not truthiness — a macro returns a SafeString OBJECT. #}
+{% set hasImg = (img | length) > 0 %}
+
+{% macro icon(kind, size) %}
+  {% set s = size | default(22) %}
+  {% if kind == 'pin' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/>
+    </svg>
+  {% elif kind == 'smile' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M8.5 14a4.5 4.5 0 0 0 7 0"/>
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+  {% elif kind == 'chair' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M6.5 4.5h11l-1 8h-9z"/><path stroke-linecap="round" d="M5.5 12.5h13M8 12.5 7 20M16 12.5l1 7.5"/>
+    </svg>
+  {% elif kind == 'truck' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M2.5 6.5h10.5v9.5H2.5zM13 10h3.7l2.8 3v3H13z"/><circle cx="7" cy="17.6" r="1.7"/><circle cx="17" cy="17.6" r="1.7"/>
+    </svg>
+  {% elif kind == 'star' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="m12 3.5 2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.9l6.1-.8z"/>
+    </svg>
+  {% elif kind == 'shield' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/>
+    </svg>
+  {% elif kind == 'leaf' %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M20 4C10 4 4.5 8 4.5 14.5A5.5 5.5 0 0 0 10 20C16.5 20 20 14 20 4Z"/><path stroke-linecap="round" d="M15.5 8.5 6 18"/>
+    </svg>
+  {% else %}
+    <svg width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path stroke-linejoin="round" d="M12 3.2 20 7.5v9L12 20.8 4 16.5v-9z"/><path stroke-linecap="round" d="M4 7.5 12 12l8-4.5M12 12v8.8"/>
+    </svg>
+  {% endif %}
+{% endmacro %}
+
+
+{# The root background is INLINE so it beats every stylesheet rule — see the
+   note in the other sections. #}
+<section id="hy-it-{{ id }}"
+         class="hy-imgtext-sec"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <style>
+    #hy-it-{{ id }} {
+      --hy-it-radius: {{ radius }}px;
+      --hy-it-ratio: {{ ratioVal }};
+      --hy-it-seal: {{ sealSize }}px;
+      --hy-it-seal-bg: {{ d.seal_color | default('var(--color-pop)', true) }};
+      --hy-it-seal-fg: {{ d.seal_text_color | default('var(--color-pop-text)', true) }};
+    }
+  </style>
+
+  <div class="hy-container">
+    <div class="hy-imgtext hy-imgtext--media-{{ mediaPos }} {{ 'hy-imgtext--spin' if sealSpin }}">
+
+      {# ═══════════════ media ═══════════════ #}
+      <div class="hy-imgtext-media">
+        <div class="hy-imgtext-figure">
+          {% if hasImg %}
+            <img src="{{ img }}" alt="{{ d.title | default('', true) }}"
+                 loading="lazy"/>
+          {% else %}
+            <span class="hy-imgtext-noimg">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.75" cy="9" r="1.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+              </svg>
+            </span>
+          {% endif %}
+        </div>
+
+        {% if sealOn %}
+          <span class="hy-imgtext-seal" aria-hidden="true">
+            <span class="hy-imgtext-seal-disc"></span>
+
+            {# The path id is per-widget: two of these sections on one page would
+               otherwise both point their textPath at the first one's circle. #}
+            <svg class="hy-imgtext-seal-ring" viewBox="0 0 200 200" fill="none"
+                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <defs>
+                <path id="hy-seal-{{ id }}"
+                      d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/>
+              </defs>
+              {% if sealText %}
+                {# BOTH `href` and `xlink:href`: the plain `href` is the modern
+                   form, but several WebKit-based renderers still only resolve
+                   the namespaced one and drop the text entirely without it. #}
+                {# `startOffset` 50% with `text-anchor: middle` centres the run on the
+                   path instead of hanging it off offset 0. At 0% any layout that
+                   starts by measuring backwards puts the whole string outside the
+                   rendered range; from the middle there is half a circle of room
+                   on either side, so it survives either direction. #}
+                <text text-anchor="middle"><textPath href="#hy-seal-{{ id }}" xlink:href="#hy-seal-{{ id }}"
+                                startOffset="50%">{{ sealText }}</textPath></text>
+              {% endif %}
+            </svg>
+
+            <span class="hy-imgtext-seal-icon">{{ icon(sealIcon, 100) }}</span>
+          </span>
+        {% endif %}
+      </div>
+
+      {# ═══════════════ copy ═══════════════ #}
+      <div class="hy-imgtext-body">
+        {% if d.eyebrow %}<p class="hy-imgtext-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+        {% if d.title %}<h2 class="hy-imgtext-title">{{ d.title }}</h2>{% endif %}
+
+        {% if d.text %}
+          {# ⚠️  A <div>, NOT a <p>: a `text` field returns block HTML and a <p>
+             cannot contain a <p> — the browser would split them and every style
+             on this class would stop reaching the copy. #}
+          <div class="hy-imgtext-text">{{ d.text | safe }}</div>
+        {% endif %}
+
+        <div class="hy-imgtext-facts">
+          {% for block in facts %}
+            {% set b = block.data %}
+            {% if b.text %}
+              <div class="hy-imgtext-fact">
+                {{ icon(b.icon | default('star'), 22) }}
+                <span>{{ b.text }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if (facts | length) == 0 %}
+            {# No rows added yet. Three greyed lines at the real size, so the
+               merchant can see the feature exists at all — a preset cannot seed
+               blocks, so this section arrives with none. See style.css
+               → "15.29.1". #}
+            {% for i in range(0, 3) %}
+              <div class="hy-imgtext-fact" data-hy-placeholder aria-hidden="true">
+                <span class="hy-imgtext-fact-ph"></span>
+                <span class="hy-ph-line" style="--ph-line-w: {{ 150 + (i % 3) * 40 }}px;"></span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        {% if d.cta_text %}
+          <a href="{{ d.cta_url | default('/shop') }}"
+             class="hy-btn hy-btn--lg hy-btn--pill hy-btn--solid">{{ d.cta_text }}</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-it-' ~ id, c=d %}

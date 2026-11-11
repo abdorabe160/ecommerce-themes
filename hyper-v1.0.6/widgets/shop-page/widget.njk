@@ -1,0 +1,413 @@
+{# ============================================================================
+   HYPER SHOP PAGE — the browsing chrome for /shop, /shop/:handle and /shop?q=
+   ----------------------------------------------------------------------------
+   ⚠️  This widget is only the CHROME. The grid itself is rendered by the
+   `shop-products` widget, which Qumra mounts into
+   #products-grid-wrapper[data-qumra-section="shop-products"].
+
+   ⚠️  CONTRACT with collectionFilter() in assets/main.js — do not rename:
+     · #products-grid-wrapper   where the section is mounted
+     · #products-count · #products-count-toolbar   filled after every run
+     · state:   loading · sortOpen · currentSort · col
+       (the filter drawer is on $store.modal — key 'filters')lectionId
+                priceMin · priceMax · activeCount · activeChips · isActive()
+     · methods: sortBy() · toggleFilter() · applyPrice() · clearFilters()
+                setCollection() · setSearchQuery() · goToPage()
+
+   Filters render TWICE from one partial (ui/filter-panel.njk): a sidebar on
+   desktop and a drawer below 1024px. Both copies live in the DOM at once and
+   that is safe — neither holds state, they both read `isActive()` and write
+   through `toggleFilter()`, so ticking either one reflects in the other and in
+   the removable chips above the grid.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set collections = context.collections | default([]) %}
+{# /shop/<handle> sends context.shop.collection; /collections/<handle> sends
+   context.collection + context.products. Read both. #}
+{% set _shop = context.shop or {} %}
+{% set filters = _shop.filters.available if _shop.filters else (context.filters or []) %}
+{% set lang = localization.language | default('ar') %}
+
+{% set col = _shop.collection or context.collection or null %}
+{% set title = col.title if col and col.title else (d.title | default(t('pages.shop.all_products'), true)) %}
+{% set desc = col.description if col and col.description else (d.description | default('', true)) %}
+
+{% set showCrumbs = d.show_breadcrumb | default(true) %}
+{# The rail shows whenever there ARE collections to show — the toggle is gone. #}
+{% set showRail = (collections | length) > 0 %}
+{% set showSort = d.show_sort | default(true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set showFilters = (d.show_filters | default(true)) and (filters | length) > 0 %}
+
+{% set colsD = d.columns_desktop | default('4', true) %}
+{% set colsT = d.columns_tablet | default('3', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{% set ratio = d.card_image_ratio | default('', true) %}
+{# Resolved here and pushed onto the section as `--hy-card-ratio`, so the ONE
+   setting reaches both grids: the server-rendered one (widgets/shop-products)
+   and every card main.js rebuilds after a filter run. It used to be two
+   separate settings with the same label on the same page — this one and a
+   second copy on `shop-products` — which disagreed (3x4 vs 4x5) and made
+   whichever one the merchant edited look dead. #}
+{% if ratio == '1x1' %}{% set cardRatioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set cardRatioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set cardRatioVal = '3 / 4' %}
+{% elif ratio == '2x3' %}{% set cardRatioVal = '2 / 3' %}
+{% else %}{% set cardRatioVal = '' %}{% endif %}
+
+{# The sort menu. The matching handle → label map is emitted into the config
+   script below, where the toolbar reads it to name the active sort. #}
+{% set sortOptions = [
+  { value: 'newest',        label: t('pages.search.newest') },
+  { value: 'price_asc',     label: t('pages.search.price_low_high') },
+  { value: 'price_desc',    label: t('pages.search.price_high_low') }
+] %}
+
+
+{# ============================================================================
+   The collectionFilter config lives in a <script>, NOT inline in x-data.
+   ----------------------------------------------------------------------------
+   ⚠️  Anything merchant-authored — a collection title, a filter label — can
+   contain a quote. Inside x-data="…" the first double quote CLOSES the HTML
+   attribute: Alpine then never parses the component, collectionFilter never
+   runs, and the page renders working chrome beside a permanently empty grid
+   with no console error pointing at the cause. `| dump` emits double quotes,
+   so it is only ever safe inside a script block. Keep this config here.
+   ========================================================================= #}
+<script>
+  window.__hyShopCfg_{{ id }} = {
+    collectionId: {{ (col._id if col else '') | dump | safe }},
+    section: 'shop-products',
+    rangeHandles: [
+      {%- for f in filters -%}
+        {%- set fh = f.handle or f.id or '' -%}
+        {%- if (f.inputType == 'range' or f.type == 'range') and fh -%}{{ fh | dump | safe }},{%- endif -%}
+      {%- endfor -%}
+    ],
+    collections: [
+      {%- for c in collections -%}
+        {%- if c._id -%}
+        { id: {{ c._id | dump | safe }}, slug: {{ (c.slug or c.handle or '') | dump | safe }}, title: {{ (c.title or '') | dump | safe }} },
+        {%- endif -%}
+      {%- endfor -%}
+    ],
+    cardSettings: {
+      cols: { desktop: {{ colsD | int }}, tablet: {{ colsT | int }}, mobile: {{ colsM | int }} }
+      {%- if ratio %}, imageRatio: {{ ratio | dump | safe }}{% endif %}
+    },
+    {# ⚠️  Every entry is guarded on having BOTH a handle and a value.
+       A filter item with neither — the payload does contain them — used to emit
+       a bare `: ,` into this object literal. That is a SYNTAX ERROR, so the
+       whole script threw and `__hyShopCfg_` was never assigned: not just the
+       labels, but collectionId, section and rangeHandles all vanished, and
+       section-based filtering silently degraded to full page reloads.
+       One malformed value in the payload took out the entire config. #}
+    {# Read by the toolbar's x-text — kept here, not in the attribute, for the
+       reason spelled out beside it. The '' key is the no-sort-selected label. #}
+    sortLabels: {
+      '': {{ t('pages.search.sort_by') | dump | safe }},
+      {%- for o in sortOptions -%}{{ o.value | dump | safe }}: {{ o.label | dump | safe }},{%- endfor -%}
+    },
+    filterLabels: {
+      {%- for f in filters -%}
+        {%- set fh = f.handle or f.id or '' -%}
+        {%- if f.inputType != 'range' and f.type != 'range' and fh -%}
+          {%- set items = f.items or f.values or f.options or f.choices or f.list or [] -%}
+          {%- if (items | length) > 0 -%}
+            {{ fh | dump | safe }}: {
+            {%- for it in items -%}
+              {%- set iv = it.value or it.handle or it.id or '' -%}
+              {%- if iv -%}
+                {# Same chain as optionLabel() in ui/filter-panel.njk — the chip
+                   above the grid must read exactly what the option in the panel
+                   reads, or removing a filter looks like removing a different
+                   one. #}
+                {%- set raw = it.label | default(it.name) | default(it.title) | default(it.displayName) | default(it.text) | default(iv) -%}
+                {%- if raw is string -%}{%- set lab = raw -%}
+                {%- else -%}{%- set lab = raw[lang] | default(raw.ar) | default(raw.en) | default(iv) -%}{%- endif -%}
+                {{ iv | dump | safe }}: {{ lab | dump | safe }},
+              {%- endif -%}
+            {%- endfor -%}
+            },
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    }
+  };
+</script>
+
+
+<section id="hy-shop-{{ id }}"
+         class="hy-shop"
+         style="--shop-cols: {{ colsD }}; --shop-cols-lg: {{ colsT }}; --shop-cols-md: {{ colsT }}; --shop-cols-sm: {{ colsM }};{% if cardRatioVal %} --hy-card-ratio: {{ cardRatioVal }};{% endif %}"
+         x-data="collectionFilter(window.__hyShopCfg_{{ id }})">
+  <div class="hy-container">
+
+    {# ═══════════════ cover ═══════════════
+       The collection's own artwork. Qumra exposes it as `collection.image`
+       (docs/qalab/variables.md), and the theme read the title and the
+       description off that object but never the picture — so a merchant who
+       uploaded a cover saw it on the collections grid and on the home page
+       tiles, and NOT on the collection's own page.
+
+       Above the head, not behind it. Copy laid over a photograph needs a tone
+       switch and a scrim to stay legible — that is why the hero carries both
+       per slide — and a collection cover is merchant artwork this section
+       cannot preview. The band sits on its own and the title reads on the page
+       ground underneath it, which is legible against any image that can be
+       uploaded.
+
+       No setting: a cover shows when there is one. #}
+    {% set coverUrl = col.image.fileUrl if col and col.image and col.image.fileUrl and not col.image.notFound else '' %}
+    {% if coverUrl %}
+      <div class="hy-shop-cover">
+        <img src="{{ coverUrl }}" alt="{{ title }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    {# ═══════════════ head ═══════════════ #}
+    <div class="hy-shop-head">
+      {% if showCrumbs %}
+        <nav class="hy-crumbs" aria-label="{{t('common.home')}}">
+          <a href="/">{{t('common.home')}}</a>
+          <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+          </svg>
+          {% if col %}
+            <a href="/shop">{{t('pages.shop.all_products')}}</a>
+            <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+            </svg>
+          {% endif %}
+          <span aria-current="page">{{ title }}</span>
+        </nav>
+      {% endif %}
+
+      <h1 class="hy-shop-title">{{ title }}</h1>
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+           HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+           the outer one and the content becomes a SIBLING, so every style on
+           this class stops reaching the text. Inner margins are reset in the CSS. #}
+      {% if desc %}<div class="hy-shop-desc">{{ desc | safe }}</div>{% endif %}
+    </div>
+
+    {# ═══════════════ collection rail ═══════════════ #}
+    {% if showRail %}
+      <div class="hy-shop-rail" role="group" aria-label="{{t('common.categories')}}">
+        <button type="button" class="hy-chip" :class="!collectionId && 'is-active'"
+                @click="setCollection('', '')">{{t('common.view_all')}}</button>
+        {% for c in collections %}
+          {# data- attributes, not interpolation — see the note in
+             ui/filter-panel.njk for why `| dump` breaks an HTML attribute. #}
+          <button type="button" class="hy-chip"
+                  data-id="{{ c._id }}"
+                  data-slug="{{ c.slug | default('', true) }}"
+                  :class="collectionId === $el.dataset.id && 'is-active'"
+                  @click="setCollection($el.dataset.id, $el.dataset.slug)">{{ c.title }}</button>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ⚠️  The modifier is load-bearing. `.hy-shop-body` is a TWO-column grid on
+       desktop (aside + main); with filters off the <aside> below is not
+       rendered at all, so `.hy-shop-main` fell into the 250px sidebar track and
+       the whole shop squeezed into a narrow strip beside empty space. #}
+    <div class="hy-shop-body{{ ' hy-shop-body--nofilter' if not showFilters }}">
+
+    {# ═══════════════ sidebar (desktop) ═══════════════ #}
+    {% if showFilters %}
+      <aside class="hy-shop-aside" aria-label="{{t('pages.search.filter')}}">
+        <div class="hy-shop-aside-head">
+          <span class="hy-label">{{t('pages.search.filter')}}</span>
+          <button type="button" class="hy-shop-clear" x-show="activeCount > 0" x-cloak
+                  @click="clearFilters()">{{t('common.delete')}}</button>
+        </div>
+        {% ui "filter-panel.njk", filters=filters, lang=lang %}
+      </aside>
+    {% endif %}
+
+    <div class="hy-shop-main">
+
+    {# ═══════════════ toolbar ═══════════════ #}
+    <div class="hy-shop-bar">
+      <span class="hy-shop-count">
+        {% if showCount %}<span id="products-count-toolbar" x-show="!loading"></span>{% endif %}
+      </span>
+
+      <div class="hy-shop-tools">
+        {% if showFilters %}
+          <button type="button" class="hy-shop-btn hy-shop-filter-btn" onclick="toggleModal('filters')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path stroke-linecap="round" d="M3.5 7h17M6.5 12h11M10 17h4"/>
+            </svg>
+            {{t('pages.search.filter')}}
+            <span class="count" x-show="activeCount > 0" x-text="activeCount" x-cloak></span>
+          </button>
+        {% endif %}
+
+        {% if showSort %}
+          <div class="hy-sort" @click.outside="sortOpen = false">
+            {# `aria-label` is the button's PURPOSE and stays put; the span below
+               shows the CURRENT VALUE and changes. A control needs both — and
+               the span's text arrives from Alpine, so it also carries a
+               server-rendered fallback for the first paint. #}
+            <button type="button" class="hy-shop-btn" @click="sortOpen = !sortOpen"
+                    aria-label="{{ t('pages.collection.sort') }}"
+                    :aria-expanded="sortOpen ? 'true' : 'false'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>
+              </svg>
+              {# Naming the active sort saves a click: the shopper can see what
+                 order they are in without opening the menu to find the tick.
+
+                 ⚠️  The labels are read off the config object, NOT interpolated
+                 here. `| dump` emits double quotes and the first one closes
+                 this attribute — Alpine then hands a truncated expression to
+                 its parser, which throws `Unexpected token '}'` and takes down
+                 EVERY Alpine component on the page, not just this one. #}
+              <span x-text="window.__hyShopCfg_{{ id }}.sortLabels[currentSort] || window.__hyShopCfg_{{ id }}.sortLabels['']">{{ t('pages.search.sort_by') }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="hy-sort-menu" x-show="sortOpen" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+              {% for o in sortOptions %}
+                <button type="button" :class="currentSort === '{{ o.value }}' && 'is-active'"
+                        @click="sortBy('{{ o.value }}')">
+                  <span>{{ o.label }}</span>
+                  <svg x-show="currentSort === '{{ o.value }}'" x-cloak width="13" height="13" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                  </svg>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {# ---- column switcher ----
+           Stored per visitor: someone who prefers a denser grid should not have
+           to set it again on the next collection. #}
+        <div class="hy-cols-switch" role="group" aria-label="{{t('pages.search.products')}}"
+             x-data="{
+               /* A stored preference must not outrank a merchant who has
+                  since CHANGED the setting — it did, and `عدد الأعمدة (كمبيوتر)`
+                  looked permanently broken for anyone who had ever touched this
+                  switch. The merchant's value is stamped alongside the choice;
+                  when it differs the stored choice is stale and gets dropped. */
+               n: (function () {
+                    var def = {{ colsD }};
+                    try {
+                      if (+localStorage.getItem('hy-shop-cols-def') !== def) {
+                        localStorage.setItem('hy-shop-cols-def', def);
+                        localStorage.removeItem('hy-shop-cols');
+                        return def;
+                      }
+                      return +localStorage.getItem('hy-shop-cols') || def;
+                    } catch (e) { return def }
+                  })(),
+               set(v) { this.n = v; try { localStorage.setItem('hy-shop-cols', v); localStorage.setItem('hy-shop-cols-def', {{ colsD }}) } catch (e) {}
+                        document.getElementById('hy-shop-{{ id }}').style.setProperty('--shop-cols', v); if (window.hyMarkLone) window.hyMarkLone() }
+             }"
+             x-init="document.getElementById('hy-shop-{{ id }}').style.setProperty('--shop-cols', n)">
+          {% for n in [3, 4, 5] %}
+            <button type="button" :class="n === {{ n }} && 'is-active'" @click="set({{ n }})"
+                    aria-label="{{ n }}">{{ n }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {# ═══════════════ active filter chips ═══════════════ #}
+    {% if showFilters %}
+      <div class="hy-shop-rail" x-show="activeChips.length > 0" x-cloak>
+        <button type="button" class="hy-chip hy-chip--removable" @click="clearFilters()">
+          {{t('pages.search.clear_all')}}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        <template x-for="chip in activeChips" :key="chip.handle + chip.value">
+          {# Named by the filter's VALUE alone, the chip told a screen-reader
+             user nothing about what pressing it does. #}
+          <button type="button" class="hy-chip hy-chip--removable"
+                  :aria-label="{{ t('common.remove') | dump | escape }} + ' ' + chip.label"
+                  @click="toggleFilter(chip.handle, chip.value)">
+            <span x-text="chip.label"></span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </template>
+      </div>
+    {% endif %}
+
+    {# ═══════════════ grid ═══════════════
+       Qumra mounts the `shop-products` widget inside the wrapper below. It is
+       left EMPTY on purpose — anything rendered here would be replaced on the
+       first filter run and flash. #}
+    <div class="hy-shop-stage" :class="loading && 'is-loading'">
+      <span class="hy-spinner hy-shop-spinner" x-show="loading" x-cloak></span>
+      <div id="products-grid-wrapper" data-qumra-section="shop-products"></div>
+    </div>
+
+    </div>{# /hy-shop-main #}
+    </div>{# /hy-shop-body #}
+
+  </div>
+
+  {# ═══════════════ filter drawer ═══════════════ #}
+  {% if showFilters %}
+    <div x-cloak>
+      {# ⚠️  Driven by $store.modal, NOT by a local `filtersOpen`.
+         It used to be local, which meant this was the only drawer in the theme
+         outside the modal system — and it silently lost the two things that
+         system provides: ModalController locks body scroll on open, so the page
+         behind this one scrolled under a shopper's finger; and the global Esc
+         handler reads ModalController.current, so Esc did nothing here while it
+         closed the cart, the menu and the search sheet.
+         It also means only one overlay can be open at a time, which was already
+         true for the other three and not for this one. #}
+      <div class="taqa-overlay" x-show="$store.modal.current === 'filters'" @click="$store.modal.close()"
+           x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+           x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
+      <div class="taqa-drawer" :class="{ 'is-open': $store.modal.current === 'filters' }" style="max-width: 380px;"
+           role="dialog" aria-label="{{t('pages.search.filter')}}">
+        <div class="taqa-drawer-head">
+          <span class="hy-label">{{t('pages.search.filter')}}</span>
+          <button type="button" @click="$store.modal.close()" class="hy-icon-btn" aria-label="{{t('common.close')}}">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+              <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="taqa-drawer-body taqa-scroll-thin">
+          {# The same partial as the sidebar — see the note in its header. #}
+          {% ui "filter-panel.njk", filters=filters, lang=lang %}
+        </div>
+
+        <div class="taqa-drawer-foot" style="display: flex; gap: 10px;">
+          <button type="button" class="hy-btn hy-btn--outline hy-btn--sm" style="flex:1"
+                  @click="clearFilters()">{{t('common.delete')}}</button>
+          <button type="button" class="hy-btn hy-btn--solid hy-btn--sm" style="flex:1"
+                  @click="$store.modal.close()">{{t('pages.search.apply')}}</button>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay LAST — it and the widget's own <style>
+   target the same id at the same specificity, so source order decides. #}
+{% ui "section-colors.njk", scope='#hy-shop-' ~ id, c=d %}

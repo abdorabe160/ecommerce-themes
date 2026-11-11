@@ -1,0 +1,92 @@
+{#
+  ============================================================================
+  MUHARRIK · KINETIC STRIP · شريط نص متحرك
+  ----------------------------------------------------------------------------
+     ──────────────────────────────────────────────────────────────────
+      PERFORMANCE ✦ ⌐CAR CARE⌐ ✦ LIGHTING ✦ ⌐DETAILING⌐ ✦ PERFORMANCE …
+     ──────────────────────────────────────────────────────────────────
+
+  Ported from morva/widgets/kinetic-strip, built on the .mh-marquee primitive
+  (muharrik.css): two identical tracks side by side, each sliding by its own
+  width, so the loop is seamless. Words alternate solid / hollow (outline),
+  with a yellow separator between them. Words come from ONE text field,
+  separated by `|` — "الأداء | العناية | الإضاءة". Empty → the theme's
+  car-accessories words in the visitor's language.
+
+  The inline script only tops the track up: a short list on a wide screen
+  gets its words repeated until each track is at least as wide as the strip,
+  which is what keeps the loop gap-free. Hover pauses (primitive).
+
+  Styles: assets/mh-hero.css → "KINETIC STRIP".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% set raw = d.text | default('', true) | trim %}
+{% if not raw %}
+  {% set raw = 'الأداء | العناية بالسيارة | الإضاءة | التلميع | الإطارات' if isAr else 'Performance | Car care | Lighting | Detailing | Tyres' %}
+{% endif %}
+{% set words = [] %}
+{% for w in raw.split('|') %}
+  {% set wt = w | trim %}
+  {% if wt %}{% set _ = words.push(wt) %}{% endif %}
+{% endfor %}
+{% if (words | length) == 0 %}{% set _ = words.push(raw) %}{% endif %}
+
+{% set sep = d.separator | default('star', true) %}
+{% set tone = d.tone | default('alternate', true) %}
+{% set size = d.size | default('large', true) %}
+{% set speed = d.speed | default(30, true) %}
+{% set dirn = d.direction | default('forward', true) %}
+{# repeat the list so even one short word fills a phone screen; the script
+   adds more copies on wider screens #}
+{% set reps = 4 if (words | length) < 3 else 2 %}
+
+<section id="mh-ks-{{ id }}"
+         class="mh-ks mh-ks--{{ size }} is-sep-{{ sep }} is-tone-{{ tone }}{{ ' is-reverse' if dirn == 'reverse' }}{{ ' has-rules' if d.show_rules != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 0 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 0 }}px; --mh-marquee-speed: {{ speed }}s;">
+  <p class="mh-sr">{{ words | join(' · ') }}</p>
+  <div class="mh-marquee mh-ks-marquee" data-mh-ks aria-hidden="true">
+    {% for t in range(0, 2) %}
+      <div class="mh-marquee-track mh-ks-track">
+        {% for r in range(0, reps) %}
+          {% for w in words %}
+            {% set k = (r * (words | length)) + loop.index0 %}
+            <span class="mh-ks-w {{ 'is-outline' if (k % 2 == 1) else 'is-solid' }}">{{ w | safe }}</span><span class="mh-ks-sep" aria-hidden="true">{% if sep == 'star' %}&#10022;{% elif sep == 'dot' %}●{% elif sep == 'slash' %}//{% else %}<i></i>{% endif %}</span>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var root = document.getElementById('mh-ks-{{ id }}');
+      var box = root && root.querySelector('[data-mh-ks]');
+      if (!box || box.__mhKs) return;
+      box.__mhKs = true;
+      function fill() {
+        var need = box.clientWidth;
+        if (!need) return;
+        box.querySelectorAll('.mh-ks-track').forEach(function (track) {
+          var guard = 0;
+          var seed = Array.prototype.slice.call(track.children);
+          while (track.scrollWidth < need && guard < 12) {
+            seed.forEach(function (c) { track.appendChild(c.cloneNode(true)); });
+            guard++;
+          }
+        });
+      }
+      fill();
+      var t;
+      window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fill, 200); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-ks-' ~ id, c=d %}

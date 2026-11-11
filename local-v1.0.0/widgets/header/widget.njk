@@ -1,0 +1,590 @@
+{# ============================================================================
+   LOCAL · HEADER — two rows
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │ LOGO   ( ⌕  ابحث عن…                              )  ( ◯ زر )  (■ 🛒 ٠٫٠٠ (0)) │  row 1
+     ├──────────────────────────────────────────────────────────────────────────┤
+     │ تصنيفات ⌄   من نحن ⌄   المدونة …             ▣ سطر صغير   ▣ سطر صغير   ع/E │  row 2
+     │                                                سطر رئيسي    سطر رئيسي       │
+     └──────────────────────────────────────────────────────────────────────────┘
+   Phone:  ☰  LOGO  ………  (🛒 0)   /   ( ⌕ search field — full width )
+
+   ── What the reference has that Qumra does NOT, and what replaces it ──
+   · "Account" button   → Qumra ships no account routes, so the outlined pill is
+     a merchant-defined link (`action_link_*`) and renders NOTHING until filled.
+   · "Select store" / "See estimates" → there is no store-picker or delivery
+     estimate API. The two slots are plain "quick info" items — icon, two lines,
+     optional link — so the merchant can say something true there.
+   · Mega menu with nested columns → the `menu` setting is a FLAT list, so a
+     dropdown is that list split across 1–4 columns plus one promo image.
+
+   ── Why the quick-info items are flat settings, not blocks ──
+   The nav already uses `nav_item` blocks, and the field that tells two block
+   types apart in one widget is undocumented in Qumra. Two fixed slots match
+   the design exactly and cannot misfire.
+
+   ── The search field is a real form ──
+   `/shop?q=` IS the results page (collectionFilter() reads `q` on init). The
+   live panel calls Qumra.search.suggest() → /ajax/search/suggest.
+
+   Contracts with the rest of the theme — do not rename:
+     toggleModal('sidebar' | 'cart') · $store.cart.* · $store.search.*
+     --lc-header-h on <html> (scroll-padding, sticky filters, hero offsets)
+     #lc-header-spacer-* (hidden by the print stylesheet)
+   Styling: assets/style.css → "15.1 HEADER · LOCAL".
+   ========================================================================= #}
+
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set navItems = widget.blocks | default([], true) %}
+
+{% set storeName = store.name | default('Local') %}
+{% set logo = d.header_logo if d.header_logo and d.header_logo.fileUrl else store.logo %}
+{% set logoH = d.logo_height | default(44) %}
+
+{% set isSticky = d.sticky | default(true) %}
+{% set showSearch = d.show_search | default(true) %}
+{% set searchPh = d.search_placeholder | default(t('header.search_placeholder'), true) %}
+{% set actionUrl = d.action_link_url | default('', true) %}
+{% set actionLabel = d.action_link_label | default('', true) %}
+{% set actionIcon = d.action_link_icon | default('whatsapp') %}
+{% set showCart = d.show_cart | default(true) %}
+{% set showTotal = d.cart_show_total | default(true) %}
+
+{% set navOn = d.nav_enabled | default(true) %}
+{% set navExtra = d.nav_extra_menu | default('', true) %}
+{% set showLocale = d.show_locale | default(true) %}
+
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+
+{# Quick-info slots — see the note above for why these are not blocks. #}
+{% set infos = [
+  { on: d.info1_enabled | default(true), icon: d.info1_icon | default('store'), eyebrow: d.info1_eyebrow, title: d.info1_title, url: d.info1_url },
+  { on: d.info2_enabled | default(true), icon: d.info2_icon | default('box'),   eyebrow: d.info2_eyebrow, title: d.info2_title, url: d.info2_url }
+] %}
+{% set hasInfo = (infos | selectattr('on') | selectattr('title') | list | length) > 0 %}
+{% set hasNavRow = navOn and ((navItems | length) > 0 or navExtra or hasInfo or showLocale) %}
+
+{# ---- Current path, for the active-link underline ----
+   Trailing slash stripped; home collapses to '' so the match is an equality
+   test. Items whose URL carries a query match on the whole URL instead. #}
+{% set curFull = page.url | default('/') %}
+{% set curPath = curFull.split('?')[0] %}
+{% set curPath = curPath.slice(0, -1) if (curPath | length) > 1 and curPath.slice(-1) == '/' else curPath %}
+{% set curPath = '' if curPath == '/' else curPath %}
+
+
+{# ============================ MACROS ============================ #}
+
+{# Menus nest up to three levels (item → children → children). Sub-levels
+   used to be dropped, so a nested category was unreachable from the header. #}
+{% macro menuLinks(menu, cls) %}
+  {% for item in (menu.items if menu.items else menu) %}
+    <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="{{ cls }}">{{ item.title }}</a>
+    {% for c in item.children | default([], true) %}
+      <a href="{{ c.url | default('#') }}"{{ extAttrs(c.url) }} class="{{ cls }} lc-link-sub">{{ c.title }}</a>
+      {% for g in c.children | default([], true) %}
+        <a href="{{ g.url | default('#') }}"{{ extAttrs(g.url) }} class="{{ cls }} lc-link-sub lc-link-sub2">{{ g.title }}</a>
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro caret() %}
+  <svg class="lc-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"
+       stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/>
+  </svg>
+{% endmacro %}
+
+{% macro icon(key, size) %}
+  <svg width="{{ size | default(20) }}" height="{{ size | default(20) }}" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if key == 'store' %}
+      <path d="M3.5 9.5V20h17V9.5"/><path d="M2.5 9.5 4.3 4h15.4l1.8 5.5"/>
+      <path d="M2.5 9.5a2.4 2.4 0 0 0 4.8 0 2.4 2.4 0 0 0 4.7 0 2.4 2.4 0 0 0 4.7 0 2.4 2.4 0 0 0 4.8 0"/>
+      <path d="M6.5 20v-6h4v6"/><path d="M13.5 13.5h4v3.5h-4z"/>
+    {% elif key == 'box' %}
+      <path d="m12 2.8 8.5 4.6v9.2L12 21.2l-8.5-4.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6"/><path d="M12 12v9.2"/>
+      <path d="m7.8 5.1 8.5 4.6"/><path d="M15 15.2v2.4l2.2-1.2v-2.4z"/>
+    {% elif key == 'truck' %}
+      <path d="M2.5 6.5h11v10h-11z"/><path d="M13.5 10h4l3 3.2v3.3h-7z"/>
+      <circle cx="6.5" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>
+    {% elif key == 'phone' %}
+      <path d="M5 3.8h3.1l1.6 4-2 1.3a11.4 11.4 0 0 0 5.2 5.2l1.3-2 4 1.6v3.1a1.8 1.8 0 0 1-2 1.8A15.9 15.9 0 0 1 3.2 5.8a1.8 1.8 0 0 1 1.8-2Z"/>
+    {% elif key == 'whatsapp' %}
+      <path d="M3.5 20.5 5 16.8A7.8 7.8 0 1 1 8 19.4l-4.5 1.1Z"/><path d="M9 9.4c0 3 2.6 5.6 5.6 5.6"/>
+    {% elif key == 'clock' %}
+      <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+    {% elif key == 'pin' %}
+      <path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/>
+    {% elif key == 'gift' %}
+      <path d="M3.5 8.5h17v4h-17z"/><path d="M5 12.5V20h14v-7.5"/><path d="M12 8.5V20"/>
+      <path d="M12 8.5C10.5 5 7 4.6 7 6.6c0 1.6 2.6 1.9 5 1.9 2.4 0 5-.3 5-1.9 0-2-3.5-1.6-5 1.9Z"/>
+    {% elif key == 'shield' %}
+      <path d="M12 3 4.5 6v5.5c0 4.4 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5.1 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>
+    {% elif key == 'heart' %}
+      <path d="M12 20.3 4.8 13.4a4.4 4.4 0 0 1 6.2-6.2l1 1 1-1a4.4 4.4 0 0 1 6.2 6.2L12 20.3Z"/>
+    {% elif key == 'globe' %}
+      <circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.3 2.3 3.4 5.2 3.4 8.5s-1.1 6.2-3.4 8.5c-2.3-2.3-3.4-5.2-3.4-8.5S9.7 5.8 12 3.5Z"/>
+    {% else %}
+      <circle cx="12" cy="8.2" r="3.6"/><path d="M5.6 19.6a6.8 6.8 0 0 1 12.8 0"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+<header id="lc-header-{{ id }}" class="lc-header {{ 'is-sticky' if isSticky }}">
+
+  {# ═══════════════════════ ROW 1 · brand · search · actions ═══════════════════════ #}
+  <div class="lc-hmain">
+    <div class="lc-hwrap lc-hmain-row">
+
+      <button type="button"
+              onclick="toggleModal('sidebar')"
+              class="lc-hburger"
+              aria-label="{{ t('common.menu') }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" d="M3.5 7h17M3.5 12h17M3.5 17h17"/>
+        </svg>
+      </button>
+
+      <a href="/" class="lc-brand" aria-label="{{ storeName }}">
+        {% if logo and logo.fileUrl %}
+          <img src="{{ logo.fileUrl }}" alt="{{ storeName }}" class="lc-brand-logo" style="--lc-logo-h: {{ logoH }}px;"/>
+        {% else %}
+          <span class="lc-wordmark">{{ storeName }}</span>
+        {% endif %}
+      </a>
+
+      {% if showSearch %}
+        {# Always open — the field IS the control. Focus + ≥2 characters is what
+           brings the results panel down. #}
+        <div class="lc-search"
+             x-data="lcSearch({{ 'true' if (d.search_show_suggestions | default(true)) else 'false' }})"
+             @click.outside="close()"
+             @keydown.escape.window="close()">
+
+          {# `action` is static: Alpine boots at the end of <body>, and Enter
+             must work before it does. #}
+          <form class="lc-search-field" role="search" method="get" action="/shop" @submit="close()">
+            <svg class="lc-search-glyph" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9"/>
+            </svg>
+            <input type="search"
+                   name="q"
+                   x-ref="field"
+                   x-model="q"
+                   class="lc-search-input"
+                   autocomplete="off"
+                   @focus="focused = true"
+                   @input.debounce.250ms="run()"
+                   @keydown.arrow-down.prevent="move(1)"
+                   @keydown.arrow-up.prevent="move(-1)"
+                   @keydown.enter="if (enter()) $event.preventDefault()"
+                   :aria-activedescendant="active >= 0 ? 'lc-sr-{{ id }}-' + active : null"
+                   aria-autocomplete="list"
+                   placeholder="{{ searchPh }}"
+                   aria-label="{{ t('header.search') }}"/>
+            <button type="button"
+                    class="lc-search-clear"
+                    x-show="q.length > 0"
+                    x-cloak
+                    @click="clearQuery()"
+                    aria-label="{{ t('pages.search.clear') }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </form>
+
+          <div class="lc-spanel"
+               x-show="panelOpen"
+               x-cloak
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="opacity-0 -translate-y-1"
+               x-transition:enter-end="opacity-100 translate-y-0"
+               x-transition:leave="transition ease-in duration-150"
+               x-transition:leave-start="opacity-100"
+               x-transition:leave-end="opacity-0">
+
+            <div x-show="loading" class="lc-spanel-state">
+              <span class="lc-spinner" style="width: 22px; height: 22px;"></span>
+            </div>
+
+            <template x-if="!loading && (terms.length || results.length)">
+              <div>
+                <template x-if="terms.length">
+                  <div class="lc-spanel-block">
+                    <p class="lc-spanel-head">{{ t('pages.search.suggestions') }}</p>
+                    <div class="lc-spanel-chips">
+                      <template x-for="term in terms" :key="term">
+                        <a class="lc-chip" :href="'/shop?q=' + encodeURIComponent(term)" x-text="term"></a>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="results.length">
+                  <div class="lc-spanel-block">
+                    <p class="lc-spanel-head">{{ t('pages.search.related') }}</p>
+                    <div class="lc-sres">
+                      <template x-for="(p, i) in results" :key="p._id">
+                        <a class="lc-sres-row"
+                           :id="'lc-sr-{{ id }}-' + i"
+                           :class="active === i && 'is-active'"
+                           @mouseenter="active = i"
+                           :href="productUrl(p)">
+                          <span class="lc-sres-media">
+                            <template x-if="p.images && p.images.length">
+                              <img :src="p.images[0].fileUrl" :alt="p.title" loading="lazy"/>
+                            </template>
+                          </span>
+                          <span class="lc-sres-name" x-text="p.title"></span>
+                          <span class="lc-sres-money">
+                            <span class="lc-sres-price" :class="onSale(p) && 'is-sale'" x-text="money(p.pricing && p.pricing.price)"></span>
+                            <template x-if="onSale(p)">
+                              <span class="lc-sres-was" x-text="money(p.pricing.compareAtPrice)"></span>
+                            </template>
+                          </span>
+                        </a>
+                      </template>
+                    </div>
+                    <a class="lc-spanel-all" :href="allUrl()">
+                      <span>{{ t('pages.search.view_all') }}</span>
+                      <svg class="lc-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
+                      </svg>
+                    </a>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <div x-show="!loading && searched && !terms.length && !results.length" class="lc-spanel-state">
+              <p>{{ t('pages.search.no_results') }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="lc-hactions">
+        {% if actionUrl %}
+          <a href="{{ actionUrl }}"{{ extAttrs(actionUrl) }}
+             class="lc-pill lc-pill--outline {{ 'lc-pill--icon' if not actionLabel }}"
+             {% if not actionLabel %}aria-label="{{ t('header.quick_link') }}"{% endif %}>
+            {{ icon(actionIcon, 21) }}
+            {% if actionLabel %}<span class="lc-pill-text">{{ actionLabel }}</span>{% endif %}
+          </a>
+        {% endif %}
+
+        {% if showCart %}
+          {# SSR prints the real total and count so the pill is right on the first
+             paint; Alpine takes over on the same values once it boots. #}
+          {% set ssrQty = cart.totalQuantity | default(0, true) %}
+          <button type="button"
+                  onclick="toggleModal('cart')"
+                  class="lc-pill lc-pill--solid lc-cart-btn"
+                  aria-label="{{ t('header.cart') }}"
+                  x-data>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.2 3h2.6l2.4 11.2a1.7 1.7 0 0 0 1.7 1.4h8.3a1.7 1.7 0 0 0 1.7-1.3L20.6 7H6"/>
+              <circle cx="9.4" cy="20" r="1.3"/><circle cx="17.6" cy="20" r="1.3"/>
+            </svg>
+            <span class="lc-cart-meta">
+              {% if showTotal %}
+                <span class="lc-cart-total"
+                      x-text="Qumra.utils.formatMoney($store.cart.totalPrice || 0)">{{ cart.totalPrice | default(0, true) | money }}</span>
+              {% endif %}
+              <span class="lc-cart-count">(<span x-text="$store.cart.totalQuantity">{{ ssrQty }}</span>)</span>
+            </span>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════════════ ROW 2 · nav · quick info · language ═══════════════════════ #}
+  {% if hasNavRow %}
+    <div class="lc-hnav">
+      <div class="lc-hwrap lc-hnav-row"
+           x-data="{
+             open: null,
+             _t: null,
+             show(k) { clearTimeout(this._t); this.open = k },
+             hide()  { clearTimeout(this._t); this._t = setTimeout(() => { this.open = null }, 160) },
+             close() { clearTimeout(this._t); this.open = null }
+           }"
+           @keydown.escape.window="close()">
+
+        <nav class="lc-nav" aria-label="{{ t('common.menu') }}">
+          {% for block in navItems %}
+            {# Block settings live on `.data`, never on the block itself. #}
+            {% set b = block.data %}
+            {% if b.nav_label %}
+              {% set links = b.nav_menu.items if b.nav_menu and b.nav_menu.items else b.nav_menu %}
+              {% set hasDrop = links and (links | length) > 0 %}
+              {% set cols = b.nav_columns | default('1') %}
+              {% set promo = b.nav_image.fileUrl if b.nav_image and b.nav_image.fileUrl else '' %}
+              {% set wide = cols != '1' %}
+
+              {% set bRaw = b.nav_url | default('', true) %}
+              {% set bUrl = bRaw.split('?')[0] %}
+              {% set bUrl = bUrl.slice(0, -1) if (bUrl | length) > 1 and bUrl.slice(-1) == '/' else bUrl %}
+              {% set bUrl = '' if bUrl == '/' else bUrl %}
+              {% set isActive = (bRaw == curFull) if (bRaw.indexOf('?') > -1) else (bUrl == curPath) %}
+
+              <div class="lc-nav-item {{ 'lc-nav-item--wide' if hasDrop and wide }}"
+                   {% if hasDrop %}@mouseenter="show({{ loop.index }})" @mouseleave="hide()"{% endif %}>
+                <a href="{{ b.nav_url | default('#') }}"
+                   class="lc-nav-link {{ 'is-active' if isActive }} {{ 'is-hot' if b.nav_highlight }}"
+                   {% if hasDrop %}@focus="show({{ loop.index }})" :aria-expanded="open === {{ loop.index }} ? 'true' : 'false'"{% endif %}>
+                  <span>{{ b.nav_label }}</span>
+                  {% if b.nav_badge %}<span class="lc-nav-badge">{{ b.nav_badge }}</span>{% endif %}
+                  {% if hasDrop %}{{ caret() }}{% endif %}
+                </a>
+
+                {% if hasDrop %}
+                  <div class="lc-drop {{ 'lc-drop--wide' if wide }}"
+                       x-show="open === {{ loop.index }}"
+                       x-cloak
+                       @mouseenter="show({{ loop.index }})"
+                       @mouseleave="hide()"
+                       x-transition:enter="transition ease-out duration-200"
+                       x-transition:enter-start="opacity-0 -translate-y-1"
+                       x-transition:enter-end="opacity-100 translate-y-0"
+                       x-transition:leave="transition ease-in duration-150"
+                       x-transition:leave-start="opacity-100"
+                       x-transition:leave-end="opacity-0">
+                    <div class="lc-drop-inner">
+                      <div class="lc-drop-links" style="--lc-drop-cols: {{ cols }};">
+                        {{ menuLinks(b.nav_menu, 'lc-drop-link') }}
+                      </div>
+                      {% if promo and wide %}
+                        <a href="{{ b.nav_image_url | default(b.nav_url) | default('#') }}" class="lc-drop-promo">
+                          <img src="{{ promo }}" alt="{{ b.nav_image_caption | default('', true) }}" loading="lazy"/>
+                          {% if b.nav_image_caption %}<span class="lc-drop-promo-cap">{{ b.nav_image_caption }}</span>{% endif %}
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if navExtra %}
+            {% for item in (navExtra.items if navExtra.items else navExtra) %}
+              <div class="lc-nav-item">
+                <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="lc-nav-link"><span>{{ item.title }}</span></a>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </nav>
+
+        <div class="lc-haside">
+          {% for info in infos %}
+            {% if info.on and info.title %}
+              {% set tag = 'a' if info.url else 'div' %}
+              <{{ tag }} class="lc-info"{% if info.url %} href="{{ info.url }}"{{ extAttrs(info.url) }}{% endif %}>
+                <span class="lc-info-icon">{{ icon(info.icon, 34) }}</span>
+                <span class="lc-info-text">
+                  {% if info.eyebrow %}<span class="lc-info-eyebrow">{{ info.eyebrow }}</span>{% endif %}
+                  <span class="lc-info-title">{{ info.title }}</span>
+                </span>
+              </{{ tag }}>
+            {% endif %}
+          {% endfor %}
+
+          {% if showLocale %}
+            {# Two languages, so one button that goes to the other one. #}
+            {% form 'lang' %}
+              <button type="submit" name="lang" value="{{ 'ar' if currentLang == 'en' else 'en' }}"
+                      class="lc-lang" aria-label="{{ t('common.language') }}">
+                {{ icon('globe', 18) }}
+                <span class="{{ 'font-body' if currentLang == 'en' else 'font-body-en' }}">{{ 'العربية' if currentLang == 'en' else 'English' }}</span>
+              </button>
+            {% endform %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</header>
+
+{# The search dimmer sits OUTSIDE <header>: the fixed header is a stacking
+   context, so a child could never paint below the bar it belongs to. #}
+{% if showSearch %}
+  <div class="lcb-overlay lc-sdim"
+       x-data
+       x-show="$store.search.open"
+       x-cloak
+       @click="$store.search.dismiss()"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"></div>
+{% endif %}
+
+{# A fixed header takes no flow space; the spacer reserves it. #}
+{% if isSticky %}
+  <div id="lc-header-spacer-{{ id }}" aria-hidden="true"></div>
+{% endif %}
+
+<script>
+  (function () {
+    var header = document.getElementById('lc-header-{{ id }}');
+    if (!header) return;
+
+    /* Height is published on <html> as --lc-header-h for scroll-padding and the
+       sticky offsets other sections use, and mirrored onto the spacer. It is
+       remeasured on every event that can change it: font swap, resize, the
+       phone layout wrapping the search onto its own line. */
+    var spacer = document.getElementById('lc-header-spacer-{{ id }}');
+    var sync = function () {
+      var h = header.offsetHeight;
+      if (spacer) spacer.style.height = h + 'px';
+      document.documentElement.style.setProperty('--lc-header-h', h + 'px');
+    };
+    sync();
+    window.addEventListener('load', sync);
+    window.addEventListener('resize', sync);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(header);
+
+    {% if isSticky %}
+    /* A hairline shadow once the page moves, so the pinned bar separates from
+       the content sliding under it. rAF-gated; 4px threshold ignores the
+       sub-pixel scroll events trackpads emit at rest. */
+    var ticking = false;
+    var apply = function () {
+      ticking = false;
+      header.classList.toggle('is-scrolled', window.scrollY > 4);
+    };
+    apply();
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(apply);
+    }, { passive: true });
+    window.addEventListener('pageshow', apply);
+    {% endif %}
+
+    {% if showSearch %}
+    document.addEventListener('alpine:init', function () {
+      if (window.__lcSearchReady) return;   /* the Theme Editor can re-inject */
+      window.__lcSearchReady = true;
+
+      /* `open` is reported by the field for the dimmer (a sibling, so it cannot
+         share x-data). `nonce` is the other direction: the dimmer bumps it to
+         say "dismissed". Two values, because "panel closed since the query got
+         short" and "the shopper clicked away" must not be the same event. */
+      Alpine.store('search', {
+        open: false,
+        nonce: 0,
+        dismiss: function () { this.nonce++; }
+      });
+
+      Alpine.data('lcSearch', function (showTerms) {
+        var COUNT = 4;
+        return {
+          q: '',
+          focused: false,
+          loading: false,
+          searched: false,
+          results: [],
+          terms: [],
+          active: -1,
+
+          get panelOpen() {
+            return this.focused && this.q.trim().length >= 2 && (this.loading || this.searched);
+          },
+
+          init: function () {
+            this.$watch('panelOpen', (v) => { Alpine.store('search').open = v; });
+            this.$watch('$store.search.nonce', () => this.close());
+          },
+
+          close: function () {
+            this.focused = false;
+            this.active = -1;
+            Alpine.store('search').open = false;
+          },
+
+          clearQuery: function () {
+            this.q = '';
+            this.results = [];
+            this.terms = [];
+            this.searched = false;
+            this.active = -1;
+            this.$refs.field && this.$refs.field.focus();
+          },
+
+          move: function (step) {
+            if (!this.panelOpen || !this.results.length) return;
+            var n = this.results.length;
+            this.active = this.active + step;
+            if (this.active >= n) this.active = -1;
+            if (this.active < -1) this.active = n - 1;
+          },
+
+          /* TRUE when it handled Enter, so the form does not also submit. */
+          enter: function () {
+            if (!this.panelOpen || this.active < 0 || !this.results[this.active]) return false;
+            window.location.href = this.productUrl(this.results[this.active]);
+            return true;
+          },
+
+          productUrl: function (p) { return '/products/' + (p.slug || p.handle || p._id); },
+          allUrl: function () { return '/shop?q=' + encodeURIComponent(this.q.trim()); },
+          money: function (v) { return Qumra.utils.formatMoney(v || 0); },
+          onSale: function (p) {
+            var c = p.pricing && p.pricing.compareAtPrice, x = p.pricing && p.pricing.price;
+            return !!(c && c > x);
+          },
+
+          run: function () {
+            var self = this;
+            var q = (this.q || '').trim();
+            this.active = -1;
+            this.focused = true;
+            if (q.length < 2) { this.results = []; this.terms = []; this.searched = false; return; }
+
+            this.loading = true;
+            /* suggest() is already debounced inside main.js; its third argument
+               is a result LIMIT, not a delay. */
+            Qumra.search.suggest(q, function (data) {
+              var r = (data && data.resources) || {};
+              var list = r.products || (data && data.products) || [];
+              self.results = list.slice(0, COUNT);
+              var terms = r.queries || [];
+              if (!terms.length && r.collections)
+                terms = r.collections.map(function (c) { return c.title; });
+              self.terms = showTerms ? terms.slice(0, 6) : [];
+              self.searched = true;
+              self.loading = false;
+            }, COUNT);
+          }
+        };
+      });
+    });
+    {% endif %}
+  })();
+</script>
+
+{# ---- Global panels triggered from the header ---- #}
+{% ui "sidebar.njk", nav_items=navItems, extra_menu=navExtra, socials=[], has_socials=false, currentLang=currentLang, showLang=showLocale, action_url=actionUrl, action_label=actionLabel %}
+{# Every argument is defaulted: Qalab's `{% ui %}` refuses an undefined value and
+   prints an error box instead of the drawer — a product/collection picker the
+   merchant never opened arrives as undefined, so the drawer broke on every page. #}
+{% ui "cart.njk", free_shipping=d.cart_free_shipping | default(0, true), upsell_title=d.cart_upsell_title | default('', true), upsell=d.cart_upsell_products | default([], true), empty_collections=d.cart_empty_collections | default([], true), footer_dark=d.cart_footer_dark | default(true), note=d.cart_note | default('', true) %}
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on. Last, so
+   it wins on source order over anything above that targets the same id. #}
+{% ui "section-colors.njk", scope='#lc-header-' ~ id, c=d %}

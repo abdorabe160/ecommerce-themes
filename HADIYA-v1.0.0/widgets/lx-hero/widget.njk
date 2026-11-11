@@ -1,0 +1,62 @@
+{# ============================================================================
+   HADIYA · Luxe · بانر فاخر  (lx-hero)
+   ----------------------------------------------------------------------------
+   ┌────────────────────────┬────────────────────────────┐
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│  ── دار هدايا               │
+   │▓▓▓ photograph, bleeds ▓│  هدايا تُحكى                │
+   │▓▓▓ to the page edge   ▓│  قبل ما تتفتح   ← gold       │
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│  وصف                        │
+   │▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│  [ تسوّق الهدايا ]  كل … →   │
+   └────────────────────────┴────────────────────────────┘
+
+   Half the screen is the photograph, not all of it: the free CC0 demo
+   photos top out at ~960px, which stays crisp at half of a 1440 screen and
+   would go soft stretched across all of it. A merchant's own upload fills the
+   same half at whatever resolution they give it.
+
+   The second title line is painted in the accent (gold) — the one flourish
+   the hero allows itself.
+
+   Styling: assets/theme.css → "LUXE · lx-hero".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set img = img if (img | length) else ('slot-hero.jpg' | assets) %}
+
+<section id="lx-hero-{{ id }}" class="lx-hero {{ 'lx-hero--end' if d.media_position == 'end' }}" aria-labelledby="lx-hero-t-{{ id }}">
+  <div class="lx-hero-media">
+    <picture>
+      {% if imgM | length %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+      <img src="{{ img }}" alt="" fetchpriority="high"/>
+    </picture>
+  </div>
+  <div class="lx-hero-copy">
+    {% if d.eyebrow %}<p class="lx-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+    <h1 id="lx-hero-t-{{ id }}" class="lx-hero-title">
+      {{ d.title | default(t('gifts.hero_title'), true) }}
+      {% if d.title_2 %}<span class="lx-gold">{{ d.title_2 }}</span>{% endif %}
+    </h1>
+    {% if d.text %}<div class="lx-hero-text">{{ d.text | safe }}</div>{% endif %}
+    {% if d.cta_text or d.link_text %}
+      <div class="lx-actions">
+        {% if d.cta_text %}<a class="lx-btn" href="{{ d.cta_url | default('/shop', true) }}">{{ d.cta_text }}</a>{% endif %}
+        {% if d.link_text %}
+          <a class="lx-link" href="{{ d.link_url | default('/collections', true) }}">{{ d.link_text }}
+            <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  #lx-hero-{{ id }} { --lx-hero-h: {{ d.height | default(88) }}vh; }
+</style>
+
+{% ui "section-colors.njk", scope='#lx-hero-' ~ id, c=d %}

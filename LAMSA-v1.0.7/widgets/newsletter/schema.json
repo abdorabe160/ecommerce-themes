@@ -1,0 +1,214 @@
+{
+  "name": "النشرة البريدية",
+  "settings": {
+    "action_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط استقبال البريد (مطلوب) — من Mailchimp أو Klaviyo أو أي مزوّد",
+        "en": "Form action URL (required) — from Mailchimp, Klaviyo or any provider"
+      },
+      "default": ""
+    },
+    "email_field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد عند المزوّد — Mailchimp: EMAIL · معظم المزوّدين: email",
+        "en": "Provider's email field name — Mailchimp: EMAIL · most others: email"
+      },
+      "default": "EMAIL"
+    },
+    "open_in_new_tab": {
+      "type": "boolean",
+      "label": {
+        "ar": "فتح صفحة المزوّد في تبويب جديد (يُبقي الزائرة في الموقع)",
+        "en": "Open the provider's page in a new tab (keeps the visitor on the site)"
+      },
+      "default": true
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "card",
+      "options": [
+        {
+          "value": "card",
+          "label": {
+            "ar": "بطاقة داخل الصفحة",
+            "en": "Inset card"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "شريط ممتد بعرض الشاشة",
+            "en": "Full-width strip"
+          }
+        },
+        {
+          "value": "split",
+          "label": {
+            "ar": "صورة + نموذج",
+            "en": "Image + form"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "sage",
+      "options": [
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج",
+            "en": "Sage"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose"
+          }
+        },
+        {
+          "value": "ink",
+          "label": {
+            "ar": "غامق",
+            "en": "Ink"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        }
+      ]
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة (لتقسيم «صورة + نموذج»)",
+        "en": "Image (split layout)"
+      }
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "النشرة"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "انضمّي إلى <em>القائمة</em>"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "النص التوضيحي",
+        "en": "Subtitle"
+      },
+      "default": "اشتركي لتصلك أحدث المنتجات والعروض ونصائح العناية."
+    },
+    "placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص داخل الحقل",
+        "en": "Input Placeholder"
+      },
+      "default": "بريدك الإلكتروني"
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button Text"
+      },
+      "default": "اشتراك"
+    },
+    "success_message": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة النجاح",
+        "en": "Success Message"
+      },
+      "default": "أهلاً بك في لمسة — تحقّقي من بريدك."
+    },
+    "show_consent": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مربّع الموافقة (يطلبه بعض المزوّدين)",
+        "en": "Show a consent checkbox (some providers require it)"
+      },
+      "default": false
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار ملاحظة الخصوصية",
+        "en": "Show the privacy note"
+      },
+      "default": true
+    },
+    "note_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص ملاحظة الخصوصية",
+        "en": "Privacy Note"
+      },
+      "default": "نحترم خصوصيتك، ويمكنك إلغاء الاشتراك في أي وقت."
+    },
+    "text_alignment": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "وسط",
+            "en": "Center"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "النشرة البريدية"
+    }
+  ]
+}

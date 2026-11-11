@@ -1,0 +1,23 @@
+{
+  "name": "الأقسام",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة التصنيفات",
+      "widget": "collections-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "المنيو",
+        "title": "كل الأقسام",
+        "description": "وجبات ومخبوزات وحلويات ومشروبات — أو ابدأ من مزاجك.",
+        "show_count": true,
+        "card_shape": "soft",
+        "card_ratio": "3/4",
+        "columns_desktop": "3"
+      }
+    }
+  ]
+}

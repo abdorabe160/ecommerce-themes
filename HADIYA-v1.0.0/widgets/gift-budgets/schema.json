@@ -1,0 +1,115 @@
+{
+  "name": "هدايا حسب الميزانية",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اتركه فارغاً لإخفائه",
+        "en": "Title — leave empty to hide"
+      },
+      "default": "هدايا حسب ميزانيتك"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر تحت العنوان — اتركه فارغاً لإخفائه",
+        "en": "Line under the title — leave empty to hide"
+      },
+      "default": ""
+    },
+    "steps": {
+      "type": "string",
+      "label": {
+        "ar": "▸ حدود الميزانية بنفس وحدة الأسعار الظاهرة، مفصولة بفاصلة — مثلاً 300، 700، 1500",
+        "en": "▸ Budget limits in the displayed price unit, comma-separated — e.g. 300, 700, 1500"
+      },
+      "default": "300، 700، 1500"
+    },
+    "base_url": {
+      "type": "string",
+      "label": {
+        "ar": "الصفحة اللي الكروت بتفتحها — /shop أو تصنيف زي /shop/gifts",
+        "en": "Page the cards open — /shop or a collection like /shop/gifts"
+      },
+      "default": "/shop"
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "ورق الهدايا الدافئ",
+            "en": "Warm gift paper"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الروابط والعناصر النشطة",
+        "en": "Accent — links and active elements"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الكروت",
+        "en": "Card background"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "هدايا حسب الميزانية"
+    }
+  ]
+}

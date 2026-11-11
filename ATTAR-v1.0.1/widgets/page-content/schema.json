@@ -1,0 +1,11 @@
+{
+  "name": "محتوى الصفحة",
+  "settings": {
+    "show_title": {
+      "type": "boolean",
+      "label": { "ar": "إظهار عنوان الصفحة", "en": "Show page title" },
+      "default": true
+    }
+  },
+  "presets": [{ "category": "الصفحات", "name": "محتوى الصفحة" }]
+}

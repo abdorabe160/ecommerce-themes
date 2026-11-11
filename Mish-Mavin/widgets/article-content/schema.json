@@ -1,0 +1,12 @@
+{
+  "name": "article-content",
+  "settings": {
+    "article": {
+      "type": "article",
+      "label": { "ar": "مقال (اختياري)", "en": "Article (optional)" }
+    }
+  },
+  "presets": [
+    { "category": "article", "name": "article-content" }
+  ]
+}

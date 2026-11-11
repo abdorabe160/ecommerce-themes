@@ -1,0 +1,17 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "kicker": "",
+        "show_title": true,
+        "title_override": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+    "layout": "layout",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "صفحة المنتج",
+            "widget": "product-detail",
+            "settings": {
+                "image_ratio": "3x4",
+                "show_zoom": true,
+                "show_breadcrumb": true,
+                "title_size": "md",
+                "show_savings": true,
+                "show_stock_status": true,
+                "colors_enabled": false
+            },
+            "blocks": [
+                {
+                    "block": "panel",
+                    "name": "الوصف",
+                    "settings": {
+                        "title": "الوصف",
+                        "source": "description",
+                        "open_by_default": true,
+                        "text": ""
+                    }
+                },
+                {
+                    "block": "panel",
+                    "name": "طريقة الاستخدام",
+                    "settings": {
+                        "title": "طريقة الاستخدام",
+                        "source": "text",
+                        "open_by_default": false,
+                        "text": ""
+                    }
+                },
+                {
+                    "block": "panel",
+                    "name": "العناية",
+                    "settings": {
+                        "title": "تعليمات العناية",
+                        "source": "text",
+                        "open_by_default": false,
+                        "text": ""
+                    }
+                },
+                {
+                    "block": "panel",
+                    "name": "الشحن والإرجاع",
+                    "settings": {
+                        "title": "الشحن والإرجاع",
+                        "source": "text",
+                        "open_by_default": false,
+                        "text": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "مجموعة مميزة: قد يعجبك أيضاً",
+            "widget": "collection-products",
+            "settings": {
+                "title": "قد يعجبك أيضاً",
+                "subtitle": "",
+                "view_all_text": "",
+                "view_all_url": "/shop",
+                "tab1_label": "",
+                "tab1_products": [],
+                "tab2_label": "",
+                "tab2_products": [],
+                "tab3_label": "",
+                "tab3_products": [],
+                "columns_desktop": "4",
+                "columns_mobile": "2",
+                "card_image_ratio": "1x1",
+                "background": "white",
+                "show_arrows": true,
+                "show_progress": true,
+                "promo_enabled": false,
+                "colors_enabled": false
+            }
+        }
+    ]
+}

@@ -1,0 +1,436 @@
+{# ============================================================================
+   LAMSA ROUTINE BUNDLE
+   Products presented as an ordered routine (cleanse → tone → serum → moisturise)
+   with a bundle bar that adds every step to the cart in one click.
+
+   Each `step` block picks its OWN product, so step order and labels are fully
+   under the merchant's control — no fragile pairing between two lists.
+
+   The total is computed client-side from the real product prices, so it can
+   never drift from what the products actually cost.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set steps = widget.blocks | default([]) %}
+{% set count = steps | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('row') %}
+{% set isList = layout == 'list' %}
+{% set bg = d.background | default('blush') %}
+
+{% set showPrices = d.show_prices | default(true) %}
+{% set showBar = d.show_bundle_bar | default(true) %}
+{% set bundlePrice = d.bundle_price | default(0, true) %}
+{% set bundleNote = d.bundle_note | default('') %}
+{% set ctaText = d.cta_text | default(t('routine.add_all'), true) %}
+
+{% if bg == 'white' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+
+{# ---- time-of-use chip ---- #}
+{% macro timeChip(when) %}
+  {% if when == 'morning' %}
+    <span class="lamsa-tag lamsa-tag--rose">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
+      </svg>
+      {{ t('routine.morning') }}
+    </span>
+  {% elif when == 'evening' %}
+    <span class="lamsa-tag lamsa-tag--sage">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.5 14.5A9 9 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/>
+      </svg>
+      {{ t('routine.evening') }}
+    </span>
+  {% elif when == 'both' %}
+    <span class="lamsa-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2"/>
+      </svg>
+      {{ t('routine.morning') }} · {{ t('routine.evening') }}
+    </span>
+  {% endif %}
+{% endmacro %}
+
+
+<style>
+  #lamsa-rb-{{ id }} { background: {{ bgVal }}; }
+
+  .lamsa-rb-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-rb-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-rb-{{ id }}-title { line-height: 1.34; }
+  .lamsa-rb-{{ id }}-title em { font-style: normal; color: var(--color-accent); }
+  .lamsa-rb-{{ id }}-title p { margin: 0; }
+
+  /* ================= steps track ================= */
+  .lamsa-rb-{{ id }}-track {
+    display: grid;
+    gap: 28px 20px;
+    grid-template-columns: 1fr;
+  }
+  {% if not isList %}
+  /* two up even on phones — four full-width squares was ~2000px of scroll */
+  .lamsa-rb-{{ id }}-track { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 12px; }
+  @media (min-width: 1024px) {
+    .lamsa-rb-{{ id }}-track { grid-template-columns: repeat({{ count if count < 5 else 4 }}, minmax(0, 1fr)); gap: 24px; }
+  }
+  {% endif %}
+
+  /* ================= step ================= */
+  .lamsa-rb-{{ id }}-step {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    {% if isList %}
+    gap: 18px;
+    align-items: flex-start;
+    {% else %}
+    flex-direction: column;
+    gap: 14px;
+    {% endif %}
+  }
+
+  {% if isList %}
+  /* connector line running down between the numbers */
+  .lamsa-rb-{{ id }}-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 46px;
+    bottom: -32px;
+    inset-inline-start: 17px;
+    width: 1.5px;
+    background: linear-gradient(to bottom, var(--color-accent-soft), transparent);
+  }
+  {% else %}
+  /* connector arrow between cards on desktop */
+  @media (min-width: 1024px) {
+    .lamsa-rb-{{ id }}-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 78px;
+      inset-inline-end: -16px;
+      width: 8px;
+      height: 8px;
+      border-top: 1.5px solid var(--color-accent-soft);
+      border-inline-end: 1.5px solid var(--color-accent-soft);
+      transform: rotate(45deg);
+    }
+    html[dir="rtl"] .lamsa-rb-{{ id }}-step:not(:last-child)::after { transform: rotate(-135deg); }
+  }
+  {% endif %}
+
+  /* ================= number ================= */
+  .lamsa-rb-{{ id }}-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 35px;
+    height: 35px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-display-en);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  /* ================= media ================= */
+  .lamsa-rb-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: radial-gradient(118% 100% at 50% 8%, #FFF 0%, var(--color-bg-primary) 52%, var(--color-bg-tertiary) 100%);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft);
+    {% if isList %}
+    width: 96px;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+    {% else %}
+    width: 100%;
+    aspect-ratio: 1;
+    {% endif %}
+  }
+  .lamsa-rb-{{ id }}-step:hover .lamsa-rb-{{ id }}-media { box-shadow: var(--shadow-card-hover); }
+  .lamsa-rb-{{ id }}-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .lamsa-rb-{{ id }}-step:hover .lamsa-rb-{{ id }}-media img { transform: scale(1.045); }
+
+  {% if isList %}
+  @media (max-width: 640px) { .lamsa-rb-{{ id }}-media { width: 78px; } }
+  {% endif %}
+
+  /* step number pinned on the media in row layout */
+  {% if not isList %}
+  .lamsa-rb-{{ id }}-numfloat {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 10px;
+    z-index: 3;
+    box-shadow: var(--shadow-sm);
+  }
+  {% endif %}
+
+  .lamsa-rb-{{ id }}-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  html[dir="rtl"] .lamsa-rb-{{ id }}-label { font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
+
+  .lamsa-rb-{{ id }}-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  html[dir="ltr"] .lamsa-rb-{{ id }}-name { font-family: var(--font-display-en); }
+  .lamsa-rb-{{ id }}-name:hover { color: var(--color-accent); }
+
+  .lamsa-rb-{{ id }}-note {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+  }
+
+  /* ================= bundle bar ================= */
+  .lamsa-rb-{{ id }}-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 48px;
+    padding: 22px 28px;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+  @media (max-width: 640px) {
+    .lamsa-rb-{{ id }}-bar {
+      margin-top: 32px;
+      padding: 18px;
+      gap: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .lamsa-rb-{{ id }}-bar .lamsa-btn { width: 100%; }
+  }
+</style>
+
+
+{% if count > 0 %}
+<section id="lamsa-rb-{{ id }}" class="lamsa-section">
+  <div class="lamsa-container">
+
+    {# ═════════════ header ═════════════ #}
+    {% if eyebrow or title or desc %}
+      <div class="lamsa-head lamsa-head--center">
+        {% if eyebrow %}
+          <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+        {% endif %}
+        {% if title %}<div class="lamsa-rb-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+        {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ steps ═════════════ #}
+    <div class="lamsa-rb-{{ id }}-track reveal reveal-stagger">
+      {% for block in steps %}
+        {% set s = block.data %}
+        {% set p = s.product[0] if s.product and (s.product | length) > 0 else null %}
+        {% set url = ('/products/' ~ (p.slug | default(p.handle) | default(p._id))) if p else '#' %}
+        {% set img = p.images[0].fileUrl if p and p.images and (p.images | length) > 0 else '' %}
+
+        <div class="lamsa-rb-{{ id }}-step">
+
+          {% if isList %}
+            <span class="lamsa-rb-{{ id }}-num">{{ loop.index }}</span>
+          {% endif %}
+
+          {# ---- media ---- #}
+          <a href="{{ url }}" class="lamsa-rb-{{ id }}-media" aria-label="{{ p.title if p else s.step_label }}">
+            {% if img %}
+              <img src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>
+            {% else %}
+              {# no product picked yet → static stand-in #}
+              <img src="{{ ['lamsa-ph-bottle.jpg', 'lamsa-ph-amber.jpg', 'lamsa-ph-hero-3.jpg', 'lamsa-ph-routine.jpg'][loop.index0 % 4] | assets }}" alt="{{ s.step_label | default('') }}" loading="lazy"/>
+            {% endif %}
+
+            {% if not isList %}
+              <span class="lamsa-rb-{{ id }}-num lamsa-rb-{{ id }}-numfloat">{{ loop.index }}</span>
+            {% endif %}
+          </a>
+
+          {# ---- text ---- #}
+          <div class="flex flex-col gap-2 min-w-0 flex-1">
+            {% if s.step_label %}
+              <span class="lamsa-rb-{{ id }}-label">{{ s.step_label }}</span>
+            {% endif %}
+
+            {% if p %}
+              <a href="{{ url }}" class="lamsa-rb-{{ id }}-name line-clamp-2">{{ p.title }}</a>
+            {% endif %}
+
+            {% if s.note %}<p class="lamsa-rb-{{ id }}-note line-clamp-2">{{ s.note }}</p>{% endif %}
+
+            <div class="flex items-center gap-2 flex-wrap mt-0.5">
+              {{ timeChip(s.time | default('both')) }}
+              {% if showPrices and p and p.pricing.price > 0 %}
+                <span class="lamsa-price" style="font-size: 0.9375rem;">{{ p.pricing.price | money }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+    {# ═════════════ bundle bar ═════════════ #}
+    {% if showBar %}
+      <div class="lamsa-rb-{{ id }}-bar"
+           x-data="lamsaRoutine{{ id }}()"
+           x-show="ids.length > 0"
+           x-cloak>
+
+        <div class="flex flex-col gap-1 min-w-0">
+          <span class="lamsa-caption">{{ t('routine.total') }}</span>
+          <div class="flex items-baseline gap-2.5 flex-wrap justify-center sm:justify-start">
+            {% if bundlePrice > 0 %}
+              <span class="lamsa-price lamsa-price--lg">{{ bundlePrice | money }}</span>
+              <span class="lamsa-price-was" x-text="fmt(total)"></span>
+              <span class="lamsa-badge lamsa-badge--sale font-num" x-show="saving > 0" x-cloak
+                    x-text="'−' + Math.round(saving / total * 100) + '%'"></span>
+            {% else %}
+              <span class="lamsa-price lamsa-price--lg" x-text="fmt(total)"></span>
+            {% endif %}
+          </div>
+          {% if bundleNote %}<span class="lamsa-caption">{{ bundleNote }}</span>{% endif %}
+        </div>
+
+        <button type="button"
+                @click="addAll()"
+                :disabled="loading || done"
+                class="lamsa-btn lamsa-btn--primary lamsa-btn--lg shrink-0">
+          <span x-show="loading" class="lamsa-spinner" style="width:17px;height:17px;border-width:2px;"></span>
+          <span x-show="done && !loading" x-cloak class="inline-flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            {{ t('routine.added_all') }}
+          </span>
+          <span x-show="!loading && !done" class="inline-flex items-center gap-2">
+            {{ ctaText }}
+            <span class="lamsa-badge font-num" style="background: rgba(255,255,255,0.22); color: #fff; box-shadow: none;"
+                  x-text="ids.length"></span>
+          </span>
+        </button>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if showBar %}
+<script>
+  /* Registered before Alpine boots (main.js loads first, Alpine is deferred). */
+  document.addEventListener('alpine:init', function () {
+    Alpine.data('lamsaRoutine{{ id }}', function () {
+      return {
+        /* product id + price for every step that actually has a product */
+        items: [
+          {%- for block in steps -%}
+            {%- set p = block.data.product[0] if block.data.product and (block.data.product | length) > 0 else null -%}
+            {%- if p -%}
+              { id: '{{ p._id }}', price: {{ p.pricing.price | default(0, true) }} }{% if not loop.last %},{% endif %}
+            {%- endif -%}
+          {%- endfor -%}
+        ],
+        loading: false,
+        done: false,
+
+        get ids() { return this.items.map(function (i) { return i.id; }); },
+        get total() { return this.items.reduce(function (sum, i) { return sum + (i.price || 0); }, 0); },
+        get saving() {
+          var bundle = {{ bundlePrice | default(0, true) }};
+          return bundle > 0 ? Math.max(0, this.total - bundle) : 0;
+        },
+
+        fmt: function (v) { return Qumra.utils.formatMoney(v); },
+
+        async addAll() {
+          if (this.loading || !this.items.length) return;
+          this.loading = true;
+          try {
+            /* Add every step but the last quietly, then run the final one through
+               CartManager so the drawer, badge and toast all refresh exactly once
+               instead of firing N times. */
+            var ids = this.ids;
+            for (var i = 0; i < ids.length - 1; i++) {
+              await Qumra.api.post('/ajax/cart/add', { productId: ids[i], quantity: 1 });
+            }
+            await Qumra.cart.add(ids[ids.length - 1], 1);
+
+            this.done = true;
+            var self = this;
+            setTimeout(function () { self.done = false; }, 2600);
+          } catch (e) {
+            /* CartManager already toasted if the failure came from the last add. */
+            console.error('[routine-bundle] add all failed', e);
+          } finally {
+            this.loading = false;
+          }
+        }
+      };
+    });
+  });
+</script>
+{% endif %}
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section id="lamsa-rb-{{ id }}" class="lamsa-section" data-lamsa-empty>
+    <div class="lamsa-container">
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21c4 0 7-3 7-7 0-4.5-4-8-7-11C9 6 5 9.5 5 14c0 4 3 7 7 7Z"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('routine.empty_title') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('routine.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}

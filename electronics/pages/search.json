@@ -1,0 +1,14 @@
+{
+  "layout": "layout",
+  "name": "نتائج البحث",
+  "title": "نتائج البحث",
+  "widgets": [
+    {
+      "name": "نتائج البحث",
+      "widget": "search-results",
+      "settings": {
+        "limit": 24
+      }
+    }
+  ]
+}

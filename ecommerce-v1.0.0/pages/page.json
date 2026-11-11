@@ -1,0 +1,48 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_title": true,
+        "eyebrow": "",
+        "title_override": "",
+        "width": "narrow",
+        "background": "white",
+        "fallback_text": "<p>هذه الصفحة لم تُكتب بعد. أضف محتواها من لوحة التحكّم.</p>",
+        "show_updated": false
+      }
+    },
+    {
+      "name": "مميزات المتجر",
+      "widget": "text-columns",
+      "settings": {
+        "layout": "grid",
+        "full_width": true,
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": "1.6",
+        "autoplay": true,
+        "interval": 4,
+        "pause_on_hover": true,
+        "icon_size": 44,
+        "icon_radius": 8,
+        "icon_bg": "",
+        "icon_color": "",
+        "show_dividers": false,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

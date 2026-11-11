@@ -1,0 +1,82 @@
+{# DECAFE collection cards. Live collections take priority; preview uses bundled examples. #}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{#- live Qumra ignores the h1 setting in pages/collections.json (no H1 on /collections), so the route decides too -#}
+{%- set ht = 'h1' if (wd.heading_tag == 'h1' or ((context or {}).page or {}).handle == 'collections') else 'h2' -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = wd['title' + L] or wd.title or t('category.title') -%}
+{%- set text = wd['text' + L] or wd.text or t('category.text') -%}
+{%- set viewText = wd['link_text' + L] or wd.link_text or t('common.view_all') -%}
+{%- set allUrl = wd.link_url or '/collections' -%}
+{#- picked collections first; then the store's real ones (context.collections on live /collections) -#}
+{%- set ctxCols = (context or {}).collections or [] -%}
+{%- set colSrc = wd.collections if (wd.collections and wd.collections.length) else (ctxCols if ctxCols.length else []) -%}
+{#- REG-01..04: a collection taken off the online store (salesChannels.onlineStore === false) or deleted never shows.
+    salesChannels.shop is false on every live store — never filter on it. -#}
+{%- set collections = [] -%}
+{#- `home-page` is the platform's own system collection; a collection with no title has nothing to show -#}
+{%- for c in colSrc -%}{%- if c and c.title and (c.handle or c.slug) != 'home-page' and (not c.deleted) and not (c.salesChannels and c.salesChannels.onlineStore === false) and collections.push(c) -%}{%- endif -%}{%- endfor -%}
+{%- set blocks = widget.blocks | default([]) -%}
+{#- nothing picked and no blocks: bundled examples in preview only; on a live store the section hides instead of leaving a heading over nothing -#}
+{%- set hasCards = collections.length or blocks.length -%}
+<section class="dc-categories section surface-cream" aria-labelledby="dc-categories-title"{% if not hasCards %} x-data="dcDemoCollections({{ 'false' if ((context or {}).page or {}).handle == 'collections' else 'true' }})"{% if ht != 'h1' %} x-show="items.length" x-cloak{% endif %}{% endif %}>
+  <div class="shell">
+    <header class="dc-section-heading">
+      <div>
+        <p class="eyebrow">{{ t('category.eyebrow') }}</p>
+        <{{ ht }} id="dc-categories-title" class="h-section dc-section-heading__title">{{ title | escape | replace('\\n', '<br>') | replace('&#92;n', '<br>') | safe }}</{{ ht }}>
+        {%- if text %}<p class="dc-section-heading__text">{{ text }}</p>{%- endif %}
+      </div>
+      {%- if allUrl %}<a href="{{ allUrl }}" class="link-arrow dc-section-heading__link">{{ viewText }} {% ui "icon.njk", name="arrow", size=17 %}</a>{%- endif %}
+    </header>
+
+    {%- if collections.length %}
+    <div class="dc-category-grid">
+      {%- for c in collections %}
+      {%- set image = c.image.fileUrl or c.image.url or c.image or '' -%}
+      {%- set slug = c.slug or c.handle or '' -%}
+      <a href="{{ ('/collections/' ~ slug) if slug else allUrl }}" class="dc-category-card" data-reveal>
+        {%- if image %}<img src="{{ image }}" alt="{{ c.title }}" width="800" height="1000" loading="lazy" decoding="async">{%- else %}<span class="dc-category-card__art" aria-hidden="true">{% ui "icon.njk", name="bean", size=72 %}</span>{%- endif %}
+        <span class="dc-category-card__shade"></span>
+        <span class="dc-category-card__copy">
+          <span class="dc-category-card__title">{{ c.title }}</span>
+          {%- if c.description %}<span class="dc-category-card__text">{{ c.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | striptags | truncate(88) }}</span>{%- endif %}
+          <span class="dc-category-card__arrow" aria-hidden="true">{% ui "icon.njk", name="arrow", size=18 %}</span>
+        </span>
+      </a>
+      {%- endfor %}
+    </div>
+    {%- elif blocks.length %}
+    <div class="dc-category-grid">
+      {%- for block in blocks %}
+      {%- set b = block.data or block.settings or {} -%}
+      {%- set image = b.image.fileUrl or b.image.url or b.image or '' -%}
+      <a href="{{ b.url or allUrl }}" class="dc-category-card" data-reveal>
+        {%- if image %}<img src="{{ image }}" alt="{{ b['title' + L] or b.title }}" width="800" height="1000" loading="lazy" decoding="async">{%- else %}<span class="dc-category-card__art" aria-hidden="true">{% ui "icon.njk", name="bean", size=72 %}</span>{%- endif %}
+        <span class="dc-category-card__shade"></span>
+        <span class="dc-category-card__copy">
+          <span class="dc-category-card__title">{{ b['title' + L] or b.title }}</span>
+          {%- if b['text' + L] or b.text %}<span class="dc-category-card__text">{{ b['text' + L] or b.text }}</span>{%- endif %}
+          <span class="dc-category-card__arrow" aria-hidden="true">{% ui "icon.njk", name="arrow", size=18 %}</span>
+        </span>
+      </a>
+      {%- endfor %}
+    </div>
+    {%- else %}
+    {%- if ht == 'h1' %}<p class="dc-empty-note" x-show="!items.length" x-cloak>{{ t('category.empty') }}</p>{%- endif %}
+    <div class="dc-category-grid" x-show="items.length">
+      <template x-for="item in items" :key="item._id">
+        <a :href="item.url || '/collections'" class="dc-category-card" data-reveal>
+          <template x-if="item.image"><img :src="item.image.fileUrl || item.image" :alt="item.title" width="800" height="1000" loading="lazy" decoding="async"></template>
+          <template x-if="!item.image"><span class="dc-category-card__art" aria-hidden="true">{% ui "icon.njk", name="bean", size=72 %}</span></template>
+          <span class="dc-category-card__shade"></span>
+          <span class="dc-category-card__copy">
+            <span class="dc-category-card__title" x-text="item.title"></span>
+            <span class="dc-category-card__text" x-show="item.description" x-text="item.description"></span>
+            <span class="dc-category-card__arrow" aria-hidden="true">{% ui "icon.njk", name="arrow", size=18 %}</span>
+          </span>
+        </a>
+      </template>
+    </div>
+    {%- endif %}
+  </div>
+</section>

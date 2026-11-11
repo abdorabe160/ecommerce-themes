@@ -1,0 +1,10 @@
+{#- Dark Blood (v1.0.4) - عرض سعر: {% ui "blk-price.njk", amount=price %}
+    المكان الوحيد اللي بيتنسّق فيه السعر في القوالب: فلتر | money بتاع المنصة (الرمز والخانات من إعدادات المتجر).
+    blkMoney في assets/main.js بيستنتج نفس التنسيق من عينة | money في layouts/layout.njk (#blkMoneySample).
+    أسعار المتجر بالجنيه زي المنتجات التجريبية، فـ major="1" مابيغيّرش حاجة (متساب عشان النداءات الموجودة).
+    مفيش regex ولا methods زي .indexOf/.charAt هنا (نسيج مابيقبلهمش: attempted to call a non-function) -#}
+{%- set amount = (data.amount | default(0)) | float -%}
+{#- free="1": سعر المنتج = 0 بيظهر «مجاني» (PRD-19) — الإجماليات والتوفير مش بتبعته -#}
+{%- if data.free and (((amount | abs) * 100) | round | int) == 0 -%}{{ t('common.free') }}{%- else -%}
+{{ amount | money }}
+{%- endif -%}

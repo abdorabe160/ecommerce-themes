@@ -1,0 +1,302 @@
+{
+  "name": "الطقم الكامل",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — ضع <em>كلمة</em> لتلوينها بالبرتقالي",
+        "en": "Title — wrap a word in <em> to set it in flame"
+      },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير",
+        "en": "Short Description"
+      },
+      "default": ""
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "row",
+      "options": [
+        {
+          "value": "row",
+          "label": {
+            "ar": "بالعرض مع علامة + بين القطع",
+            "en": "Row with + between items"
+          }
+        },
+        {
+          "value": "list",
+          "label": {
+            "ar": "قائمة رأسية بالتفاصيل",
+            "en": "Vertical list with details"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "canvas",
+      "options": [
+        {
+          "value": "canvas",
+          "label": {
+            "ar": "خلفية الموقع (موصى به)",
+            "en": "Page background (recommended)"
+          }
+        },
+        {
+          "value": "alt",
+          "label": {
+            "ar": "خلفية متبادلة",
+            "en": "Alternating"
+          }
+        },
+        {
+          "value": "surface",
+          "label": {
+            "ar": "لون البطاقات",
+            "en": "Card surface"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "غائرة",
+            "en": "Well"
+          }
+        },
+        {
+          "value": "void",
+          "label": {
+            "ar": "أسود صافٍ",
+            "en": "True black"
+          }
+        },
+        {
+          "value": "light",
+          "label": {
+            "ar": "شريط أبيض — يقلب ألوان القسم كله",
+            "en": "White band — inverts the whole section"
+          }
+        }
+      ]
+    },
+    "show_prices": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار سعر كل قطعة",
+        "en": "Show Each Item's Price"
+      },
+      "default": true
+    },
+    "show_notes": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار ملاحظة كل قطعة",
+        "en": "Show Each Item's Note"
+      },
+      "default": true
+    },
+    "show_bundle_bar": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط الإجمالي وزر «أضف الطقم كامل»",
+        "en": "Show the total + \"add whole bundle\" bar"
+      },
+      "default": true
+    },
+    "bundle_price": {
+      "type": "number",
+      "label": {
+        "ar": "سعر الطقم بعد الخصم (بالهللات — اتركه 0 لعرض الإجمالي فقط)",
+        "en": "Discounted bundle price (minor units — leave 0 to just show the total)"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 100
+    },
+    "bundle_note": {
+      "type": "string",
+      "label": {
+        "ar": "ملاحظة تحت الإجمالي",
+        "en": "Note under the total"
+      },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الإضافة (اتركه فارغاً للنص الافتراضي)",
+        "en": "Add Button Text (empty = default)"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "item": {
+      "name": "قطعة في الطقم",
+      "settings": {
+        "product": {
+          "type": "products",
+          "label": {
+            "ar": "المنتج (اختر منتجاً واحداً)",
+            "en": "Product (pick one)"
+          },
+          "default": []
+        },
+        "role_label": {
+          "type": "string",
+          "label": {
+            "ar": "دور القطعة في الطقم",
+            "en": "Item's Role in the Bundle"
+          },
+          "default": ""
+        },
+        "note": {
+          "type": "string",
+          "label": {
+            "ar": "سبب اختيارها (سطر قصير)",
+            "en": "Why it's included (one short line)"
+          },
+          "default": ""
+        },
+        "tag": {
+          "type": "select",
+          "label": {
+            "ar": "وسم القطعة",
+            "en": "Item Tag"
+          },
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            },
+            {
+              "value": "essential",
+              "label": {
+                "ar": "أساسي",
+                "en": "Essential"
+              }
+            },
+            {
+              "value": "recommended",
+              "label": {
+                "ar": "موصى به",
+                "en": "Recommended"
+              }
+            },
+            {
+              "value": "optional",
+              "label": {
+                "ar": "اختياري",
+                "en": "Optional"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "يُشترى معاً"
+    }
+  ]
+}

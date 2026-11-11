@@ -1,0 +1,323 @@
+{# ============================================================================
+   LAMSA PRODUCTS SECTION
+   Three layouts: grid · slider · spotlight (first product large + grid).
+   Cards come from ui/product-card.njk (SSR) or LamsaCard.build() (AJAX
+   fallback when the merchant hasn't picked products yet).
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set products = d.featuredCollection | default([]) %}
+{% set hasServer = (products | length) > 0 %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('grid') %}
+{% set isSlider = layout == 'slider' %}
+{% set isSpotlight = layout == 'spotlight' %}
+{% set headerAlign = d.header_align | default('split') %}
+{% set isCenter = headerAlign == 'center' %}
+
+{% set bg = d.background | default('white') %}
+{% set limit = d.limit | default(8, true) %}
+{% set ratio = d.card_image_ratio | default('1/1') %}
+
+{% set viewAllUrl = d.view_all_url | default('') %}
+{% set viewAllText = d.view_all_text | default(t('common.view_all'), true) %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showProgress = d.show_progress | default(true) %}
+
+{# ---- columns ---- #}
+{% set colsD = d.columns_desktop | default('4', true) %}
+{% set colsM = d.columns_mobile | default('2') %}
+{% if colsD == '2' %}{% set spv = 2 %}
+{% elif colsD == '3' %}{% set spv = 3 %}
+{% elif colsD == '5' %}{% set spv = 5 %}
+{% else %}{% set spv = 4 %}{% endif %}
+
+{# ---- background ---- #}
+{% if bg == 'blush' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-surface)' %}{% endif %}
+
+
+<style>
+  #lamsa-cp-{{ id }} { background: {{ bgVal }}; }
+
+  /* ---------- header ---------- */
+  .lamsa-cp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    letter-spacing: -0.008em;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-cp-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-cp-{{ id }}-title { letter-spacing: 0; line-height: 1.34; }
+  .lamsa-cp-{{ id }}-title em {
+    font-style: normal;
+    color: var(--color-accent);
+  }
+  .lamsa-cp-{{ id }}-title p { margin: 0; }
+
+  /* ---------- grid ---------- */
+  .lamsa-cp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat({{ colsM }}, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+  @media (min-width: 641px) {
+    .lamsa-cp-{{ id }}-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+  }
+  @media (min-width: 768px) {
+    .lamsa-cp-{{ id }}-grid { grid-template-columns: repeat({{ 3 if spv > 3 else spv }}, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-cp-{{ id }}-grid { grid-template-columns: repeat({{ spv }}, minmax(0, 1fr)); gap: 48px 28px; }
+  }
+
+  {% if isSpotlight %}
+  /* first product gets a 2×2 cell — editorial spotlight */
+  @media (min-width: 1024px) {
+    .lamsa-cp-{{ id }}-grid { grid-template-columns: repeat({{ spv if spv > 2 else 3 }}, minmax(0, 1fr)); }
+    .lamsa-cp-{{ id }}-grid > *:first-child { grid-column: span 2; grid-row: span 2; }
+  }
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .lamsa-cp-{{ id }}-grid > *:first-child { grid-column: span 2; }
+  }
+  {% endif %}
+
+  /* ---------- slider ---------- */
+  /* Swiper REQUIRES the container to clip horizontally — with `overflow:visible`
+     every slide paints across the whole page and blows out the layout.
+     `overflow-x: clip` clips sideways while still letting card shadows and the
+     hover lift bleed vertically; `hidden` is the fallback where clip is absent. */
+  .lamsa-cp-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .lamsa-cp-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .lamsa-cp-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .lamsa-cp-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .lamsa-cp-{{ id }}-sw .swiper-slide > * { width: 100%; }
+
+  /* thin rose progress line instead of a chunky scrollbar */
+  .lamsa-cp-{{ id }}-prog {
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    height: 3px;
+    margin-top: 36px;
+    border-radius: var(--radius-pill);
+    background: var(--color-border) !important;
+  }
+  .lamsa-cp-{{ id }}-prog .swiper-scrollbar-drag {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent) !important;
+    cursor: grab;
+  }
+
+  @media (max-width: 767px) {
+    .lamsa-cp-{{ id }}-prog { margin-top: 24px; }
+  }
+</style>
+
+
+<section id="lamsa-cp-{{ id }}" class="lamsa-section">
+  <div class="lamsa-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="lamsa-head lamsa-head--center">
+          {% if eyebrow %}
+            <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+          {% endif %}
+          {% if title %}
+            <div class="lamsa-cp-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>
+          {% endif %}
+          {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+        </div>
+      {% else %}
+        <div class="lamsa-head lamsa-head--split">
+          <div class="min-w-0">
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+            {% endif %}
+            {% if title %}
+              <div class="lamsa-cp-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>
+            {% endif %}
+            {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            {% if isSlider and showArrows %}
+              <div class="flex items-center gap-2" id="cpNav-{{ id }}" {% if not hasServer %}style="display:none"{% endif %}>
+                <button type="button" id="cpPrev-{{ id }}"
+                        class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.prev') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+                  </svg>
+                </button>
+                <button type="button" id="cpNext-{{ id }}"
+                        class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.next') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                  </svg>
+                </button>
+              </div>
+            {% endif %}
+
+            {% if viewAllUrl %}
+              <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm max-sm:hidden">
+                {{ viewAllText }}
+                <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═══════════════ products ═══════════════ #}
+    {% if isSlider %}
+      <div class="swiper lamsa-cp-{{ id }}-sw" id="cpSwiper-{{ id }}">
+        <div class="swiper-wrapper" id="cpWrapper-{{ id }}">
+          {% for p in products %}
+            {% if loop.index <= limit %}
+              <div class="swiper-slide">
+                {% ui "product-card.njk", product=p, image_ratio=ratio %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% if showProgress %}
+          <div class="swiper-scrollbar lamsa-cp-{{ id }}-prog" id="cpProg-{{ id }}"
+               {% if not hasServer %}style="display:none"{% endif %}></div>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="lamsa-cp-{{ id }}-grid" id="cpGrid-{{ id }}"{% if not isSpotlight %} data-lone-m="{{ colsM }}" data-lone-t="{{ 3 if spv > 3 else spv }}" data-lone-d="{{ spv }}"{% endif %}>
+        {% for p in products %}
+          {% if loop.index <= limit %}
+            {% ui "product-card.njk", product=p, image_ratio=ratio %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═══════════════ empty ═══════════════ #}
+    <div id="cpEmpty-{{ id }}" class="lamsa-empty" style="display: none;">
+      <span class="lamsa-empty-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+          <path stroke-linecap="round" d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+        </svg>
+      </span>
+      <p class="lamsa-text-sm m-0">{{ t('products.no_products') }}</p>
+    </div>
+
+    {# ═══════════════ view all — centered header, or mobile ═══════════════ #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-12 max-sm:mt-8 {{ '' if isCenter else 'sm:hidden' }}"
+           id="cpViewAll-{{ id }}" {% if not hasServer %}style="display:none"{% endif %}>
+        <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--outline">
+          {{ viewAllText }}
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var hasServer = {{ 'true' if hasServer else 'false' }};
+    var isSlider = {{ 'true' if isSlider else 'false' }};
+    var limit = {{ limit | int }};
+    var cardOpts = { imageRatio: '{{ ratio }}' };
+
+    function initSlider() {
+      if (!isSlider || typeof Swiper === 'undefined') return;
+      return new Swiper('#cpSwiper-{{ id }}', {
+        slidesPerView: 1.25,
+        spaceBetween: 16,
+        speed: 480,
+        watchOverflow: true,
+        breakpoints: {
+          641:  { slidesPerView: 2.2, spaceBetween: 24 },
+          768:  { slidesPerView: {{ (3 if spv > 3 else spv) | int }}, spaceBetween: 26 },
+          1024: { slidesPerView: {{ spv | int }}, spaceBetween: 28 }
+        },
+        {% if showArrows %}
+        navigation: { prevEl: '#cpPrev-{{ id }}', nextEl: '#cpNext-{{ id }}' },
+        {% endif %}
+        {% if showProgress %}
+        scrollbar: { el: '#cpProg-{{ id }}', draggable: true, hide: false },
+        {% endif %}
+        a11y: { enabled: true }
+      });
+    }
+
+    /* The merchant picked products → nothing to fetch. */
+    if (hasServer) { initSlider(); return; }
+
+    /* Otherwise show the latest products so the section is never empty. */
+    function reveal(sel) {
+      var el = document.getElementById(sel);
+      if (el) el.style.display = '';
+    }
+
+    async function loadLatest() {
+      var empty = document.getElementById('cpEmpty-{{ id }}');
+      try {
+        var res = await fetch('/ajax/search/products?q=&sort=created-desc');
+        var data = await res.json();
+        var items = (data.products || data.items || data.data || []).slice(0, limit);
+
+        if (!items.length) { if (empty) empty.style.display = ''; return; }
+
+        var box = document.getElementById(isSlider ? 'cpWrapper-{{ id }}' : 'cpGrid-{{ id }}');
+        if (!box) return;
+
+        if (isSlider) {
+          box.innerHTML = items
+            .map(function (p) { return '<div class="swiper-slide">' + LamsaCard.build(p, cardOpts) + '</div>'; })
+            .join('');
+          if (window.Alpine) box.querySelectorAll('[x-data]').forEach(function (el) { Alpine.initTree(el); });
+        } else {
+          LamsaCard.mount(box, items, cardOpts);
+        }
+
+        reveal('cpNav-{{ id }}');
+        reveal('cpProg-{{ id }}');
+        reveal('cpViewAll-{{ id }}');
+        initSlider();
+      } catch (e) {
+        console.error('[collection-products] could not load latest products', e);
+        if (empty) empty.style.display = '';
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadLatest);
+    } else {
+      loadLatest();
+    }
+  })();
+</script>

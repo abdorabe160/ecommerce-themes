@@ -1,0 +1,327 @@
+{# ===== ANAQA Mobile Filter & Sort — Editorial ===== #}
+{# Parameters passed directly from {% ui %} — no data. prefix needed #}
+
+<style>
+  .anaqa-mob-toolbar-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-radius: 0;
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    background: transparent;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+  .anaqa-mob-toolbar-btn:hover {
+    border-color: var(--color-text-primary);
+  }
+  .anaqa-mob-badge {
+    position: absolute;
+    top: -6px;
+    inset-inline-end: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 0;
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .anaqa-mob-sheet {
+    position: absolute;
+    bottom: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    background: var(--color-surface);
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .anaqa-mob-handle {
+    width: 40px;
+    height: 3px;
+    border-radius: 0;
+    background: var(--color-border);
+    margin: 12px auto 8px;
+  }
+  .anaqa-mob-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 14px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .anaqa-mob-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    color: var(--color-text-tertiary);
+    background: transparent;
+  }
+  .anaqa-mob-close:hover { color: var(--color-text-primary); }
+  .anaqa-mob-opt {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-radius: 0;
+    font-size: 14px;
+    transition: color 0.2s ease;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+    background: transparent;
+  }
+  .anaqa-mob-opt:hover { color: var(--color-text-primary); }
+  .anaqa-mob-opt-active { color: var(--color-text-primary); font-weight: 500; }
+  .anaqa-mob-chip {
+    padding: 8px 16px;
+    border-radius: 0;
+    font-size: 13px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    transition: all 0.25s ease;
+  }
+  .anaqa-mob-chip-active {
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    border-color: var(--color-accent);
+  }
+  .anaqa-mob-chip:not(.anaqa-mob-chip-active):hover {
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+  }
+  .anaqa-mob-color {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    transition: all 0.2s ease;
+  }
+  .anaqa-mob-color-active {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 3px var(--color-accent);
+  }
+  .anaqa-mob-price-val {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .anaqa-mob-clear {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    transition: opacity 0.2s ease;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .anaqa-mob-clear:hover { opacity: 0.65; }
+  .anaqa-mob-section-title {
+    margin-bottom: 12px;
+    display: block;
+  }
+</style>
+
+{# Mobile Toolbar — always visible on mobile #}
+<div class="flex items-center gap-2 mb-5 md:hidden">
+    {# Filter Button #}
+    <button @click="filtersOpen = true" class="anaqa-mob-toolbar-btn font-body-ar">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
+      </svg>
+      {{ t('search.filter') | default('تصفية') }}
+      <span x-show="activeCount > 0" x-cloak class="anaqa-mob-badge" x-text="activeCount"></span>
+    </button>
+
+    {% if show_sort %}
+      <button @click="sortOpen = true" class="anaqa-mob-toolbar-btn font-body-ar">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"/>
+        </svg>
+        {{ t('search.sort_by') | default('الترتيب') }}
+      </button>
+    {% endif %}
+  </div>
+
+  {# ====== Filter Bottom Sheet ====== #}
+  <div x-show="filtersOpen" x-cloak class="fixed inset-0 z-50 md:hidden">
+    {# Overlay #}
+    <div @click="filtersOpen = false" class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-400"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"></div>
+
+    {# Sheet #}
+    <div class="anaqa-mob-sheet max-h-[85vh]"
+         x-transition:enter="transition ease-out duration-400"
+         x-transition:enter-start="translate-y-full"
+         x-transition:enter-end="translate-y-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="translate-y-0"
+         x-transition:leave-end="translate-y-full">
+
+      {# Handle #}
+      <div class="anaqa-mob-handle"></div>
+
+      {# Header #}
+      <div class="anaqa-mob-sheet-header">
+        <h3 class="font-heading-ar text-[18px]" style="color: var(--color-text-primary); font-weight: 500;">{{ t('search.filter') | default('تصفية') }}</h3>
+        <div class="flex items-center gap-4">
+          <button x-show="activeCount > 0" @click="clearFilters()" class="anaqa-mob-clear font-body-ar">
+            {{ t('collection.clear_filters') | default('مسح الكل') }}
+          </button>
+          <button @click="filtersOpen = false" class="anaqa-mob-close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      {# Content #}
+      <div class="flex-1 overflow-y-auto custom-scrollbar px-5 py-5 space-y-7">
+
+        {# Collections (from Alpine scope) #}
+        <template x-if="collections && collections.length > 0">
+          <div>
+            <span class="editorial-label anaqa-mob-section-title font-body-ar">{{t('pages.shop.collections') | default('التصنيفات')}}</span>
+            <div>
+              {# All Products #}
+              <button @click="setCollection('', ''); filtersOpen = false"
+                      class="anaqa-mob-opt font-body-ar"
+                      :class="!collectionId ? 'anaqa-mob-opt-active' : ''">
+                <span>{{t('pages.shop.all_products') | default('كل المنتجات')}}</span>
+                <svg x-show="!collectionId" class="w-3.5 h-3.5" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+
+              {# Each Collection #}
+              <template x-for="col in collections" :key="col.id">
+                <button @click="setCollection(col.id, col.slug); filtersOpen = false"
+                        class="anaqa-mob-opt font-body-ar"
+                        :class="collectionId === col.id ? 'anaqa-mob-opt-active' : ''">
+                  <span x-text="col.title"></span>
+                  <svg x-show="collectionId === col.id" class="w-3.5 h-3.5" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        {# API Filters #}
+        {% for filter in filters %}
+          <div>
+            <span class="editorial-label anaqa-mob-section-title font-body-ar">{{ filter.name[localization.language] | default(filter.name.ar) | default(filter.name) }}</span>
+
+            {# Range Filter (price slider) #}
+            {% if filter.inputType == 'range' %}
+              <div class="space-y-4" dir="ltr">
+                <div class="flex items-center justify-between">
+                  <span class="anaqa-mob-price-val"
+                        x-text="(+(priceMin) || {{ filter.range.min | default(0) }}).toLocaleString()"></span>
+                  <div class="flex-1 mx-3" style="border-top: 1px solid var(--color-border);"></div>
+                  <span class="anaqa-mob-price-val"
+                        x-text="(+(priceMax) || {{ filter.range.max | default(1000) }}).toLocaleString()"></span>
+                </div>
+                <div class="price-slider" dir="ltr">
+                  <div class="slider-track"></div>
+                  <div class="slider-range"
+                       :style="`left: ${((+(priceMin) || {{ filter.range.min | default(0) }}) - {{ filter.range.min | default(0) }}) / ({{ filter.range.max | default(1000) }} - {{ filter.range.min | default(0) }}) * 100}%; right: ${100 - ((+(priceMax) || {{ filter.range.max | default(1000) }}) - {{ filter.range.min | default(0) }}) / ({{ filter.range.max | default(1000) }} - {{ filter.range.min | default(0) }}) * 100}%`"></div>
+                  <input type="range"
+                         min="{{ filter.range.min | default(0) }}" max="{{ filter.range.max | default(1000) }}" step="{{ filter.range.step | default(1) }}"
+                         :value="+(priceMin) || {{ filter.range.min | default(0) }}"
+                         @input="priceMin = Math.min(+$event.target.value, +(priceMax) || {{ filter.range.max | default(1000) }}); $event.target.value = priceMin; _debouncedApplyPrice()">
+                  <input type="range"
+                         min="{{ filter.range.min | default(0) }}" max="{{ filter.range.max | default(1000) }}" step="{{ filter.range.step | default(1) }}"
+                         :value="+(priceMax) || {{ filter.range.max | default(1000) }}"
+                         @input="priceMax = Math.max(+$event.target.value, +(priceMin) || {{ filter.range.min | default(0) }}); $event.target.value = priceMax; _debouncedApplyPrice()">
+                </div>
+              </div>
+
+            {# Select / Checkbox / Color Filter #}
+            {% elif filter.inputType == 'select' or filter.inputType == 'checkbox' or filter.inputType == 'color' or filter.inputType == 'text' %}
+              <div class="flex flex-wrap gap-2.5">
+                {% set filterItems = filter.items | default(filter.values) | default([]) %}
+                {% for value in filterItems %}
+                  {% if filter.inputType == 'color' %}
+                    <button @click="toggleFilter('{{ filter.handle }}', '{{ value.value }}')"
+                            class="anaqa-mob-color"
+                            :class="isActive('{{ filter.handle }}', '{{ value.value }}') && 'anaqa-mob-color-active'"
+                            style="background-color: {{ value.value | default('#ccc') }};"
+                            title="{{ value.label[localization.language] | default(value.label.ar) | default(value.label) | default(value.value) }}">
+                    </button>
+                  {% else %}
+                    <button @click="toggleFilter('{{ filter.handle }}', '{{ value.value }}')"
+                            class="anaqa-mob-chip font-body-ar"
+                            :class="isActive('{{ filter.handle }}', '{{ value.value }}') && 'anaqa-mob-chip-active'">
+                      {{ value.label[localization.language] | default(value.label.ar) | default(value.label) | default(value.value) }}
+                    </button>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {# ====== Sort Bottom Sheet ====== #}
+  {% if show_sort %}
+    <div x-show="sortOpen" x-cloak class="fixed inset-0 z-50 md:hidden">
+      <div @click="sortOpen = false" class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+           x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
+      <div class="anaqa-mob-sheet"
+           x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+           x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full">
+
+        <div class="anaqa-mob-handle"></div>
+
+        <div class="anaqa-mob-sheet-header">
+          <h3 class="font-heading-ar text-[18px]" style="color: var(--color-text-primary); font-weight: 500;">{{ t('search.sort_by') | default('الترتيب') }}</h3>
+          <button @click="sortOpen = false" class="anaqa-mob-close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="px-5 py-2">
+          {% set sortOptions = [
+            { value: '', label: t('search.newest') | default('الأحدث') },
+            { value: 'price_asc', label: t('search.price_low_high') | default('السعر: من الأقل') },
+            { value: 'price_desc', label: t('search.price_high_low') | default('السعر: من الأعلى') },
+            { value: 'highest_rated', label: t('search.highest_rated') | default('الأعلى تقييماً') }
+          ] %}
+          {% for opt in sortOptions %}
+            <button @click="sortBy('{{ opt.value }}')"
+                    class="anaqa-mob-opt font-body-ar"
+                    :class="currentSort === '{{ opt.value }}' ? 'anaqa-mob-opt-active' : ''">
+              {{ opt.label }}
+              <svg x-show="currentSort === '{{ opt.value }}'" class="w-4 h-4" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}

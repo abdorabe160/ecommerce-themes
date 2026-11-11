@@ -1,0 +1,139 @@
+{
+  "name": "صفحة السلة",
+  "settings": {
+    "page_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان الصفحة",
+        "en": "Page Title"
+      },
+      "default": ""
+    },
+    "continue_shopping_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص متابعة التسوق",
+        "en": "Continue Shopping Text"
+      },
+      "default": ""
+    },
+    "order_summary_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان ملخص الطلب",
+        "en": "Order Summary Title"
+      },
+      "default": ""
+    },
+    "subtotal_label": {
+      "type": "text",
+      "label": {
+        "ar": "نص المجموع الفرعي",
+        "en": "Subtotal Label"
+      },
+      "default": ""
+    },
+    "savings_label": {
+      "type": "text",
+      "label": {
+        "ar": "نص التوفير",
+        "en": "Savings Label"
+      },
+      "default": ""
+    },
+    "total_label": {
+      "type": "text",
+      "label": {
+        "ar": "نص الإجمالي",
+        "en": "Total Label"
+      },
+      "default": ""
+    },
+    "checkout_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص زر إتمام الطلب",
+        "en": "Checkout Button Text"
+      },
+      "default": ""
+    },
+    "show_savings": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التوفير",
+        "en": "Show Savings"
+      },
+      "default": true
+    },
+    "show_free_shipping": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار رسالة الشحن المجاني",
+        "en": "Show Free Shipping Message"
+      },
+      "default": true
+    },
+    "free_shipping_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص الشحن المجاني",
+        "en": "Free Shipping Text"
+      },
+      "default": ""
+    },
+    "empty_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان السلة الفارغة",
+        "en": "Empty Cart Title"
+      },
+      "default": ""
+    },
+    "empty_message": {
+      "type": "text",
+      "label": {
+        "ar": "وصف السلة الفارغة",
+        "en": "Empty Cart Description"
+      },
+      "default": ""
+    },
+    "empty_button_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص زر السلة الفارغة",
+        "en": "Empty Cart Button Text"
+      },
+      "default": ""
+    },
+    "continue_shopping_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط متابعة التسوق",
+        "en": "Continue Shopping URL"
+      },
+      "default": "/"
+    },
+    "checkout_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط إتمام الطلب",
+        "en": "Checkout URL"
+      },
+      "default": "/checkout"
+    },
+    "trust_note": {
+      "type": "text",
+      "label": {
+        "ar": "سطر ثقة تحت زر الدفع (اختياري — اكتب ما يقدمه متجرك فعلًا)",
+        "en": "Trust line under checkout (optional — only what your store really offers)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحات",
+      "name": "صفحة السلة"
+    }
+  ]
+}

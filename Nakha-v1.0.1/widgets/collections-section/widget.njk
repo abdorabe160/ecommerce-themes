@@ -1,0 +1,492 @@
+{# ============================================================================
+   NAKHA COLLECTIONS SECTION
+   ----------------------------------------------------------------------------
+   Pulls the store's REAL collections (title · image · productsCount) from the
+   `collections` picker, so the counts are never hand-typed and never stale.
+
+   Three layouts: grid · slider · mosaic (first tile spans 2×2).
+   Three label positions: below (default) · overlay · chip.
+
+   ── Why this does not look like SHOP BY GOAL ───────────────────────────────
+   Both sections are a grid of photo tiles, so without a deliberate split they
+   read as the same section twice. The division is by what each one IS:
+
+     use-case-finder   intent. Overlay label on the photo, flame bar, no data.
+     this widget       inventory. Carded tile, label BELOW on its own row, and
+                       a product count — the honest number only this section has.
+
+   That is why `below` is the default label position here and why the count is
+   on by default. Setting `label_style: overlay` makes this look like the goal
+   tiles again; that is a legitimate choice, but only pick it when the goals
+   section is not on the same page.
+
+   `image_fit` is the setting that matters most. `cover` suits real photography
+   (kit, athletes, gear in use) and is the default. Switch to `contain` when the
+   category art is a cut-out product that must not be cropped — it is then
+   padded and centred on the black plate rather than filling it.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set collections = d.collections | default([]) %}
+{% set usingDemo = not (collections and collections | length) %}
+{# Until the merchant picks collections in the Theme Editor, show demo ones (bundled CC0
+   photos in assets/demo-collection-*.jpg) so the section never ships empty. No counts —
+   a made-up number reads as a real one. #}
+{% if not (collections and collections | length) %}
+  {% set en = (localization.language | default('ar')) == 'en' %}
+  {% set collections = [
+    { title: 'Bakery' if en else 'مخبوزات', slug: '', image: { fileUrl: 'demo-collection-1.jpg' | assets } },
+    { title: 'Pizza' if en else 'بيتزا', slug: '', image: { fileUrl: 'demo-collection-2.jpg' | assets } },
+    { title: 'Sandwiches' if en else 'ساندويتشات', slug: '', image: { fileUrl: 'demo-collection-3.jpg' | assets } },
+    { title: 'Salads' if en else 'سلطات', slug: '', image: { fileUrl: 'demo-collection-4.jpg' | assets } },
+    { title: 'Cookies & Sweets' if en else 'كوكيز وحلويات', slug: '', image: { fileUrl: 'demo-collection-5.jpg' | assets } },
+    { title: 'Breakfast & Coffee' if en else 'فطار وقهوة', slug: '', image: { fileUrl: 'demo-collection-6.jpg' | assets } }
+  ] %}
+  {# one full row: as many tiles as the desktop grid has columns (3–6) #}
+  {% set _cols = (d.columns_desktop | default('5', true)) | int %}
+  {% set collections = collections.slice(0, _cols if (_cols >= 3 and _cols <= 6) else 6) %}
+{% endif %}
+{% set count = collections | length %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.menu'), true) %}
+{% set title = d.title | default(t('defaults.browse_categories'), true) %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('grid', true) %}
+{% set isSlider = layout == 'slider' %}
+{% set isMosaic = layout == 'mosaic' %}
+
+{% set labelStyle = d.label_style | default('below', true) %}
+{% set isBelow = labelStyle == 'below' %}
+{% set isOverlay = labelStyle == 'overlay' %}
+
+{% set fit = d.image_fit | default('cover', true) %}
+{% set ratio = d.card_ratio | default('1x1', true) %}
+{% if ratio == '4x3' %}{% set ratioCls = 'nakha-ratio-4x3' %}
+{% elif ratio == '3x2' %}{% set ratioCls = 'nakha-ratio-3x2' %}
+{% elif ratio == '4x5' %}{% set ratioCls = 'nakha-ratio-4x5' %}
+{% elif ratio == '3x4' %}{% set ratioCls = 'nakha-ratio-3x4' %}
+{% else %}{% set ratioCls = 'nakha-ratio-1x1' %}{% endif %}
+
+{% set bg = d.background | default('alt', true) %}
+{# `void` and `dark` are the same answer — a charcoal band. Both MUST set
+   isDark, because that is what adds .nakha-invert; a charcoal ground without
+   it is dark text on a dark panel. #}
+{% set isDark = bg == 'dark' or bg == 'void' %}
+{% if bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'well' %}{% set bgVal = 'var(--color-bg-tertiary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'void' %}{% set bgVal = 'var(--color-char)' %}
+{% elif isDark %}{% set bgVal = 'var(--color-char)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+{% set colsD = d.columns_desktop | default('5', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{% set colsInt = colsD | int %}
+{% set colsMid = 3 if colsInt > 3 else colsInt %}
+{# No tile alone on the last row: when count leaves exactly one over, move the
+   column count by one (the side that doesn't leave one over either). #}
+{% set _n = collections | length %}
+{% if _n > colsInt and _n % colsInt == 1 %}{% set colsInt = (colsInt - 1) if (colsInt > 2 and _n % (colsInt - 1) != 1) else (colsInt + 1) %}{% endif %}
+{% if _n > colsMid and _n % colsMid == 1 %}{% set colsMid = (colsMid - 1) if (colsMid > 2 and _n % (colsMid - 1) != 1) else (colsMid + 1) %}{% endif %}
+{% set loneMobile = colsM == '2' and _n > 1 and _n % 2 == 1 %}
+
+{% set headerAlign = d.header_align | default('split', true) %}
+{% set isCenter = headerAlign == 'center' %}
+{% set showCount = d.show_count | default(false) %}
+{# same forms as ui/count.njk, passed in: no ui tag inside a macro #}
+{% set countLabel = { one: t('counts.product_one'), two: t('counts.product_two'), few: t('counts.product_few'), many: t('counts.product_many') } %}
+
+{% set viewAllUrl = d.view_all_url | default('/collections') %}
+{% set viewAllRaw = d.view_all_text | default(t('defaults.all_categories'), true) %}
+{% if viewAllRaw %}{% set viewAllText = viewAllRaw %}{% else %}{% set viewAllText = t('common.view_all') %}{% endif %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set autoplay = d.autoplay | default(false) %}
+{% set speed = d.autoplay_speed | default(5, true) %}
+
+
+{# ============================ THE TILE ============================
+   Written once; the grid, the mosaic and the slider all call it.
+   ================================================================ #}
+{% macro tile(c, wid, ratioCls, isBelow, isOverlay, showCount, countLabel) %}
+  {% set _pn = c.productsCount or 0 %}{% set _pm = _pn % 100 %}
+  {% set countText = countLabel.one if _pn == 1 else (countLabel.two if _pn == 2 else ((countLabel.few if (_pm >= 3 and _pm <= 10) else countLabel.many) | replace('{n}', _pn))) %}
+  {% set cslug = c.slug or c.handle or c._id %}
+  {% set url = ('/shop/' ~ cslug) if cslug else '/shop' %}
+  {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+
+  <a href="{{ url }}" class="nakha-cs-{{ wid }}-card">
+    <div class="nakha-cs-{{ wid }}-media {{ ratioCls }}">
+      {% if img %}
+        <img src="{{ img }}" alt="{{ c.title }}" loading="lazy"/>
+      {% else %}
+        <span class="nakha-noimg-art">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5.5"/><path d="M3.5 3v5.2a2 2 0 0 0 2 2V21M5.5 3v4M7.5 3v5.2a2 2 0 0 1-2 2M20.5 21v-7c-1.6 0-2.5-1.4-2.5-4.4 0-3.3 1-6.6 2.5-6.6Z"/>
+          </svg>
+        </span>
+      {% endif %}
+
+      {% if isOverlay %}
+        <span class="nakha-cs-{{ wid }}-overlay">
+          <span class="nakha-cs-{{ wid }}-name">{{ c.title }}</span>
+          {% if showCount and c.productsCount %}
+            <span class="nakha-cs-{{ wid }}-count">{{ countText }}</span>
+          {% endif %}
+        </span>
+      {% elif not isBelow %}
+        <span class="nakha-cs-{{ wid }}-chip">
+          <span class="nakha-cs-{{ wid }}-name">{{ c.title }}</span>
+          {% if showCount and c.productsCount %}
+            <span class="nakha-cs-{{ wid }}-count">{{ c.productsCount }}</span>
+          {% endif %}
+        </span>
+      {% endif %}
+    </div>
+
+    {% if isBelow %}
+      <span class="nakha-cs-{{ wid }}-body">
+        <span class="min-w-0">
+          <span class="nakha-cs-{{ wid }}-name block nakha-clamp-1">{{ c.title }}</span>
+          {% if showCount and c.productsCount %}
+            <span class="nakha-cs-{{ wid }}-count block">{{ countText }}</span>
+          {% endif %}
+        </span>
+        <svg class="nakha-cs-{{ wid }}-arrow nakha-flip" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+      </span>
+    {% endif %}
+  </a>
+{% endmacro %}
+
+
+{% if count > 0 %}
+
+<style>
+  #nakha-cs-{{ id }} { background: {{ bgVal }}; }
+
+  /* ================= grid ================= */
+  .nakha-cs-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat({{ colsM }}, minmax(0, 1fr));
+    gap: 10px;
+  }
+  {% if loneMobile and not isMosaic %}
+  /* odd count on two columns: the last tile takes the row, as a wide plate */
+  @media (max-width: 767px) {
+    .nakha-cs-{{ id }}-grid > :last-child { grid-column: 1 / -1; }
+    .nakha-cs-{{ id }}-grid > :last-child [class*="nakha-ratio-"] { aspect-ratio: 2 / 1; }
+  }
+  {% endif %}
+  @media (min-width: 768px) {
+    .nakha-cs-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 14px; }
+  }
+  @media (min-width: 1024px) {
+    .nakha-cs-{{ id }}-grid { grid-template-columns: repeat({{ colsInt }}, minmax(0, 1fr)); }
+  }
+  {% if not isMosaic %}
+  {# stepping the count still leaves one (13 at 3 or 4 columns): it takes the row too #}
+  {% if _n > colsMid and _n % colsMid == 1 %}
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .nakha-cs-{{ id }}-grid > :last-child { grid-column: 1 / -1; }
+    .nakha-cs-{{ id }}-grid > :last-child [class*="nakha-ratio-"] { aspect-ratio: 3 / 1; }
+  }
+  {% endif %}
+  {% if _n > colsInt and _n % colsInt == 1 %}
+  @media (min-width: 1024px) {
+    .nakha-cs-{{ id }}-grid > :last-child { grid-column: 1 / -1; }
+    .nakha-cs-{{ id }}-grid > :last-child [class*="nakha-ratio-"] { aspect-ratio: 3 / 1; }
+  }
+  {% endif %}
+  {% endif %}
+
+  {% if isMosaic %}
+  /* first tile spans 2×2 — only from the breakpoint where there are enough
+     columns left for the rest of the row to still make sense */
+  @media (min-width: 1024px) {
+    .nakha-cs-{{ id }}-grid > *:first-child { grid-column: span 2; grid-row: span 2; }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .nakha-cs-{{ id }}-grid > *:first-child { grid-column: span 2; }
+  }
+  {% endif %}
+
+  /* ================= card ================= */
+  .nakha-cs-{{ id }}-card {
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    overflow: hidden;
+    transition: border-color var(--t-base) var(--ease-out);
+  }
+  .nakha-cs-{{ id }}-card:hover { border-color: var(--color-appetite); }
+
+  /* The plate is the white plate either way — the same constant the product card
+     uses, so a category tile and a product tile read as one system. */
+  .nakha-cs-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-media);
+  }
+  .nakha-cs-{{ id }}-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: {{ fit }};
+    {% if fit == 'contain' %}padding: 12%;{% endif %}
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .nakha-cs-{{ id }}-card:hover .nakha-cs-{{ id }}-media img { transform: scale({{ '1.07' if fit == 'contain' else '1.05' }}); }
+
+  .nakha-cs-{{ id }}-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-border-strong);
+  }
+
+  /* ---- name + count ---- */
+  .nakha-cs-{{ id }}-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-cs-{{ id }}-name { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.03em; }
+  .nakha-cs-{{ id }}-count {
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+  }
+
+  /* ---- below ---- */
+  .nakha-cs-{{ id }}-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 13px 14px;
+    border-top: 1px solid var(--color-border);
+  }
+  .nakha-cs-{{ id }}-arrow {
+    flex: none;
+    color: var(--color-text-tertiary);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .nakha-cs-{{ id }}-card:hover .nakha-cs-{{ id }}-arrow { color: var(--color-appetite); }
+
+  /* ---- overlay ---- */
+  .nakha-cs-{{ id }}-overlay {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 20px 16px 14px;
+    background: linear-gradient(to top, rgba(28, 26, 25, 0.85) 0%, rgba(28, 26, 25, 0.15) 76%, transparent 100%);
+  }
+  .nakha-cs-{{ id }}-overlay .nakha-cs-{{ id }}-name { color: var(--color-cream); }
+  .nakha-cs-{{ id }}-overlay .nakha-cs-{{ id }}-count { color: rgba(255, 247, 239, 0.75); }
+
+  /* ---- chip ---- */
+  .nakha-cs-{{ id }}-chip {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    border: 1px solid rgba(255, 247, 239, 0.22);
+    border-radius: var(--radius-btn);
+    background: rgba(28, 26, 25, 0.62);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out);
+  }
+  .nakha-cs-{{ id }}-chip .nakha-cs-{{ id }}-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    color: #FFFFFF;
+  }
+  .nakha-cs-{{ id }}-chip .nakha-cs-{{ id }}-count { color: rgba(255, 247, 239, 0.7); }
+  .nakha-cs-{{ id }}-card:hover .nakha-cs-{{ id }}-chip {
+    background: var(--color-appetite);
+    border-color: var(--color-appetite);
+  }
+  .nakha-cs-{{ id }}-card:hover .nakha-cs-{{ id }}-chip .nakha-cs-{{ id }}-count { color: rgba(255, 247, 239, 0.85); }
+
+  /* ================= slider ================= */
+  /* Swiper must clip horizontally — see the same note in collection-products. */
+  .nakha-cs-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .nakha-cs-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .nakha-cs-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .nakha-cs-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .nakha-cs-{{ id }}-sw .swiper-slide > * { width: 100%; }
+
+  @media (max-width: 639px) {
+    .nakha-cs-{{ id }}-body { padding: 11px 12px; }
+    .nakha-cs-{{ id }}-name { font-size: 0.8125rem; }
+    .nakha-cs-{{ id }}-chip { inset-inline: 8px; bottom: 8px; padding: 8px 11px; gap: 6px; }
+    .nakha-cs-{{ id }}-overlay { padding: 16px 12px 11px; }
+  }
+</style>
+
+
+<section id="nakha-cs-{{ id }}"{% if usingDemo %} data-nakha-demo{% endif %} class="nakha-section {{ 'nakha-invert' if isDark }}">
+  <div class="nakha-container">
+
+    {# ═════════════ header ═════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="nakha-head nakha-head--center">
+          <div class="nakha-head-inner">
+            {% if eyebrow %}<span class="nakha-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="nakha-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="nakha-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="nakha-head nakha-head--split">
+          <div class="nakha-head-inner">
+            {% if eyebrow %}<span class="nakha-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="nakha-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="nakha-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            {% if isSlider and showArrows %}
+              <div class="nakha-navs">
+                <button type="button" id="csPrev-{{ id }}"
+                        class="nakha-btn-icon nakha-btn-icon--outline nakha-btn-icon--sm"
+                        aria-label="{{ t('common.prev') }}">
+                  <svg class="nakha-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+                  </svg>
+                </button>
+                <button type="button" id="csNext-{{ id }}"
+                        class="nakha-btn-icon nakha-btn-icon--outline nakha-btn-icon--sm"
+                        aria-label="{{ t('common.next') }}">
+                  <svg class="nakha-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                  </svg>
+                </button>
+              </div>
+            {% endif %}
+
+            {% if viewAllUrl %}
+              <a href="{{ viewAllUrl }}" class="nakha-btn nakha-btn--outline nakha-btn--sm nakha-hide-sm">
+                {{ viewAllText }}
+                <svg class="nakha-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═════════════ tiles ═════════════ #}
+    {% if isSlider %}
+      <div class="swiper nakha-cs-{{ id }}-sw" id="csSwiper-{{ id }}">
+        <div class="swiper-wrapper">
+          {% for c in collections %}
+            <div class="swiper-slide">
+              {{ tile(c, id, ratioCls, isBelow, isOverlay, showCount, countLabel) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="nakha-cs-{{ id }}-grid">
+        {% for c in collections %}
+          {{ tile(c, id, ratioCls, isBelow, isOverlay, showCount, countLabel) }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ view all — centered header, or mobile ═════════════ #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-8 max-sm:mt-6 {{ '' if isCenter else 'nakha-only-sm' }}">
+        <a href="{{ viewAllUrl }}" class="nakha-btn nakha-btn--outline">
+          {{ viewAllText }}
+          <svg class="nakha-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if isSlider %}
+<script>
+  (function () {
+    if ({{ count }} < 2) return;
+    var el = document.getElementById('csSwiper-{{ id }}');
+    if (!el || typeof Swiper === 'undefined') return;
+
+    new Swiper(el, {
+      slidesPerView: {{ 1.2 if colsM == '1' else 2.2 }},
+      spaceBetween: 10,
+      speed: 420,
+      watchOverflow: true,
+      breakpoints: {
+        641:  { slidesPerView: {{ colsMid | default(3, true) }}, spaceBetween: 14 },
+        1024: { slidesPerView: {{ colsInt | default(5, true) }}, spaceBetween: 14 }
+      },
+      {% if autoplay and settings.enableAnimations != false %}
+      autoplay: { delay: {{ (speed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#csPrev-{{ id }}', nextEl: '#csNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+  })();
+</script>
+{% endif %}
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section data-nakha-demo id="nakha-cs-{{ id }}" class="nakha-section {{ 'nakha-invert' if isDark }}" style="background: {{ bgVal }};">
+    <div class="nakha-container">
+      <div class="nakha-empty">
+        <span class="nakha-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>
+          </svg>
+        </span>
+        <span class="nakha-empty-title">{{ t('categories.no_categories') }}</span>
+        <p class="nakha-text-sm m-0">{{ t('categories.no_categories_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-cs-' ~ id, c=d %}

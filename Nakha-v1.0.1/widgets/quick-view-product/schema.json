@@ -1,0 +1,33 @@
+{
+  "name": "العرض السريع",
+  "settings": {
+    "show_brand": {
+      "type": "boolean",
+      "label": { "ar": "إظهار اسم الماركة", "en": "Show Brand" },
+      "default": true
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": { "ar": "إظهار التقييم بالنجوم", "en": "Show Star Rating" },
+      "default": true
+    },
+    "show_specs": {
+      "type": "boolean",
+      "label": { "ar": "إظهار وسوم المواصفات", "en": "Show Spec Chips" },
+      "default": true
+    },
+    "low_stock_threshold": {
+      "type": "number",
+      "label": {
+        "ar": "حد التنبيه لقرب النفاد (يظهر «بقي كذا فقط»)",
+        "en": "Low-stock threshold (shows “only N left”)"
+      },
+      "default": 3,
+      "min": 1,
+      "max": 50
+    }
+  },
+  "presets": [
+    { "category": "صفحة المنتج", "name": "العرض السريع" }
+  ]
+}

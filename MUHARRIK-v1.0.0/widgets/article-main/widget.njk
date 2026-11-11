@@ -1,0 +1,216 @@
+{#
+  ============================================================================
+  ARTICLE MAIN · صفحة المقال — MUHARRIK: a "DIY guide"
+  ----------------------------------------------------------------------------
+  /articles/<handle>: mono crumb, a wide hairline-framed picture, then two
+  columns — a sidebar of hairline boxes (blocks: plain panel, or a yellow
+  promo panel with a picture and a link) and the article itself: mono
+  category kicker, display title, mono meta (author · date · read time ·
+  views), the prose on dark with yellow links, tags, share. Related guides
+  below reuse the BLOG GRID tile (.hx-bg-card).
+
+  No blocks → one text box and one promo card in the visitor's language.
+  Related: context.article.relatedArticles when Qumra sends it; otherwise
+  the same category's articles, read client-side by HxPosts (see below).
+  Dates: Qalab's `truncate` is (length, end), so `truncate(10, '')`.
+  No article (template preview) → a demo article, so it never arrives blank.
+  Media fields not uploaded through the editor arrive empty → demo picture.
+
+  Styles: assets/sections.css → "ARTICLE MAIN" (+ "BLOG GRID"), re-voiced in
+  assets/mh-content.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set a = context.article | default({}, true) %}
+{% set isDemo = (a.title | default('', true) | length) == 0 %}
+{% set related = context.related_articles or a.relatedArticles or a.related or [] %}
+{% set side = d.sidebar | default('start', true) %}
+
+{% macro coverOf(a) %}{% if a.image is string %}{{ a.image }}{% elif a.image and a.image.fileUrl and not a.image.notFound %}{{ a.image.fileUrl }}{% elif a.imageUrl %}{{ a.imageUrl }}{% endif %}{% endmacro %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set title = t('posts.a2.title') if isDemo else a.title %}
+{% set heroOwn = coverOf(a) | trim %}
+{% set heroImg = heroOwn if (not isDemo and (heroOwn | length)) else ('mh-build-3.jpg' | assets) %}
+{# the article API carries `category` (title + handle), not `blog`: the crumb,
+   the kicker and the related grid use whichever exists #}
+{% set relHandle = '' %}
+{% if a.blog and (a.blog.handle or a.blog.slug) %}{% set relHandle = a.blog.handle | default(a.blog.slug, true) %}
+{% elif a.category and (a.category.handle or a.category.slug) %}{% set relHandle = a.category.handle | default(a.category.slug, true) %}{% endif %}
+{% set blogTitle = a.blog.title if a.blog and a.blog.title else (a.category.title if a.category and a.category.title else t('bx.blog')) %}
+{% set blogUrl = ('/blogs/' ~ relHandle) if relHandle else '/blogs' %}
+{% set catName = (t('bx.demo_cat') if isDemo else (a.category.title | default(a.category.name, true) | default('', true) if a.category else '')) %}
+{% set author = t('bx.demo_author') if isDemo else ((a.author if a.author is string else (a.author.name | default('', true))) if a.author else '') %}
+{% set date = '2026-10-01' if isDemo else (a.publishedAt | default(a.createdAt, true) | default('', true)) %}
+{% set tags = ['tech', 'tips'] if isDemo else (a.tags | default([], true)) %}
+{% set body = t('bx.demo_body') if isDemo else (a.content | default(a.body, true) | default(a.description, true) | default('', true)) %}
+
+{# ---- read time: ~200 words a minute, never under 1. Shown as a clock + "4′"
+        (the prime is the minute mark), which needs no locale string. ---- #}
+{% set words = body | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags | wordcount %}
+{% set mins = ((words / 200) | round(0, 'ceil') | int) if words > 0 else 0 %}
+{% if mins < 1 %}{% set mins = 1 %}{% endif %}
+{% set showRead = d.show_read_time != false %}
+
+<article id="hx-am-{{ id }}"
+         class="hx-am is-side-{{ side }}"
+         style="--am-h: {{ d.hero_height | default(420, true) }}px; --pt: {{ d.padding_top if d.padding_top is defined else 16 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 48 }}px;"
+         x-data="{ copied: false, share() { var u = location.href; if (navigator.share) { navigator.share({ title: document.title, url: u }).catch(function () {}); return; } var s = this; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { s.copied = true; setTimeout(function () { s.copied = false; }, 2000); }).catch(function () {}); } }">
+  <div class="hx-am-wrap">
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-crumbs mh-mono" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+        <a href="{{ blogUrl }}">{{ blogTitle }}</a><span aria-hidden="true">/</span>
+        <span aria-current="page">{{ title }}</span>
+      </nav>
+    {% endif %}
+
+    {% if d.show_hero != false and heroImg %}
+      <div class="hx-am-hero mh-hud"><img src="{{ heroImg }}" alt="{{ title }}" fetchpriority="high"/></div>
+    {% endif %}
+
+    <div class="hx-am-grid">
+      <div class="hx-am-main">
+        <header class="hx-am-head">
+          {% if d.show_meta != false and catName %}<p class="hx-am-cat mh-kicker">{{ catName }}</p>{% endif %}
+          <h1 class="hx-am-title mh-h" dir="auto">{{ title }}</h1>
+          {% if d.show_meta != false and (author or date or a.views or showRead) %}
+            <p class="hx-am-meta mh-mono">
+              {% if author %}<span>{{ t('bx.by') }} {{ author }}</span>{% endif %}
+              {% if date %}<time datetime="{{ date }}" data-hy-date>{{ date | truncate(10, '') }}</time>{% endif %}
+              {% if showRead %}<span class="hx-am-read" title="{{ mins }}&prime;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" d="M12 7.5V12l3 2"/></svg><bdi>{{ mins }}&prime;</bdi></span>{% endif %}
+              {% if a.views %}<span><bdi>{{ a.views }}</bdi> {{ t('pages.blog.views') }}</span>{% endif %}
+            </p>
+          {% endif %}
+        </header>
+
+        <div class="taqa-prose hx-am-body mh-prose" dir="auto">{{ body | safe }}</div>
+
+        {% if (d.show_tags != false and (tags | length) > 0) or d.show_share != false %}
+          <div class="hx-am-foot">
+            {% if d.show_tags != false and (tags | length) > 0 %}
+              <div class="hx-am-tags"><span class="hx-am-lbl mh-mono">{{ t('bx.tags') }}</span>{#- live tags are objects — printed raw they read «#[object Object]» -#}{% for tg in tags %}{% if tg is string %}{% set tgText = tg %}{% elif tg.name %}{% set tgText = tg.name %}{% elif tg.displayName %}{% set tgText = tg.displayName %}{% elif tg.title %}{% set tgText = tg.title %}{% elif tg.label %}{% set tgText = tg.label %}{% elif tg.value %}{% set tgText = tg.value %}{% else %}{% set tgText = '' %}{% endif %}{% if tgText %}<span class="hx-am-tag mh-mono">#{{ tgText }}</span>{% endif %}{% endfor %}</div>
+            {% endif %}
+            {% if d.show_share != false %}
+              <div class="hx-am-share">
+                <span class="hx-am-lbl mh-mono">{{ t('bx.share') }}</span>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="Facebook" :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href)" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8.1v3h2.5V21h2.9Z"/></svg></a>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="X" :href="'https://twitter.com/intent/tweet?url=' + encodeURIComponent(location.href)" href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.5l11.2 14.5Z"/></svg></a>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="WhatsApp" :href="'https://wa.me/?text=' + encodeURIComponent(location.href)" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3c-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.4-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.3Z"/></svg></a>
+                <button type="button" class="hx-am-sbtn" @click="share()" :aria-label="copied ? '{{ t('pages.blog.copied') }}' : '{{ t('common.share') }}'"><svg x-show="!copied" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><svg x-show="copied" x-cloak width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if side != 'none' %}
+        <aside class="hx-am-side">
+          {% set blocks = widget.blocks | default([], true) %}
+          {% if (blocks | length) > 0 %}
+            {% for b in blocks %}
+              {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+              {% set bimg = mediaUrl(bd.image) | trim %}
+              {% if bd.style == 'promo' %}
+                {# an empty / legacy ecommerce-blue pick → the accent panel; any other pick → that colour, tinted onto the dark ground #}
+                {% set customBg = bd.bg | default('', true) | trim %}
+                {% if (customBg | upper) == '#DCE6FB' %}{% set customBg = '' %}{% endif %}
+                <div class="hx-am-box is-promo mh-hud {{ 'is-accent' if not customBg else 'is-custom' }}"{% if customBg %} style="--box-bg: {{ customBg }};"{% endif %}>
+                  <p class="hx-am-bt">{{ (bd.title or t('bx.promo_title')) | safe }}</p>
+                  {% if bd.text %}<div class="hx-am-bx">{{ bd.text | safe }}</div>{% endif %}
+                  <a href="{{ bd.url | default('/shop', true) }}" class="hx-am-link">{{ (bd.button or t('bx.promo_btn')) | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+                  <img class="hx-am-pimg" src="{{ bimg if (bimg | length) else ('mh-cat-lighting.jpg' | assets) }}" alt="" loading="lazy"/>
+                </div>
+              {% else %}
+                <div class="hx-am-box">
+                  <p class="hx-am-bt">{{ (bd.title or t('bx.side_title')) | safe }}</p>
+                  <div class="hx-am-bx">{{ (bd.text or t('bx.side_text')) | safe }}</div>
+                  {% if bd.button %}<a href="{{ bd.url | default('/shop', true) }}" class="hx-am-link">{{ bd.button | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="hx-am-box">
+              <p class="hx-am-bt">{{ t('bx.side_title') }}</p>
+              <div class="hx-am-bx">{{ t('bx.side_text') }}</div>
+            </div>
+            <div class="hx-am-box is-promo is-accent mh-hud">
+              <p class="hx-am-bt">{{ t('bx.promo_title') }}</p>
+              <div class="hx-am-bx">{{ t('bx.promo_text') }}</div>
+              <a href="/shop" class="hx-am-link">{{ t('bx.promo_btn') }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+              <img class="hx-am-pimg" src="{{ 'mh-cat-lighting.jpg' | assets }}" alt="" loading="lazy"/>
+            </div>
+          {% endif %}
+        </aside>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if d.show_related != false and (related | length) > 0 %}
+    <div class="hx-am-related">
+      <div class="hx-am-wrap">
+        <div class="mh-head">
+          <div class="mh-head-main">
+            <a class="mh-kicker" href="{{ blogUrl }}">{{ blogTitle }}</a>
+            <h2 class="mh-h hx-am-rh">{{ d.related_title if (d.related_title | default('', true) | trim | length) else t('bx.related') }}</h2>
+          </div>
+          <a href="{{ blogUrl }}" class="mh-viewall">{{ t('common.view_all') }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+        </div>
+        <div class="hx-bg hx-bg-grid is-r-wide is-zoom" data-bg-cols="3" style="--bg-cols: 3;">
+          {% for ra in related %}{% if loop.index <= 3 %}
+            {% set rurl = '/articles/' ~ (ra.handle | default(ra.slug, true) | default(ra._id, true)) %}
+            <article class="hx-bg-card">
+              <a href="{{ rurl }}" class="hx-bg-media" tabindex="-1" aria-hidden="true">{% set raCov = coverOf(ra) | trim %}{% if raCov | length %}<img src="{{ raCov }}" alt="" loading="lazy"/>{% else %}<img src="{{ 'mh-build-2.jpg' | assets }}" alt="" loading="lazy"/>{% endif %}</a>
+              {% if ra.category and ra.category.title %}<p class="hx-bg-cat">{{ ra.category.title }}</p>{% endif %}
+              <h3 class="hx-bg-title" dir="auto"><a href="{{ rurl }}">{{ ra.title }}</a></h3>
+              {% if ra.createdAt %}<p class="hx-bg-meta"><time datetime="{{ ra.createdAt }}" data-hy-date>{{ ra.createdAt | truncate(10, '') }}</time></p>{% endif %}
+            </article>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+  {% elif d.show_related != false and not isDemo %}
+    {# Qumra hands the article no related list (verified: context.article has
+       no relatedArticles). So the same blog / category is read the way the
+       home page reads posts: HxPosts (assets/hx.js, data-card="bg") lifts
+       the cards from /blogs/<handle>; the script below drops THIS article,
+       keeps three, and only then shows the section — nothing demo is shown. #}
+    <div class="hx-am-related" data-am-related style="display:none">
+      <div class="hx-am-wrap">
+        <div class="mh-head">
+          <div class="mh-head-main">
+            <a class="mh-kicker" href="{{ blogUrl }}">{{ blogTitle }}</a>
+            <h2 class="mh-h hx-am-rh">{{ d.related_title if (d.related_title | default('', true) | trim | length) else t('bx.related') }}</h2>
+          </div>
+          <a href="{{ blogUrl }}" class="mh-viewall">{{ t('common.view_all') }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+        </div>
+        <div class="hx-bg hx-bg-grid is-r-wide is-zoom" data-bg-cols="3" style="--bg-cols: 3;" data-hx-posts data-card="bg" data-blog="{{ relHandle }}" data-limit="4" data-cat="on" data-date="on" data-excerpt="off"></div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        function boot() {
+          var box = document.querySelector('#hx-am-{{ id }} [data-am-related]');
+          var grid = box && box.querySelector('[data-hx-posts]');
+          if (!grid || !window.HxPosts) return;
+          var here = decodeURIComponent(location.pathname).replace(/^\/[a-z]{2}(?=\/)/, '').replace(/\/$/, '');
+          new MutationObserver(function () {
+            var cards = Array.prototype.slice.call(grid.querySelectorAll('.hx-bg-card'));
+            cards.forEach(function (c) {
+              var a = c.querySelector('.hx-bg-title a');
+              var href = a ? decodeURIComponent(a.getAttribute('href') || '').replace(/^\/[a-z]{2}(?=\/)/, '').replace(/\/$/, '') : '';
+              if (href === here) c.remove();
+            });
+            cards = grid.querySelectorAll('.hx-bg-card');
+            for (var i = 3; i < cards.length; i++) cards[i].remove();
+            box.style.display = cards.length ? '' : 'none';
+          }).observe(grid, { childList: true });
+          HxPosts.fill(grid);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+      })();
+    </script>
+  {% endif %}
+</article>

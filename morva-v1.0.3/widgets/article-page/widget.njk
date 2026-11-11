@@ -1,0 +1,65 @@
+{# MORVA · ARTICLE — /articles/<handle>
+   The static-page column (max 820px): crumb · title · meta · cover · prose ·
+   tags · share — then related articles as tiles. #}
+{% set d = widget.data %}
+{% set a = context.article | default({}, true) %}
+{#- the platform sends the related list next to the article -#}
+{% set related = context.related_articles or a.relatedArticles or a.related or [] %}
+{#- the cover arrives as { fileUrl }, as imageUrl or as a plain string -#}
+{% if a.image and a.image.fileUrl %}{% set cover = a.image.fileUrl %}{% elif a.imageUrl %}{% set cover = a.imageUrl %}{% elif a.image is string %}{% set cover = a.image %}{% else %}{% set cover = '' %}{% endif %}
+{% set blogHandle = (a.blog.handle | default(a.blog.slug)) if a.blog else '' %}
+{% set backUrl = ('/blogs/' ~ blogHandle) if blogHandle else '/blogs' %}
+
+<section class="mv-section">
+  <article class="mv-page" style="margin-inline: auto;"
+           x-data="{ copied: false, async share() {
+             var url = window.location.href;
+             if (navigator.share) { try { await navigator.share({ title: document.title, url: url }); return; } catch (e) {} }
+             try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+             this.copied = true; setTimeout(() => { this.copied = false; }, 2000);
+           } }">
+    <nav class="mv-crumb" aria-label="breadcrumb">
+      <a href="{{ backUrl }}"><span class="mv-arrow" aria-hidden="true">←</span> {{ a.blog.title | default(t('pages.blog.title'), true) if a.blog else t('pages.blog.title') }}</a>
+    </nav>
+
+    <h1 class="mv-page-title">{{ a.title | default(t('pages.blog.title'), true) }}</h1>
+    {% if (d.show_meta | default(true)) and (a.createdAt or a.views) %}
+      <div class="mv-page-meta">
+        {% if a.createdAt %}<time datetime="{{ a.createdAt }}" data-hy-date>{{ (a.createdAt | string).slice(0, 10) }}</time>{% endif %}
+        {% if a.views %}<span><bdi>{{ a.views }}</bdi> {{ t('pages.blog.views') }}</span>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if cover and (d.show_cover | default(true)) %}
+      <div class="mv-page-cover"><img class="mv-fill" src="{{ cover }}" alt="{{ a.title }}" fetchpriority="high"/></div>
+    {% endif %}
+
+    {% if a.content %}<div class="mv-prose">{{ a.content | safe }}</div>{% endif %}
+
+    {% if a.tags and (a.tags | length) > 0 %}
+      <div class="mv-tags">{#- tags are objects on live stores — printed raw they read «[object Object]» -#}{% for tg in a.tags %}{% if tg is string %}{% set tgText = tg %}{% elif tg.name %}{% set tgText = tg.name %}{% elif tg.displayName %}{% set tgText = tg.displayName %}{% elif tg.title %}{% set tgText = tg.title %}{% elif tg.label %}{% set tgText = tg.label %}{% elif tg.value %}{% set tgText = tg.value %}{% else %}{% set tgText = '' %}{% endif %}{% if tgText %}<span class="mv-chip">{{ tgText }}</span>{% endif %}{% endfor %}</div>
+    {% endif %}
+
+    <div class="mv-pdp-meta" style="border-top: 1px solid var(--border); margin-top: 28px;">
+      <a href="{{ backUrl }}" class="mv-share"><span class="mv-arrow" aria-hidden="true">←</span> {{ t('pages.blog.back_to_articles') }}</a>
+      <button type="button" class="mv-share" @click="share()">
+        <span x-text="copied ? {{ t('pages.blog.copied') | dump }} : {{ t('common.share') | dump }}">{{ t('common.share') }}</span>
+      </button>
+    </div>
+  </article>
+
+  {% set relLimit = d.related_limit | default(3) %}
+  {% if (d.show_related | default(true)) and (related | length) > 0 %}
+    <div class="mv-related">
+      <div class="mv-head">
+        <div>
+          <div class="mv-kicker">— {{ t('morva.journal') }}</div>
+          <h2 class="mv-h">{{ d.related_title | default(t('pages.blog.related_articles'), true) }}</h2>
+        </div>
+      </div>
+      <div class="mv-tiles" style="--tile-ratio: 4 / 3;" data-mv-stagger>
+        {% for ra in related %}{% if loop.index <= relLimit %}{% ui "article-card.njk", article=ra, show_excerpt='off' %}{% endif %}{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</section>

@@ -1,0 +1,411 @@
+{# ============================================================================
+   RIYADA BUNDLE BUILDER — "يُشترى معاً"
+   ----------------------------------------------------------------------------
+   A row of compatible products joined by + signs, then one bar with the
+   separate-parts total, the bundle price, what the shopper saves, and a single
+   button that adds every item at once.
+
+   The total is computed client-side from the real product prices, so it can
+   never drift from what the cart will actually charge. `bundle_price` is the
+   merchant's discounted figure; leave it 0 and the bar just shows the sum.
+
+   ⚠️  Two deliberate choices, both forced by Nunjucks scoping — a `set` tag
+   inside a `for` loop does NOT survive the iteration:
+     · The + separators are drawn by a CSS adjacent-sibling rule, not a
+       server-side "is this the first one" flag.
+     · Blocks with no product picked render as an EMPTY SLOT rather than being
+       skipped, so no running "did anything render" flag is needed — and the
+       merchant sees the slot they just created instead of nothing.
+
+   Contract with assets/main.js:
+     Qumra.api.post('/ajax/cart/add', …)   ·   Qumra.cart.add(id, qty)
+     Qumra.utils.formatMoney(v)
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([]) %}
+{% set count = items | length %}
+{# how many slots have a product — a bundle with none is merchant-only (editor) #}
+{% set filled = [] %}
+{% for block in items %}{% if block.data and block.data.product and (block.data.product | length) > 0 %}{% set _ = filled.push(1) %}{% endif %}{% endfor %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('row', true) %}
+{% set isList = layout == 'list' %}
+
+{% set bg = d.background | default('canvas', true) %}
+{% set showPrices = d.show_prices | default(true) %}
+{% set showNotes = d.show_notes | default(true) %}
+{% set showBar = d.show_bundle_bar | default(true) %}
+{% set bundlePrice = d.bundle_price | default(0, true) %}
+{% set bundleNote = d.bundle_note | default('') %}
+{% set ctaRaw = d.cta_text | default(t('defaults.add_bundle'), true) %}
+{% if ctaRaw %}{% set ctaText = ctaRaw %}{% else %}{% set ctaText = t('bundle.add_all') %}{% endif %}
+
+{# ---- background ---- #}
+{% set isLight = bg == 'light' %}
+{% if bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'well' %}{% set bgVal = 'var(--color-bg-tertiary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'void' %}{% set bgVal = 'var(--color-media)' %}
+{% elif isLight %}{% set bgVal = 'var(--color-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+
+{% if count > 0 %}
+
+<style>
+  #riyada-bb-{{ id }} { background: {{ bgVal }}; }
+
+  /* ================= the chain ================= */
+  .riyada-bb-{{ id }}-chain {
+    display: flex;
+    align-items: stretch;
+    gap: 44px;
+    {% if isList %}flex-direction: column;{% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-bb-{{ id }}-chain { flex-direction: column; gap: 38px; }
+  }
+
+  .riyada-bb-{{ id }}-item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    {% if isList %}
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    {% else %}
+    flex-direction: column;
+    {% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-bb-{{ id }}-item { flex-direction: row; align-items: center; gap: 14px; }
+  }
+
+  /* The + lives in the gap BEFORE every item except the first. An
+     adjacent-sibling rule is what makes this correct no matter which blocks
+     the merchant filled in — no server-side counter can do that safely.
+
+     The glyph is `content: '+'` rather than an inlined SVG data URI, because a
+     data URI has to hard-code its stroke colour: the moment the merchant
+     retints the accent from the Theme Editor, a baked-in hex stops matching.
+     Text content reads --color-flame like everything else. */
+  .riyada-bb-{{ id }}-item + .riyada-bb-{{ id }}-item::before {
+    content: '+';
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: {{ bgVal }};
+    color: var(--color-flame);
+    font-family: var(--font-num);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1;
+    {% if isList %}
+    inset-block-start: -33px;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+    {% else %}
+    inset-block-start: 50%;
+    inset-inline-start: -36px;
+    translate: 0 -50%;
+    {% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-bb-{{ id }}-item + .riyada-bb-{{ id }}-item::before {
+      inset-block-start: -33px;
+      inset-inline-start: 50%;
+      translate: -50% 0;
+    }
+  }
+
+  /* ================= item body ================= */
+  .riyada-bb-{{ id }}-media {
+    position: relative;
+    flex: none;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-media);
+    {% if isList %}
+    width: 88px;
+    height: 88px;
+    {% else %}
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 12px;
+    {% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-bb-{{ id }}-media { width: 88px; height: 88px; aspect-ratio: auto; margin-bottom: 0; }
+  }
+  .riyada-bb-{{ id }}-media img { width: 100%; height: 100%; object-fit: cover; }
+
+  .riyada-bb-{{ id }}-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+
+  .riyada-bb-{{ id }}-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .riyada-bb-{{ id }}-name:hover { color: var(--color-flame); }
+
+  .riyada-bb-{{ id }}-note {
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .riyada-bb-{{ id }}-save {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-success);
+  }
+
+  /* an unfilled slot — editor only, dashed so it reads as "pick something" */
+  .riyada-bb-{{ id }}-item.is-empty {
+    border-style: dashed;
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-tertiary);
+  }
+
+  /* ================= bundle bar =================
+     Uses the shared .riyada-bundle-bar primitive (style.css §11) — the same
+     flame-washed bar the PDP uses for its own bundle row. */
+  .riyada-bb-{{ id }}-bar { margin-top: 22px; }
+  @media (max-width: 639px) {
+    .riyada-bb-{{ id }}-bar > * { width: 100%; }
+  }
+</style>
+
+
+<section id="riyada-bb-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}"{% if (filled | length) == 0 %} data-editor-only{% endif %}>
+  <div class="riyada-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      <div class="riyada-head">
+        <div class="riyada-head-inner">
+          {% if eyebrow %}<span class="riyada-eyebrow">{{ eyebrow }}</span>{% endif %}
+          {% if title %}<div class="riyada-h2">{{ title | safe }}</div>{% endif %}
+          {% if desc %}<p class="riyada-lead">{{ desc | safe }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# ═══════════════ the chain ═══════════════ #}
+    <div class="riyada-bb-{{ id }}-chain">
+      {% for block in items %}
+        {% set b = block.data %}
+        {% set p = b.product[0] if b.product and (b.product | length) > 0 else null %}
+
+        <div class="riyada-bb-{{ id }}-item {{ 'is-empty' if not p }}"{% if not p %} data-editor-only{% endif %}>
+          {% if p %}
+            {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+            {% set url = '/product/' ~ (p.slug | default(p.handle) | default('')) %}
+            {% set price = p.pricing.price | default(0, true) %}
+
+            <a href="{{ url }}" class="riyada-bb-{{ id }}-media" aria-label="{{ p.title }}">
+              {% if img %}
+                <img src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>
+              {% else %}
+                <span class="riyada-pcard-noimg">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <circle cx="8.75" cy="9" r="1.6"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                  </svg>
+                </span>
+              {% endif %}
+            </a>
+
+            <div class="riyada-bb-{{ id }}-body">
+              {% if b.role_label or (b.tag and b.tag != 'none') %}
+                <div class="flex items-center gap-2 flex-wrap">
+                  {% if b.role_label %}<span class="riyada-micro">{{ b.role_label }}</span>{% endif %}
+                  {% if b.tag and b.tag != 'none' %}
+                    <span class="riyada-tag {{ 'riyada-tag--flame' if b.tag == 'essential' }}">{{ t('bundle.tag_' ~ b.tag) }}</span>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <a href="{{ url }}" class="riyada-bb-{{ id }}-name riyada-clamp-2">{{ p.title }}</a>
+
+              {% if showNotes and b.note %}
+                <span class="riyada-bb-{{ id }}-note">{{ b.note }}</span>
+              {% endif %}
+
+              {% if showPrices and price > 0 %}
+                <span class="riyada-price riyada-price--sm">{{ price | money }}</span>
+              {% endif %}
+            </div>
+
+          {% else %}
+            {# no product picked yet — show the slot, not a gap #}
+            <span class="riyada-bb-{{ id }}-media flex items-center justify-center" style="background: transparent;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.4" style="stroke: var(--color-border-strong)">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path stroke-linecap="round" d="M12 8.5v7M8.5 12h7"/>
+              </svg>
+            </span>
+            <div class="riyada-bb-{{ id }}-body">
+              {% if b.role_label %}<span class="riyada-micro">{{ b.role_label }}</span>{% endif %}
+              <span class="riyada-bb-{{ id }}-note">{{ t('bundle.pick_product') }}</span>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {# ═══════════════ bundle bar ═══════════════ #}
+    {% if showBar %}
+      <div class="riyada-bundle-bar riyada-bb-{{ id }}-bar"
+           x-data="riyadaBundle{{ id }}()" x-show="items.length > 0" x-cloak>
+
+        <div class="flex flex-col gap-1 min-w-0">
+          {% if bundlePrice > 0 %}
+            <span class="riyada-micro">{{ t('bundle.bundle_total') }}</span>
+            <div class="flex items-baseline gap-2.5 flex-wrap">
+              <span class="riyada-price riyada-price--lg">{{ bundlePrice | money }}</span>
+              <span class="riyada-price-was" x-text="fmt(total)"></span>
+              <span class="riyada-badge riyada-badge--off" x-show="saving > 0" x-cloak
+                    x-text="'−' + Math.floor(saving / total * 100) + '%'"></span>
+            </div>
+            <span class="riyada-bb-{{ id }}-save" x-show="saving > 0" x-cloak
+                  x-text="'{{ t('bundle.you_save') }} ' + fmt(saving)"></span>
+          {% else %}
+            <span class="riyada-micro">{{ t('bundle.total') }}</span>
+            <span class="riyada-price riyada-price--lg" x-text="fmt(total)"></span>
+          {% endif %}
+
+          {% if bundleNote %}
+            <span class="riyada-caption">{{ bundleNote }}</span>
+          {% endif %}
+        </div>
+
+        <button type="button"
+                @click="addAll()"
+                :disabled="loading || done"
+                class="riyada-btn riyada-btn--primary riyada-btn--lg max-sm:w-full">
+          <span x-show="loading" class="riyada-spinner" style="width:16px;height:16px;border-width:2px;"></span>
+          <span x-show="done && !loading" x-cloak class="inline-flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            {{ t('bundle.added_all') }}
+          </span>
+          <span x-show="!loading && !done">
+            {{ ctaText }}
+            <span class="riyada-num" x-text="'(' + items.length + ')'"></span>
+          </span>
+        </button>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if showBar %}
+<script>
+  /* Registered before Alpine boots (main.js loads first, Alpine is deferred). */
+  document.addEventListener('alpine:init', function () {
+    Alpine.data('riyadaBundle{{ id }}', function () {
+      return {
+        /* product id + price for every block that actually has a product.
+           The trailing comma after each entry is legal in a JS array literal,
+           which is why no loop.last bookkeeping is needed here. */
+        items: [
+          {%- for block in items -%}
+            {%- set p = block.data.product[0] if block.data.product and (block.data.product | length) > 0 else null -%}
+            {%- if p -%}
+              { id: '{{ p._id }}', price: {{ p.pricing.price | default(0, true) }},
+                {# a product with options can't be added blind — the server would make a
+                   parent-priced line with no variant (measured). Those are left for their page. #}
+                hasOptions: {{ 'true' if ((p.options and p.options | length) or (p.variants and p.variants | length) or (p.variantsCount and p.variantsCount > 0)) else 'false' }} },
+            {%- endif -%}
+          {%- endfor -%}
+        ],
+        loading: false,
+        done: false,
+
+        get ids() { return this.items.map(function (i) { return i.id; }); },
+        get total() { return this.items.reduce(function (sum, i) { return sum + (i.price || 0); }, 0); },
+        get saving() {
+          var bundle = {{ bundlePrice | default(0, true) }};
+          return bundle > 0 ? Math.max(0, this.total - bundle) : 0;
+        },
+
+        fmt: function (v) { return Qumra.utils.formatMoney(v); },
+
+        async addAll() {
+          if (this.loading || !this.items.length) return;
+          this.loading = true;
+          try {
+            /* Add every item but the last quietly, then run the final one through
+               CartManager so the drawer, badge and toast all refresh exactly once
+               instead of firing N times. */
+            var plain = this.items.filter(function (i) { return !i.hasOptions; }).map(function (i) { return i.id; });
+            var needsChoice = this.items.length - plain.length;
+            if (needsChoice && Qumra.toast) Qumra.toast.warning({{ t('pages.cart.needs_variant') | dump | safe }});
+            if (!plain.length) return;
+            for (var i = 0; i < plain.length - 1; i++) {
+              await Qumra.api.post('/ajax/cart/add', { productId: plain[i], quantity: 1 });
+            }
+            await Qumra.cart.add(plain[plain.length - 1], 1);
+
+            this.done = true;
+            var self = this;
+            setTimeout(function () { self.done = false; }, 2600);
+          } catch (e) {
+            /* CartManager already toasted if the failure came from the last add. */
+            console.error('[bundle-builder] add all failed', e);
+          } finally {
+            this.loading = false;
+          }
+        }
+      };
+    });
+  });
+</script>
+{% endif %}
+
+{% else %}
+  {# ---- editor empty state: no blocks at all ---- #}
+  <section id="riyada-bb-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}" style="background: {{ bgVal }};" data-editor-only>
+    <div class="riyada-container">
+      <div class="riyada-empty">
+        <span class="riyada-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7.6 12 3l9 4.6v8.8L12 21l-9-4.6z"/><path d="M3 7.6 12 12l9-4.4"/><path d="M12 12v9"/>
+          </svg>
+        </span>
+        <span class="riyada-empty-title">{{ t('bundle.empty_title') }}</span>
+        <p class="riyada-text-sm m-0">{{ t('bundle.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-bb-' ~ id, c=d %}

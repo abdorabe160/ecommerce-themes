@@ -1,0 +1,267 @@
+{# ============================================================================
+   LOCAL · HERO — a full-bleed picture, copy on the start edge, a pager below
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────────────┐
+     │                                                     ╭──────╮         │
+     │   ★★★★★ 4.9 (589)                                    │ ▓▓▓▓ │         │
+     │   Fresh.                                            │ ▓▓▓▓ │  ◢◢◢◢◢  │
+     │   Organic.                                          ╰──────╯ ◢◢◢◢◢◢  │
+     │   Delivered.                                                         │
+     │   ( SHOP NOW )                                                       │
+     └──────────────────────────────────────────────────────────────────────┘
+                              ‹   ▬▬▬  •   ›
+
+   ── The transition ("reveal") ──
+   Not a slide and not a plain crossfade. The incoming picture WIPES in from
+   the inline-end edge while it settles from a 1.08 zoom, and the heading
+   rises into place one line at a time behind a mask; the rating, copy and
+   button follow. The old slide stays underneath until the wipe covers it, so
+   nothing ever flashes to the page colour. `fade` is the quieter alternative.
+
+   The first slide on page load skips the wipe (it would only delay the
+   biggest paint on the page) but still runs the text rise.
+
+   ── The pager is a timer ──
+   With autoplay on, the active pill FILLS over the slide's duration, driven by
+   Swiper's `autoplayTimeLeft`. Hovering the stage pauses both.
+
+   ── What is merchant content, not Qumra data ──
+   The rating line is TEXT the merchant types — Qumra exposes no store-wide
+   review score. The label asks for the real figure; it can be switched off.
+
+   ── Headings ──
+   `|` in the title starts a new line; each line is its own masked span so it
+   can rise on its own. Only the FIRST slide is an <h1>.
+
+   Styling: assets/style.css → "15.5 HERO · LOCAL". The copy sits in the same
+   `.lc-hwrap` measure as the header, so its start edge lines up with the logo.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([], true) %}
+{% set count = slides | length %}
+
+{% set heightD = d.height | default(600) %}
+{% set heightM = d.height_mobile | default(560) %}
+{% set fx = d.transition | default('reveal') %}
+{% set autoplay = d.autoplay | default(true) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showDots = d.show_dots | default(true) %}
+{% set hasPager = count > 1 and (showArrows or showDots) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro star() %}
+  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>
+{% endmacro %}
+
+<section id="lc-hero-{{ id }}"
+         class="lc-hero lc-hero--{{ fx }}"
+         style="--lc-hero-h: {{ heightD }}px; --lc-hero-h-sm: {{ heightM }}px;"
+         aria-roledescription="carousel">
+
+  <div class="lc-hero-stage swiper" id="lc-heroSw-{{ id }}">
+    <div class="swiper-wrapper">
+
+      {% for block in slides %}
+        {% set s = block.data %}
+        {% set img = mediaUrl(s.image) | trim %}
+        {% set imgM = mediaUrl(s.image_mobile) | trim %}
+        {# start | center only — an older block saved as 'end' falls back to start #}
+        {% set align = 'center' if s.content_align == 'center' else 'start' %}
+        {% set focus = s.image_focus | default('end') %}
+        {% set accent = s.accent_color | default('var(--color-accent)', true) %}
+        {% set lines = (s.title | default('', true)).split('|') %}
+        {% set headTag = 'h1' if loop.first else 'h2' %}
+
+        <div class="swiper-slide lc-hero-slide lc-hero-slide--{{ align }} {{ 'is-in is-first' if loop.first }}"
+             style="--lc-s-bg: {{ s.bg_color | default('color-mix(in srgb, var(--color-bg-tertiary) 96%, var(--color-text-primary))', true) }};
+                    --lc-s-fg: {{ s.text_color | default('var(--color-text-primary)', true) }};
+                    --lc-s-accent: {{ accent }};
+                    --lc-s-on-accent: {{ s.button_text_color | default('var(--color-text-on-accent)', true) }};
+                    --lc-s-star: {{ s.star_color | default(accent, true) }};"
+             role="group"
+             aria-roledescription="slide"
+             aria-label="{{ loop.index }} / {{ count }}">
+
+          <div class="lc-hero-media">
+            {% if (img | length) > 0 %}
+              <picture>
+                {% if (imgM | length) > 0 %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+                <img src="{{ img }}" alt=""
+                     class="lc-hero-img lc-hero-img--{{ focus }}"
+                     {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </picture>
+            {% else %}
+              <span class="lc-hero-noimg"><svg class="lc-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false"><circle class="lc-ph-fill" cx="64" cy="74" r="30"/><circle class="lc-ph-fill" cx="106" cy="58" r="32"/><circle class="lc-ph-fill" cx="146" cy="78" r="26"/><path class="lc-ph-fill" d="M16 92h168a4 4 0 0 1 4 4c0 30-38 54-88 54S12 126 12 96a4 4 0 0 1 4-4Z"/><rect class="lc-ph-tint" x="40" y="104" width="120" height="12" rx="6"/></svg></span>
+            {% endif %}
+          </div>
+
+          <div class="lc-hwrap lc-hero-inner">
+            <div class="lc-hero-copy">
+              {% if s.rating_enabled | default(true) and s.rating_text %}
+                {% set pct = ((s.rating_stars | default('5') | float) / 5 * 100) %}
+                <div class="lc-hero-rating lc-rise" style="--i: 0;">
+                  <span class="lc-stars" aria-hidden="true">
+                    <span class="lc-stars-base">{% for i in range(5) %}{{ star() }}{% endfor %}</span>
+                    <span class="lc-stars-fill" style="width: {{ pct }}%;">{% for i in range(5) %}{{ star() }}{% endfor %}</span>
+                  </span>
+                  <span class="lc-hero-rating-text">{{ s.rating_text }}</span>
+                </div>
+              {% endif %}
+
+              {% if s.title %}
+                <{{ headTag }} class="lc-hero-title">
+                  {% for line in lines %}
+                    <span class="lc-line"><span class="lc-line-in" style="--i: {{ loop.index }};">{{ line | trim }}</span></span>
+                  {% endfor %}
+                </{{ headTag }}>
+              {% endif %}
+
+              {% if s.description %}
+                <div class="lc-hero-desc lc-rise" style="--i: {{ (lines | length) + 1 }};">{{ s.description | safe }}</div>
+              {% endif %}
+
+              {% if s.cta_text %}
+                <a href="{{ s.cta_url | default('/shop') }}"
+                   class="lc-hero-btn lc-rise"
+                   style="--i: {{ (lines | length) + 2 }};"
+                   {% if not loop.first %}tabindex="-1"{% endif %}>{{ s.cta_text }}</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        {# Fresh install — one inert slide, so the merchant sees the real layout. #}
+        <div class="swiper-slide lc-hero-slide lc-hero-slide--start is-in is-first" data-lc-placeholder aria-hidden="true"
+             style="--lc-s-bg: color-mix(in srgb, var(--color-bg-tertiary) 96%, var(--color-text-primary)); --lc-s-fg: var(--color-text-primary); --lc-s-accent: var(--color-accent); --lc-s-on-accent: var(--color-text-on-accent); --lc-s-star: var(--color-accent);">
+          <div class="lc-hero-media"></div>
+          <div class="lc-hwrap lc-hero-inner">
+            <div class="lc-hero-copy">
+              <div class="lc-hero-title">
+                <span class="lc-line"><span class="lc-line-in" style="--i: 1;">{{ t('common.placeholder_add') }}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  {% if hasPager %}
+    <div class="lc-pager">
+      {% if showArrows %}
+        <button type="button" class="lc-pager-arrow" id="lc-heroPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+          <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/>
+          </svg>
+        </button>
+      {% endif %}
+
+      {% if showDots %}
+        <div class="lc-pager-dots" id="lc-heroDots-{{ id }}">
+          {% for block in slides %}
+            <button type="button"
+                    class="lc-pager-dot {{ 'is-active' if loop.first }}"
+                    data-i="{{ loop.index0 }}"
+                    aria-label="{{ loop.index }} / {{ count }}"
+                    {% if loop.first %}aria-current="true"{% endif %}><span></span></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if showArrows %}
+        <button type="button" class="lc-pager-arrow" id="lc-heroNext-{{ id }}" aria-label="{{ t('common.next') }}">
+          <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/>
+          </svg>
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+
+{% if count > 1 %}
+<script>
+  (function () {
+    var root = document.getElementById('lc-hero-{{ id }}');
+    var el = document.getElementById('lc-heroSw-{{ id }}');
+    if (!root || !el || typeof Swiper === 'undefined') return;
+
+    var dots = [].slice.call(root.querySelectorAll('.lc-pager-dot'));
+    var reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('lc-no-motion');
+
+    /* Restart the entrance on the slide that just became active. Removing the
+       class and forcing a reflow is what lets the same keyframes run again on
+       a slide that has been shown before. */
+    var enter = function (sw) {
+      sw.slides.forEach(function (sl, i) {
+        sl.classList.remove('is-first');
+        if (i !== sw.activeIndex) sl.classList.remove('is-in');
+        var cta = sl.querySelector('.lc-hero-btn');
+        if (cta) cta.tabIndex = i === sw.activeIndex ? 0 : -1;
+      });
+      var cur = sw.slides[sw.activeIndex];
+      cur.classList.remove('is-in');
+      void cur.offsetWidth;
+      cur.classList.add('is-in');
+
+      dots.forEach(function (b, i) {
+        var on = i === sw.activeIndex;
+        b.classList.toggle('is-active', on);
+        if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+        b.style.setProperty('--p', 0);
+      });
+    };
+
+    var sw = new Swiper(el, {
+      effect: 'fade',
+      /* reveal: the new slide is drawn OVER the old one, which stays solid
+         underneath until the wipe has covered it. fade: both move together. */
+      fadeEffect: { crossFade: {{ 'true' if fx == 'fade' else 'false' }} },
+      speed: reduce ? 0 : {{ 1100 if fx == 'reveal' else 900 }},
+      rewind: true,
+      {% if autoplay %}
+      autoplay: reduce ? false : { delay: {{ (speed * 1000) | default(6000, true) }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#lc-heroPrev-{{ id }}', nextEl: '#lc-heroNext-{{ id }}' },
+      {% endif %}
+      keyboard: { enabled: true, onlyInViewport: true },
+      a11y: { enabled: true },
+      on: {
+        slideChangeTransitionStart: function () {
+          var prev = this.slides[this.previousIndex];
+          this.slides.forEach(function (sl) { sl.classList.toggle('is-leaving', sl === prev); });
+          enter(this);
+        },
+        /* The outgoing slide is only needed until the wipe has covered it. */
+        slideChangeTransitionEnd: function () {
+          this.slides.forEach(function (sl) { sl.classList.remove('is-leaving'); });
+        },
+        /* 1 → 0 over the slide's life; the pill fills the other way. */
+        autoplayTimeLeft: function (s, time, progress) {
+          var b = dots[s.activeIndex];
+          if (b) b.style.setProperty('--p', (1 - progress).toFixed(3));
+        }
+      }
+    });
+
+    dots.forEach(function (b) {
+      b.addEventListener('click', function () { sw.slideTo(+b.getAttribute('data-i')); });
+    });
+  })();
+</script>
+{% endif %}
+
+<style>
+  {# Only the per-section overrides live here; everything else is in style.css. #}
+  #lc-hero-{{ id }} {
+    {% if d.colors_enabled and d.color_accent %}--lc-ui: {{ d.color_accent }};{% endif %}
+  }
+</style>
+
+{% ui "section-colors.njk", scope='#lc-hero-' ~ id, c=d %}

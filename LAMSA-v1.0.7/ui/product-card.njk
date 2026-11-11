@@ -1,0 +1,273 @@
+{# ============================================================================
+   LAMSA PRODUCT CARD  ·  SSR renderer
+   ----------------------------------------------------------------------------
+   ⚠️  THIS CARD HAS A TWIN: `LamsaCard.build()` in assets/main.js renders the
+   same markup for AJAX results (filters, search, lazy grids). If you change the
+   structure here, change it there too. All styling lives in
+   assets/style.css → "PRODUCT CARD", so visual drift is impossible; only the
+   markup order has to stay in sync.
+   ----------------------------------------------------------------------------
+   Usage (written without the tag braces so no parser ever sees them here):
+     ui "product-card.njk", product=item
+     ui "product-card.njk", product=item, image_ratio='4/5', show_rating=false
+
+   Locals (all optional — they fall back to the theme settings):
+     product         the product object (required)
+     image_ratio     '1/1' | '4/5' | '3/4'
+     show_swatches · show_rating · show_suitability · show_second_image
+     show_quick_view · atc_style ('tray' | 'always' | 'hidden')
+
+   Data used:  pricing · images[] · options[] (type=='color' → shades)
+               averageRating · reviewsCount · tags[] (→ "مناسب لـ")
+               variantsCount · quantity · trackQuantity · allowBackorder
+   ========================================================================= #}
+
+{% set p = data.product %}
+
+{% if p %}
+
+  {# ---------------- resolve options: local override → theme setting ------- #}
+  {% set ratio        = data.image_ratio      | default(settings.cardImageRatio      | default('1/1')) %}
+  {# A local passed through the ui tag arrives as a STRING. A flag set to the
+     literal false reaches here as "false" — a non-empty string, therefore
+     truthy — so `is defined` alone would read every passed flag as ON.
+     Compare against the text; a real boolean from a variable still works. #}
+  {% set showSwatches = (data.show_swatches | string) != 'false' and (data.show_swatches | string) != 'off' if data.show_swatches is defined else (settings.cardShowSwatches | default(true)) %}
+  {% set showRating   = (data.show_rating | string) != 'false' and (data.show_rating | string) != 'off' if data.show_rating is defined else (settings.cardShowRating | default(true)) %}
+  {% set showSuit     = (data.show_suitability | string) != 'false' and (data.show_suitability | string) != 'off' if data.show_suitability is defined else (settings.cardShowSuitability | default(true)) %}
+  {% set showAlt      = (data.show_second_image | string) != 'false' and (data.show_second_image | string) != 'off' if data.show_second_image is defined else (settings.cardShowSecondImage | default(true)) %}
+  {% set showQuick    = (data.show_quick_view | string) != 'false' and (data.show_quick_view | string) != 'off' if data.show_quick_view is defined else (settings.cardShowQuickView | default(true)) %}
+  {% set atcStyle     = data.atc_style        | default(settings.cardAddToCartStyle | default('tray')) %}
+
+  {# Accepts the LAMSA vocabulary ('1/1','4/5','3/4','4/3') and the legacy
+     widget vocabulary ('square','portrait','landscape') — keep in sync with
+     LamsaCard.ratioClass() in assets/main.js. #}
+  {% if ratio == '4/5' %}{% set ratioCls = 'lamsa-ratio-4/5' %}
+  {% elif ratio == '3/4' or ratio == 'portrait' %}{% set ratioCls = 'lamsa-ratio-3/4' %}
+  {% elif ratio == '4/3' or ratio == 'landscape' %}{% set ratioCls = 'lamsa-ratio-4/3' %}
+  {% else %}{% set ratioCls = 'lamsa-ratio-1/1' %}{% endif %}
+
+  {# ---------------- pricing ---------------------------------------------- #}
+  {% set price = p.pricing.price | default(0) %}
+  {% set wasPrice = p.pricing.compareAtPrice | default(0) %}
+  {% set onSale = wasPrice and wasPrice > price %}
+  {# floor, not round — mirrors LamsaCard.build(); rounding up advertises a bigger cut than the real one #}
+  {% set off = ((wasPrice - price) / wasPrice * 100) | round(0, 'floor') if onSale else 0 %}
+
+  {# ---------------- stock ------------------------------------------------ #}
+  {# Listing payloads (shop, collections, search) carry NO trackQuantity — only
+     quantity + allowBackorder — so `not p.trackQuantity` used to read every
+     card as in stock. Order of trust: the server's own isAvailable verdict →
+     the full rule when trackQuantity is present → the listing rule. Keep in
+     sync with LamsaCard.isInStock() in assets/main.js. #}
+  {# Quantity 0 on a listing with no variant data says nothing: the stock may sit
+     on the variants. That is «unknown», never «نفد»: the card links to the
+     product, whose page knows. #}
+  {% set stockUnknown = false %}
+  {% if p.isAvailable is defined and p.isAvailable != null %}
+    {% set inStock = p.isAvailable %}
+  {% elif p.trackQuantity is defined and p.trackQuantity != null %}
+    {% set inStock = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+  {% else %}
+    {% set inStock = true %}
+    {% set stockUnknown = (not p.allowBackorder) and (not (p.quantity > 0)) %}
+  {% endif %}
+  {# Known variants → the button becomes a link. Listing payloads carry NEITHER
+     field, so for those productCard() checks /ajax/product on click and opens
+     Quick View instead of a blind add (a blind add books a parent line at the
+     parent price next to the variant line). Twin: LamsaCard.build(). #}
+  {% set hasVariants = (p.variantsCount and p.variantsCount > 0) or (p.options and (p.options | length) > 0) %}
+
+  {# ---------------- images ----------------------------------------------- #}
+  {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+  {% set imgAlt = p.images[1].fileUrl if showAlt and p.images and (p.images | length) > 1 else '' %}
+
+  {# ---------------- rating: floor + optional half ------------------------ #}
+  {% set rating = p.averageRating | default(0) %}
+  {% set reviews = p.reviewsCount | default(0) %}
+  {% set full = rating | round(0, 'floor') %}
+  {% set hasHalf = (rating - full) >= 0.25 %}
+
+  {% set url = '/products/' ~ (p.slug | default(p.handle) | default(p._id)) %}
+
+
+<article class="lamsa-pcard group" x-data="productCard('{{ p._id }}', {{ (p.slug | default(p.handle) | default('')) | dump | escape }})">
+
+  {# ═══════════════════ media ═══════════════════ #}
+  <div class="lamsa-pcard-media {{ ratioCls }}">
+    <a href="{{ url }}" aria-label="{{ p.title }}">
+      {% if img %}
+        <img src="{{ img }}"
+             alt="{{ p.title }}"
+             loading="lazy"
+             class="lamsa-pcard-img {{ 'lamsa-pcard-img--only' if not imgAlt }}"/>
+        {% if imgAlt %}
+          <img src="{{ imgAlt }}"
+               alt="{{ p.title }}"
+               loading="lazy"
+               class="lamsa-pcard-img lamsa-pcard-img--alt"/>
+        {% endif %}
+      {% else %}
+        <span class="lamsa-pcard-noimg">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <circle cx="8.75" cy="9" r="1.75"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+          </svg>
+        </span>
+      {% endif %}
+    </a>
+
+    {# ---- badges ---- #}
+    {% if onSale or not inStock %}
+      <div class="lamsa-pcard-badges">
+        {% if onSale %}<span class="lamsa-badge lamsa-badge--sale font-num">−{{ off }}%</span>{% endif %}
+      </div>
+    {% endif %}
+
+    {# ---- quick view ---- #}
+    {% if showQuick %}
+      <button type="button"
+              class="lamsa-btn-icon lamsa-btn-icon--filled lamsa-btn-icon--sm lamsa-pcard-quick"
+              aria-label="{{ t('pages.product.quick_view') }}"
+              @click.prevent="$dispatch('quick-view', { slug: '{{ p.slug | default(p.handle) }}' })">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12S18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+          <circle cx="12" cy="12" r="2.75"/>
+        </svg>
+      </button>
+    {% endif %}
+
+    {# ---- out of stock veil ---- #}
+    {% if not inStock %}
+      <div class="lamsa-soldout-veil">
+        <span>{{ t('pages.product.out_of_stock') }}</span>
+      </div>
+    {% endif %}
+
+    {# ---- add to cart (revealed on hover) ---- #}
+    {% if inStock and atcStyle == 'tray' %}
+      <div class="lamsa-reveal-tray">
+        {% if hasVariants %}
+          <a href="{{ url }}" class="lamsa-btn lamsa-btn--light lamsa-btn--sm lamsa-pcard-atc">
+            {{ t('pages.product.choose_options') }}
+          </a>
+        {% elif stockUnknown %}
+          <a href="{{ url }}" class="lamsa-btn lamsa-btn--light lamsa-btn--sm lamsa-pcard-atc">
+            {{ t('pages.product.view_product') }}
+          </a>
+        {% else %}
+          <button type="button"
+                  @click.prevent="addToCart()"
+                  :disabled="cartLoading || cartSuccess"
+                  class="lamsa-btn lamsa-btn--light lamsa-btn--sm lamsa-pcard-atc">
+            <span x-show="cartLoading" class="lamsa-spinner" style="width:15px;height:15px;border-width:1.5px;"></span>
+            <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              {{ t('pages.product.added') }}
+            </span>
+            <span x-show="!cartLoading && !cartSuccess">{{ t('pages.product.add_to_cart') }}</span>
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# ═══════════════════ body ═══════════════════ #}
+  <div class="lamsa-pcard-body">
+
+    {# ---- shades — every `color` option becomes a swatch row ---- #}
+    {% if showSwatches %}
+      {% for o in p.options | default([]) %}
+        {% if o.type == 'color' and o.values and (o.values | length) > 0 %}
+          <div class="lamsa-swatches" role="img"
+               aria-label="{{ o.name }}: {{ o.values | length }}">
+            {% for v in o.values %}
+              {% if loop.index <= 5 %}
+                <span class="lamsa-swatch lamsa-swatch--sm"
+                      data-swatch="{{ v.label }}" data-swatch-value="{{ v.value }}"
+                      title="{{ v.label }}"></span>
+              {% endif %}
+            {% endfor %}
+            {% if (o.values | length) > 5 %}
+              <span class="lamsa-swatch-more">+{{ (o.values | length) - 5 }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {# ---- name ---- #}
+    <a href="{{ url }}" class="lamsa-pcard-name line-clamp-2">{{ p.title }}</a>
+
+    {# ---- rating ---- #}
+    {% if showRating and reviews > 0 %}
+      <div class="flex items-center gap-1.5">
+        <span class="lamsa-stars lamsa-stars--sm">
+          {% for i in [1, 2, 3, 4, 5] %}
+            {% if i <= full %}
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+            {% elif i == full + 1 and hasHalf %}
+              <span class="lamsa-star-half">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+              </span>
+            {% else %}
+              <svg class="lamsa-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+            {% endif %}
+          {% endfor %}
+        </span>
+        <span class="lamsa-rating-count">({{ reviews }})</span>
+      </div>
+    {% endif %}
+
+    {# ---- "مناسب لـ" — driven by the product's tags ---- #}
+    {% if showSuit and p.tags and (p.tags | length) > 0 %}
+      <div class="flex flex-wrap gap-1.5">
+        {% for tag in p.tags %}
+          {#- Live tags are objects ({ name, displayName… }); printed raw they read «[object Object]». -#}
+          {% if tag is string %}{% set tagText = tag %}{% elif tag.displayName %}{% set tagText = tag.displayName %}{% elif tag.name %}{% set tagText = tag.name %}{% elif tag.title %}{% set tagText = tag.title %}{% elif tag.label %}{% set tagText = tag.label %}{% elif tag.value %}{% set tagText = tag.value %}{% else %}{% set tagText = '' %}{% endif %}
+          {% if loop.index <= 2 and tagText %}<span class="lamsa-suit">{{ tagText }}</span>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ---- price ---- #}
+    <div class="lamsa-pcard-prices">
+      {% if price > 0 %}<span class="lamsa-price">{{ price | money }}</span>{% endif %}
+      {% if onSale %}<span class="lamsa-price-was">{{ wasPrice | money }}</span>{% endif %}
+    </div>
+
+    {# ---- add to cart (always-visible variant) ---- #}
+    {% if inStock and atcStyle == 'always' %}
+      {% if hasVariants %}
+        <a href="{{ url }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm lamsa-btn--block mt-1">
+          {{ t('pages.product.choose_options') }}
+        </a>
+      {% elif stockUnknown %}
+        <a href="{{ url }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm lamsa-btn--block mt-1">
+          {{ t('pages.product.view_product') }}
+        </a>
+      {% else %}
+        <button type="button"
+                @click.prevent="addToCart()"
+                :disabled="cartLoading || cartSuccess"
+                class="lamsa-btn lamsa-btn--soft lamsa-btn--sm lamsa-btn--block mt-1">
+          <span x-show="cartLoading" class="lamsa-spinner" style="width:15px;height:15px;border-width:1.5px;"></span>
+          <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            {{ t('pages.product.added') }}
+          </span>
+          <span x-show="!cartLoading && !cartSuccess">{{ t('pages.product.add_to_cart') }}</span>
+        </button>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</article>
+
+{% endif %}

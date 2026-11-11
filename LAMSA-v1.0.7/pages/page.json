@@ -1,0 +1,17 @@
+{
+  "name": "صفحة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "show_breadcrumb": true,
+        "fallback_text": "<p>محتوى هذه الصفحة سيُضاف قريبًا.</p>"
+      }
+    }
+  ]
+}

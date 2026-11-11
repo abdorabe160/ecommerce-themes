@@ -1,0 +1,106 @@
+{
+  "name": "قصة العلامة (البيان)",
+  "settings": {
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة",
+        "en": "Image"
+      }
+    },
+    "image_alt": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الصورة",
+        "en": "Image alt text"
+      },
+      "default": ""
+    },
+    "image_side": {
+      "type": "select",
+      "label": {
+        "ar": "مكان الصورة",
+        "en": "Image side"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "في البداية",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "في النهاية",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "index": {
+      "type": "string",
+      "label": {
+        "ar": "رقم القسم",
+        "en": "Section index"
+      },
+      "default": "04"
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الصغير",
+        "en": "Kicker"
+      },
+      "default": "البيان"
+    },
+    "body": {
+      "type": "text",
+      "label": {
+        "ar": "النص الرئيسي",
+        "en": "Statement"
+      },
+      "default": "ستريت وير من ضجيج المدينة — للولد اللي بيحكم الحي، مش الكاتووك. كل غُرزة هتاف، وكل إصدار رسالة."
+    },
+    "signature": {
+      "type": "string",
+      "label": {
+        "ar": "التوقيع",
+        "en": "Signature"
+      },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر (اختياري)",
+        "en": "Button label (optional)"
+      },
+      "default": ""
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر",
+        "en": "Button link"
+      },
+      "default": ""
+    },
+    "anchor": {
+      "type": "string",
+      "label": {
+        "ar": "معرّف القسم للروابط (#story)",
+        "en": "Section anchor id (#story)"
+      },
+      "default": "story"
+    }
+  },
+  "presets": [
+    {
+      "category": "نصوص",
+      "name": "قصة العلامة (البيان)"
+    }
+  ]
+}

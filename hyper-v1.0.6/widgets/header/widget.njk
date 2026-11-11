@@ -1,0 +1,871 @@
+{# ============================================================================
+   HYPER HEADER — three stacked rows
+   ----------------------------------------------------------------------------
+     ┌ topbar ──── message · locale + socials ────────────────────── (indigo) ┐
+     ├ main ────── logo · [ category ▾ | search | ⌕ ] · link · ♡ · bag ──────┤
+     └ nav ─────── Shop By … ▾   Rooms ▾   Tables ▾   …   On Sale ───────────┘
+
+   ── What the reference design has that Qumra does NOT, and what replaces it ──
+   · Country / currency picker  →  Qumra resolves the market server-side from
+     `localization.market`; there is no endpoint a shopper can post to. The slot
+     shows the CURRENT currency as a label and carries the LANGUAGE switcher,
+     which is real (`{% form 'lang' %}`).
+   · "Sign in / Register"       →  themes ship with no customer-account entry
+     (house rule). The slot is left EMPTY: `action_link_*` is there for a
+     merchant who wants something in it.
+   · "Find a store"             →  no store-locator API. It is a generic
+     merchant-defined link (`action_link_*`), off by default.
+   · Mega menu with nested columns → the `menu` setting returns a FLAT list of
+     `{ title, url }`; Qumra has no nested link lists. A nav item's dropdown is
+     therefore that flat list split across 1–4 columns, with one optional
+     promo image per item.
+
+   ── The search field is a real form, not a decoration ──
+   `/shop` IS the search results page: collectionFilter() in assets/main.js
+   reads `?q=` from the URL on init, and reads the collection from the PATH
+   (`/shop/<handle>`). So the category picker changes the form's ACTION rather
+   than adding a parameter — pick "Chairs" and it posts to /shop/chairs?q=…
+   The live dropdown calls Qumra.search.search(), which hits
+   /ajax/search/products and DOES accept collectionId — so the suggestions are
+   scoped the same way the submit is. (Qumra.search.suggest() is not used here:
+   it ignores collectionId, which would make a scoped field lie.)
+
+   Contracts with assets/main.js — do not rename:
+     toggleModal('sidebar' | 'cart')  ·  $store.cart.totalQuantity
+     Qumra.search.search
+   All styling lives in assets/style.css → "15.1 HEADER".
+   ========================================================================= #}
+
+{# ---- External-link test ----
+   Identical to the macro in widgets/footer/widget.njk, and duplicated rather
+   than shared on purpose: ui/sidebar.njk is itself a `ui` partial included by
+   this widget, and `{% ui %}` calling `{% ui %}` is a construct this theme
+   bans outright (see the header of ui/cart.njk). Six characters of duplication
+   beat reintroducing nested includes.
+
+   `indexOf` rather than the `in` operator — `in` is written for arrays and
+   dicts here and throws on an undefined string. The second test lets an
+   absolute link to THIS store stay in-tab; `store.url` is guarded so a render
+   without it cannot make every link external by accident. #}
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set navItems = widget.blocks | default([]) %}
+
+{% set storeName = store.name | default('HYPER') %}
+{# shown name: first 3 words (ui/store-name.njk); the full name stays in alt/aria/title #}
+{# (same rule as ui/store-name.njk — a {% set %} block can't capture {% ui %} output in Qalab) #}
+{% set _sn = (store.name or 'HYPER') | trim %}{% set _sw = [] %}{% for _w in _sn.split(' ') %}{% if _w %}{% set _x = _sw.push(_w) %}{% endif %}{% endfor %}{% set storeShort = (_sw.slice(0, 3).join(' ') ~ '…') if (_sw | length) > 3 else _sn %}
+{% set logo = d.header_logo if d.header_logo and d.header_logo.fileUrl else store.logo %}
+{% set logoH = d.logo_height | default(30) %}
+{% set wmWeight = d.wordmark_weight | default('800') %}
+
+{% set isSticky = d.sticky | default(true) %}
+{% set stickyMode = d.sticky_mode | default('compact') %}
+
+{% set showTop = d.topbar_enabled | default(true) %}
+{% set topMsg = d.topbar_message | default('', true) %}
+{% set topMsgUrl = d.topbar_message_url | default('', true) %}
+{% set topMenu = d.topbar_menu %}   {# drawer utility links only — not shown in the topbar #}
+{% set showLocale = d.topbar_show_locale | default(true) %}
+
+{% set showSearch = d.show_search | default(true) %}
+{% set searchLive = d.search_live | default(true) %}
+{% set scopeOn = d.search_scope_enabled | default(true) %}
+{# The `search_collections` picker was removed, so the scope dropdown has no
+   list to show and `hasScope` below is always false — the markup for it is left
+   in place, one setting away from coming back. #}
+{% set scopeCols = [] %}
+{% set hasScope = scopeOn and (scopeCols | length) > 0 %}
+
+{% set showCart = d.show_cart | default(true) %}
+{% set cartStyle = d.cart_style | default('circle') %}
+
+{% set navOn = d.nav_enabled | default(true) %}
+{% set navAlign = d.nav_align | default('start') %}
+{% set navExtra = d.nav_extra_menu %}
+{# ⚠️  ONE colour for the whole nav, not one per item. It is a widget-level
+   setting because a `color` picker inside a `blocks` entry is unproven on this
+   platform — no original widget puts one there, and a `products` picker in the
+   same position stopped the Theme Editor rendering the block's settings at all.
+   Only string/text/number/boolean/select/media/menu are proven at block level.
+   It is also the better default: "on sale" is one accent, not one per link. #}
+
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+{% set currencyCode = localization.currency.currencyCode | default('') %}
+
+{# ---- Current path, for the active-link underline ----
+   Trailing slashes are stripped so '/shop' and '/shop/' resolve to the same
+   link. Home collapses to '' rather than '/', which is what lets the match be
+   an equality test: with '/' kept, a startswith test would light up Home on
+   every page and an equality test would fail on '/shop/'. #}
+{% set curPath = (page.url | default('/')).split('?')[0] %}
+{% set curPath = curPath.slice(0, -1) if (curPath | length) > 1 and curPath.slice(-1) == '/' else curPath %}
+{% set curPath = '' if curPath == '/' else curPath %}
+
+{# ---- Socials: one fixed list, not blocks ----
+   The icon for each platform is a hardcoded path, so a free-form block type
+   would let a merchant add a platform that renders no icon at all. A fixed
+   list of URL fields cannot get out of sync with the icons below. #}
+{% set socials = [
+  { key: 'facebook',  url: d.social_facebook  | default('') },
+  { key: 'instagram', url: d.social_instagram | default('', true) },
+  { key: 'x',         url: d.social_x         | default('') },
+  { key: 'tiktok',    url: d.social_tiktok    | default('') },
+  { key: 'youtube',   url: d.social_youtube   | default('') },
+  { key: 'whatsapp',  url: d.social_whatsapp  | default('') }
+] %}
+{# ⚠️  Counted with a plain `or` chain, NOT by incrementing inside a loop.
+   Nunjucks scopes `{% set %}` to the block it runs in, so a counter bumped
+   inside `{% for %}` reads back as its pre-loop value outside — the count would
+   be 0 forever and the whole social row would never render. #}
+{% set hasSocial = d.social_facebook or d.social_instagram or d.social_x
+                   or d.social_tiktok or d.social_youtube or d.social_whatsapp %}
+
+
+{# ============================ MACROS ============================ #}
+
+{# A menu picker hands back either { items: [...] } or a bare [...]. Normalise
+   once here so every call site can just iterate. #}
+{# Sub-items arrive under `item.menu` (measured on the real store), not `children`.
+   An item with sub-items renders as a group label followed by its links. #}
+{% macro menuLinks(menu, cls) %}
+  {% for item in (menu.items if menu.items else menu) %}
+    {% set subs = item.menu or item.children or [] %}
+    {% if subs | length %}
+      {% if item.url and item.url != '#' %}<a href="{{ item.url }}"{{ extAttrs(item.url) }} class="{{ cls }} {{ cls }}--group">{{ item.title }}</a>
+      {% else %}<span class="{{ cls }} {{ cls }}--group">{{ item.title }}</span>{% endif %}
+      {% for s in subs %}<a href="{{ s.url | default('#') }}"{{ extAttrs(s.url) }} class="{{ cls }} {{ cls }}--sub">{{ s.title }}</a>{% endfor %}
+    {% else %}
+      <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="{{ cls }}">{{ item.title }}</a>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro caret(cls) %}
+  <svg class="{{ cls | default('hy-caret') }}" width="10" height="10" viewBox="0 0 12 12"
+       fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/>
+  </svg>
+{% endmacro %}
+
+{# The six icons are declared ONCE as an SVG sprite (printed just below the
+   header markup) and referenced here and in the drawer with <use>. Both places
+   need the same six paths, and this theme's rule is that a shape may not exist
+   twice — a duplicated path set is a twin that drifts the first time one is
+   touched. #}
+{% macro socialIcon(key) %}
+  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#hy-ic-{{ key }}"/></svg>
+{% endmacro %}
+
+
+
+<header id="hy-header-{{ id }}"
+        class="hy-header {{ 'is-sticky' if isSticky }} {{ 'sticky-compact' if isSticky and stickyMode == 'compact' }}">
+
+  {# ═══════════════════════════ 1 · TOPBAR ═══════════════════════════ #}
+  {% if showTop %}
+    <div class="hy-topbar{{ ' hy-topbar--nomsg' if not topMsg }}" id="hy-topbar-{{ id }}">
+      {# The dismiss control. Absolutely positioned rather than added to
+         .hy-topbar-end, because the row is a three-column grid (spacer ·
+         message · end) and a fourth child would knock the message off centre —
+         and because below 1024 the row keeps ONLY the message, so an `end`
+         child would vanish exactly where the bar is most in the way. #}
+      {% if topMsg %}<button type="button"
+              id="hy-topbarX-{{ id }}"
+              class="hy-topbar-close"
+              aria-label="{{ t('common.close') }}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>{% endif %}
+      <div class="hy-container">
+        <div class="hy-topbar-row">
+
+          {# Left cell is an empty spacer, not a link list: an announcement bar
+             carries ONE message, and a second set of nav links beside the two
+             that already exist (main nav + drawer) competes with it. `topMenu`
+             still feeds the drawer's utility list — see ui/sidebar.njk. #}
+          <span class="hy-topbar-start" aria-hidden="true"></span>
+
+          {% if topMsg %}
+            {% if topMsgUrl %}
+              <a href="{{ topMsgUrl }}" class="hy-topbar-msg">{{ topMsg }}</a>
+            {% else %}
+              <p class="hy-topbar-msg">{{ topMsg }}</p>
+            {% endif %}
+          {% else %}
+            <span class="hy-topbar-msg" aria-hidden="true"></span>
+          {% endif %}
+
+          <div class="hy-topbar-end">
+            {% if showLocale %}
+              {# The reference design puts a country + currency picker here.
+                 Currency is resolved server-side from `localization.market` and
+                 there is nothing to post, so it renders as a LABEL; the control
+                 next to it is the language switcher, which is real. #}
+              <div class="hy-locale" x-data="{ open: false }" @click.outside="open = false">
+                <button type="button"
+                        class="hy-locale-btn"
+                        @click="open = !open"
+                        :aria-expanded="open ? 'true' : 'false'"
+                        aria-label="{{ t('common.language') }}">
+                  <span>{{ 'English' if currentLang == 'en' else 'العربية' }}</span>
+                  {% if currencyCode %}
+                    <span class="hy-locale-cur">({{ currencyCode }})</span>
+                  {% endif %}
+                  {{ caret('hy-caret hy-caret--sm') }}
+                </button>
+
+                <div class="hy-locale-drop"
+                     x-show="open"
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0">
+                  {% form 'lang' %}
+                    <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>
+                      <span class="font-body">العربية</span>
+                      {% if currentLang == 'ar' %}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                      {% endif %}
+                    </button>
+                    <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>
+                      <span class="font-body-en">English</span>
+                      {% if currentLang == 'en' %}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                      {% endif %}
+                    </button>
+                  {% endform %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if hasSocial %}
+              <div class="hy-socials">
+                {% for s in socials %}
+                  {% if s.url %}
+                    <a href="{{ s.url }}" class="hy-social" target="_blank" rel="noopener noreferrer"
+                       aria-label="{{ s.key }}">{{ socialIcon(s.key) }}</a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+
+  {# ═══════════════════════════ 2 · MAIN ROW ═══════════════════════════ #}
+  <div class="hy-mainbar">
+    <div class="hy-container">
+      <div class="hy-mainrow">
+
+        <button type="button"
+                onclick="toggleModal('sidebar')"
+                class="hy-icon-btn hy-mob"
+                aria-label="{{ t('common.menu') }}">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" d="M3 7h18M3 12h18M3 17h18"/>
+          </svg>
+        </button>
+
+        {# ---- brand ---- #}
+        <a href="/" class="hy-brand" aria-label="{{ storeName }}">
+          {% if logo and logo.fileUrl %}
+            {# Only the merchant's height rides inline. The width cap has to
+               respond to the viewport and an inline style cannot, so the rest
+               lives in style.css → "15.1 HEADER". #}
+            <img src="{{ logo.fileUrl }}" alt="{{ storeName }}"
+                 class="hy-brand-logo" style="--hy-logo-h: {{ logoH }}px;"/>
+          {% else %}
+            <span class="hy-wordmark" style="font-weight: {{ wmWeight }};" title="{{ storeName }}">{{ storeShort }}</span>
+          {% endif %}
+        </a>
+
+        {# ---- search ---- #}
+        {% if showSearch %}
+          {# `action` is set statically AND bound: Alpine boots at the end of
+             <body>, so a bind-only action would submit to the current URL for
+             anyone who hits Enter before then. #}
+          <form class="hy-search"
+                role="search"
+                method="get"
+                action="/shop"
+                :action="scope ? '/shop/' + scope : '/shop'"
+                @submit="open = false"
+                x-data="hyHeaderSearch({{ 'true' if searchLive else 'false' }})"
+                @click.outside="open = false">
+
+            {% if hasScope %}
+              <div class="hy-search-scope" @click.outside="scopeOpen = false">
+                <button type="button"
+                        class="hy-search-scope-btn"
+                        @click="scopeOpen = !scopeOpen"
+                        :aria-expanded="scopeOpen ? 'true' : 'false'">
+                  <span x-text="scopeLabel">{{ t('header.all_categories') }}</span>
+                  {{ caret('hy-caret') }}
+                </button>
+
+                <div class="hy-search-scope-drop"
+                     x-show="scopeOpen"
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0">
+                  <button type="button"
+                          @click="pickScope('', '', {{ t('header.all_categories') | dump | escape }})"
+                          :class="!scope && 'is-active'">{{ t('header.all_categories') }}</button>
+                  {% for c in scopeCols %}
+                    <button type="button"
+                            @click="pickScope({{ c.handle | dump | escape }}, {{ c._id | dump | escape }}, {{ c.title | dump | escape }})"
+                            :class="scope === {{ c.handle | dump | escape }} && 'is-active'">{{ c.title }}</button>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <input type="search"
+                   name="q"
+                   class="hy-search-input"
+                   autocomplete="off"
+                   x-model="query"
+                   @input.debounce.300ms="fetch()"
+                   @focus="if (results.length) open = true"
+                   {# `.prevent` on the arrows stops the caret jumping to the
+                      start/end of the field while the highlight moves. #}
+                   @keydown.arrow-down.prevent="move(1)"
+                   @keydown.arrow-up.prevent="move(-1)"
+                   {# Enter with nothing highlighted falls through to the form
+                      and lands on /shop?q=… — the behaviour that was there
+                      before. It is only intercepted for a chosen row. #}
+                   @keydown.enter="if (enter()) $event.preventDefault()"
+                   :aria-activedescendant="active >= 0 ? 'hy-hit-{{ id }}-' + active : null"
+                   aria-autocomplete="list"
+                   {# `, true` is load-bearing: Nunjucks' `default` fires on
+                      UNDEFINED only, and this setting's schema default is "",
+                      which is defined. Without it a merchant who never touched
+                      the field — or who cleared it — got an empty placeholder
+                      and the translated fallback never ran. #}
+                   placeholder="{{ d.search_placeholder | default(t('header.search_placeholder'), true) }}"
+                   aria-label="{{ t('header.search') }}"/>
+
+            <button type="submit" class="hy-search-go" aria-label="{{ t('header.search') }}">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <path stroke-linecap="round" d="m20 20-3.9-3.9"/>
+              </svg>
+            </button>
+
+            {# ---- live results ---- #}
+            {% if searchLive %}
+              <div class="hy-search-drop" x-show="open" x-cloak
+                   x-transition:enter="transition ease-out duration-200"
+                   x-transition:enter-start="opacity-0 -translate-y-1"
+                   x-transition:enter-end="opacity-100 translate-y-0">
+
+                <div x-show="loading" class="hy-search-state">
+                  <span class="hy-spinner" style="width:20px;height:20px;"></span>
+                </div>
+
+                <template x-if="!loading && results.length">
+                  <div>
+                    <template x-for="p in results" :key="p._id">
+                      <a class="hy-search-hit"
+                         :id="'hy-hit-{{ id }}-' + results.indexOf(p)"
+                         :class="active === results.indexOf(p) && 'is-active'"
+                         @mouseenter="active = results.indexOf(p)"
+                         :href="productUrl(p)">
+                        <span class="hy-search-hit-img">
+                          <template x-if="p.images && p.images.length">
+                            <img :src="p.images[0].fileUrl" :alt="p.title" loading="lazy"/>
+                          </template>
+                        </span>
+                        <span class="hy-search-hit-body">
+                          <span class="hy-search-hit-name" x-text="p.title"></span>
+                          {# Stock reads the SAME three fields as the product card, in the
+                             same order — ui/product-card.njk and HayatCard.build both use
+                             `allowBackorder || !trackQuantity || quantity > 0`. A hit that
+                             disagreed with the grid behind it would send a shopper to a
+                             product page that then tells them no.
+
+                             The row is an <a> and carries no add button, so nothing here
+                             can put the item in a cart; this is about not walking someone
+                             into a dead end. #}
+                          <span class="hy-search-hit-out"
+                                x-show="!(p.allowBackorder || !p.trackQuantity || p.quantity > 0)"
+                                x-cloak>{{ t('pages.product.out_of_stock') }}</span>
+                          <span class="hy-search-hit-price"
+                                x-show="p.allowBackorder || !p.trackQuantity || p.quantity > 0"
+                                x-text="money(p.pricing && p.pricing.price)"></span>
+                        </span>
+                      </a>
+                    </template>
+                    <a class="hy-search-all" :href="allUrl()">
+                      {{ t('pages.search.view_all') }}
+                      <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+                      </svg>
+                    </a>
+                  </div>
+                </template>
+
+                <div x-show="!loading && searched && !results.length" class="hy-search-state">
+                  <p>{{ t('pages.search.no_results') }}</p>
+                </div>
+              </div>
+            {% endif %}
+          </form>
+        {% endif %}
+
+        {# ---- actions ---- #}
+        <div class="hy-actions">
+
+          {% if showCart %}
+            <button type="button"
+                    onclick="toggleModal('cart')"
+                    class="hy-cart-btn {{ 'hy-cart-btn--circle' if cartStyle == 'circle' }}"
+                    aria-label="{{ t('header.cart') }}"
+                    x-data>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linejoin="round" d="M4.5 7.5h15l-1.1 12a1.5 1.5 0 0 1-1.5 1.35H7.1a1.5 1.5 0 0 1-1.5-1.35L4.5 7.5Z"/>
+                <path stroke-linecap="round" d="M8.75 10V6.75a3.25 3.25 0 0 1 6.5 0V10"/>
+              </svg>
+              {# The SSR count is PRINTED, and x-cloak is conditional.
+
+                 Alpine boots at the very end of <body>, and `x-text` writes
+                 nothing until it does — so an unconditionally cloaked, empty
+                 span meant the badge was missing for the first frames of EVERY
+                 page load, on a value the server already knew. On a slow
+                 connection a shopper with items in their cart sees an empty bag
+                 icon, which is the one thing this badge exists to prevent.
+
+                 With a count the span carries the number and no cloak, so it is
+                 painted with the page and Alpine takes over on the same value —
+                 no flash, nothing to reconcile. With no count the cloak hides it
+                 until `x-show` takes the same decision a moment later.
+
+                 This is the pattern ui/cart.njk already uses for the drawer's
+                 own count (`data-cart-count` with the value inline); the two
+                 badges now behave the same way. #}
+              {% set ssrQty = cart.totalQuantity | default(0) %}
+              <span class="hy-count"
+                    x-show="$store.cart.totalQuantity > 0"
+                    x-text="$store.cart.totalQuantity"
+                    {% if ssrQty == 0 %}x-cloak{% endif %}>{{ ssrQty }}</span>
+            </button>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  {# ═══════════════════════════ 3 · NAV ROW ═══════════════════════════ #}
+  {% if navOn and ((navItems | length) > 0 or navExtra) %}
+    <div class="hy-navbar"
+         x-data="{
+           open: null,
+           _t: null,
+           show(k) { clearTimeout(this._t); this.open = k },
+           hide()  { clearTimeout(this._t); this._t = setTimeout(() => { this.open = null }, 160) },
+           close() { clearTimeout(this._t); this.open = null }
+         }"
+         @keydown.escape.window="close()">
+      <div class="hy-container">
+        <nav class="hy-nav {{ 'hy-nav--center' if navAlign == 'center' }}" aria-label="{{ t('common.menu') }}">
+
+          {% for block in navItems %}
+            {# Blocks arrive wrapped — the settings live on `.data`, never on the
+               block itself. Reading b.nav_label off the wrapper yields undefined,
+               the guard below goes false, and the whole nav renders as nothing
+               with no error anywhere. #}
+            {% set b = block.data %}
+            {% if b.nav_label %}
+              {% set links = b.nav_menu.items if b.nav_menu and b.nav_menu.items else b.nav_menu %}
+              {% set hasDrop = links and (links | length) > 0 %}
+              {% set cols = b.nav_columns | default('1') %}
+              {% set promo = b.nav_image.fileUrl if b.nav_image and b.nav_image.fileUrl else '' %}
+              {% set wide = cols != '1' %}
+
+              {# Normalise the block's own URL the same way the current path was,
+                 so '/shop/' and '/shop' compare equal. #}
+              {% set bUrl = (b.nav_url | default('', true)).split('?')[0] %}
+              {% set bUrl = bUrl.slice(0, -1) if (bUrl | length) > 1 and bUrl.slice(-1) == '/' else bUrl %}
+              {% set bUrl = '' if bUrl == '/' else bUrl %}
+              {% set isActive = bUrl == curPath %}
+
+              {# `--wide` goes position:static so the multi-column panel can
+                 anchor to the container instead of to this item — see the note
+                 on `.hy-navbar .hy-container` in style.css. #}
+              <div class="hy-nav-item {{ 'hy-nav-item--wide' if hasDrop and wide }}"
+                   {% if hasDrop %}@mouseenter="show({{ loop.index }})" @mouseleave="hide()"{% endif %}>
+
+                <a href="{{ b.nav_url | default('#') }}"
+                   class="hy-nav-link {{ 'is-active' if isActive }} {{ 'is-hot' if b.nav_highlight }}"
+                   {% if hasDrop %}@focus="show({{ loop.index }})" :aria-expanded="open === {{ loop.index }} ? 'true' : 'false'"{% endif %}>
+                  <span>{{ b.nav_label }}</span>
+                  {% if b.nav_badge %}<span class="hy-nav-badge">{{ b.nav_badge }}</span>{% endif %}
+                  {% if hasDrop %}{{ caret('hy-caret hy-nav-caret') }}{% endif %}
+                </a>
+
+                {% if hasDrop %}
+                  <div class="hy-drop {{ 'hy-drop--wide' if wide }}"
+                       x-show="open === {{ loop.index }}"
+                       x-cloak
+                       @mouseenter="show({{ loop.index }})"
+                       @mouseleave="hide()"
+                       x-transition:enter="transition ease-out duration-200"
+                       x-transition:enter-start="opacity-0 -translate-y-1"
+                       x-transition:enter-end="opacity-100 translate-y-0"
+                       x-transition:leave="transition ease-in duration-150"
+                       x-transition:leave-start="opacity-100"
+                       x-transition:leave-end="opacity-0">
+                    <div class="hy-drop-inner">
+                      <div class="hy-drop-links" style="--hy-drop-cols: {{ cols }};">
+                        {{ menuLinks(b.nav_menu, 'hy-drop-link') }}
+                      </div>
+
+                      {% if promo and wide %}
+                        <a href="{{ b.nav_image_url | default(b.nav_url) | default('#') }}" class="hy-drop-promo">
+                          <img src="{{ promo }}" alt="{{ b.nav_image_caption | default('', true) }}" loading="lazy"/>
+                          {% if b.nav_image_caption %}
+                            <span class="hy-drop-promo-cap">{{ b.nav_image_caption }}</span>
+                          {% endif %}
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if navExtra %}
+            {% for item in (navExtra.items if navExtra.items else navExtra) %}
+              {% set subs = item.menu or item.children or [] %}
+              {% set k = "'x" ~ loop.index ~ "'" %}
+              {% if subs | length %}
+                <div class="hy-nav-item" @mouseenter="show({{ k }})" @mouseleave="hide()">
+                  <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="hy-nav-link"
+                     @focus="show({{ k }})" :aria-expanded="open === {{ k }} ? 'true' : 'false'">
+                    <span>{{ item.title }}</span>{{ caret('hy-caret hy-nav-caret') }}
+                  </a>
+                  <div class="hy-drop" x-show="open === {{ k }}" x-cloak
+                       @mouseenter="show({{ k }})" @mouseleave="hide()"
+                       x-transition:enter="transition ease-out duration-200"
+                       x-transition:enter-start="opacity-0 -translate-y-1"
+                       x-transition:enter-end="opacity-100 translate-y-0"
+                       x-transition:leave="transition ease-in duration-150"
+                       x-transition:leave-start="opacity-100"
+                       x-transition:leave-end="opacity-0">
+                    <div class="hy-drop-inner">
+                      <div class="hy-drop-links" style="--hy-drop-cols: 1;">
+                        {{ menuLinks(subs, 'hy-drop-link') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% else %}
+                <div class="hy-nav-item">
+                  <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="hy-nav-link">
+                    <span>{{ item.title }}</span>
+                  </a>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+        </nav>
+      </div>
+    </div>
+  {% endif %}
+
+</header>
+
+{# ---- Social icon sprite ----
+   Rendered once per page and referenced by <use> from the topbar and from the
+   mobile drawer. Not `hidden` and not `display:none`: a `<use>` pointing into a
+   `display:none` subtree renders nothing in Safari, so the sprite is taken out
+   of flow with zero size instead. #}
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+     style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="hy-ic-facebook" viewBox="0 0 24 24"><path fill="currentColor" d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.29-.04-1.27-.13-2.41-.13-2.38 0-4.01 1.45-4.01 4.13v2.3H7.6V13h2.68v8h3.22Z"/></symbol>
+  <symbol id="hy-ic-instagram" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="3.9"/></g><circle cx="17" cy="7" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="hy-ic-x" viewBox="0 0 24 24"><path fill="currentColor" d="M17.2 3h3.3l-7.2 8.2L21.7 21h-6.6l-4.4-5.7L5.6 21H2.3l7.7-8.8L2.6 3h6.8l4 5.3L17.2 3Zm-1.15 16.1h1.83L8.03 4.8H6.07l9.98 14.3Z"/></symbol>
+  <symbol id="hy-ic-tiktok" viewBox="0 0 24 24"><path fill="currentColor" d="M16.3 3c.34 2.06 1.62 3.4 3.7 3.62v2.4c-1.28.07-2.45-.24-3.68-.98v4.9c0 5.3-5.4 6.94-8 3.4-1.66-2.28-.9-6.24 3.02-6.4v2.53c-.3.05-.62.13-.91.23-1.28.44-1.68 1.53-1.4 2.4.53 1.66 3.16 1.68 3.16-.66V3h2.11Z"/></symbol>
+  <symbol id="hy-ic-youtube" viewBox="0 0 24 24"><path fill="currentColor" d="M21.6 7.9a2.5 2.5 0 0 0-1.75-1.77C18.3 5.7 12 5.7 12 5.7s-6.3 0-7.85.43A2.5 2.5 0 0 0 2.4 7.9C2 9.47 2 12 2 12s0 2.53.4 4.1a2.5 2.5 0 0 0 1.75 1.77c1.55.43 7.85.43 7.85.43s6.3 0 7.85-.43a2.5 2.5 0 0 0 1.75-1.77C22 14.53 22 12 22 12s0-2.53-.4-4.1ZM10 15.1V8.9l5.2 3.1-5.2 3.1Z"/></symbol>
+  <symbol id="hy-ic-whatsapp" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a9.9 9.9 0 0 0-8.5 15L2 22l5.2-1.4A9.9 9.9 0 1 0 12 2Zm5.6 14c-.24.67-1.4 1.3-1.93 1.35-.5.05-1.1.07-1.78-.11a15.7 15.7 0 0 1-6.1-4.55c-.63-.85-1.05-1.85-1.05-2.85 0-1 .53-1.5.72-1.7.19-.21.42-.26.56-.26h.4c.13 0 .3-.05.48.36l.66 1.6c.05.11.09.24 0 .38l-.26.4-.37.4c-.12.12-.25.25-.11.49.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06l.75-.87c.17-.19.3-.15.5-.08l1.43.68c.2.1.34.15.4.24.05.09.05.52-.19 1.19Z"/></symbol>
+</svg>
+
+{# Spacer — a fixed header no longer occupies flow space, so this reserves it.
+   With `sticky_mode = compact` only part of the header stays fixed, but the
+   spacer still reserves the FULL height: the rows above simply scroll away
+   under it, and reserving less would pull the page up by that amount on load. #}
+{% if isSticky %}
+  <div id="hy-header-spacer-{{ id }}" aria-hidden="true"></div>
+{% endif %}
+
+<script>
+  (function () {
+    var header = document.getElementById('hy-header-{{ id }}');
+    if (!header) return;
+
+    {% if isSticky %}
+    var spacer = document.getElementById('hy-header-spacer-{{ id }}');
+    /* Remeasured on every event that can change the header's height: a web font
+       swapping in, a viewport resize, the nav wrapping. Setting it once on parse
+       would leave a gap or an overlap the moment any of those fire. */
+    var sync = function () {
+      if (spacer) spacer.style.height = header.offsetHeight + 'px';
+      /* Same measurement, second consumer: html { scroll-padding-top } needs it
+         so an #anchor clears the fixed header instead of landing behind it.
+         Written on <html> rather than on the header because that is the element
+         the property applies to. */
+      document.documentElement.style.setProperty('--hy-header-h', header.offsetHeight + 'px');
+      /* The compact mode slides the rows above the main bar out of view rather
+         than hiding them, so the sticky offset has to be their real height. */
+      var top = header.querySelector('.hy-topbar');
+      header.style.setProperty('--hy-topbar-h', (top ? top.offsetHeight : 0) + 'px');
+    };
+    sync();
+    window.addEventListener('load', sync);
+    window.addEventListener('resize', sync);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(header);
+
+    {% endif %}
+
+    /* ---- Announcement bar · dismiss ----
+       sessionStorage, not localStorage: an announcement is a campaign, and a
+       shopper who closes it should see the NEXT one. localStorage would keep it
+       shut across visits and the merchant would never know why their banner
+       stopped working. The theme's two localStorage users are both genuine
+       long-lived preferences (a column count, a countdown's first-seen time) —
+       this is not one of those.
+
+       The key carries a hash of the message, so changing the text brings the
+       bar back for everyone who dismissed the previous one. Without that, a
+       merchant editing the announcement would be shouting at a closed room.
+
+       Read and applied HERE, inline, while the body is still parsing: the
+       topbar is a few nodes above this script, so it is hidden before the
+       browser has painted it and there is no flash of a bar that then vanishes.
+
+       Removing the element (not just hiding it) is what keeps the rest honest:
+       `sync()` measures `.hy-topbar` for --hy-topbar-h and the header for the
+       spacer, and the ResizeObserver above re-runs it the moment the height
+       changes. Nothing else needs to know the bar is gone.
+
+       try/catch on every access — Safari private mode throws on the first read
+       of sessionStorage, and an uncaught throw here would take the whole header
+       script down with it. */
+    (function () {
+      var bar = document.getElementById('hy-topbar-{{ id }}');
+      if (!bar) return;
+
+      /* djb2 over the rendered message — short, stable, and enough to tell one
+         announcement from the next. */
+      var msg = {{ (topMsg or '') | dump | safe }};
+      var h = 5381;
+      for (var i = 0; i < msg.length; i++) h = ((h << 5) + h + msg.charCodeAt(i)) | 0;
+      var KEY = 'hy-topbar-closed:' + (h >>> 0).toString(36);
+
+      var closed = false;
+      try { closed = sessionStorage.getItem(KEY) === '1'; } catch (e) {}
+      if (closed) { bar.remove(); return; }
+
+      var btn = document.getElementById('hy-topbarX-{{ id }}');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+
+          /* Collapse, then remove. A bare remove() dropped 38px out of the
+             document in one frame and the whole page snapped upward — correct,
+             and unpleasant enough to read as a glitch.
+
+             The height has to be pinned to its measured pixel value first:
+             `auto` is not an animatable value, so going straight to 0 from it
+             transitions nothing. One forced reflow between the two writes is
+             what makes the browser treat them as two states rather than
+             collapsing them into the final one.
+
+             `prefers-reduced-motion` skips straight to the end — this is a
+             layout collapse, which is exactly the kind of motion that setting
+             is asking us not to make. */
+          var reduce = document.documentElement.classList.contains('hy-no-motion')
+            || (window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          if (reduce) { bar.remove(); return; }
+
+          bar.style.height = bar.offsetHeight + 'px';
+          bar.style.overflow = 'hidden';
+          void bar.offsetHeight;                      /* forced reflow */
+          bar.style.transition = 'height 240ms var(--ease-out), opacity 160ms linear';
+          bar.style.height = '0px';
+          bar.style.opacity = '0';
+
+          /* transitionend can fail to arrive — a background tab throttles it,
+             and a display change mid-flight swallows it — so the removal is on
+             a timer that the event can only bring forward. */
+          var done = false;
+          var finish = function () { if (done) return; done = true; bar.remove(); };
+          bar.addEventListener('transitionend', finish);
+          setTimeout(finish, 320);
+        });
+      }
+    })();
+
+    {% if isSticky %}
+    {% if stickyMode == 'compact' %}
+    /* `is-scrolled` is what slides the topbar away. It is toggled off a scroll
+       listener rather than a CSS `position: sticky` on the inner row, because
+       the rows have to move as one unit — sticky children of a fixed parent do
+       not scroll relative to it at all.
+
+       The threshold is the topbar's OWN height, not a token 8px: the spacer
+       below reserves the header's full height, so collapsing earlier than that
+       would lift the header's bottom edge above the still-visible spacer and
+       expose a blank strip between the header and the page. */
+    var onScroll = function () {
+      var topH = parseFloat(getComputedStyle(header).getPropertyValue('--hy-topbar-h'));
+      if (isNaN(topH)) topH = 38;
+      header.classList.toggle('is-scrolled', window.scrollY > topH);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    {% endif %}
+    {% endif %}
+  })();
+
+  {% if showSearch and searchLive %}
+  /* Registered on `alpine:init` like every other component in this theme —
+     defining it at parse time would race Alpine's boot at the end of <body>. */
+  document.addEventListener('alpine:init', function () {
+    if (window.__hyHeaderSearchReady) return;   /* one header per page, but the
+                                                   Theme Editor can re-inject it */
+    window.__hyHeaderSearchReady = true;
+
+    Alpine.data('hyHeaderSearch', function (live) {
+      return {
+        query: '',
+        scope: '',            /* collection HANDLE — drives the form action  */
+        scopeId: '',          /* collection _id    — drives the AJAX filter  */
+        scopeLabel: {{ t('header.all_categories') | dump | safe }},
+        scopeOpen: false,
+        open: false,
+        loading: false,
+        searched: false,
+        results: [],
+        /* -1 = nothing highlighted, which is also "Enter submits the form and
+           goes to the full results page". Any other value is an index into
+           `results`, and Enter opens that product instead. */
+        active: -1,
+
+        productUrl: function (p) {
+          return '/products/' + (p.slug || p.handle || p._id);
+        },
+
+        /* Wraps at both ends: Down from the last lands back on the field
+           (active = -1) rather than sticking, which is how a shopper gets back
+           to editing what they typed without reaching for the mouse. */
+        move: function (step) {
+          if (!this.open || !this.results.length) return;
+          var n = this.results.length;
+          this.active = this.active + step;
+          if (this.active >= n) this.active = -1;
+          if (this.active < -1) this.active = n - 1;
+          this.$nextTick(function () {
+            var el = document.querySelector('.hy-search-hit.is-active');
+            if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
+          });
+        },
+
+        /* Returns TRUE when it handled the key, so the caller knows whether to
+           let the form submit. Enter on a highlighted row must not do both. */
+        enter: function () {
+          if (!this.open || this.active < 0 || !this.results[this.active]) return false;
+          window.location.href = this.productUrl(this.results[this.active]);
+          return true;
+        },
+
+        pickScope: function (handle, id, label) {
+          this.scope = handle;
+          this.scopeId = id;
+          this.scopeLabel = label;
+          this.scopeOpen = false;
+          if (this.query.length >= 2) this.fetch();
+        },
+
+        allUrl: function () {
+          var base = this.scope ? '/shop/' + this.scope : '/shop';
+          return base + '?q=' + encodeURIComponent(this.query);
+        },
+
+        money: function (v) { return Qumra.utils.formatMoney(v || 0); },
+
+        fetch: function () {
+          if (!live) return;
+          var self = this;
+          var q = (this.query || '').trim();
+          /* A new query invalidates the highlight — index 2 of the old list is
+             a different product in the new one. */
+          this.active = -1;
+          if (q.length < 2) { this.results = []; this.open = false; this.searched = false; return; }
+
+          this.loading = true;
+          this.open = true;
+
+          /* search(), not suggest() — suggest() ignores collectionId, which
+             would make a field scoped to "Chairs" return everything. */
+          var filters = {};
+          if (this.scopeId) filters.collectionId = this.scopeId;
+
+          Qumra.search.search(q, filters).then(function (data) {
+            var list = (data && (data.products || data.data || data.results)) || [];
+            self.results = list.slice(0, 6);
+            self.active = -1;
+            self.searched = true;
+            self.loading = false;
+          }).catch(function () {
+            self.results = [];
+            self.searched = true;
+            self.loading = false;
+          });
+        }
+      };
+    });
+  });
+  {% endif %}
+</script>
+
+{# ---- Global panels triggered from the header ---- #}
+{% ui "sidebar.njk", nav_items=navItems, extra_menu=navExtra, topbar_menu=topMenu, socials=socials, has_socials=hasSocial, currentLang=currentLang, showLang=showLocale %}
+{% ui "cart.njk" %}
+
+{# Topbar colours are their own two settings rather than part of the palette
+   block below, because the bar is a deliberately contrasting strip — folding it
+   into `color_bg` would repaint the whole header the same colour. #}
+<style>
+  #hy-header-{{ id }} {
+    --hy-topbar-bg: {{ d.topbar_bg | default('var(--color-topbar)', true) }};
+    --hy-topbar-fg: {{ d.topbar_text | default('var(--color-topbar-text)', true) }};
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-header-' ~ id, c=d %}

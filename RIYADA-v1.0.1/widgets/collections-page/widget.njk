@@ -1,0 +1,262 @@
+{# ============================================================================
+   RIYADA COLLECTIONS PAGE — /collections
+   Lists every collection in the store. Card visuals mirror the homepage
+   collections-section (chip label on the media) so the two feel like one system.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# hidden, deleted or nameless collections stay out, and out of the count the grid is fitted to #}
+{% set cols = [] %}
+{% for _c in context.collections or [] %}{% if _c.title and _c.handle != 'home-page' and not _c.deleted and not (_c.salesChannels and _c.salesChannels.onlineStore == false) %}{% set _p = cols.push(_c) %}{% endif %}{% endfor %}
+{% set count = cols | length %}
+{% set pagination = context.pagination %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.categories'), true) %}
+{% set title = d.title | default(t('pages.collections.title'), true) %}
+{% set desc = d.description | default('') %}
+{% set showTitle = d.show_title | default(true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set colsD = d.columns_desktop | default('3', true) %}
+{% set ratio = d.card_ratio | default('3/4', true) %}
+{% set shape = d.card_shape | default('soft', true) %}
+{% if shape == 'circle' %}{% set ratio = '1/1' %}{% endif %}
+
+{% set colsDInt = colsD | int %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+{# no tile alone on the last row: desktop moves the column count by one when the
+   count leaves a single tile; on 2-column screens an odd last tile spans the row
+   at the same height #}
+{% set colsDesk = colsDInt %}
+{% if count > colsDInt and count % colsDInt == 1 %}
+  {% if colsDInt < 5 and count % (colsDInt + 1) != 1 %}{% set colsDesk = colsDInt + 1 %}
+  {% elif colsDInt > 2 and count % (colsDInt - 1) != 1 %}{% set colsDesk = colsDInt - 1 %}{% endif %}
+{% endif %}
+{% set rp = ratio.split('/') %}
+{% set wideRatio = ((rp[0] | float) * 2) ~ ' / ' ~ (rp[1] | default(1, true)) %}
+
+
+<style>
+  .riyada-clp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .riyada-clp-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .riyada-clp-{{ id }}-title { line-height: 1.34; }
+
+  .riyada-clp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 14px;
+  }
+  @media (min-width: 768px) {
+    .riyada-clp-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 26px 20px; }
+  }
+  @media (min-width: 1024px) {
+    .riyada-clp-{{ id }}-grid { grid-template-columns: repeat({{ colsDesk }}, minmax(0, 1fr)); gap: 30px 24px; }
+  }
+  {% if colsMid == 2 and count > 1 and count % 2 == 1 %}
+  @media (max-width: 1023px) {
+    .riyada-clp-{{ id }}-grid > :last-child { grid-column: 1 / -1; }
+    .riyada-clp-{{ id }}-grid > :last-child .riyada-clp-{{ id }}-media { aspect-ratio: {{ wideRatio }}; }
+  }
+  {% endif %}
+  {% if count > colsDesk and count % colsDesk == 1 %}
+  @media (min-width: 1024px) {
+    .riyada-clp-{{ id }}-grid > :last-child { grid-column: 1 / -1; }
+    .riyada-clp-{{ id }}-grid > :last-child .riyada-clp-{{ id }}-media { aspect-ratio: {{ (rp[0] | float) * colsDesk }} / {{ rp[1] | default(1, true) }}; }
+  }
+  {% endif %}
+
+  .riyada-clp-{{ id }}-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  .riyada-clp-{{ id }}-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    overflow: hidden;
+    /* True black, like every other image plate in the theme — a grey gradient
+       here made the collections page the one screen where product art sits on
+       something other than the void. */
+    background: var(--color-media);
+    border: 1px solid var(--color-border);
+    transition: border-color var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+    {% if shape == 'arch' %}border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
+    {% elif shape == 'circle' %}border-radius: 50%;
+    {% else %}border-radius: var(--radius-lg);{% endif %}
+  }
+  .riyada-clp-{{ id }}-card:hover .riyada-clp-{{ id }}-media {
+    border-color: var(--color-flame);
+    transform: translateY(-3px);
+  }
+  .riyada-clp-{{ id }}-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .riyada-clp-{{ id }}-card:hover .riyada-clp-{{ id }}-media img { transform: scale(1.05); }
+
+  .riyada-clp-{{ id }}-chip {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 12px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-btn);
+    /* Was `rgba(255,255,255,0.94)` with `color: var(--color-text-primary)` — a
+       near-white chip carrying near-white text, i.e. unreadable, because that
+       token is #F2F2F2 on this theme. The chip rides on a photo, so it takes a
+       dark scrim and white text, matching collections-section. */
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #FFFFFF;
+    transition: background var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out);
+  }
+  .riyada-clp-{{ id }}-card:hover .riyada-clp-{{ id }}-chip {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+  }
+
+  .riyada-clp-{{ id }}-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .riyada-clp-{{ id }}-name { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+
+  @media (max-width: 639px) {
+    .riyada-clp-{{ id }}-chip { inset-inline: 8px; bottom: 8px; padding: 9px 13px; gap: 6px; }
+    .riyada-clp-{{ id }}-name { font-size: 0.8125rem; }
+  }
+</style>
+
+
+<section id="riyada-clp-{{ id }}" class="riyada-section" style="background: var(--color-bg-primary);">
+  <div class="riyada-container">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 riyada-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-flame transition-colors">{{ t('common.home') }}</a>
+      <svg class="riyada-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <span style="color: var(--color-text-secondary);">{{ title }}</span>
+    </nav>
+
+    {# ═════════════ header ═════════════ #}
+    {% if showTitle %}
+      <div class="riyada-head riyada-head--center">
+        {% if eyebrow %}
+          <span class="riyada-eyebrow">{{ eyebrow }}</span>
+        {% endif %}
+        <h1 class="riyada-clp-{{ id }}-title riyada-h2">{{ title }}</h1>
+        {% if desc %}<p class="riyada-lead">{{ desc | safe }}</p>{% endif %}
+        {% if showCount and count > 0 %}
+          <p class="riyada-caption m-0 mt-2">{% ui "count.njk", n=count, kind='collection' %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ grid ═════════════ #}
+    {% if count > 0 %}
+      <div class="riyada-clp-{{ id }}-grid reveal reveal-stagger">
+        {% for col in cols %}
+          {% set _cs = col.slug or col.handle %}
+          <a href="{{ ('/shop/' ~ _cs) if _cs else '/shop' }}" class="riyada-clp-{{ id }}-card">
+            <div class="riyada-clp-{{ id }}-media">
+              {% if col.image and col.image.fileUrl and not col.image.notFound %}
+                <img src="{{ col.image.fileUrl }}" alt="{{ col.title }}" loading="lazy"/>
+              {% else %}
+                <span class="riyada-noimg-art">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/>
+                  </svg>
+                </span>
+              {% endif %}
+
+              <span class="riyada-clp-{{ id }}-chip">
+                <span class="riyada-clp-{{ id }}-name">{{ col.title }}</span>
+                <svg class="riyada-flip shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {# ═════════════ pagination — plain links, no Alpine scope here ═════════════ #}
+      {% if pagination and pagination.totalPages > 1 %}
+        <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+          {% if pagination.currentPage > 1 %}
+            <a href="?page={{ pagination.currentPage - 1 }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+               aria-label="{{ t('common.prev') }}">
+              <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pagination.totalPages + 1) %}
+            {% if n == pagination.currentPage %}
+              <span class="riyada-btn-icon riyada-num" aria-current="page"
+                    style="background: var(--color-flame-fill); color: #fff;">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm riyada-num">{{ n }}</a>
+            {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+              <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pagination.hasNextPage %}
+            <a href="?page={{ pagination.currentPage + 1 }}" class="riyada-btn-icon riyada-btn-icon riyada-btn-icon--outline riyada-btn-icon--sm"
+               aria-label="{{ t('common.next') }}">
+              <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="riyada-empty">
+        <span class="riyada-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('categories.no_categories') }}</h3>
+        <p class="riyada-text-sm m-0">{{ t('categories.no_categories_desc') }}</p>
+        <a href="/shop" class="riyada-btn riyada-btn--outline riyada-btn--sm mt-1">{{ t('pages.shop.all_products') }}</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-clp-' ~ id, c=d %}

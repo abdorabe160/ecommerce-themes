@@ -1,0 +1,69 @@
+{# ===== ANAQA Article Card (Shared UI) — Editorial ===== #}
+{# Expects: article, showDate (optional), showExcerpt (optional) #}
+{# Repeated partial — NO style block. Tailwind + inline var() only. #}
+{# the cover arrives as { fileUrl }, as imageUrl, or as a plain string #}
+{% if article.image and article.image.fileUrl %}{% set _img = article.image.fileUrl %}
+{% elif article.imageUrl %}{% set _img = article.imageUrl %}
+{% elif article.image and article.image is string %}{% set _img = article.image %}
+{% else %}{% set _img = '' %}{% endif %}
+{% set _excerpt = article.excerpt or article.description %}
+{% set _aSlug = article.handle or article.slug %}
+
+<a href="{{ ('/articles/' ~ _aSlug) if _aSlug else '/blogs' }}"
+   data-date="{{ article.publishedAt or article.createdAt or '' }}"
+   class="attar-article-card group flex flex-col h-full font-body-ar"
+   style="text-decoration: none;">
+
+  {# ——— Media (4:3, sharp, slow hover zoom) ——— #}
+  <div class="relative aspect-[4/3] w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+    {% if _img %}
+      <img src="{{ _img }}"
+           alt="{{ article.title }}"
+           class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-[1.04]"
+           style="filter: saturate(1.03) contrast(1.02);"
+           loading="lazy">
+    {% else %}
+      <div class="attar-mark" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+
+  {# ——— Caption ——— #}
+  <div class="flex flex-col flex-1 mt-5">
+
+    {# meta: date · category #}
+    {% if (showDate and article.createdAt) or (article.blog and article.blog.title) %}
+      <div class="flex items-center flex-wrap gap-2.5 mb-3">
+        {% if showDate and article.createdAt %}
+          <span class="text-[11px] tabular-nums" style="color: var(--color-text-tertiary);">{{ article.createdAt | date('yyyy-MM-dd') }}</span>
+        {% endif %}
+        {% if showDate and article.createdAt and article.blog and article.blog.title %}
+          <span class="text-[11px]" style="color: var(--color-text-tertiary); opacity: 0.5;">·</span>
+        {% endif %}
+        {% if article.blog and article.blog.title %}
+          <span class="editorial-label">{{ article.blog.title }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# title — serif editorial #}
+    <h3 class="font-heading-ar text-[19px] leading-snug line-clamp-2 transition-colors duration-300 [color:var(--color-text-primary)] group-hover:[color:var(--color-accent)]"
+        style="font-weight: 600;">
+      {{ article.title }}
+    </h3>
+
+    {# excerpt — thin #}
+    {% if showExcerpt and _excerpt %}
+      <p class="text-[13.5px] leading-relaxed line-clamp-2 mt-2.5" style="color: var(--color-text-secondary);">
+        {{ _excerpt | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | truncate(120) }}
+      </p>
+    {% endif %}
+
+    {# read more — editorial underlined link (charcoal → nude) #}
+    <span class="mt-4 inline-flex items-center gap-1.5 self-start pb-[3px] text-[12px] font-medium border-b border-solid transition-colors duration-300 [color:var(--color-text-primary)] [border-color:var(--color-border)] group-hover:[color:var(--color-accent)] group-hover:[border-color:var(--color-accent)]">
+      {{ t('pages.blog.read_more') | default('اقرئي المزيد') }}
+      <svg class="w-3.5 h-3.5 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </span>
+  </div>
+</a>

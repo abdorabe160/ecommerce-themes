@@ -1,0 +1,19 @@
+{
+  "name": "مقالات مدونة",
+  "icon": "book-open",
+  "settings": {
+    "articles": {
+      "type": "blog",
+      "label": {
+        "ar": "المدونة",
+        "en": "Blog"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "مقالات مدونة"
+    }
+  ]
+}

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="{{ localization.language | default('ar') }}" dir="{{ 'ltr' if localization.language == 'en' else 'rtl' }}"{% if settings.enableAnimations == false %} class="attar-no-motion"{% endif %}>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    {# Google Fonts — Dynamic body fonts from settings + fixed display fonts #}
+    {% set fontAr = settings.fontArabic | default('Almarai') %}
+    {% set fontEn = settings.fontEnglish | default('Jost') %}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    {# Body fonts — dynamic from settings #}
+    <link href="https://fonts.googleapis.com/css2?family={{ fontAr | replace(' ', '+') }}:wght@400;500;600;700;800;900&family={{ fontEn | replace(' ', '+') }}:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    {# Display fonts — fixed by ATTAR identity: Cormorant Garamond (EN) + Aref Ruqaa (AR) #}
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet"/>
+
+    {% seo %}
+    {% qumra_head %}
+
+    {% if settings.favicon and settings.favicon.fileUrl %}<link rel="icon" href="{{ settings.favicon.fileUrl }}"/>{% endif %}
+    {# Accepts the full <meta …> tag or just its content value #}
+    {% set gv = (settings.googleVerification or '') | trim %}
+    {% if gv %}
+      {% set _gvI = gv.indexOf('content=') %}{% set _gvTail = gv.slice(_gvI + 8) | trim if _gvI > -1 else '' %}{% set gvMatch = [gv, _gvTail.slice(1).split(_gvTail.slice(0, 1))[0]] if _gvTail else false %}
+      <meta name="google-site-verification" content="{{ gvMatch[1] if gvMatch else gv }}"/>
+    {% endif %}
+
+    {# Builder preview runs in an iframe — demo content is shown there only #}
+    <script>if (window.self !== window.top) document.documentElement.classList.add('is-builder');</script>
+
+    {# Style Css #}
+    {% set assetv = '452c89e6' %}
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+    {# Dynamic theme overrides from builder settings — html:root beats style.css's :root #}
+    <style>
+      html:root {
+        {% if settings.custom_colors %}
+        /* Colors — from builder */
+        --color-accent: {{ settings.primaryColor | default('#C9A227', true) }};
+        --color-primary: {{ settings.primaryColor | default('#C9A227', true) }};
+        --color-accent-hover: {{ settings.primaryColorDark | default('#A5851C', true) }};
+        --color-primary-dark: {{ settings.primaryColorDark | default('#A5851C', true) }};
+        --color-accent-light: {{ settings.primaryColorLight | default('#2B2410', true) }};
+        --color-border-focus: {{ settings.primaryColor | default('#C9A227', true) }};
+        --color-accent-secondary: {{ settings.secondaryColor | default('#A97BD0', true) }};
+        --color-accent-secondary-light: {{ settings.secondaryColorLight | default('#251A31', true) }};
+        --color-bg-primary: {{ settings.backgroundColor | default('#1A1220', true) }};
+        --color-surface: {{ settings.surfaceColor | default('#221730', true) }};
+        --color-section-a: {{ settings.backgroundColor | default('#1A1220', true) }};
+        --color-header: {{ settings.backgroundColor | default('#1A1220', true) }};
+        --color-text-primary: {{ settings.textColor | default('#F5EFE6', true) }};
+        --color-header-text: {{ settings.textColor | default('#F5EFE6', true) }};
+        --color-text-secondary: {{ settings.textSecondaryColor | default('#C3B7CE', true) }};
+        --color-border: {{ settings.borderColor | default('#33263F', true) }};
+        {% endif %}
+        {% if settings.brandColor %}
+        /* One colour re-skins buttons, links, badges and eyebrows */
+        --color-accent: {{ settings.brandColor }};
+        --color-primary: {{ settings.brandColor }};
+        --color-accent-hover: color-mix(in srgb, {{ settings.brandColor }} 82%, #fff);
+        --color-primary-dark: color-mix(in srgb, {{ settings.brandColor }} 80%, #000);
+        --color-accent-light: color-mix(in srgb, {{ settings.brandColor }} 16%, var(--color-bg-primary));
+        --color-border-focus: {{ settings.brandColor }};
+        --color-warning: {{ settings.brandColor }};
+        {% endif %}
+        {% if settings.logoHeight %}--attar-logo-h: {{ settings.logoHeight }}px;{% endif %}
+        /* Fonts — body from builder, display fixed by ATTAR identity */
+        --font-body-ar: '{{ fontAr }}', system-ui, -apple-system, sans-serif;
+        --font-body-en: '{{ fontEn }}', system-ui, -apple-system, sans-serif;
+        --font-heading-ar: 'Aref Ruqaa', '{{ fontAr }}', Georgia, serif;
+        --font-heading-en: 'Cormorant Garamond', Georgia, serif;
+      }
+    </style>
+    {% if settings.brandColor %}
+    {# The brand colour is also text on this dark ground: keep it light enough to read (4.5:1),
+       whatever the merchant picks. `l * 1`, never a bare `l`: that crashes Chromium ≤130. #}
+    <style>
+      @supports (color: oklch(from red l c h)) {
+        html:root { --color-accent: oklch(from {{ settings.brandColor }} max(l * 1, .74) c h); --color-primary: var(--color-accent); --color-warning: var(--color-accent); }
+      }
+    </style>
+    {% endif %}
+
+    {# Status colours — empty keeps the theme's look. Text on the dark ground is kept readable,
+       and a badge's own text picks black or white from the colour's lightness. #}
+    {% if settings.saleColor or settings.successColor or settings.warningColor %}
+    <style>
+      html:root {
+        {% if settings.saleColor %}--color-sale: {{ settings.saleColor }}; --color-sale-text: {{ settings.saleColor }}; --color-on-sale: #fff;{% endif %}
+        {% if settings.successColor %}--color-success: {{ settings.successColor }}; --color-instock: {{ settings.successColor }};{% endif %}
+        {% if settings.warningColor %}--color-warning: {{ settings.warningColor }}; --color-low-badge: {{ settings.warningColor }}; --color-on-low: #fff;{% endif %}
+      }
+      @supports (color: oklch(from red l c h)) {
+        html:root {
+          {% if settings.saleColor %}--color-sale-text: oklch(from {{ settings.saleColor }} max(l * 1, .74) c h); --color-on-sale: oklch(from {{ settings.saleColor }} clamp(0, calc((.62 - l * 1) * 1000), 1) 0 0);{% endif %}
+          {% if settings.successColor %}--color-instock: oklch(from {{ settings.successColor }} max(l * 1, .74) c h);{% endif %}
+          {% if settings.warningColor %}--color-warning: oklch(from {{ settings.warningColor }} max(l * 1, .74) c h); --color-on-low: oklch(from {{ settings.warningColor }} clamp(0, calc((.62 - l * 1) * 1000), 1) 0 0);{% endif %}
+        }
+      }
+    </style>
+    {% endif %}
+
+    {# Tailwind CSS — CDN first, then config #}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              accent: {
+                DEFAULT: 'var(--color-accent)',
+                hover: 'var(--color-accent-hover)',
+                light: 'var(--color-accent-light)',
+              },
+              'accent-secondary': {
+                DEFAULT: 'var(--color-accent-secondary)',
+                hover: 'var(--color-accent-secondary-hover)',
+                light: 'var(--color-accent-secondary-light)',
+              },
+              surface: 'var(--color-surface)',
+              success: 'var(--color-success)',
+              error: 'var(--color-error)',
+              warning: 'var(--color-warning)',
+              'header': 'var(--color-header)',
+              'footer': 'var(--color-footer)',
+              'footer-text': 'var(--color-footer-text)',
+              'footer-muted': 'var(--color-footer-text-muted)',
+              'footer-heading': 'var(--color-footer-heading)',
+              'footer-border': 'var(--color-footer-border)',
+            },
+            backgroundColor: {
+              primary: 'var(--color-bg-primary)',
+              secondary: 'var(--color-bg-secondary)',
+              tertiary: 'var(--color-bg-tertiary)',
+              green: 'var(--color-bg-green)',
+              peach: 'var(--color-bg-peach)',
+              'section-a': 'var(--color-section-a)',
+              'section-b': 'var(--color-section-b)',
+              'header': 'var(--color-header)',
+              'footer': 'var(--color-footer)',
+            },
+            textColor: {
+              primary: 'var(--color-text-primary)',
+              secondary: 'var(--color-text-secondary)',
+              tertiary: 'var(--color-text-tertiary)',
+            },
+            borderColor: {
+              DEFAULT: 'var(--color-border)',
+              hover: 'var(--color-border-hover)',
+              focus: 'var(--color-border-focus)',
+            },
+            fontFamily: {
+              'heading-ar': ['Aref Ruqaa', '{{ fontAr }}', 'Georgia', 'serif'],
+              'heading-en': ['Cormorant Garamond', 'Georgia', 'serif'],
+              'body-ar': ['{{ fontAr }}', 'system-ui', '-apple-system', 'sans-serif'],
+              'body-en': ['{{ fontEn }}', 'system-ui', '-apple-system', 'sans-serif'],
+            },
+            borderRadius: {
+              none: '0px',
+              sm: '0px',
+              DEFAULT: '0px',
+              md: '0px',
+              lg: '0px',
+              xl: '0px',
+              '2xl': '0px',
+              full: '9999px',
+            },
+            boxShadow: {
+              sm: '0 1px 2px rgba(28, 27, 26, 0.04)',
+              DEFAULT: '0 2px 10px rgba(28, 27, 26, 0.05)',
+              md: '0 4px 16px rgba(28, 27, 26, 0.06)',
+              lg: '0 12px 32px rgba(28, 27, 26, 0.08)',
+              focus: '0 0 0 2px rgba(28, 27, 26, 0.35)',
+            },
+            fontSize: {
+              'display': ['5rem', { lineHeight: '1.02', letterSpacing: '-0.02em' }],
+              'headline': ['3.25rem', { lineHeight: '1.08', letterSpacing: '-0.015em' }],
+            },
+          },
+        },
+      }
+    </script>
+
+    {# Swiper.js CSS #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css">
+
+    {# Swiper.js #}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+
+    {# GLightbox CSS #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css">
+
+    {# Custom CSS from the theme settings — last, so it wins #}
+    {% if settings.customCSS %}<style>{{ settings.customCSS | safe }}</style>{% endif %}
+  </head>
+  <body>
+    {# Header #}
+    {% template "header" %}
+
+    {# Main Content #}
+    <main>{% content %}</main>
+
+    {# Footer #}
+    {% template "footer" %}
+
+    {# A page with no H1 (home without a hero) gets the store name as a hidden one.
+       It only runs when none exists, so never two. #}
+    <script>
+      (function () {
+        if (document.querySelector('h1')) return;
+        var name = {{ (store.name | default('', true)) | dump | safe }} || document.title, main = document.querySelector('main');
+        if (!name || !main) return;
+        var h = document.createElement('h1');
+        h.className = 'sr-only';
+        h.textContent = name;
+        main.insertBefore(h, main.firstChild);
+      })();
+    </script>
+
+    {# Quick View Modal #}
+    <div x-data="quickView()" @quick-view.window="openQuickView($event.detail.slug)" x-cloak>
+      {# Overlay #}
+      <div x-show="$store.modal.current === 'quick-view'"
+           @click="$store.modal.close()"
+           class="overlay"
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-200"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0">
+      </div>
+
+      {# Modal #}
+      <div x-show="$store.modal.current === 'quick-view'"
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 scale-95"
+           x-transition:enter-end="opacity-100 scale-100"
+           x-transition:leave="transition ease-in duration-200"
+           x-transition:leave-start="opacity-100 scale-100"
+           x-transition:leave-end="opacity-0 scale-95"
+           class="fixed inset-0 z-[220] flex items-center justify-center p-4">
+        <div class="bg-primary shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto relative" style="border: 1px solid var(--color-border);" @click.outside="$store.modal.close()">
+          {# Close Button #}
+          <button @click="$store.modal.close()"
+                  class="absolute top-2 end-2 z-10 w-11 h-11 flex items-center justify-center transition-colors"
+                  aria-label="{{ t('common.close') }}"
+                  style="background: var(--color-bg-secondary); color: var(--color-text-tertiary);"
+                  onmouseenter="this.style.background='var(--color-accent-light)'; this.style.color='var(--color-accent)'"
+                  onmouseleave="this.style.background='var(--color-bg-secondary)'; this.style.color='var(--color-text-tertiary)'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+
+          {# Content #}
+          <div class="p-6">
+            {# Loading State #}
+            <div x-show="loading" class="flex items-center justify-center py-20">
+              <svg class="w-8 h-8 animate-spin text-accent" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+
+            {# Error State #}
+            <div x-show="error && !loading" class="flex flex-col items-center justify-center py-20 text-center">
+              <svg class="w-12 h-12 mb-4" style="color: var(--color-border);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+              <p class="text-sm text-tertiary">{{t('common.error')}}</p>
+            </div>
+
+            {# Product HTML — injected dynamically, Alpine.initTree() runs on it #}
+            <div x-show="!loading && !error" id="quick-view-content-dynamic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Toast Notifications Container #}
+    <div id="toast-container" role="status" aria-live="polite" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none w-[calc(100%-2rem)] max-w-sm"></div>
+
+    {# GLightbox #}
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+
+    {# Alpine.js #}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
+
+
+
+        {# Currency/Language config for JS #}
+    <script>
+      window.__QUMRA_CONFIG__ = {
+        currency: '{{ localization.currency.currencyCode | default("SAR") }}',
+        currencySymbol: '{{ localization.currency.currencySymbol | default("ر.س") }}',
+        language: '{{ localization.language | default("ar") }}',
+        exchangeRate: {{ localization.market.exchangeRate | default(1, true) }},
+        {# Money format is MEASURED from this one sample — see Utils in main.js #}
+        moneyFormatSample: '{{ 123456789 | money }}',
+        demoImages: [{% for i in range(1, 9) %}'{{ ('demo-product-' ~ i ~ '.jpg') | assets }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        lowStockAt: {{ settings.lowStockThreshold | default(3, true) | int }},  {# the ONE "only N left" threshold — read by Qumra.stock.lowAt() #}
+        cartTotalQuantity: {{ cart.totalQuantity | default(0, true) }},
+        wishlistIds: [{% for p in wishlist.products %}'{{ p._id }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        messages: {
+          addedToCart: {{ t("pages.product.added_to_cart") | dump | safe }},
+          addError: {{ t("common.error") | dump | safe }},
+          outOfStock: {{ t("cart.out_of_stock") | dump | safe }},
+          soldOut: {{ t("pages.product.out_of_stock") | dump | safe }},
+          onlyAvailable: {{ t("pages.cart.only_available") | dump | safe }},
+          needsVariant: {{ t("pages.cart.needs_variant") | dump | safe }},
+          checkoutBlocked: {{ t("pages.cart.stock_blocked") | dump | safe }},
+          maxInCart: {{ t("pages.product.max_in_cart") | dump | safe }},
+          stock: {
+            soldOut: {{ t("pages.product.out_of_stock") | dump | safe }},
+            allInCart: {{ t("pages.product.max_in_cart") | dump | safe }},
+            low: {{ t("pages.product.low_stock") | dump | safe }},
+            inStock: {{ t("pages.product.in_stock") | dump | safe }},
+            inStockCount: {{ t("pages.product.in_stock_count") | dump | safe }}
+          },
+          freeShipping: {
+            left: {{ t("cart.free_shipping_left") | dump | safe }},
+            reached: {{ t("cart.free_shipping_reached") | dump | safe }}
+          },
+          count: {
+            one: {{ t("common.count_product_one") | dump | safe }},
+            two: {{ t("common.count_product_two") | dump | safe }},
+            few: {{ t("common.count_product_few") | dump | safe }},
+            many: {{ t("common.count_product_many") | dump | safe }}
+          },
+          card: {
+            viewProduct: {{ t("pages.product.view_product") | dump | safe }},
+            addToCart: {{ t("pages.product.add_to_cart") | dump | safe }},
+            added: {{ t("pages.product.added") | dump | safe }},
+            outOfStock: {{ t("pages.product.out_of_stock") | dump | safe }},
+            chooseOptions: {{ t("pages.product.choose_options") | dump | safe }},
+            almostGone: {{ t("pages.product.almost_gone") | dump | safe }},
+            free: {{ t("pages.product.free") | dump | safe }}
+          }
+        }
+      };
+    </script>
+
+    {# qumra_scripts #}
+    {% qumra_scripts %}
+    
+    {# Main Js — Alpine is loaded with `defer`, so it starts after this file has registered
+       its stores/components on `alpine:init`. Inline widget scripts run earlier, while the
+       page parses: they may only touch Qumra inside callbacks (DOMContentLoaded / Alpine). #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+
+    {# Custom JS from the theme settings #}
+    {% if settings.customJS %}<script>{{ settings.customJS | safe }}</script>{% endif %}
+
+  </body>
+</html>

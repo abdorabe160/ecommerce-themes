@@ -1,0 +1,11 @@
+{# حالة فارغة — الاستخدام: {% ui "empty.njk", icon="cart", title="...", text="...", url="/", button="..." %} #}
+<div class="glass max-w-xl mx-auto text-center px-6 py-12 flex flex-col items-center gap-4">
+  <div class="glass glass-pill w-20 h-20 grid place-items-center text-primary">
+    {% ui "icon.njk", name=data.icon | default('device'), cls="w-9 h-9" %}
+  </div>
+  {% if data.title %}<h2 class="text-xl font-bold">{{ data.title }}</h2>{% endif %}
+  {% if data.text %}<p class="text-muted">{{ data.text }}</p>{% endif %}
+  {% if data.button %}
+    <a href="{{ data.url | default('/') }}" class="btn btn-primary mt-2">{{ data.button }}</a>
+  {% endif %}
+</div>

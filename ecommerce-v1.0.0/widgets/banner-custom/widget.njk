@@ -1,0 +1,57 @@
+{#
+  ============================================================================
+  CUSTOM BANNER · لافتة مخصصة
+  ----------------------------------------------------------------------------
+  A wide, short promo band: picture behind, a shade in the middle, then a
+  small line, a title and a link. Empty fields fall back to the theme's demo
+  picture (assets/pg-demo-1.jpg, CC0) and to texts in the visitor's
+  language (locales → banner.*), so it never arrives blank.
+
+  Styles: assets/sections.css → "CUSTOM BANNER".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set isDemo = (img | length) == 0 and (imgM | length) == 0 %}
+{% set img = ('pg-demo-1.jpg' | assets) if isDemo else (img if (img | length) else imgM) %}
+{% set imgM = ('pg-demo-1.jpg' | assets) if isDemo else (imgM if (imgM | length) else img) %}
+
+{% set eyebrow = d.eyebrow or t('banner.eyebrow') %}
+{% set title = d.title or t('banner.title') %}
+{% set linkText = d.link_text or t('banner.link') %}
+{% set url = d.link_url | default('/shop') %}
+{% set showLink = d.show_link != false %}
+{% set whole = d.whole_link != false %}
+{% set overlay = d.overlay | default('center') %}
+{% set op = d.overlay_opacity if d.overlay_opacity is defined else 70 %}
+
+<section id="hx-bn-{{ id }}"
+         class="hx-bn {{ 'is-zoom' if d.hover_zoom != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-bn-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    <div class="hx-bn-box is-align-{{ d.align | default('center') }} is-shade-{{ overlay }} is-focus-{{ d.image_focus | default('center') }}"
+         style="--bn-h: {{ d.height | default(150) }}px; --bn-h-m: {{ d.height_mobile | default(200) }}px; --bn-r: {{ d.radius if d.radius is defined else 6 }}px; --bn-bg: {{ d.bg_color | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 78%, black)', true) }}; --bn-fg: {{ d.text_color | default('var(--hx-on-primary, white)', true) }}; --bn-link: {{ d.link_color | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 35%, white)', true) }}; --bn-shade: {{ op / 100 }};">
+      <picture class="hx-bn-media">
+        <source media="(max-width: 639.98px)" srcset="{{ imgM }}"/>
+        <img src="{{ img }}" alt="" loading="lazy"/>
+      </picture>
+      <span class="hx-bn-shade" aria-hidden="true"></span>
+      <div class="hx-bn-body">
+        {% if eyebrow %}<p class="hx-bn-eyebrow">{{ eyebrow | safe }}</p>{% endif %}
+        {% if title %}<h2 class="hx-bn-title">{{ title | safe }}</h2>{% endif %}
+        {% if showLink and linkText %}
+          <a href="{{ url }}" class="hx-bn-link">{{ linkText | safe }}
+            <svg class="hx-bn-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 7 5 5-5 5M13 7l5 5-5 5"/></svg>
+          </a>
+        {% endif %}
+      </div>
+      {% if whole and url %}<a href="{{ url }}" class="hx-bn-hit" aria-label="{{ (title or linkText) | replace('<', ' <') | striptags }}" tabindex="-1"></a>{% endif %}
+    </div>
+  </div>
+</section>

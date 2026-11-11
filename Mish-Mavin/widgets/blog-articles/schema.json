@@ -1,0 +1,60 @@
+{
+  "name": "blog-articles",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "From the journal"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        }
+      ]
+    },
+    "articles": {
+      "type": "blog_articles",
+      "label": {
+        "ar": "المقالات",
+        "en": "Articles"
+      }
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل",
+        "en": "View all text"
+      },
+      "default": ""
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل",
+        "en": "View all link"
+      },
+      "default": "/blogs"
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "blog-articles"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{#
+  MEDIA GALLERY · معرض الوسائط — MUHARRIK: a gallery of BUILDS ("Customer
+  builds / عربيات العملاء"). Square hairline frames, a mono index in the
+  corner, a mono caption bar and HUD corner ticks that appear on hover.
+  Pictures or muted looping clips, each clip with a play-pause button.
+  Blocks; with none, four demo pictures (CC0).
+  Styles: assets/sections.css → "MEDIA GALLERY", re-voiced in assets/mh-content.css.
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set items = [] %}
+{% for block in widget.blocks | default([], true) %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% set src = mediaUrl(b.media) | trim %}
+  {% if (src | length) > 0 %}{% set _ = items.push({ src: src, url: b.url | default('', true), caption: b.caption | default('', true) }) %}{% endif %}
+{% endfor %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+{#- sample photos captioned «عربية عميل» are not this store's customers —
+    editor-only until the merchant adds their own -#}
+{% set demoGallery = (items | length) == 0 %}
+{% if demoGallery %}
+  {# demo builds: the theme's car photos with a mono caption each, in the
+     visitor's language — replaced by the merchant's blocks as soon as one exists #}
+  {% set demoCaps = ['غسيل وتلميع', 'عربية عميل · SUV', 'إضاءة LED', 'جراج محرّك'] if isAr else ['Wash & polish', 'Customer build · SUV', 'LED lighting', 'MUHARRIK garage'] %}
+  {% for im in ['mh-hero-3.jpg', 'mh-build-5.jpg', 'mh-build-2.jpg', 'mh-garage.jpg'] %}{% set _ = items.push({ src: im | assets, url: '', caption: demoCaps[loop.index0] }) %}{% endfor %}
+{% endif %}
+{% set n = items | length %}
+{% set nPad = ('0' ~ n) if n < 10 else (n ~ '') %}
+{# default title: the gallery is "customer builds" in this theme #}
+{% set title = (d.title or ('عربيات عملائنا' if isAr else 'Customer builds')) if d.show_title != false else '' %}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = nPad %}{% endif %}
+<section id="hx-mg-{{ id }}"{% if demoGallery %} data-hy-empty{% endif %} class="hx-mg is-r-{{ d.ratio | default('square', true) }}"
+         style="--mg-per: {{ d.columns_desktop | default(4, true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}
+      <div class="mh-head">
+        <div class="mh-head-main">
+          <span class="mh-kicker">{{ kicker | safe }}</span>
+          <h2 class="mh-h">{{ title | safe }}</h2>
+        </div>
+        {% if d.sub %}<p class="mh-sub">{{ d.sub | safe }}</p>{% elif kicker != nPad %}<span class="mh-sub"><bdi>{{ nPad }}</bdi></span>{% endif %}
+      </div>
+    {% endif %}
+    <ul class="hx-mg-grid" role="list">
+      {% for it in items %}
+        {% set low = it.src | lower %}
+        {% set clip = low.indexOf('.mp4') > -1 or low.indexOf('.webm') > -1 or low.indexOf('.mov') > -1 %}
+        <li class="hx-mg-item mh-hud mh-reveal" {% if clip %}x-data="{ on: true }"{% endif %}>
+          {% if it.url %}<a href="{{ it.url }}" class="hx-mg-hit" aria-label="{{ it.caption | default(title, true) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}"></a>{% endif %}
+          {% if clip %}
+            <video src="{{ it.src }}" autoplay muted loop playsinline preload="metadata" x-ref="v"></video>
+            <button type="button" class="hx-mg-play" @click="on = !on; on ? $refs.v.play() : $refs.v.pause()" :aria-label="on ? '{{ t('common.pause') }}' : '{{ t('common.play') }}'">
+              <svg x-show="on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg x-show="!on" x-cloak width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>
+            </button>
+          {% else %}
+            <img src="{{ it.src }}" alt="{{ it.caption | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" loading="lazy"/>
+          {% endif %}
+          <span class="hx-mg-idx mh-mono" aria-hidden="true">{{ ('0' ~ loop.index) if loop.index < 10 else loop.index }}</span>
+          {% if it.caption %}<span class="hx-mg-cap mh-mono">{{ it.caption | safe }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>

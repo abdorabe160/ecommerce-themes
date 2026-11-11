@@ -1,0 +1,20 @@
+{# مقالات مختارة — شبكة مقالات بنفس تصميم المدونة. تختفي لو مفيش مقالات (بدون رسالة فاضية للعميل). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set posts = wd.articles or [] %}
+{% if posts | length %}
+<section class="mw-section">
+  <div class="container">
+    {% if wd.title %}
+    <div class="mw-section__head mw-align-{{ wd.heading_align | default('center') }}">
+      <h2 class="mw-section__title">{{ wd.title }}</h2>
+    </div>
+    {% endif %}
+    <div class="mw-posts">
+      {%- for a in posts %}{% if a and a.title %}{% ui "post-card.njk", article=a, heading='h3' %}{% endif %}{% endfor -%}
+    </div>
+    {% if wd.view_all_url %}
+      <div class="mw-section__foot"><a href="{{ wd.view_all_url }}" class="mw-link">{{ wd.view_all_text or t('common.view_all') }}</a></div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}

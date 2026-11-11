@@ -1,0 +1,237 @@
+{# ============================================================================
+   HYPER · شريط تمرير كتالوج الصور  (spaces gallery)
+   ----------------------------------------------------------------------------
+     استوحِ من المساحات
+     ┌──┐ ┌────────┐ ┌──────────────────┐ ┌──┐
+     │  │ │        │ │                  │ │  ⋯
+     │ ③│ │      ③ │ │                ③ │ │
+     └──┘ └────────┘ └──────────────────┘ └──┘
+     ▬▬▬▬▬▬▬────────────────────────      ( ‹ ) ( › )
+
+   A row of interiors at mixed widths. Every tile is the same HEIGHT and takes
+   its width from its own ratio, so a portrait shot and a panorama sit together
+   without either being cropped into a grid cell.
+
+   ⚠️  The ratio is a per-slide SETTING, not measured from the file. Swiper runs
+   `slidesPerView: 'auto'` and measures each slide during init — before the
+   photographs have loaded — so an intrinsic width would be 0 at that moment and
+   every tile would collapse to nothing.
+
+   ── The badge is a real count ──
+   It is `tab_products | length`, not a number the merchant types. A typed count
+   goes stale the first time they change the picker, and a badge that lies about
+   how many products are in a photograph is worse than no badge. With nothing
+   picked the badge is not rendered at all rather than showing a zero.
+
+   ── Reused, not rebuilt ──
+   The head and the whole control row come from the product row (15.8):
+   `.hy-prow-head` · `.hy-prow-title` · `.hy-prow-controls` · `-rail` · `-nav` ·
+   `-arrow`. Same objects, same job — a second copy would be two things to keep
+   in step for no visual difference.
+
+   ── RTL ──
+   Swiper resolves direction from the element's `dir` attribute (there is no
+   `rtl` init option), so it is written on the `.swiper` below. The badge sits
+   on `inset-inline-start`, and the rail fills from the correct edge on its own.
+
+   Styling lives in assets/style.css → "15.13.1 SPACES GALLERY" and "15.8".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set title = d.title | default('', true) %}
+{% set bg = d.background | default('white') %}
+{% set height = d.tile_height | default(560) %}
+{% set heightSm = d.tile_height_mobile | default(340) %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 10 %}
+{% set showBadge = d.show_badge | default(true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showProgress = d.show_progress | default(true) %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+{# The empty state. A preset cannot seed blocks, so a freshly added section
+   arrives with none — see the note in style.css → "15.29.1". #}
+{% macro phHint() %}
+  <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    {{ t('common.placeholder_add') }}
+  </span>
+{% endmacro %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+{# The root background is INLINE so it beats every stylesheet rule — which is
+   why it reads `var(--hy-sec-bg, …)`. The section-colours picker overrides the
+   custom property, not the declaration. Do not collapse it back. #}
+<section id="hy-look-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-look"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <style>
+    #hy-look-{{ id }} {
+      --hy-look-h: {{ height }}px;
+      --hy-look-h-sm: {{ heightSm }}px;
+      --hy-look-radius: {{ radius }}px;
+    }
+  </style>
+
+  <div class="hy-container">
+    {% if title %}
+      <div class="hy-prow-head">
+        <div class="hy-prow-headings">
+          <h2 class="hy-prow-title">{{ title }}</h2>
+          {% if d.subtitle %}<p class="hy-prow-sub">{{ d.subtitle }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="hy-look-stage">
+      {# `dir` is load-bearing — Swiper reads it off the element. #}
+      <div id="hy-lookSw-{{ id }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+        <div class="swiper-wrapper">
+          {% if count == 0 %}
+            {# Four tiles at the real height and mixed ratios, so the row's whole
+               point — that widths vary — is visible before anything is added. #}
+            {% for r in ['0.75', '1.7778', '0.6667', '1.3333'] %}
+              <div class="swiper-slide">
+                <span class="hy-look-tile hy-ph-box" style="--look-r: {{ r }};"
+                      data-hy-placeholder aria-hidden="true"></span>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% for block in slides %}
+            {% set b = block.data %}
+            {% set img = mediaUrl(b.image) | trim %}
+            {# `| length`, not truthiness — a macro returns a SafeString OBJECT,
+               and an object is truthy even when it holds an empty string. #}
+            {% set hasImg = (img | length) > 0 %}
+
+            {# The ratio goes out as a DECIMAL, not as `3 / 4`. The tile computes
+               its width as height × this number — `aspect-ratio` cannot do the
+               job because a block box's `width: auto` fills its container and
+               beats it. See the note in style.css → 15.13.1. #}
+            {% set r = b.ratio | default('3x4') %}
+            {% if r == '1x1' %}{% set ratioVal = '1' %}
+            {% elif r == '4x3' %}{% set ratioVal = '1.3333' %}
+            {% elif r == '16x9' %}{% set ratioVal = '1.7778' %}
+            {% elif r == '2x3' %}{% set ratioVal = '0.6667' %}
+            {% else %}{% set ratioVal = '0.75' %}{% endif %}
+            {# no photo yet → the bundled demo photo cut to THIS tile's ratio (CC0,
+               docs/demo-images.md) — the frame is `contain`, so a mismatched demo
+               would show bands either side #}
+            {% if not (img | length) %}
+              {% set img = ('demo-space-' ~ (r if r in ['3x4', '2x3', '16x9', '4x3', '1x1'] else '3x4') ~ '.jpg') | assets %}
+              {% set hasImg = true %}
+            {% endif %}
+
+            {% set tagged = b.products | default([]) %}
+            {% set n = tagged | length %}
+
+            <div class="swiper-slide">
+              <a href="{{ b.link_url | default('/shop') }}"
+                 class="hy-look-tile"
+                 style="--look-r: {{ ratioVal }};"
+                 {% if b.alt %}aria-label="{{ b.alt }}"{% endif %}>
+                {% if hasImg %}
+                  <img src="{{ img }}"
+                       alt="{{ b.alt | default('', true) }}"
+                       {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                {% else %}
+                  <span class="hy-look-noimg">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.75" cy="9" r="1.5"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                    </svg>
+                  </span>
+                {% endif %}
+
+                {# Rendered only when something is tagged — never a bare zero. #}
+                {% if showBadge and n > 0 %}
+                  <span class="hy-look-badge">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.6" aria-hidden="true">
+                      <path stroke-linejoin="round" d="M3.5 11.2V4.5a1 1 0 0 1 1-1h6.7a1 1 0 0 1 .7.3l8.3 8.3a1 1 0 0 1 0 1.4l-6.7 6.7a1 1 0 0 1-1.4 0L3.8 11.9a1 1 0 0 1-.3-.7Z"/>
+                      <circle cx="8" cy="8" r="1.4"/>
+                    </svg>
+                    <span class="hy-look-count">{{ n }}</span>
+                  </span>
+                {% endif %}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% if count == 0 %}
+      <div class="hy-ph-center" style="margin-block-start: var(--space-5);">{{ phHint() }}</div>
+    {% endif %}
+
+    {% if count > 0 and (showArrows or showProgress) %}
+      <div class="hy-prow-controls">
+        {% if showProgress %}<div id="hy-lookProg-{{ id }}" class="hy-prow-rail"></div>{% endif %}
+        {% if showArrows %}
+          <div class="hy-prow-nav">
+            <button type="button" id="hy-lookPrev-{{ id }}" class="hy-prow-arrow" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+              </svg>
+            </button>
+            <button type="button" id="hy-lookNext-{{ id }}" class="hy-prow-arrow" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var el = document.getElementById('hy-lookSw-{{ id }}');
+    /* Nothing added yet — the wrapper holds skeletons, not slides. */
+    if ({{ count }} === 0) return;
+    if (!el || typeof Swiper === 'undefined') return;
+
+    new Swiper(el, {
+      /* 'auto' reads each slide's own width, which is what puts tiles of
+         different ratios on one row. Direction comes from the element's `dir`
+         attribute — Swiper has no `rtl` init option. */
+      slidesPerView: 'auto',
+      spaceBetween: 16,
+      watchOverflow: true,
+      breakpoints: { 768: { spaceBetween: 20 }, 1024: { spaceBetween: 24 } },
+      {% if showArrows %}
+      navigation: { prevEl: '#hy-lookPrev-{{ id }}', nextEl: '#hy-lookNext-{{ id }}' },
+      {% endif %}
+      {% if showProgress %}
+      scrollbar: { el: '#hy-lookProg-{{ id }}', draggable: true, hide: false },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-look-' ~ id, c=d %}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+{% set lang = localization.language | default('ar') %}
+{% set isLtr = lang == 'en' or lang == 'fr' %}
+{# رقم نسخة ملفات الثيم — الـ CDN بيخزن main.js/style.css سنة كاملة (immutable)، فلازم الرقم ده يتغير مع كل تعديل في assets عشان المتصفح يجيب النسخة الجديدة #}
+{% set assetv = '8d956670' %}
+{% set S = settings or {} %}
+{# الخط العربي (GEN-04): خط ويب واحد لكل الأجهزة بدل Arial اللي مش موجود على أندرويد #}
+{% set fontMap = {
+  'ibm-plex': { 'family': 'IBM Plex Sans Arabic', 'q': 'IBM+Plex+Sans+Arabic:wght@400;500;600;700' },
+  'cairo': { 'family': 'Cairo', 'q': 'Cairo:wght@400;500;600;700;800' },
+  'tajawal': { 'family': 'Tajawal', 'q': 'Tajawal:wght@400;500;700;800' },
+  'noto-kufi': { 'family': 'Noto Kufi Arabic', 'q': 'Noto+Kufi+Arabic:wght@400;500;600;700' },
+  'readex': { 'family': 'Readex Pro', 'q': 'Readex+Pro:wght@400;500;600;700' }
+} %}
+{% set fa = fontMap[S.fontArabic | default('ibm-plex')] if S.fontArabic != 'system' else null %}
+{% set brand = (S.brandColor | trim) if (S.brandColor and (S.brandColor | trim | length)) else '' %}
+{% set storeName = (store.name if store and store.name else '') %}
+<html lang="{{ lang }}" dir="{% if isLtr %}ltr{% else %}rtl{% endif %}" class="{% if S.enableAnimations == false %}mw-no-motion{% endif %}">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="{{ brand or '#ffffff' }}"/>
+    {% seo %}
+    {% qumra_head %}
+
+    {% if S.favicon and S.favicon.fileUrl %}<link rel="icon" href="{{ S.favicon.fileUrl }}"/>{% endif %}
+
+    {# Google Search Console: يقبل وسم <meta> كامل أو قيمة content فقط #}
+    {% set gsv = (S.googleVerification or '') | string | trim %}
+    {% if 'content=' in gsv %}{% set gsv = (gsv.split('content=')[1] | replace('"', '') | replace("'", '') | replace('/>', '') | replace('>', '') | trim).split(' ')[0] %}{% endif %}
+    {% if gsv %}<meta name="google-site-verification" content="{{ gsv }}"/>{% endif %}
+
+    {# QLT-11: بيانات منظمة للمتجر (وسم seo بيطلع meta بس) #}
+    {% set sdUrl = (store.url if store and store.url else '') %}
+    {% set sdLogo = (store.logo.fileUrl if (store and store.logo and store.logo.fileUrl) else ((S.favicon.fileUrl) if (S.favicon and S.favicon.fileUrl) else '')) %}
+    <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Organization', 'name': storeName, 'url': sdUrl, 'logo': sdLogo } | dump | replace('</', '<\\/') | safe }}</script>
+    <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'WebSite', 'name': storeName, 'url': sdUrl, 'potentialAction': { '@type': 'SearchAction', 'target': sdUrl + '/search?q={search_string}', 'query-input': 'required name=search_string' } } | dump | replace('</', '<\\/') | safe }}</script>
+
+    {# Bricolage Grotesque (نفس خط mavin-wear.com) للاتيني + خط عربي من الإعدادات #}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800{% if fa %}&family={{ fa.q }}{% endif %}&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.6/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+    {# html:root أقوى من :root في style.css — ألوان التاجر تكسب دايماً (GEN-05) #}
+    <style>
+      html:root {
+        --mw-sale: {{ S.sale_color | default('#c25151', true) }};
+        --mw-discount: {{ S.discount_badge_color | default('#d61f1f', true) }};
+        --mw-accent: {{ S.accent_color | default('#e8ff7a', true) }};
+        --mw-success: {{ S.successColor | default('#15803d', true) }};
+        --mw-warning: {{ S.warningColor | default('#c2410c', true) }};
+        {% if brand %}--mw-brand: {{ brand }};{% endif %}
+        --mw-radius-card: {{ S.cornerRadius | default(0, true) }}px;
+        --mw-logo-h: {{ S.logoHeight | default(20, true) }}px;
+        {% if fa %}--mw-font: "Bricolage Grotesque", "{{ fa.family }}", Arial, sans-serif;{% endif %}
+      }
+    </style>
+
+    <script>
+      window.MW_CFG = {
+        lang: {{ lang | dump | safe }},
+        moneySample: {{ (100000 | money) | string | dump | safe }},
+        promo: {{ (S.promo_badge or '') | dump | safe }},
+        demoSrc: {{ (('demo-data.js' | assets) + '?v=' + assetv) | dump | safe }},
+        demoProducts: {{ 'true' if S.demoProducts == true else 'false' }},
+        checkoutUrl: {{ (S.checkout_url or '/checkout') | dump | safe }},
+        lowStock: {{ (S.low_stock_threshold or 3) | dump | safe }},
+        followStock: {{ 'false' if S.followProductStock == false else 'true' }},
+        cartOpenOnAdd: {{ 'false' if S.cartOpenOnAdd == false else 'true' }},
+        freeShip: {{ (S.freeShippingThreshold or 0) | dump | safe }},
+        wishlist: {{ 'true' if S.showWishlist == true else 'false' }},
+        cardButtons: {{ 'false' if S.show_card_buttons == false else 'true' }},
+        i18n: {
+          added: {{ t('toast.added_to_cart') | dump | safe }},
+          removed: {{ t('toast.removed_from_cart') | dump | safe }},
+          colorChanged: {{ t('toast.color_changed') | dump | safe }},
+          error: {{ t('header.search_error') | dump | safe }},
+          chooseOptions: {{ t('product.choose_options') | dump | safe }},
+          addToCart: {{ t('product.add_to_cart') | dump | safe }},
+          buyNow: {{ t('product.buy_now') | dump | safe }},
+          off: {{ t('product.off') | dump | safe }},
+          color: {{ t('product.color') | dump | safe }},
+          size: {{ t('product.size') | dump | safe }},
+          soldOut: {{ t('product.sold_out') | dump | safe }},
+          free: {{ t('product.free') | dump | safe }},
+          variantSoldOut: {{ t('stock.variant_sold_out') | dump | safe }},
+          inStock: {{ t('stock.in_stock') | dump | safe }},
+          onlyLeft: {{ t('stock.only_left') | dump | safe }},
+          onlyLeftShort: {{ t('product.only_left_short') | dump | safe }},
+          allInCart: {{ t('stock.all_in_cart') | dump | safe }},
+          maxReached: {{ t('stock.max_reached') | dump | safe }},
+          maxReachedGeneric: {{ t('stock.no_more') | dump | safe }},
+          maxAvailable: {{ t('stock.max_available') | dump | safe }},
+          inCartCount: {{ t('stock.in_cart') | dump | safe }},
+          selectOption: {{ t('stock.select_option') | dump | safe }},
+          qtyInvalid: {{ t('stock.qty_invalid') | dump | safe }},
+          previewCheckout: {{ t('stock.preview_checkout') | dump | safe }},
+          availableByName: {{ t('search.available_by_name') | dump | safe }},
+          searchSummary: {{ t('search.summary') | dump | safe }},
+          linkCopied: {{ t('product.link_copied') | dump | safe }},
+          lowBadge: {{ t('stock.low_badge') | dump | safe }},
+          wishToggle: {{ t('wishlist.toggle') | dump | safe }},
+          close: {{ t('common.close') | dump | safe }},
+          wishAdded: {{ t('toast.added_to_wishlist') | dump | safe }},
+          wishRemoved: {{ t('toast.removed_from_wishlist') | dump | safe }},
+          freeShipLeft: {{ t('cart.free_ship_left') | dump | safe }},
+          freeShipDone: {{ t('cart.free_ship_done') | dump | safe }},
+          priceSwapped: {{ t('collection.price_swapped') | dump | safe }},
+          results: {{ t('collection.results') | dump | safe }},
+          countOne: {{ t('collection.count_one') | dump | safe }},
+          countTwo: {{ t('collection.count_two') | dump | safe }},
+          countFew: {{ t('collection.count_few') | dump | safe }},
+          countMany: {{ t('collection.count_many') | dump | safe }},
+          showing: {{ t('collection.showing') | dump | safe }},
+          errName: {{ t('contact.err_name') | dump | safe }},
+          errEmail: {{ t('contact.err_email') | dump | safe }},
+          errMessage: {{ t('contact.err_message') | dump | safe }}
+        }
+      };
+    </script>
+    {# Merchant CSS last in <head>, so it wins over the theme at equal specificity #}
+    {% if S.custom_css %}<style>{{ S.custom_css | safe }}</style>{% endif %}
+  </head>
+  <body>
+    <a class="mw-skip" href="#main">{{ t('common.skip_to_content') }}</a>
+    {% template "header" %}
+    <main id="main" tabindex="-1">
+      {% ui "demo-product.njk" %}
+      {% ui "demo-collection.njk" %}
+      {% content %}
+    </main>
+    {% template "footer" %}
+    {# H1 واحد في كل صفحة، حتى لو التاجر شال البانر أو كرره: مفيش H1 = اسم المتجر مخفي بصرياً، أكتر من واحد = الباقي H2 (بيشتغل قبل Alpine) #}
+    <script>
+      (function () {
+        var all = Array.prototype.slice.call(document.querySelectorAll('h1'));
+        if (!all.length) {
+          var name = {{ storeName | dump | replace('</', '<\\/') | safe }};
+          if (!name) return;
+          var h = document.createElement('h1');
+          h.className = 'visually-hidden';
+          h.textContent = name;
+          var m = document.getElementById('main');
+          m.insertBefore(h, m.firstChild);
+          return;
+        }
+        var keep = all.filter(function (x) { return !x.classList.contains('visually-hidden'); })[0] || all[0];
+        all.forEach(function (o) {
+          if (o === keep) return;
+          var r = document.createElement('h2');
+          Array.prototype.forEach.call(o.attributes, function (a) { r.setAttribute(a.name, a.value); });
+          while (o.firstChild) r.appendChild(o.firstChild);
+          o.parentNode.replaceChild(r, o);
+        });
+      })();
+    </script>
+    {% ui "cart.njk" %}
+    {% ui "quick-add.njk" %}
+
+    <script type="application/json" id="mw-cart-json">{{ (cart or {}) | dump | replace('</', '<\\/') | safe }}</script>
+    <script type="application/json" id="mw-wishlist-json">{{ (wishlist or {}) | dump | replace('</', '<\\/') | safe }}</script>
+
+    {% qumra_scripts %}
+
+    {# main.js يسجّل مكونات Alpine قبل تشغيله، وSwiper قبل Alpine عشان سلايدر البانر #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11.2.6/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    {% if S.customJS %}<script>{{ S.customJS | safe }}</script>{% endif %}
+  </body>
+</html>

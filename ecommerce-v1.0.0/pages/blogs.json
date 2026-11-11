@@ -1,0 +1,50 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "كل المقالات",
+      "widget": "blog-grid",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_heading": true,
+        "columns_desktop": 3,
+        "image_ratio": "wide",
+        "show_category": true,
+        "show_date": true,
+        "show_excerpt": true,
+        "hover_zoom": true,
+        "padding_top": 16,
+        "padding_bottom": 48
+      }
+    },
+    {
+      "name": "مميزات المتجر",
+      "widget": "text-columns",
+      "settings": {
+        "layout": "grid",
+        "full_width": true,
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": "1.6",
+        "autoplay": true,
+        "interval": 4,
+        "pause_on_hover": true,
+        "icon_size": 44,
+        "icon_radius": 8,
+        "icon_bg": "",
+        "icon_color": "",
+        "show_dividers": false,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

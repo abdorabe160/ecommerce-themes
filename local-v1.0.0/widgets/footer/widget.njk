@@ -1,0 +1,303 @@
+{# ============================================================================
+   LOCAL · FOOTER
+   ----------------------------------------------------------------------------
+     ┌─────────────────────── warm ground (--color-footer) ────────────────────┐
+     │  ╭────────────────────────── white card ──────────────────────────────╮ │
+     │  │ Subscribe to our newsletter          ( email…              [Join] ) │ │
+     │  │ seasonal recipes, new arrivals…                                     │ │
+     │  ╰─────────────────────────────────────────────────────────────────────╯ │
+     │                                                                          │
+     │  LOGO              Shop          Help          Contact us               │
+     │  a short blurb     links…        links…        (◌) title / text × 4     │
+     │  (f) (x) (ig)                                                            │
+     │  ──────────────────────────────────────────────────────────────────────  │
+     │  © 2026 Local · Privacy · Terms        [mada][visa]…        (🌐 English) │
+     └──────────────────────────────────────────────────────────────────────────┘
+
+   Setting keys are the previous footer's (newsletter_* · contact1..4_* ·
+   social_* · pay_* · copyright · bottom_menu · show_language_switcher), so
+   anything a merchant already filled in carries over.
+
+   ── Newsletter ──
+   A NATIVE form POST to the merchant's list provider (`newsletter_action`),
+   not fetch(): providers send no CORS headers, so fetch() fails silently and
+   says "subscribed" when nothing was stored. No action URL → no field, only a
+   setup hint (an input that posts nowhere collects nothing while looking like
+   it works). `novalidate` + checkValidity() keeps the browser's rules but
+   shows the messages in the STORE's language. The honeypot is hidden INLINE
+   on purpose — it must not depend on the stylesheet loading.
+
+   ── Language, not market ──
+   Qumra resolves the market server-side; the language is the one thing a
+   shopper can switch from here (`{% form 'lang' %}`), so that is the pill.
+
+   ── Contact text is dir="auto" ──
+   "+966 55 000 0000" starts with no strong character and would render
+   reversed in RTL; `dir="auto"` lets each value pick its own direction.
+
+   Styling: assets/style.css → "15.20 FOOTER · LOCAL" (+ 15.20.1 badges).
+   ========================================================================= #}
+
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set columns = widget.blocks | default([], true) %}
+
+{% set showNl = d.show_newsletter | default(true) %}
+{% set nlAction = d.newsletter_action | default('', true) %}
+{% set nlField = d.newsletter_field | default('EMAIL', true) %}
+{% set nlPlaceholder = d.newsletter_placeholder | default(t('newsletter.placeholder'), true) %}
+{% set nlButton = d.newsletter_button | default(t('newsletter.button'), true) %}
+{% set nlNote = d.newsletter_note | default('', true) %}
+
+{% set showLogo = d.show_logo | default(true) %}
+{% set logoSrc = mediaUrl(d.footer_logo) | trim %}
+{% set logoSrc = logoSrc if (logoSrc | length) > 0 else (store.logo.fileUrl if store.logo and store.logo.fileUrl else '') %}
+{% set storeName = store.name | default('Local') %}
+
+{% set showContact = d.show_contact | default(true) %}
+{% set hasContact = d.contact1_title or d.contact1_text or d.contact2_title or d.contact2_text or d.contact3_title or d.contact3_text or d.contact4_title or d.contact4_text %}
+
+{% set hasPayIcon = d.pay_mada or d.pay_visa or d.pay_mastercard or d.pay_amex or d.pay_applepay or d.pay_stcpay or d.pay_tabby or d.pay_tamara or d.pay_paypal or d.pay_cod %}
+{% set showPay = d.show_payments | default(true) %}
+{% set showLang = d.show_language_switcher | default(true) %}
+{% set copyright = d.copyright | default(storeName, true) %}
+{% set bottomMenu = d.bottom_menu %}
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+
+{% set payImg1 = mediaUrl(d.payment_image_1) | trim %}
+{% set payImg2 = mediaUrl(d.payment_image_2) | trim %}
+{% set payImg3 = mediaUrl(d.payment_image_3) | trim %}
+{% set hasPayImg = (payImg1 | length) > 0 or (payImg2 | length) > 0 or (payImg3 | length) > 0 %}
+{% set showPay = showPay and (hasPayImg or hasPayIcon) %}
+{% set hasSocial = d.social_facebook or d.social_x or d.social_instagram or d.social_tiktok or d.social_youtube or d.social_snapchat or d.social_whatsapp or d.social_pinterest %}
+
+{# ═══════════════════ icons ═══════════════════ #}
+{% macro contactIcon(kind) %}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if kind == 'chat' %}
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.3 9.3 0 0 1-2.8-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/>
+    {% elif kind == 'phone' %}
+      <path d="M22 16.9v2.6a1.8 1.8 0 0 1-2 1.8 17.6 17.6 0 0 1-7.7-2.7 17.4 17.4 0 0 1-5.3-5.3A17.6 17.6 0 0 1 4.3 5.6 1.8 1.8 0 0 1 6.1 3.6h2.6a1.8 1.8 0 0 1 1.8 1.6c.1.9.3 1.7.6 2.5a1.8 1.8 0 0 1-.4 1.9l-1.1 1.1a14 14 0 0 0 5.3 5.3l1.1-1.1a1.8 1.8 0 0 1 1.9-.4c.8.3 1.6.5 2.5.6a1.8 1.8 0 0 1 1.6 1.8Z"/>
+    {% elif kind == 'mail' %}
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6.5 9 6 9-6"/>
+    {% elif kind == 'pin' %}
+      <path d="M20 10.5c0 5.5-8 12-8 12s-8-6.5-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10.3" r="2.9"/>
+    {% elif kind == 'send' %}
+      <path d="M21.5 2.5 2.5 9.8l7.6 2.9 3 8L21.5 2.5Z"/><path d="m10.1 12.7 4.6-4.6"/>
+    {% elif kind == 'clock' %}
+      <circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2"/>
+    {% elif kind == 'truck' %}
+      <path d="M2.5 6.5h10v9h-10zM12.5 10h4l3 3v2.5h-7z"/><circle cx="6.5" cy="17.6" r="1.7"/><circle cx="16.6" cy="17.6" r="1.7"/>
+    {% elif kind == 'shield' %}
+      <path d="M12 3 5 6v5.5c0 4.3 3 8.2 7 9.5 4-1.3 7-5.2 7-9.5V6l-7-3Z"/><path d="m9.2 12 2 2 3.6-3.8"/>
+    {% elif kind == 'whatsapp' %}
+      <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3.5 20.5l1.5-4.4a8.4 8.4 0 1 1 15.5-4.4Z"/><path d="M9.3 8.6c.4 1 .8 1.6.8 1.6s-.5.7-.3 1.1a6 6 0 0 0 2.9 2.9c.4.2 1.1-.3 1.1-.3s.6.4 1.6.8"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{% macro social(kind) %}
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    {% if kind == 'instagram' %}
+      <path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.22 1 .48 1.4.9.4.4.68.8.9 1.4.17.4.37 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.05 1.2-.25 1.8-.42 2.2-.22.6-.5 1-.9 1.4-.4.4-.8.68-1.4.9-.4.17-1 .37-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.05-1.8-.25-2.2-.42-.6-.22-1-.5-1.4-.9-.4-.4-.68-.8-.9-1.4-.17-.4-.37-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.22-.6.5-1 .9-1.4.4-.4.8-.68 1.4-.9.4-.17 1-.37 2.2-.42C8.4 2.2 8.8 2.2 12 2.2Zm0 1.8c-3.1 0-3.5 0-4.7.07-1.1.05-1.7.24-2.1.4-.5.2-.9.44-1.3.84-.4.4-.64.8-.84 1.3-.16.4-.35 1-.4 2.1C2.6 9.9 2.6 10.3 2.6 12s0 2.1.06 3.3c.05 1.1.24 1.7.4 2.1.2.5.44.9.84 1.3.4.4.8.64 1.3.84.4.16 1 .35 2.1.4 1.2.06 1.6.06 4.7.06s3.5 0 4.7-.06c1.1-.05 1.7-.24 2.1-.4.5-.2.9-.44 1.3-.84.4-.4.64-.8.84-1.3.16-.4.35-1 .4-2.1.06-1.2.06-1.6.06-3.3s0-2.1-.06-3.3c-.05-1.1-.24-1.7-.4-2.1a3.5 3.5 0 0 0-.84-1.3 3.5 3.5 0 0 0-1.3-.84c-.4-.16-1-.35-2.1-.4C15.5 4 15.1 4 12 4Zm0 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Zm5.2-3.1a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/>
+    {% elif kind == 'x' %}
+      <path d="M17.3 3h3.1l-6.8 7.8L21.7 21h-6.2l-4.9-6.4L4.9 21H1.8l7.3-8.3L1.9 3h6.4l4.4 5.8L17.3 3Zm-1.1 16.2h1.7L7.9 4.7H6.1l10.1 14.5Z"/>
+    {% elif kind == 'facebook' %}
+      <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12Z"/>
+    {% elif kind == 'tiktok' %}
+      <path d="M16.6 2h-3.1v13.1a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .7.1V9.4a5.7 5.7 0 1 0 5 5.7V8.6a6.5 6.5 0 0 0 3.8 1.2V6.7a3.7 3.7 0 0 1-3.8-3.6V2Z"/>
+    {% elif kind == 'youtube' %}
+      <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.1V8.9l5.3 3.1-5.3 3.1Z"/>
+    {% elif kind == 'snapchat' %}
+      <path d="M12 2c2.7 0 4.6 2 4.7 4.7 0 .8 0 1.6-.1 2.3.4.2.9.1 1.4-.1.5-.2 1 .1 1.1.6.1.5-.2.9-.7 1.1-.5.2-1.3.5-1.5.9-.2.4.5 1.9 2.4 3 .4.2.5.6.4 1-.3.7-1.4 1-2.3 1.2-.2.3-.2.7-.4 1-.2.3-.6.3-1 .2-.6-.1-1.2-.2-1.9 0-.6.2-1.2 1.1-2.1 1.1s-1.5-.9-2.1-1.1c-.7-.2-1.3-.1-1.9 0-.4.1-.8.1-1-.2-.2-.3-.2-.7-.4-1-.9-.2-2-.5-2.3-1.2-.1-.4 0-.8.4-1 1.9-1.1 2.6-2.6 2.4-3-.2-.4-1-.7-1.5-.9-.5-.2-.8-.6-.7-1.1.1-.5.6-.8 1.1-.6.5.2 1 .3 1.4.1-.1-.7-.1-1.5-.1-2.3C7.4 4 9.3 2 12 2Z"/>
+    {% elif kind == 'whatsapp' %}
+      <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm0 1.8a8.2 8.2 0 1 1-4.2 15.2l-.3-.2-2.8.8.8-2.8-.2-.3A8.2 8.2 0 0 1 12 3.8Zm-3.1 4c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.7 4.2 3.7 2 .8 2.5.7 2.9.6.6-.1 1.8-.7 2-1.5.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3l-2-1c-.3-.1-.5-.1-.7.1l-.7.9c-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.5-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.2-.5 0-.2 0-.4-.1-.5l-.9-2c-.2-.5-.4-.5-.6-.5h-.4Z"/>
+    {% elif kind == 'pinterest' %}
+      <path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5.1s-.3-.6-.3-1.5c0-1.4.8-2.5 1.8-2.5.9 0 1.3.6 1.3 1.4 0 .9-.5 2.2-.8 3.4-.3 1 .5 1.9 1.5 1.9 1.8 0 3.2-1.9 3.2-4.7 0-2.4-1.8-4.2-4.3-4.2a4.5 4.5 0 0 0-4.7 4.5c0 .9.3 1.8.8 2.3.1.1.1.2.1.3l-.3 1c0 .2-.1.2-.3.1-1.2-.6-2-2.4-2-3.8 0-3.1 2.3-6 6.5-6 3.4 0 6.1 2.4 6.1 5.7 0 3.4-2.1 6.2-5.1 6.2-1 0-2-.5-2.3-1.1l-.6 2.4c-.2.9-.8 2-1.2 2.6A10 10 0 1 0 12 2Z"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+{% macro socialLink(url, kind, label) %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ label }}">{{ social(kind) }}</a>{% endif %}{% endmacro %}
+
+{% macro contactRow(icon, title, text, url) %}
+  {% if title or text %}
+    <li class="lc-foot-contact">
+      {% if icon and icon != 'none' %}<span class="lc-foot-contact-icon">{{ contactIcon(icon) }}</span>{% endif %}
+      <span class="lc-foot-contact-body">
+        {% if title %}<span class="lc-foot-contact-title" dir="auto">{{ title }}</span>{% endif %}
+        {% if text %}
+          {% if url %}<a href="{{ url }}" dir="auto">{{ text }}</a>{% else %}<span dir="auto">{{ text }}</span>{% endif %}
+        {% endif %}
+      </span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
+
+<footer id="lc-footer-{{ id }}" class="lc-foot" style="--lc-logo-h: {{ d.logo_height | default(40) }}px;">
+  <div class="lc-hwrap">
+
+    {# ═══════════ newsletter card ═══════════ #}
+    {% if showNl %}
+      {# No provider URL yet → the card is the merchant's to-do, not the shopper's:
+         it renders only inside the theme editor (html.is-builder, set in the layout). #}
+      <div class="lc-foot-nl{{ '' if nlAction else ' lc-builder-only' }}" x-data="{ sent: false }">
+        <div class="lc-foot-nl-copy">
+          {% if d.newsletter_title %}<h2 class="lc-foot-nl-title">{{ d.newsletter_title }}</h2>{% endif %}
+          {% if d.newsletter_text %}<p class="lc-foot-nl-text">{{ d.newsletter_text }}</p>{% endif %}
+        </div>
+
+        <div class="lc-foot-nl-form">
+          {% if nlAction %}
+            <p class="lc-foot-nl-ok" x-show="sent" x-cloak role="status">{{ t('newsletter.success') }}</p>
+            {# The messages ride on data- attributes, NOT `| dump` inside @submit:
+               dump emits double quotes, which closed this attribute early and left
+               Alpine a broken expression — validation silently never ran. #}
+            <form action="{{ nlAction }}" method="post" target="_blank" rel="noopener"
+                  novalidate x-data="{ err: '' }" x-show="!sent"
+                  data-err-empty="{{ t('newsletter.error_empty') }}"
+                  data-err-format="{{ t('newsletter.error_format') }}"
+                  @submit="
+                    const f = $el.querySelector('input[type=email]');
+                    if (f.checkValidity()) { err = ''; sent = true; return; }
+                    $event.preventDefault();
+                    err = f.value.trim() === '' ? $el.dataset.errEmpty : $el.dataset.errFormat;
+                    f.focus();
+                  ">
+              <div class="lc-foot-field">
+                <input type="email" name="{{ nlField }}" required autocomplete="email" inputmode="email"
+                       :aria-invalid="err ? 'true' : 'false'" @input="err = ''"
+                       placeholder="{{ nlPlaceholder }}" aria-label="{{ t('common.email') }}"/>
+                <button type="submit">{{ nlButton }}</button>
+              </div>
+              {# honeypot — hidden inline so a missing stylesheet cannot expose it #}
+              <div aria-hidden="true" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;">
+                <label><span>Leave this field empty</span><input type="text" name="hy_hp" tabindex="-1" autocomplete="off"/></label>
+              </div>
+              <p class="lc-foot-err" x-show="err" x-text="err" x-cloak role="alert" aria-live="assertive"></p>
+            </form>
+            {% if nlNote %}<div class="lc-foot-nl-note">{{ nlNote | safe }}</div>{% endif %}
+          {% else %}
+            {# no provider URL yet: the field's shape, disabled, and why #}
+            <div class="lc-foot-field is-off" aria-hidden="true">
+              <input type="email" placeholder="{{ nlPlaceholder }}" disabled/>
+              <button type="button" disabled>{{ nlButton }}</button>
+            </div>
+            <p class="lc-foot-nl-note">{{ t('newsletter.setup_hint') }}</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# ═══════════ columns ═══════════ #}
+    <div class="lc-foot-grid">
+      {% if showLogo %}
+        <div class="lc-foot-brand">
+          <a href="/" class="lc-foot-logo" aria-label="{{ storeName }}">
+            {% if logoSrc %}<img src="{{ logoSrc }}" alt="{{ storeName }}"/>{% else %}<span>{{ storeName }}</span>{% endif %}
+          </a>
+          {% if d.brand_text %}<div class="lc-foot-blurb">{{ d.brand_text | safe }}</div>{% endif %}
+          {% if hasSocial %}
+            <div class="lc-foot-social">
+              {{ socialLink(d.social_facebook, 'facebook', 'Facebook') }}
+              {{ socialLink(d.social_x, 'x', 'X') }}
+              {{ socialLink(d.social_instagram, 'instagram', 'Instagram') }}
+              {{ socialLink(d.social_tiktok, 'tiktok', 'TikTok') }}
+              {{ socialLink(d.social_youtube, 'youtube', 'YouTube') }}
+              {{ socialLink(d.social_snapchat, 'snapchat', 'Snapchat') }}
+              {{ socialLink(d.social_whatsapp, 'whatsapp', 'WhatsApp') }}
+              {{ socialLink(d.social_pinterest, 'pinterest', 'Pinterest') }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% for block in columns %}
+        {% set b = block.data %}
+        {% set items = b.menu.items if b.menu and b.menu.items else b.menu %}
+        {% if items is string %}{% set items = [] %}{% endif %}
+        {% if items and (items | length) > 0 %}
+          <div class="lc-foot-col">
+            {% if b.title %}<h2 class="lc-foot-heading">{{ b.title }}</h2>{% endif %}
+            {% if items %}
+              <ul class="lc-foot-links">
+                {% for item in items %}
+                  <li><a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }}>{{ item.title }}</a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {% if showContact and hasContact %}
+        <div class="lc-foot-col">
+          {% if d.contact_title %}<h2 class="lc-foot-heading">{{ d.contact_title }}</h2>{% endif %}
+          <ul class="lc-foot-contacts">
+            {{ contactRow(d.contact1_icon, d.contact1_title, d.contact1_text, d.contact1_url) }}
+            {{ contactRow(d.contact2_icon, d.contact2_title, d.contact2_text, d.contact2_url) }}
+            {{ contactRow(d.contact3_icon, d.contact3_title, d.contact3_text, d.contact3_url) }}
+            {{ contactRow(d.contact4_icon, d.contact4_title, d.contact4_text, d.contact4_url) }}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+
+    {# ═══════════ bottom bar ═══════════ #}
+    <div class="lc-foot-bar">
+      <div class="lc-foot-legal">
+        {# the year is written by script — a typed "© 2026" is wrong every January #}
+        <span>© <span data-lc-year>2026</span> {{ copyright }}</span>
+        {% if bottomMenu %}
+          {% for item in (bottomMenu.items if bottomMenu.items else bottomMenu) %}
+            <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }}>{{ item.title }}</a>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      {% if showPay %}
+        <div class="lc-foot-pay lc-footer-pay" role="list" aria-label="{{ t('footer.payments') }}">
+          {% if hasPayImg %}
+            {% if (payImg1 | length) > 0 %}<img src="{{ payImg1 }}" alt="" loading="lazy"/>{% endif %}
+            {% if (payImg2 | length) > 0 %}<img src="{{ payImg2 }}" alt="" loading="lazy"/>{% endif %}
+            {% if (payImg3 | length) > 0 %}<img src="{{ payImg3 }}" alt="" loading="lazy"/>{% endif %}
+          {% else %}
+            {% if d.pay_mada %}{% ui "payment-icons.njk", key='mada', label='mada' %}{% endif %}
+            {% if d.pay_visa %}{% ui "payment-icons.njk", key='visa', label='Visa' %}{% endif %}
+            {% if d.pay_mastercard %}{% ui "payment-icons.njk", key='mastercard', label='Mastercard' %}{% endif %}
+            {% if d.pay_amex %}{% ui "payment-icons.njk", key='amex', label='American Express' %}{% endif %}
+            {% if d.pay_applepay %}{% ui "payment-icons.njk", key='applepay', label='Apple Pay' %}{% endif %}
+            {% if d.pay_stcpay %}{% ui "payment-icons.njk", key='stcpay', label='STC Pay' %}{% endif %}
+            {% if d.pay_tabby %}{% ui "payment-icons.njk", key='tabby', label='Tabby' %}{% endif %}
+            {% if d.pay_tamara %}{% ui "payment-icons.njk", key='tamara', label='Tamara' %}{% endif %}
+            {% if d.pay_paypal %}{% ui "payment-icons.njk", key='paypal', label='PayPal' %}{% endif %}
+            {% if d.pay_cod %}{% ui "payment-icons.njk", key='cod', label=t('footer.cod') %}{% endif %}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if showLang %}
+        {% form 'lang' %}
+          <button type="submit" name="lang" value="{{ 'ar' if currentLang == 'en' else 'en' }}" class="lc-foot-lang" aria-label="{{ t('common.language') }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.3 2.3 3.4 5.2 3.4 8.5s-1.1 6.2-3.4 8.5c-2.3-2.3-3.4-5.2-3.4-8.5S9.7 5.8 12 3.5Z"/></svg>
+            <span class="{{ 'font-body' if currentLang == 'en' else 'font-body-en' }}">{{ 'العربية' if currentLang == 'en' else 'English' }}</span>
+          </button>
+        {% endform %}
+      {% endif %}
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var el = document.querySelector('#lc-footer-{{ id }} [data-lc-year]');
+    if (el) el.textContent = new Date().getFullYear();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#lc-footer-' ~ id, c=d %}

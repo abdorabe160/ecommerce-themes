@@ -1,0 +1,122 @@
+{#
+  ============================================================================
+  CUSTOMER REVIEWS · آراء العملاء — MUHARRIK
+  ----------------------------------------------------------------------------
+  A morva section head (mono kicker + display title) with a big mono RATING
+  READOUT on the end side (average of the blocks' ratings, star row, count),
+  over a looping row of dark hairline panels: yellow stars, display headline,
+  the text, then a square avatar + mono name with a status LED. Arrows sit on
+  the row's edges (HxLoop, assets/hx.js). Each review is a block; with none
+  yet, six demo reviews in the visitor's language (locales → reviews.*) with
+  CC0 avatars (assets/hx-avatar-N.jpg).
+
+  Styles: assets/sections.css → "CUSTOMER REVIEWS", re-voiced in assets/mh-content.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set items = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% if b.text or b.title %}
+    {% set av = mediaUrl(b.avatar) | trim %}
+    {% set _ = items.push({ title: b.title | default('', true), text: b.text | default('', true), name: b.name | default('', true), avatar: av, rating: b.rating | default(5) }) %}
+  {% endif %}
+{% endfor %}
+{% set demoReviews = (items | length) == 0 %}
+{% if demoReviews %}
+  {% for n in [1, 2, 3, 4, 5, 6] %}
+    {% set _ = items.push({ title: t('reviews.r' ~ n ~ '.title'), text: t('reviews.r' ~ n ~ '.text'), name: t('reviews.r' ~ n ~ '.name'), avatar: ('mh-build-' ~ n ~ '.jpg') | assets, rating: 5 }) %}
+  {% endfor %}
+{% endif %}
+
+{# ---- the readout: average rating to one decimal, count, padded index ---- #}
+{% set count = items | length %}
+{% set sum = 0 %}
+{% for r in items %}{% set sum = sum + (r.rating | float) %}{% endfor %}
+{% set avg = (sum / count) | round(1) if count > 0 else 0 %}
+{% set avgFull = avg | round(0, 'floor') | int %}
+{% set countLabel = t('common.reviews_count') | replace('{count}', (count ~ '')) %}
+
+{% set title = (d.title or t('reviews.title')) if d.show_title != false else '' %}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = countLabel %}{% endif %}
+{% set showReadout = d.show_readout != false %}
+
+<section id="hx-rv-{{ id }}"{% if demoReviews %} data-hy-empty{% endif %}
+         class="hx-rv {{ 'has-lines' if d.dividers != false }}"
+         style="--rv-per: {{ d.columns_desktop | default(5, true) }}; --rv-per-m: {{ d.columns_mobile | default('1.2', true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.band_bg %} --rv-band: {{ d.band_bg }};{% endif %}">
+  <div class="hx-rv-wrap {{ 'is-full' if d.full_width | default(true) }}">
+
+    {% if title or showReadout %}
+      <div class="mh-head hx-rv-head">
+        <div class="mh-head-main">
+          <span class="mh-kicker">{{ kicker | safe }}</span>
+          {% if title %}<h2 class="mh-h hx-rv-title">{{ title | safe }}</h2>{% endif %}
+        </div>
+        {% if showReadout %}
+          <div class="hx-rv-readout mh-hud" aria-label="{{ avg }}/5 · {{ countLabel | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}">
+            <span class="hx-rv-avg mh-mono"><bdi>{{ avg }}</bdi><small>/5</small></span>
+            <span class="hx-rv-readout-meta">
+              <span class="hx-rv-stars is-readout" aria-hidden="true">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" class="{{ 'is-on' if s < avgFull }}"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+              <span class="hx-rv-count mh-mono">{{ countLabel | safe }}</span>
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="hx-rv-rail">
+      <div class="hx-rv-viewport" data-hx-loop data-autoplay="{{ 'false' if d.autoplay == false else 'true' }}" data-interval="{{ d.interval | default(4, true) }}" data-pause="true">
+      <ul class="hx-rv-track" data-hx-loop-track role="list">
+        {% for r in items %}
+          <li class="hx-rv-item">
+            <div class="hx-rv-top">
+              <span class="hx-rv-idx mh-mono" aria-hidden="true"></span>
+              {% if d.show_stars != false %}
+                <span class="hx-rv-stars" aria-label="{{ r.rating }}/5">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" class="{{ 'is-on' if s < r.rating }}" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+              {% else %}
+                <span class="hx-rv-quote" aria-hidden="true">&rdquo;</span>
+              {% endif %}
+            </div>
+            {% if r.title %}<h3 class="hx-rv-head">{{ r.title | safe }}</h3>{% endif %}
+            {% if r.text %}<p class="hx-rv-text">{{ r.text | safe }}</p>{% endif %}
+            <div class="hx-rv-who">
+              {% if (r.avatar | length) > 0 %}<img class="hx-rv-avatar" src="{{ r.avatar }}" alt="" loading="lazy"/>
+              {% else %}<span class="hx-rv-avatar is-initial" aria-hidden="true">{{ r.name | default('?', true) | first }}</span>{% endif %}
+              {% if r.name %}<span class="hx-rv-name mh-led">{{ r.name | safe }}</span>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      </div>
+      {% if d.show_arrows != false %}
+        <button type="button" class="hx-fc-arrow hx-rv-arrow is-prev" data-rv-prev aria-label="{{ t('common.prev') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/></svg></button>
+        <button type="button" class="hx-fc-arrow hx-rv-arrow is-next" data-rv-next aria-label="{{ t('common.next') }}"><svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></button>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var root = document.getElementById('hx-rv-{{ id }}');
+      var vp = root && root.querySelector('[data-hx-loop]');
+      if (!vp || !window.HxLoop) return;
+      HxLoop.init(vp);
+      var api = vp.__hxLoopApi;
+      var p = root.querySelector('[data-rv-prev]'), n = root.querySelector('[data-rv-next]');
+      if (p) p.addEventListener('click', function () { api.prev(); });
+      if (n) n.addEventListener('click', function () { api.next(); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-rv-' ~ id, c=d %}

@@ -1,0 +1,20 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# الرقم من الويدجت، وإلا من رابط/رقم واتساب في إعدادات الثيم (التواصل الاجتماعي) — أرقام فقط (wa.me/2010… أو +20 10…) #}
+{% set raw = (wd.phone_number or settings.socialWhatsapp or '') | string %}
+{% if 'wa.me/' in raw %}{% set raw = raw.split('wa.me/')[1].split('?')[0] %}{% elif 'phone=' in raw %}{% set raw = raw.split('phone=')[1].split('&')[0] %}{% endif %}
+{% set num = raw | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') | replace('/', '') | trim %}
+{% set msg = wd['message' + L] or wd.message %}
+{% set label = wd['label' + L] or wd.label %}
+{% if num and wd.enabled != false %}
+  <a href="https://wa.me/{{ num }}{% if msg %}?text={{ msg | urlencode }}{% endif %}"
+     target="_blank" rel="noopener noreferrer"
+     class="lg-wa lg-fab fixed z-30 {{ 'end-5 lg-wa--end' if wd.position == 'end' else 'start-5' }}{% if wd.mobile == false %} lg-wa--desktop{% endif %}{% if label %} lg-wa--label{% endif %} rounded-full shadow-lg hover:scale-105 transition-transform"
+     style="background: {{ wd.color | default('var(--wa-bg)', true) }}; color: {{ wd.icon_color | default('var(--wa-on)', true) }}"
+     aria-label="{{ label or t('common.chat_whatsapp') }}">
+    {% ui "icon.njk", name="whatsapp", cls="w-7 h-7 shrink-0" %}
+    {% if label %}<span class="lg-wa__label">{{ label }}</span>{% endif %}
+  </a>
+{% endif %}

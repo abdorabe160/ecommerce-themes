@@ -1,0 +1,119 @@
+{#
+  ============================================================================
+  COLLECTIONS GRID · شبكة التصنيفات  — /collections
+  ----------------------------------------------------------------------------
+  Same frame as the shop page: banner band, breadcrumb, title, a bar with the
+  count and a sort, then a full-width grid of collection cards (tinted tile,
+  picture, name, products count, "shop").
+
+  ⚠️ `data-hy-coll*` on every card is read by HayatAuto.collections()
+  (main.js): Qumra has no collections endpoint, so this page IS the list the
+  home page's empty collection pickers borrow from. Keep those attributes.
+
+  No collections → six demo cards (theme pictures) so it never looks empty.
+  Styles: assets/sections.css → "COLLECTIONS GRID" (+ .hx-shop-banner, .hx-crumbs).
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# hidden collections reach this list too: salesChannels.onlineStore false, or deleted #}
+{% set cols = [] %}
+{% for c in context.collections | default([]) %}{% if not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}{% endfor %}
+{% set count = cols | length %}
+{% set title = d.title or t('clx.title') %}
+{% set desc = d.description or t('clx.sub') %}
+{% set showCount = d.show_count != false %}
+
+{% macro mUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="hx-cx-{{ id }}"
+         class="hx-cx {{ 'is-zoom' if d.hover_zoom != false }} is-r-{{ d.image_ratio | default('square') }} is-fit-{{ d.image_fit | default('cover') }}"
+         style="--cl-cols: {{ d.columns_desktop | default(5) }}; --cl-cols-m: {{ d.columns_mobile | default('2') }}; --pt: {{ d.padding_top if d.padding_top is defined else 8 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 48 }}px;"
+         x-data="{ sort: 'def', open: false,
+                   apply() { var g = this.$refs.grid; var items = [].slice.call(g.children);
+                     items.sort((a, b) => this.sort === 'az' ? a.dataset.hyCollTitle.localeCompare(b.dataset.hyCollTitle)
+                       : this.sort === 'many' ? (+b.dataset.hyCollCount) - (+a.dataset.hyCollCount)
+                       : (+a.dataset.i) - (+b.dataset.i));
+                     items.forEach(function (el) { g.appendChild(el); }); } }">
+  <div class="hx-cx-wrap">
+    {% if d.show_banner != false %}
+      {% set bnImg = mUrl(d.banner_image) | trim %}
+      <a href="{{ d.banner_url | default('/shop') }}" class="hx-shop-banner">
+        <img src="{{ bnImg if (bnImg | length) else ('pg-demo-2.jpg' | assets) }}" alt="" fetchpriority="high"/>
+        <span class="hx-shop-banner-txt">
+          <b>{{ (d.banner_title or t('clx.banner_title')) | safe }}</b>
+          <span>{{ (d.banner_text or t('clx.banner_text')) | safe }}</span>
+        </span>
+      </a>
+    {% endif %}
+
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-crumbs" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+        <span aria-current="page">{{ title | replace('<', ' <') | striptags }}</span>
+      </nav>
+    {% endif %}
+
+    {% if d.show_heading != false %}
+      <header class="hx-cx-head">
+        <h1 class="hx-cx-h">{{ title | safe }}</h1>
+        {% if desc %}<div class="hx-cx-sub">{{ desc | safe }}</div>{% endif %}
+      </header>
+    {% endif %}
+
+    {% if d.show_toolbar != false %}
+      <div class="hx-cx-bar">
+        {% if count > 0 %}<span class="hx-cx-count">{% ui "count.njk", n=count, kind='collection' %}</span>{% endif %}
+        {% if count > 1 %}
+          <div class="hy-sort hx-cx-sort" @click.outside="open = false" @keydown.escape="open = false">
+            <button type="button" class="hy-shop-btn" @click="open = !open" aria-label="{{ t('clx.sort') }}" :aria-expanded="open ? 'true' : 'false'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/></svg>
+              <span data-l-def="{{ t('clx.sort') }}" data-l-az="{{ t('clx.s_az') }}" data-l-many="{{ t('clx.s_many') }}" x-text="sort === 'def' ? $el.dataset.lDef : (sort === 'az' ? $el.dataset.lAz : $el.dataset.lMany)">{{ t('clx.sort') }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="hy-sort-menu" x-show="open" x-cloak
+                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
+              {% for o in [['def', t('clx.s_def')], ['az', t('clx.s_az')], ['many', t('clx.s_many')]] %}
+                <button type="button" :class="sort === '{{ o[0] }}' && 'is-active'" @click="sort = '{{ o[0] }}'; open = false; apply()">
+                  <span>{{ o[1] }}</span>
+                  <svg x-show="sort === '{{ o[0] }}'" x-cloak width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="hx-cx-grid hx-cxd{{ d.columns_desktop | default(5) }} hx-cxm{{ d.columns_mobile | default('2') }}" x-ref="grid">
+      {% if count > 0 %}
+        {% for c in cols %}
+          {% set url = '/shop/' ~ (c.slug | default(c.handle) | default(c._id)) %}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl else '' %}
+          <a href="{{ url }}" class="hx-cx-card" data-i="{{ loop.index }}"
+             data-hy-coll data-hy-coll-title="{{ c.title }}" data-hy-coll-url="{{ url }}"
+             data-hy-coll-img="{{ img }}" data-hy-coll-count="{{ c.productsCount | default(0) }}">
+            <span class="hx-cx-media">
+              <img src="{{ img if img else (['hx-cg-4.webp', 'hx-cg-5.webp', 'hx-cg-1.webp', 'hx-cg-2.webp', 'hx-cg-3.webp', 'hx-cg-6.webp'][loop.index0 % 6] | assets) }}" alt="" loading="lazy" {% if not img %}class="is-demo"{% endif %}/>
+            </span>
+            <span class="hx-cx-name" dir="auto">{{ c.title }}</span>
+            <span class="hx-cx-meta">
+              {% if showCount and c.productsCount %}<span>{% ui "count.njk", n=c.productsCount, kind='product' %}</span>{% endif %}
+              <span class="hx-cx-go">{{ t('clx.shop') }} <svg class="rtl-flip" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span>
+            </span>
+          </a>
+        {% endfor %}
+      {% else %}
+        {% for n in [1, 2, 3, 4, 5, 6] %}
+          <a href="/shop" class="hx-cx-card" data-hx-demo data-i="{{ n }}" data-hy-coll-title="{{ t('clx.demo.c' ~ n) }}" data-hy-coll-count="0">
+            <span class="hx-cx-media"><img class="is-demo" src="{{ ['hx-cg-4.webp', 'hx-cg-5.webp', 'hx-cg-1.webp', 'hx-cg-2.webp', 'hx-cg-3.webp', 'hx-cg-6.webp'][n - 1] | assets }}" alt="" loading="lazy"/></span>
+            <span class="hx-cx-name">{{ t('clx.demo.c' ~ n) }}</span>
+            <span class="hx-cx-meta"><span class="hx-cx-go">{{ t('clx.shop') }} <svg class="rtl-flip" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span></span>
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% if count == 0 %}<div class="hy-empty hx-live-only"><span class="hy-empty-title">{{ t('categories.no_categories_desc') }}</span></div>{% endif %}
+  </div>
+</section>

@@ -1,0 +1,349 @@
+{#
+  ============================================================================
+  MORVA · PRODUCT PAGE
+  ----------------------------------------------------------------------------
+  ← SHOP crumb · 5/7 grid: sticky gallery (Swiper + thumbs, tap to zoom) |
+  kicker · name · price · options · qty + ADD TO BAG + BUY NOW · details ·
+  info panels · perks · SKU/share. Then related pieces and a sticky buy bar
+  that appears once the buy row scrolls away.
+
+  All buying logic is HayatVariants() in main.js (shared with quick view):
+  a variant is resolved from the option values the shopper picks, nothing is
+  pre-selected, and the add posts `options: [valueIds]` — the only shape the
+  cart endpoint resolves a variant from.
+
+  Blocks:
+    panel  { title, source: description|custom, text, open_by_default }
+    perk   { text }   → the small red-square list under the buy row
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set p = context.product %}
+{% set blocks = widget.blocks | default([]) %}
+{# Live stores send `context.related_products` (measured 2026-11-02 on
+   madar.qumra.store); `related` is kept as a fallback. #}
+{% set related = context.related_products or context.related or [] %}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+
+{% if p %}
+{% set images = p.images | default([]) %}
+{% set imgCount = images | length %}
+{% set pCols = p.collections | default([]) %}
+{% set pCol = pCols[0] if (pCols | length) > 0 else null %}
+{% set pColTitle = (pCol.title | default('')) if pCol and pCol.title else '' %}
+{% set pColSlug = (pCol.slug | default(pCol.handle) | default('')) if pCol else '' %}
+{% set hasDiscount = p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{% set ratio = d.image_ratio | default('1x1') %}
+{% set ratioVal = {'1x1': '1 / 1', '4x5': '4 / 5', '3x4': '3 / 4', '2x3': '2 / 3'}[ratio] | default('1 / 1') %}
+{% set showZoom = d.show_zoom | default(true) %}
+
+{% set panels = [] %}
+{% set perks = [] %}
+{# Block settings arrive on `block.data` (the docs say `block.settings`, so
+   both are read). A perk is told apart by its own `perk` field rather than by
+   the block's type key, which the template does not reliably receive. #}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings) | default({}) %}
+  {% if bd.perk %}
+    {% set _ = perks.push(bd.perk) %}
+  {% elif bd.title %}
+    {% set _ = panels.push(bd) %}
+  {% endif %}
+{% endfor %}
+
+<section id="mv-pdp-{{ id }}" class="mv-section" x-data="productPage_{{ id }}()">
+
+  <nav class="mv-crumb" aria-label="breadcrumb">
+    <a href="/shop">{{ t('morva.back_to_shop') }}</a>
+    {% if pColTitle %}
+      <span class="mv-crumb-sep" aria-hidden="true">/</span>
+      <a href="{{ ('/shop/' ~ pColSlug) if pColSlug else '/shop' }}">{{ pColTitle }}</a>
+    {% endif %}
+    <span class="mv-crumb-sep" aria-hidden="true">/</span>
+    <span aria-current="page">{{ p.title }}</span>
+  </nav>
+
+  <div class="mv-pdp">
+    {# ── gallery ── #}
+    <div class="mv-pdp-media">
+      <div class="mv-gallery" style="--pdp-ratio: {{ ratioVal }};">
+        <div class="mv-gallery-main">
+          {% if hasDiscount %}
+            {% set pct = (((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice) * 100) | round(0, 'floor') %}
+            <span class="mv-tag mv-tag--sale">{{ ('−' ~ pct ~ '%') if pct > 0 else t('common.on_sale') }}</span>
+          {% endif %}
+          <div class="swiper" x-ref="main" dir="{{ 'rtl' if isAr else 'ltr' }}">
+            <div class="swiper-wrapper">
+              {% if imgCount > 0 %}
+                {% for img in images %}
+                  <a class="swiper-slide mv-gallery-slide {{ 'glightbox' if showZoom }}"
+                     {% if showZoom %}href="{{ img.fileUrl }}" data-gallery="pdp-{{ id }}"{% else %}href="#" @click.prevent{% endif %}
+                     aria-label="{{ p.title }} {{ loop.index }}">
+                    <img src="{{ img.fileUrl }}" alt="{{ p.title }}" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                  </a>
+                {% endfor %}
+              {% else %}
+                <div class="swiper-slide mv-gallery-slide"><span class="mv-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/><path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span></div>
+              {% endif %}
+            </div>
+            {% if imgCount > 1 %}
+              <div class="swiper-button-prev" aria-label="{{ t('common.prev') }}"></div>
+              <div class="swiper-button-next" aria-label="{{ t('common.next') }}"></div>
+            {% endif %}
+          </div>
+        </div>
+        {% if imgCount > 1 %}
+          <div class="swiper mv-thumbs" x-ref="thumbs" dir="{{ 'rtl' if isAr else 'ltr' }}">
+            <div class="swiper-wrapper">
+              {% for img in images %}
+                <div class="swiper-slide"><img src="{{ img.fileUrl }}" alt="" loading="lazy"/></div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── info ── #}
+    <div class="mv-pdp-info">
+      <div class="mv-pdp-head">
+        <div class="mv-pdp-kicker">{{ pColTitle if pColTitle else (d.kicker | default(store.name, true)) }}</div>
+        <h1 class="mv-pdp-name">{{ p.title }}</h1>
+        <div class="mv-price mv-pdp-price">
+          <s class="mv-was" x-show="hasDiscount()" {% if not hasDiscount %}x-cloak{% endif %} x-text="displayComparePrice()">{% if hasDiscount %}{{ p.pricing.compareAtPrice | money }}{% endif %}</s>
+          <span x-text="displayPrice()">{% if (p.pricing.price | default(0)) == 0 %}{{ t('common.free') }}{% else %}{{ p.pricing.price | default(0) | money }}{% endif %}</span>
+          <span class="mv-pdp-save" x-show="hasDiscount() && discountPercent > 0" x-cloak>−<span x-text="discountPercent"></span>%</span>
+        </div>
+        <p class="mv-pdp-unit" x-show="qty > 1" x-cloak><bdi x-text="displayUnitPrice()"></bdi><span aria-hidden="true">×</span><bdi x-text="qty"></bdi></p>
+      </div>
+
+      {% set optCount = 0 %}
+      {% for option in p.options %}{% if (option.values | length) > 0 %}{% set optCount = optCount + 1 %}{% endif %}{% endfor %}
+      {% if optCount > 0 %}
+        <div class="mv-pdp-block">
+          {% for option in p.options %}
+            {% if (option.values | length) > 0 %}
+              {% set isColor = option.type == 'color' or (option.name | lower) in ['color', 'colour', 'colors', 'colours', 'اللون', 'لون', 'الألوان', 'ألوان', 'الالوان', 'الوان'] %}
+              <div class="mv-opt">
+                <div class="mv-opt-label">
+                  <span>{{ option.name }}</span>
+                  <span class="mv-opt-pick" data-opt="{{ option.name }}" x-text="selectedLabels[$el.dataset.opt] || ''"></span>
+                </div>
+                <div class="mv-opt-values" role="group" aria-label="{{ option.name }}">
+                  {% for v in option.values %}
+                    {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+                    {% set vHex = v.value if v.value and (v.value | string).indexOf('#') == 0 else '' %}
+                    <button type="button"
+                            class="mv-optchip{{ ' mv-optchip--swatch' if isColor or vImg }}"
+                            data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                            :class="{
+                              'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val,
+                              'is-off': valueDisabled($el.dataset.opt, $el.dataset.val)
+                            }"
+                            :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                            :aria-pressed="selectedOptions[$el.dataset.opt] === $el.dataset.val ? 'true' : 'false'"
+                            @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)">
+                      {% if isColor or vImg %}
+                        <span class="mv-swatch-dot" data-swatch="{{ v.label }}" {% if vHex %}style="background: {{ vHex }};"{% endif %}>{% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% endif %}</span>
+                      {% endif %}
+                      {{ v.label }}
+                    </button>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="mv-pdp-block" id="mvBuy-{{ id }}">
+        <div>
+          <span class="mv-stock mv-stock--out" x-show="isOutOfStock" x-cloak>{{ t('pages.product.out_of_stock') }}</span>
+          <span class="mv-stock mv-stock--low" x-show="!isOutOfStock && availableNow() === 0" x-cloak>{{ t('pages.product.all_in_cart') }}</span>
+          <span class="mv-stock mv-stock--low" x-show="!isOutOfStock && availableNow() !== null && availableNow() > 0 && availableNow() <= lowStockAt()" x-cloak x-text="lowStockText()"></span>
+          <span class="mv-stock mv-stock--in" x-show="!isOutOfStock && (availableNow() === null || availableNow() > lowStockAt())">{{ t('pages.product.in_stock') }}</span>
+        </div>
+
+        <div class="mv-buyrow">
+          <div class="mv-qty mv-qty--lg" role="group" aria-label="{{ t('morva.quantity') }}">
+            <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="{{ t('morva.decrease') }}">−</button>
+            <span class="mv-qty-val" x-text="qty">1</span>
+            <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="{{ t('morva.increase') }}">+</button>
+          </div>
+          <button type="button" class="mv-btn" @click="addToCart()" :disabled="addDisabled()">
+            <span x-show="addingToCart" x-cloak class="mv-spinner"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }} ✓</span>
+            <span x-show="!addingToCart && !addedSuccess">
+              <span x-show="!isOutOfStock">{{ t('morva.add_to_bag') }}</span>
+              <span x-show="isOutOfStock" x-cloak>{{ t('morva.sold_out') }}</span>
+            </span>
+          </button>
+          <button type="button" class="mv-btn mv-btn--outline" @click="buyNow()" :disabled="addDisabled()">{{ t('morva.buy_now') }}</button>
+        </div>
+
+        <span class="mv-hint" x-show="!selectionComplete() && !isOutOfStock && !formError" {% if optCount == 0 %}x-cloak{% endif %}>{{ t('morva.select_prompt') }}</span>
+        <p class="mv-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+        {% if d.oos_note %}
+          <div class="mv-oos-note" x-show="isOutOfStock" x-cloak>
+            <span class="mv-oos-badge">{{ t('morva.sold_out') }}</span>
+            <div class="mv-oos-text">{{ d.oos_note | safe }}</div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if p.description and (d.show_description | default(true)) %}
+        <div class="mv-pdp-block" style="gap: 10px;">
+          <div class="mv-desc-label">{{ t('morva.details') }}</div>
+          <div class="mv-prose">{{ p.description | safe }}</div>
+        </div>
+      {% endif %}
+
+      {% for b in panels %}
+        {% set body = p.description if b.source == 'description' else (b.text | default('')) %}
+        {% if b.title and body %}
+          <div class="mv-panel" x-data="{ open: {{ 'true' if b.open_by_default else 'false' }} }">
+            <button type="button" class="mv-panel-head" @click="open = !open" :aria-expanded="open ? 'true' : 'false'">
+              <span>{{ b.title }}</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1.4"/></svg>
+            </button>
+            <div class="mv-panel-body mv-prose" x-show="open" x-collapse {% if not b.open_by_default %}x-cloak{% endif %}>{{ body | safe }}</div>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {% if (perks | length) > 0 %}
+        <ul class="mv-perks">
+          {% for perk in perks %}<li>{{ perk }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="mv-pdp-meta">
+        <span x-show="currentSku" {% if not p.sku %}x-cloak{% endif %}>{{ t('pages.product.sku') }}: <span x-text="currentSku">{{ p.sku | default('') }}</span></span>
+        <button type="button" class="mv-share" @click="share()" x-text="shared ? copiedText : shareText">{{ t('pages.product.share') }}</button>
+      </div>
+    </div>
+  </div>
+
+  {% set relLimit = d.related_limit | default(4) %}
+  {% set shownRel = [] %}
+  {% for rp in related %}{% if rp._id != p._id and (shownRel | length) < relLimit %}{% set _ = shownRel.push(rp) %}{% endif %}{% endfor %}
+  {% if (shownRel | length) > 0 and (d.show_related | default(true)) %}
+    <div class="mv-related">
+      <div class="mv-head">
+        <div>
+          <div class="mv-kicker">— {{ t('morva.related_kicker') }}</div>
+          <h2 class="mv-h">{{ d.related_title | default(t('morva.related_heading'), true) }}</h2>
+        </div>
+      </div>
+      <div class="mv-grid mv-grid--four{{ ' mv-grid--sparse' if (shownRel | length) <= 2 }}" data-mv-stagger>
+        {% for rp in shownRel %}{% ui "product-card.njk", product=rp %}{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="mv-stickybar" :class="showBar && 'is-on'" aria-hidden="true">
+    <div class="mv-stickybar-info">
+      <span class="mv-stickybar-name">{{ p.title }}</span>
+      <span class="mv-price"><span x-text="displayPrice()"></span></span>
+    </div>
+    <button type="button" class="mv-btn" tabindex="-1" @click="scrollToBuy()">
+      <span x-show="!isOutOfStock">{{ t('morva.buy_now') }}</span>
+      <span x-show="isOutOfStock" x-cloak>{{ t('morva.sold_out') }}</span>
+    </button>
+  </div>
+</section>
+
+{% set ldStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ p.title | default('', true) | dump | safe }},
+  {% if imgCount > 0 %}"image": [{% for img in images %}{{ img.fileUrl | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": {{ (p.description | default('', true) | replace('</p>', '</p> ') | replace('</li>', '</li> ') | replace('</h2>', '</h2> ') | replace('<br', ' <br') | striptags | truncate(300)) | dump | safe }},
+  {% if p.sku %}"sku": {{ p.sku | dump | safe }},{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "url": {{ ((store.url | default('', true)) ~ '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true))) | dump | safe }},
+    "priceCurrency": {{ (localization.currency.currencyCode | default('EGP')) | dump | safe }},
+    "price": "{{ p.pricing.price | default(0, true) }}",
+    "availability": "https://schema.org/{{ 'InStock' if ldStock else 'OutOfStock' }}"
+  }
+}
+</script>
+
+<script>
+  (function () {
+    var wid = '{{ id }}';
+    window['productPage_' + wid] = function () {
+      return Object.assign(window.HayatVariants({
+        productId: '{{ p._id }}',
+        sku: {{ (p.sku | default('', true)) | dump | safe }},
+        price: {{ p.pricing.price | default(0, true) }},
+        compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+        quantity: {{ p.quantity | default(0, true) }},
+        trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+        allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+        groups: [
+          {% for option in p.options %}{% if (option.values | length) > 0 %}
+          { name: {{ option.name | default('', true) | dump | safe }},
+            values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ v.label | default('', true) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] },
+          {% endif %}{% endfor %}
+        ],
+        variants: [
+          {% for variant in p.variants %}
+          {% set vRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else '' %}
+          {% set vImgId = (vRaw._id if vRaw._id else vRaw) | string %}
+          {% set hit = [] %}
+          {% for img in images %}{% if vImgId and (img._id | string) == vImgId %}{% set _ = hit.push(loop.index0) %}{% endif %}{% endfor %}
+          {
+            id: '{{ variant._id }}',
+            imageIndex: {{ hit[0] if (hit | length) > 0 else -1 }},
+            price: {{ variant.pricing.price | default(p.pricing.price, true) | default(0, true) }},
+            compareAtPrice: {{ variant.pricing.compareAtPrice | default(p.pricing.compareAtPrice, true) | default(0, true) }},
+            sku: {{ (variant.sku | default('', true)) | dump | safe }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            available: {{ (variant.inventoryLevel.available if (variant.inventoryLevel and variant.inventoryLevel.available is defined) else variant.quantity) | default(0, true) }},
+            trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            options: {{ variant.options | default([], true) | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+        strings: {
+          selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+          comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+          maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+          outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+          variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+          addError:           {{ t('common.error') | dump | safe }},
+          listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+        }
+      }), window.MorvaGallery({
+        wid: wid,
+        imageCount: {{ images | length }},
+        zoom: {{ 'true' if showZoom and imgCount > 0 else 'false' }},
+        title: {{ p.title | default('', true) | dump | safe }},
+        shareText: {{ t('pages.product.share') | dump | safe }},
+        copiedText: {{ t('pages.blog.copied') | dump | safe }},
+        lowStock: {{ t('pages.product.low_stock') | dump | safe }},
+        stickyBar: true
+      }));
+    };
+  })();
+</script>
+{% else %}
+{#- No product in the context (deleted, unpublished, mistyped link): the page
+    used to render nothing at all — no heading, no way on. -#}
+<section class="mv-section mv-404">
+  <div class="mv-kicker">— {{ t('morva.lost') }}</div>
+  <h1 class="mv-h">{{ t('pages.404.title') }}</h1>
+  <div class="mv-404-text">{{ t('pages.404.message') }}</div>
+  <div class="mv-404-links">
+    <a href="/shop" class="mv-btn">{{ t('morva.all_pieces') }}</a>
+    <a href="/" class="mv-btn mv-btn--ghost">{{ t('common.home') }}</a>
+  </div>
+</section>
+{% endif %}

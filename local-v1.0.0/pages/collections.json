@@ -1,0 +1,46 @@
+{
+  "name": "التصنيفات",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة التصنيفات",
+      "widget": "collections-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "تصفّح",
+        "title": "",
+        "description": "اختر القسم الذي تبحث عنه — من المخبوزات إلى الخضار والفاكهة.",
+        "show_count": true,
+        "card_ratio": "3x4",
+        "columns_desktop": "3",
+        "columns_mobile": "2",
+        "meta_label": "تصنيف",
+        "more_text": "تسوّق",
+        "background": "white",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "title": "",
+        "layout": "inline",
+        "dividers": true,
+        "background": "none",
+        "icon_size": 30,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

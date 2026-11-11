@@ -1,0 +1,220 @@
+{
+  "name": "شبكة التصنيفات",
+  "settings": {
+    "show_banner": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ اللافتة العلوية",
+        "en": "▸ Top banner"
+      },
+      "default": true
+    },
+    "banner_image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة اللافتة",
+        "en": "Banner picture"
+      }
+    },
+    "banner_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان اللافتة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Banner title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "banner_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص اللافتة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Banner text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "banner_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط اللافتة",
+        "en": "Banner link"
+      },
+      "default": "/shop"
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "مسار التنقل",
+        "en": "Breadcrumb"
+      },
+      "default": true
+    },
+    "show_heading": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عنوان الصفحة",
+        "en": "▸ Page title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": ""
+    },
+    "show_toolbar": {
+      "type": "boolean",
+      "label": {
+        "ar": "شريط العدد والترتيب",
+        "en": "Count and sort bar"
+      },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد الأعمدة — كمبيوتر",
+        "en": "Columns — desktop"
+      },
+      "default": 5,
+      "min": 3,
+      "max": 6,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — موبايل",
+        "en": "Columns — phone"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "1",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الصورة",
+        "en": "Picture shape"
+      },
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولية",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "wide",
+          "label": {
+            "ar": "عريضة",
+            "en": "Wide"
+          }
+        }
+      ]
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "عرض الصورة",
+        "en": "Picture fit"
+      },
+      "default": "cover",
+      "options": [
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ البطاقة",
+            "en": "Fill the card"
+          }
+        },
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة على خلفية",
+            "en": "Whole, on a tint"
+          }
+        }
+      ]
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "عدد المنتجات في كل تصنيف",
+        "en": "Products count per collection"
+      },
+      "default": true
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند مرور الماوس",
+        "en": "Zoom on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 8,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 48,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "presets": [
+    {
+      "category": "التصنيفات",
+      "name": "شبكة التصنيفات"
+    }
+  ]
+}

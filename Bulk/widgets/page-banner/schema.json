@@ -1,0 +1,41 @@
+{
+  "name": "بانر عنوان الصفحة",
+  "description": "عنوان الصفحة مع مسار التنقل وتوهج أحمر، والعنوان بيتاخد تلقائياً من التصنيف أو المقال لو سبته فاضي",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "العنوان (سيبه فاضي عشان يتاخد تلقائياً)",
+      "default": ""
+    },
+    "subtitle": {
+      "type": "string",
+      "label": "وصف قصير تحت العنوان",
+      "default": ""
+    },
+    "background_image": {
+      "type": "media",
+      "label": "صورة خلفية (اختياري)"
+    },
+    "height": {
+      "type": "select",
+      "label": "ارتفاع البانر",
+      "options": [
+        { "label": "صغير", "value": "sm" },
+        { "label": "متوسط", "value": "md" },
+        { "label": "كبير", "value": "lg" }
+      ],
+      "default": "md"
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": "إظهار مسار التنقل",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "name": "بانر عنوان الصفحة (Dark Blood)",
+      "category": "عام"
+    }
+  ]
+}

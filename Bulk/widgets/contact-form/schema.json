@@ -1,0 +1,23 @@
+{
+  "name": "نموذج التواصل",
+  "description": "بيانات التواصل من إعدادات الثيم + نموذج رسالة (بيتبعت لرابط النموذج اللي تحطه، أو بالإيميل)",
+  "settings": {
+    "title": { "type": "string", "label": { "ar": "العنوان", "en": "Title" }, "default": "" },
+    "title_en": { "type": "string", "label": { "ar": "العنوان (إنجليزي)", "en": "Title (English)" }, "default": "" },
+    "text": { "type": "string", "label": { "ar": "النص", "en": "Text" }, "default": "" },
+    "text_en": { "type": "string", "label": { "ar": "النص (إنجليزي)", "en": "Text (English)" }, "default": "" },
+    "form_action": { "type": "string", "label": { "ar": "رابط استقبال الرسائل (Formspree / Getform …) — فاضي = يفتح بريد العميل لإيميل المتجر", "en": "Form endpoint (Formspree / Getform …) — empty opens the customer's mail app to the store email" }, "default": "" },
+    "button_text": { "type": "string", "label": { "ar": "نص الزر", "en": "Button text" }, "default": "" },
+    "button_text_en": { "type": "string", "label": { "ar": "نص الزر (إنجليزي)", "en": "Button text (English)" }, "default": "" },
+    "heading_tag": {
+      "type": "select",
+      "label": { "ar": "نوع العنوان", "en": "Heading level" },
+      "options": [
+        { "value": "h1", "label": { "ar": "H1 (عنوان الصفحة)", "en": "H1 (page title)" } },
+        { "value": "h2", "label": { "ar": "H2 (سكشن)", "en": "H2 (section)" } }
+      ],
+      "default": "h2"
+    }
+  },
+  "presets": [ { "category": "عام", "name": "نموذج التواصل" } ]
+}

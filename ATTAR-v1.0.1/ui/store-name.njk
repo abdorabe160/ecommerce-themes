@@ -1,0 +1,9 @@
+{#- Store name, shortened to its first 3 words (full name goes in the caller's title=).
+    One rule for header, footer and sidebar. -#}
+{%- set storeName = (store.name or 'ATTAR') | trim -%}
+{%- set nameWords = (storeName | replace('  ', ' ')).split(' ') -%}
+{#- Arabic names never get the wordmark's letter-spacing (it breaks joined letters) -#}
+{%- set isAr = (storeName | upper) == (storeName | lower) -%}
+{%- if isAr %}<span class="attar-ar">{% endif -%}
+{%- if nameWords | length > 3 -%}{{ nameWords.slice(0, 3).join(' ') }}…{%- else -%}{{ storeName }}{%- endif -%}
+{%- if isAr %}</span>{% endif -%}

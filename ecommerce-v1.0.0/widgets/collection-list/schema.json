@@ -1,0 +1,531 @@
+{
+  "name": "قائمة التصنيفات",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "panel_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية اللوحة (وفي الشريط: لون مربعات التصنيفات)",
+        "en": "Panel background (strip: tile colour)"
+      },
+      "default": ""
+    },
+    "tile_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية بطاقات التصنيفات",
+        "en": "Collection tiles background"
+      },
+      "default": ""
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل القسم",
+        "en": "▸ Section layout"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "النص في بداية السطر والتصنيفات بعده",
+            "en": "Text first, collections after"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "التصنيفات أولًا والنص بعدها",
+            "en": "Collections first, text after"
+          }
+        },
+        {
+          "value": "strip",
+          "label": {
+            "ar": "شريط تصنيفات — صورة منتج فوق مربع ملوّن (حتى 12)",
+            "en": "Category strip — product picture over a tinted tile (up to 12)"
+          }
+        }
+      ]
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Small line above the title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_features": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ قائمة المميزات",
+        "en": "▸ Feature list"
+      },
+      "default": true
+    },
+    "icon_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية أيقونات المميزات",
+        "en": "Feature icon background"
+      },
+      "default": ""
+    },
+    "feature1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الميزة 1 — الأيقونة",
+        "en": "Feature 1 — icon"
+      },
+      "default": "shield",
+      "options": [
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان الجودة",
+            "en": "Quality guarantee"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "مركز خدمة",
+            "en": "Service centre"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "أفضل سعر",
+            "en": "Best price"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        }
+      ]
+    },
+    "feature1_text": {
+      "type": "string",
+      "label": {
+        "ar": "الميزة 1 — النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Feature 1 — text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "feature2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الميزة 2 — الأيقونة",
+        "en": "Feature 2 — icon"
+      },
+      "default": "truck",
+      "options": [
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان الجودة",
+            "en": "Quality guarantee"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "مركز خدمة",
+            "en": "Service centre"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "أفضل سعر",
+            "en": "Best price"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        }
+      ]
+    },
+    "feature2_text": {
+      "type": "string",
+      "label": {
+        "ar": "الميزة 2 — النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Feature 2 — text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "feature3_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الميزة 3 — الأيقونة",
+        "en": "Feature 3 — icon"
+      },
+      "default": "support",
+      "options": [
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان الجودة",
+            "en": "Quality guarantee"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "مركز خدمة",
+            "en": "Service centre"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "أفضل سعر",
+            "en": "Best price"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        }
+      ]
+    },
+    "feature3_text": {
+      "type": "string",
+      "label": {
+        "ar": "الميزة 3 — النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Feature 3 — text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "feature4_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الميزة 4 — الأيقونة",
+        "en": "Feature 4 — icon"
+      },
+      "default": "tag",
+      "options": [
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان الجودة",
+            "en": "Quality guarantee"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "مركز خدمة",
+            "en": "Service centre"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "أفضل سعر",
+            "en": "Best price"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        }
+      ]
+    },
+    "feature4_text": {
+      "type": "string",
+      "label": {
+        "ar": "الميزة 4 — النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Feature 4 — text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_button": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الزر",
+        "en": "▸ Button"
+      },
+      "default": true
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Button text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر — مثال: /pages/about",
+        "en": "Button link — e.g. /pages/about"
+      },
+      "default": "/collections"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "▸ التصنيفات المعروضة (8، أو 12 في الشريط) — فارغ = تصنيفات تجريبية بصور",
+        "en": "▸ Collections shown (8, or 12 in the strip) — empty = demo tiles with pictures"
+      }
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد التصنيفات في الصف — كمبيوتر",
+        "en": "Collections per row — desktop"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 4,
+      "step": 1
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل صورة التصنيف",
+        "en": "Collection picture shape"
+      },
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولية",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "عرضية",
+            "en": "Landscape"
+          }
+        }
+      ]
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند مرور الماوس",
+        "en": "Zoom on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون الزر",
+        "en": "Button colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "قائمة التصنيفات"
+    }
+  ]
+}

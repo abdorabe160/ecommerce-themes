@@ -1,0 +1,55 @@
+{# ============================================================================
+   HADIYA · أسئلة عن الهدايا  (gift-faq) — engine E4
+   ----------------------------------------------------------------------------
+   ┌──────────────────────────────────────────┐
+   │ أسئلة عن الهدايا                         │
+   │ ▾ ينفع أكتب رسالة مع الهدية؟             │
+   │   الإجابة …                              │
+   │ ▸ بتوصل إمتى؟                            │
+   └──────────────────────────────────────────┘
+
+   Native <details>/<summary>: keyboard and screen-reader behaviour for free,
+   works before Alpine boots, and needs no JS at all. Answers are `text`
+   fields, so they arrive as <p> HTML — wrapped in a <div>, never a <p>.
+
+   Gift questions are where a shopper hesitates (wrapping, the message, the
+   delivery day). The answers are the merchant's policy, so the demo content
+   is written as prompts to fill, not as promises.
+
+   Styling: assets/theme.css → "gift-faq".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([], true) %}
+{% set openFirst = d.open_first | default(true) %}
+{% set bg = 'var(--hy-sec-bg, var(--color-bg-tertiary))' if d.background == 'well' else 'var(--hy-sec-bg, transparent)' %}
+
+<section id="hd-faq-{{ id }}"{% if (items | length) == 0 %} data-hy-empty{% endif %} class="hd-faq" style="background: {{ bg }};"
+         {% if d.title %}aria-labelledby="hd-faq-t-{{ id }}"{% endif %}>
+  <div class="hd-faq-in">
+    {% if d.title %}
+      <div class="hd-faq-head">
+        <h2 id="hd-faq-t-{{ id }}" class="hd-title">{{ d.title }}</h2>
+        {% if d.subtitle %}<p class="hd-sub">{{ d.subtitle }}</p>{% endif %}
+      </div>
+    {% endif %}
+    <div class="hd-faq-list">
+      {% for block in items %}{% set b = block.data %}
+        {% if b.question %}
+          <details class="hd-faq-item" {% if openFirst and loop.first %}open{% endif %}>
+            <summary class="hd-faq-q">
+              <span>{{ b.question }}</span>
+              <svg class="hd-faq-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            </summary>
+            {% if b.answer %}<div class="hd-faq-a">{{ b.answer | safe }}</div>{% endif %}
+          </details>
+        {% endif %}
+      {% else %}
+        <p class="hy-ph-hint">{{ t('common.placeholder_add') }}</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#hd-faq-' ~ id, c=d %}

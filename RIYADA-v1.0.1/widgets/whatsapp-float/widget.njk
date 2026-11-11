@@ -1,0 +1,20 @@
+{#- Floating WhatsApp button. The number lives in this widget (the footer's is that widget's
+    own data); renders nothing without one. Removable in the builder. -#}
+{% set d = widget.data %}
+{% set isEn = localization.language == 'en' %}
+{% set num = ((d.phone_number or '') ~ '') | trim | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') %}
+{% set msg = ((d.message_en if isEn else d.message) or '') | trim %}
+{% set label = ((d.label_en if isEn else d.label) or '') | trim %}
+{% if (num | length) >= 6 and d.enabled != false %}
+  <a href="https://wa.me/{{ num }}{% if msg %}?text={{ msg | urlencode }}{% endif %}"
+     target="_blank" rel="noopener noreferrer"
+     aria-label="{{ t('footer.whatsapp') }}"
+     class="riyada-fab riyada-fab--wa riyada-fab--{{ 'end' if d.position == 'end' else 'start' }}{{ ' riyada-fab--desktop' if d.show_on_mobile == false }}"
+     style="--fab-bg: {{ d.color | default('#0E7F5C', true) }}; --fab-fg: {{ d.icon_color | default('#FFFFFF', true) }};">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.5 20.5l1.3-4.2A8.4 8.4 0 1 1 8 19.4l-4.5 1.1Z"/>
+      <path stroke-linecap="round" d="M9 9.2c0 3 2.4 5.4 5.4 5.4"/>
+    </svg>
+    {% if label %}<span class="riyada-fab-label">{{ label }}</span>{% endif %}
+  </a>
+{% endif %}

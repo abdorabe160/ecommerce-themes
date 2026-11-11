@@ -1,0 +1,78 @@
+{# بوب أب "اختر الخيارات" — يفتح في نص الشاشة (بيكبر من مكان المنتج اللي اتداس عليه) من أزرار بطاقات المنتجات اللي ليها مقاسات/ألوان.
+   المنطق في main.js (mwQuickAdd + pickerMixin): توافق الخيارات مع المتغيرات المتوفرة، المخزون لكل متغير، وحد الكمية. #}
+{% set isAr = (localization.language | default('ar')) == 'ar' %}
+<div class="mw-drawer mw-quick" x-data="mwQuickAdd()" :class="{ 'is-open': $store.mw.quickOpen }" @keydown.escape.window="close()" role="dialog" aria-modal="true" aria-label="{{t('product.choose_options') | default('Choose options') }}">
+  <div class="mw-drawer__overlay" @click="close()"></div>
+  <div class="mw-drawer__panel">
+    <div class="mw-drawer__head">
+      <span class="mw-drawer__title">{{t('product.choose_options') | default('Choose options') }}</span>
+      <button type="button" class="mw-drawer__close" @click="close()" aria-label="{{t('common.close') | default('Close') }}">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="mw-quick__body">
+      <div class="mw-quick__loading" x-show="loading"><span class="mw-spinner"></span></div>
+
+      <div class="mw-quick__error" x-show="!loading && loadError" x-cloak>
+        <p>{{t('product.load_error') | default('Could not load the product options.') }}</p>
+        <a :href="url" class="mw-btn mw-btn--filled" style="border-radius:0">{{t('product.view_details') | default('View product details') }}</a>
+      </div>
+
+      <div class="mw-quick__layout" x-show="!loading && !loadError" x-cloak>
+        <a :href="url" class="mw-quick__img"><img :src="image" :alt="product.title" width="600" height="800"/></a>
+        <div class="mw-quick__info">
+          <div class="mw-quick__meta">
+            <a :href="url" class="mw-quick__title" x-text="product.title"></a>
+            <div class="mw-pdp__price">
+              <s x-show="onSale" x-text="$store.mw.money(compareAt)"></s>
+              <span :class="{ 'is-sale': onSale }" x-text="$store.mw.money(price)"></span>
+            </div>
+            <a :href="url" class="mw-quick__details">{{t('product.view_details') | default('View product details') }}</a>
+          </div>
+
+        <template x-for="(opt, oi) in options" :key="oi">
+          <template x-if="!isColor(opt) || opt.values.length > 1">
+          <fieldset class="mw-pdp__option" :class="{ 'has-error': optionError && selected[oi] == null }">
+            <legend class="mw-pdp__label"><span x-text="opt.name"></span><span class="mw-pdp__label-value" x-text="selectedLabel(oi)"></span></legend>
+            <div :class="isColor(opt) ? 'mw-pdp__swatches' : 'mw-pdp__sizes'">
+              <template x-for="(v, vi) in opt.values" :key="vi">
+                <button type="button"
+                        :class="[isColor(opt) ? 'mw-pdp__swatch' : 'mw-pdp__size', isSelected(oi, vi) ? 'is-active' : '', isAvailable(oi, vi) ? '' : 'is-unavailable']"
+                        :disabled="!isAvailable(oi, vi)" @click="choose(oi, vi)" :title="valueLabel(v)" :aria-label="valueLabel(v)">
+                  <template x-if="isColor(opt)">
+                    <span :style="'--sw:' + swatchColor(v)"></span>
+                  </template>
+                  <template x-if="!isColor(opt)">
+                    <span x-text="valueLabel(v)"></span>
+                  </template>
+                </button>
+              </template>
+            </div>
+          </fieldset>
+          </template>
+        </template>
+        <p class="mw-pdp__opt-error" x-show="optionError" x-text="optionError" role="alert"></p>
+
+        <p class="mw-stockmsg" :class="'mw-stockmsg--' + stockMessage.kind" x-show="stockMessage.text" x-text="stockMessage.text"></p>
+        <p class="mw-stockmsg mw-stockmsg--note" x-show="inCart > 0 && available > 0" x-text="inCartText"></p>
+
+        <div class="mw-pdp__buy">
+          <div class="mw-qty mw-pdp__qty" :class="{ 'is-disabled': soldOut }">
+            <button type="button" @click="dec()" :disabled="quantity <= 1" aria-label="{{t('cart.decrease') | default('Decrease quantity') }}">−</button>
+            <span x-text="quantity"></span>
+            <button type="button" @click="inc()" :disabled="soldOut || atMax" aria-label="{{t('cart.increase') | default('Increase quantity') }}">+</button>
+          </div>
+          <div class="mw-pdp__buttons">
+            <button type="button" class="mw-pdp__btn mw-pdp__btn--add" @click="go(false)" :disabled="soldOut || available <= 0 || resolving || $store.mw.isBusy('add:' + product._id)">
+              <span x-show="!soldOut">{{t('product.add_to_cart') | default('Add to cart') }}</span>
+              <span x-show="soldOut">{{t('product.sold_out') | default('Sold out') }}</span>
+            </button>
+            <button type="button" class="mw-pdp__btn mw-pdp__btn--buy" @click="go(true)" :disabled="soldOut || resolving || $store.mw.isBusy('add:' + product._id)">{{t('product.buy_now') | default('Buy now') }}</button>
+          </div>
+        </div>
+        </div>{# /.mw-quick__info #}
+      </div>{# /.mw-quick__layout #}
+    </div>
+  </div>
+</div>

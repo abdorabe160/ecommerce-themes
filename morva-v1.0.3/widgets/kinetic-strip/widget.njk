@@ -1,0 +1,14 @@
+{#
+  MORVA · KINETIC STRIP — a standalone strip of moving type, for any page.
+  The markup and motion are shared with the hero and the newsletter through
+  ui/kinetic.njk.
+#}
+{% set d = widget.data %}
+{% set stripText = d.text | default('') %}
+{% set stripSpeed = d.speed | default(28) %}
+{% set stripColor = d.color | default('') %}
+{% set isMuted = 'on' if d.style == 'muted' else 'off' %}
+{% set isSingle = 'on' if d.rows == 'one' else 'off' %}
+<section class="mv-kinetic" aria-hidden="true">
+  {% ui "kinetic.njk", text=stripText, speed=stripSpeed, color=stripColor, muted=isMuted, single=isSingle %}
+</section>

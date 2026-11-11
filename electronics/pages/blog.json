@@ -1,0 +1,16 @@
+{
+  "layout": "layout",
+  "name": "المدونة",
+  "title": "المدونة",
+  "widgets": [
+    {
+      "name": "مقالات المدونة",
+      "widget": "blog-list",
+      "settings": {
+        "title": "المدونة",
+        "title_en": "Blog",
+        "heading_tag": "h1"
+      }
+    }
+  ]
+}

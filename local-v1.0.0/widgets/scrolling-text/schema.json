@@ -1,0 +1,327 @@
+{
+  "name": "شريط نص متحرك",
+  "settings": {
+    "background_color": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الشريط",
+        "en": "Strip background"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم النص",
+        "en": "Text size"
+      },
+      "default": "small",
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "ar": "صغير — شريط إعلان",
+            "en": "Small — announcement strip"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير — عناوين عريضة",
+            "en": "Large — display headlines"
+          }
+        }
+      ]
+    },
+    "speed": {
+      "type": "select",
+      "label": {
+        "ar": "السرعة",
+        "en": "Speed"
+      },
+      "default": "normal",
+      "options": [
+        {
+          "value": "slow",
+          "label": {
+            "ar": "هادئة",
+            "en": "Calm"
+          }
+        },
+        {
+          "value": "normal",
+          "label": {
+            "ar": "عادية",
+            "en": "Normal"
+          }
+        },
+        {
+          "value": "fast",
+          "label": {
+            "ar": "سريعة",
+            "en": "Fast"
+          }
+        }
+      ]
+    },
+    "separator": {
+      "type": "select",
+      "label": {
+        "ar": "الفاصل بين الرسائل",
+        "en": "Separator between messages"
+      },
+      "default": "dot",
+      "options": [
+        {
+          "value": "dot",
+          "label": {
+            "ar": "نقطة",
+            "en": "Dot"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "pause_on_hover": {
+      "type": "boolean",
+      "label": {
+        "ar": "إيقاف الحركة عند مرور الماوس",
+        "en": "Pause on hover"
+      },
+      "default": true
+    },
+    "padding": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشريط (المسافة الداخلية)",
+        "en": "Strip height (inner padding)"
+      },
+      "min": 6,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    }
+  },
+  "blocks": {
+    "message": {
+      "name": "رسالة",
+      "settings": {
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "أيقونة قبل النص",
+            "en": "Icon before the text"
+          },
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون أيقونة",
+                "en": "No icon"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة نبات — نباتي",
+                "en": "Leaf — vegan"
+              }
+            },
+            {
+              "value": "no-gluten",
+              "label": {
+                "ar": "خالٍ من الجلوتين",
+                "en": "Gluten-free"
+              }
+            },
+            {
+              "value": "corn",
+              "label": {
+                "ar": "ذرة",
+                "en": "Corn"
+              }
+            },
+            {
+              "value": "meat",
+              "label": {
+                "ar": "لحم — كيتو",
+                "en": "Meat — keto"
+              }
+            },
+            {
+              "value": "grain",
+              "label": {
+                "ar": "حبوب",
+                "en": "Grain"
+              }
+            },
+            {
+              "value": "fish",
+              "label": {
+                "ar": "سمك",
+                "en": "Fish"
+              }
+            },
+            {
+              "value": "milk",
+              "label": {
+                "ar": "حليب",
+                "en": "Milk"
+              }
+            },
+            {
+              "value": "egg",
+              "label": {
+                "ar": "بيض",
+                "en": "Egg"
+              }
+            },
+            {
+              "value": "apple",
+              "label": {
+                "ar": "تفاح — فواكه",
+                "en": "Apple — fruit"
+              }
+            },
+            {
+              "value": "carrot",
+              "label": {
+                "ar": "جزر — خضار",
+                "en": "Carrot — vegetables"
+              }
+            },
+            {
+              "value": "bread",
+              "label": {
+                "ar": "خبز",
+                "en": "Bread"
+              }
+            },
+            {
+              "value": "coffee",
+              "label": {
+                "ar": "قهوة",
+                "en": "Coffee"
+              }
+            },
+            {
+              "value": "cheese",
+              "label": {
+                "ar": "جبن",
+                "en": "Cheese"
+              }
+            },
+            {
+              "value": "leaf-circle",
+              "label": {
+                "ar": "عضوي",
+                "en": "Organic"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "توصيل",
+                "en": "Delivery"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "ضمان",
+                "en": "Guarantee"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب",
+                "en": "Heart"
+              }
+            },
+            {
+              "value": "recycle",
+              "label": {
+                "ar": "إعادة تدوير",
+                "en": "Recycle"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            }
+          ]
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري)",
+            "en": "Link (optional)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "شريط نص متحرك"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "image_ratio": "4x5",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "title_size": "lg",
+        "show_savings": true,
+        "show_stock_status": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "الوصف",
+          "settings": {
+            "title": "الوصف",
+            "source": "description",
+            "open_by_default": true,
+            "text": ""
+          }
+        },
+        {
+          "block": "panel",
+          "name": "التغليف والإهداء",
+          "settings": {
+            "title": "التغليف والإهداء",
+            "source": "text",
+            "open_by_default": false,
+            "text": ""
+          }
+        },
+        {
+          "block": "panel",
+          "name": "التوصيل",
+          "settings": {
+            "title": "التوصيل",
+            "source": "text",
+            "open_by_default": false,
+            "text": ""
+          }
+        },
+        {
+          "block": "panel",
+          "name": "الاستبدال والاسترجاع",
+          "settings": {
+            "title": "الاستبدال والاسترجاع",
+            "source": "text",
+            "open_by_default": false,
+            "text": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "علامات تبويب المنتج: قد يعجبك أيضاً",
+      "widget": "collection-products",
+      "settings": {
+        "title": "اختيارات تكمّل هديتك",
+        "subtitle": "",
+        "view_all_text": "",
+        "view_all_url": "/shop",
+        "tab1_label": "",
+        "tab1_products": [],
+        "tab2_label": "",
+        "tab2_products": [],
+        "tab3_label": "",
+        "tab3_products": [],
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "4x5",
+        "background": "white",
+        "show_arrows": true,
+        "show_progress": true,
+        "promo_enabled": false,
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "آراء العملاء",
+        "title": "هدايا وصلت وفرّحت",
+        "subtitle": "",
+        "autoplay": 6,
+        "star_color": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

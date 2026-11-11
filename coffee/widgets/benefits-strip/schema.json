@@ -1,0 +1,138 @@
+{
+  "name": "شريط المزايا",
+  "settings": {
+    "overlap_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "يتداخل مع أسفل الهيرو على الشاشات الكبيرة (ضعه مباشرة بعد الهيرو)",
+        "en": "Overlap the bottom of the hero on desktop (place it right after the hero)"
+      },
+      "default": true
+    },
+    "surface": {
+      "type": "select",
+      "label": {
+        "ar": "لون الشريط",
+        "en": "Bar colour"
+      },
+      "default": "espresso",
+      "options": [
+        {
+          "value": "espresso",
+          "label": "إسبريسو / Espresso"
+        },
+        {
+          "value": "dark",
+          "label": "داكن / Dark"
+        },
+        {
+          "value": "cream",
+          "label": "كريمي / Cream"
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "benefit": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "leaf",
+          "options": [
+            {
+              "value": "leaf",
+              "label": "ورقة / Leaf"
+            },
+            {
+              "value": "flame",
+              "label": "لهب / Flame"
+            },
+            {
+              "value": "truck",
+              "label": "شاحنة / Truck"
+            },
+            {
+              "value": "headset",
+              "label": "دعم / Headset"
+            },
+            {
+              "value": "bean",
+              "label": "حبة بن / Bean"
+            },
+            {
+              "value": "shield",
+              "label": "درع / Shield"
+            },
+            {
+              "value": "refresh",
+              "label": "استرجاع / Refresh"
+            },
+            {
+              "value": "gift",
+              "label": "هدية / Gift"
+            },
+            {
+              "value": "clock",
+              "label": "ساعة / Clock"
+            },
+            {
+              "value": "cup",
+              "label": "كوب / Cup"
+            },
+            {
+              "value": "star",
+              "label": "نجمة / Star"
+            },
+            {
+              "value": "check",
+              "label": "علامة صح / Check"
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "حبوب القهوة"
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": "Coffee beans"
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": "اختر من أصناف المتجر"
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "النص (إنجليزي)",
+            "en": "Text (English)"
+          },
+          "default": "Choose from the store range"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "شريط المزايا"
+    }
+  ]
+}

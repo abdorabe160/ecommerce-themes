@@ -1,0 +1,130 @@
+{
+  "name": "منتجات من قسم",
+  "settings": {
+    "collection": {
+      "type": "collections",
+      "label": { "ar": "القسم المعروض — يُحتسَب القسم الأول فقط", "en": "Collection to show — only the first one counts" },
+      "default": []
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": { "ar": "نص تمهيدي", "en": "Eyebrow" },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": { "ar": "عنوان السكشن", "en": "Section Title" },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": { "ar": "وصف قصير", "en": "Short Description" },
+      "default": ""
+    },
+    "sort": {
+      "type": "select",
+      "label": { "ar": "ترتيب المنتجات", "en": "Sort Products" },
+      "default": "created-desc",
+      "options": [
+        { "value": "created-desc", "label": { "ar": "الأحدث أولاً", "en": "Newest first" } },
+        { "value": "created-asc", "label": { "ar": "الأقدم أولاً", "en": "Oldest first" } },
+        { "value": "price-asc", "label": { "ar": "السعر: من الأقل", "en": "Price: low to high" } },
+        { "value": "price-desc", "label": { "ar": "السعر: من الأعلى", "en": "Price: high to low" } },
+        { "value": "rating-desc", "label": { "ar": "الأعلى تقييماً", "en": "Highest rated" } }
+      ]
+    },
+    "layout": {
+      "type": "select",
+      "label": { "ar": "التقسيم", "en": "Layout" },
+      "default": "grid",
+      "options": [
+        { "value": "grid", "label": { "ar": "شبكة", "en": "Grid" } },
+        { "value": "slider", "label": { "ar": "سلايدر", "en": "Slider" } }
+      ]
+    },
+    "header_align": {
+      "type": "select",
+      "label": { "ar": "محاذاة العنوان", "en": "Header Alignment" },
+      "default": "split",
+      "options": [
+        { "value": "split", "label": { "ar": "العنوان يمين والرابط شمال", "en": "Title start · link end" } },
+        { "value": "center", "label": { "ar": "في الوسط", "en": "Centered" } }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": { "ar": "خلفية السكشن", "en": "Section Background" },
+      "default": "white",
+      "options": [
+        { "value": "white", "label": { "ar": "أبيض", "en": "White" } },
+        { "value": "blush", "label": { "ar": "وردي فاتح", "en": "Blush" } },
+        { "value": "rose", "label": { "ar": "وردي", "en": "Rose wash" } },
+        { "value": "sage", "label": { "ar": "سيج فاتح", "en": "Sage wash" } }
+      ]
+    },
+    "limit": {
+      "type": "number",
+      "label": { "ar": "عدد المنتجات", "en": "Products Limit" },
+      "default": 8,
+      "min": 2,
+      "max": 30,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (كمبيوتر)", "en": "Columns (Desktop)" },
+      "default": "4",
+      "options": [
+        { "value": "2", "label": { "ar": "عمودان", "en": "2 Columns" } },
+        { "value": "3", "label": { "ar": "٣ أعمدة", "en": "3 Columns" } },
+        { "value": "4", "label": { "ar": "٤ أعمدة", "en": "4 Columns" } },
+        { "value": "5", "label": { "ar": "٥ أعمدة", "en": "5 Columns" } }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (موبايل)", "en": "Columns (Mobile)" },
+      "default": "2",
+      "options": [
+        { "value": "1", "label": { "ar": "عمود واحد", "en": "1 Column" } },
+        { "value": "2", "label": { "ar": "عمودان", "en": "2 Columns" } }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": { "ar": "أبعاد صورة البطاقة", "en": "Card Image Ratio" },
+      "default": "1/1",
+      "options": [
+        { "value": "1/1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "4/5", "label": { "ar": "طولي خفيف", "en": "Portrait" } },
+        { "value": "3/4", "label": { "ar": "طولي", "en": "Tall" } }
+      ]
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": { "ar": "زر «عرض الكل»", "en": "\"View all\" button" },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص زر عرض الكل", "en": "View All Text" },
+      "default": ""
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": { "ar": "أسهم التنقل (للسلايدر)", "en": "Navigation Arrows (slider)" },
+      "default": true
+    },
+    "show_progress": {
+      "type": "boolean",
+      "label": { "ar": "شريط التقدّم (للسلايدر)", "en": "Progress Bar (slider)" },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "منتجات من قسم"
+    }
+  ]
+}

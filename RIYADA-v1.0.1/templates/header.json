@@ -1,0 +1,96 @@
+{
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "logo_height": 34,
+        "sticky": true,
+        "search_style": "icon",
+        "search_placeholder": "ابحث عن حذاء، تيشيرت، بروتين…",
+        "show_cart": true,
+        "show_language_switcher": true,
+        "show_announcement": true,
+        "claim_1": "ملابس تمرين للرجال والنساء",
+        "claim_2": "أحذية جري وتمرين",
+        "claim_3": "أوزان ومعدّات لجيم البيت",
+        "claim_4": "مكمّلات وتغذية رياضية",
+        "claim_5": "تسوّق حسب هدفك",
+        "announcement_tone": "flame",
+        "marquee_speed": 34,
+        "header_menu": "",
+        "deal_link_text": "التخفيضات",
+        "deal_link_url": "/shop",
+        "show_goals_row": true,
+        "goals_label": "تسوّق حسب الهدف",
+        "goals_menu": "header-menu"
+      },
+      "blocks": [
+        {
+          "block": "mega",
+          "name": "ملابس رياضية",
+          "settings": {
+            "nav_label": "ملابس",
+            "nav_url": "/shop",
+            "col1_title": "رجال",
+            "col1_menu": "",
+            "col2_title": "نساء",
+            "col2_menu": "",
+            "col3_title": "حسب النشاط",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "أحذية",
+          "settings": {
+            "nav_label": "أحذية",
+            "nav_url": "/shop",
+            "col1_title": "حسب الرياضة",
+            "col1_menu": "",
+            "col2_title": "حسب الماركة",
+            "col2_menu": "",
+            "col3_title": "",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "معدّات وأجهزة",
+          "settings": {
+            "nav_label": "معدّات",
+            "nav_url": "/shop",
+            "col1_title": "أوزان ومقاومة",
+            "col1_menu": "",
+            "col2_title": "كارديو",
+            "col2_menu": "",
+            "col3_title": "إكسسوارات",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "مكمّلات",
+          "settings": {
+            "nav_label": "مكمّلات",
+            "nav_url": "/shop",
+            "col1_title": "بروتين",
+            "col1_menu": "",
+            "col2_title": "طاقة وأداء",
+            "col2_menu": "",
+            "col3_title": "فيتامينات",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+{
+  "common": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "search": "Search",
+    "cart": "Cart",
+    "view_all": "View All",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "load_more": "Load More",
+    "no_results": "No results found",
+    "on_sale": "Sale",
+    "new": "New",
+    "best_seller": "Best Seller",
+    "share": "Share",
+    "menu": "Menu",
+    "add_to_cart": "Add to Cart",
+    "remove": "Remove",
+    "continue_shopping": "Continue Shopping",
+    "language": "Language",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
+    "subscribe": "Subscribe",
+    "email": "Email",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "faq": "FAQ",
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "header": {
+    "cart": "Cart",
+    "search": "Search",
+    "wishlist": "Wishlist",
+    "menu": "Menu",
+    "search_title": "Search",
+    "search_placeholder": "What are you looking for?",
+    "no_results": "No results found",
+    "latest_products": "Latest products",
+    "browse_categories": "Browse by category",
+    "browse_collections": "Explore collections",
+    "remove": "Remove",
+    "announcement_text": "A routine made for your skin — discover what’s new"
+  },
+  "products": {
+    "title": "Featured Products",
+    "subtitle": "Carefully curated selections to match your taste",
+    "view_all": "View all",
+    "no_products": "No products yet"
+  },
+  "categories": {
+    "title": "Shop by Category",
+    "subtitle": "Explore our diverse collections",
+    "products_count": "products",
+    "no_categories": "No categories yet",
+    "no_categories_desc": "Collections will appear here once added.",
+    "view_all": "View all",
+    "explore": "Explore"
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Real reviews from happy customers",
+    "no_reviews": "No reviews yet",
+    "verified": "Verified purchase",
+    "before": "Before",
+    "after": "After",
+    "about_product": "Reviewed",
+    "empty_desc": "In the Theme Editor click \"Add review\" and write the customer’s words — upload a \"before\" and \"after\" photo to show the comparison."
+  },
+  "newsletter": {
+    "title": "Subscribe to Our Newsletter",
+    "subtitle": "Be the first to know about new products and exclusive offers",
+    "placeholder": "Enter your email",
+    "button": "Subscribe Now",
+    "success": "Subscribed successfully!",
+    "privacy": "We respect your privacy and won't share your email",
+    "consent": "I agree to receive emails from LAMSA.",
+    "setup_hint": "To switch the newsletter on, paste your provider’s form action URL (Mailchimp, Klaviyo, …) into this widget’s settings. The form stays hidden until then, so no address is ever collected and lost."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know"
+  },
+  "articles": {
+    "title": "Latest Articles",
+    "add_articles": "Add articles from the builder"
+  },
+  "brands": {
+    "title": "Brands We're Proud Of"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "whatsapp": "WhatsApp",
+    "payments": "Payment methods",
+    "cod": "Cash on delivery",
+    "back_to_top": "Back to top"
+  },
+  "appBanner": {
+    "download_now": "Download now"
+  },
+  "pages": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+      "back_home": "Back to Home",
+      "browse_shop": "Browse Shop",
+      "try_these": "Try these"
+    },
+    "collections": {
+      "title": "Collections",
+      "count": "collections"
+    },
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "added_to_cart": "Added to Cart",
+      "buy_now": "Buy Now",
+      "out_of_stock": "Out of Stock",
+      "in_stock": "In Stock",
+      "low_stock": "Almost gone: only {{count}} left",
+      "quantity": "Quantity",
+      "price": "Price",
+      "description": "Description",
+      "specifications": "Specifications",
+      "reviews": "Reviews",
+      "reviews_count": "reviews",
+      "shipping_info": "Shipping Info",
+      "color": "Color",
+      "size": "Size",
+      "sku": "SKU",
+      "share": "Share Product",
+      "new": "New",
+      "sale": "Sale",
+      "discount": "{{percent}}% OFF",
+      "related_products": "You May Also Like",
+      "no_reviews": "No reviews yet",
+      "select_option": "Select {{option}}",
+      "choose_options": "Choose Options",
+      "added": "Added!",
+      "view_full_details": "View full details",
+      "quick_view": "Quick View",
+      "notes": "Scent Notes",
+      "out_of_stock_notice": "This product is out of stock",
+      "out_of_stock_hint": "It can’t be ordered right now — browse the suggestions below.",
+      "size_label": "Size",
+      "details": "More details",
+      "in_stock_count": "In stock · {{count}} left",
+      "all_in_cart": "All available stock is already in your cart",
+      "combo_unavailable": "This combination isn’t available — try another option",
+      "unavailable": "Unavailable",
+      "in_cart": "All in your cart",
+      "only_available": "Only {{count}} available for this option",
+      "view_product": "View product"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty": "Your cart is empty",
+      "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+      "empty_title": "Your cart is empty",
+      "empty_subtitle": "Discover something you love",
+      "browse": "Explore collections",
+      "continue_shopping": "Continue Shopping",
+      "checkout": "Checkout",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "discount": "Discount",
+      "savings": "You saved",
+      "items": "{{count}} items",
+      "remove_item": "Remove Item",
+      "remove": "Remove",
+      "coupon_placeholder": "Enter discount code",
+      "apply_coupon": "Apply",
+      "coupon_applied": "Coupon applied",
+      "coupon": "Discount code",
+      "clear": "Clear Cart",
+      "update": "Update",
+      "quantity": "Quantity",
+      "product": "Product",
+      "price": "Price",
+      "unit_price": "Unit price",
+      "order_summary": "Order Summary",
+      "view_cart": "View Cart",
+      "shipping": "Shipping",
+      "calculated_at_checkout": "Calculated at checkout",
+      "free_shipping_left": "Left for free shipping",
+      "free_shipping_earned": "You’ve earned free shipping",
+      "items_label": "Items:"
+    },
+    "collection": {
+      "all_products": "All Products",
+      "filter": "Filter",
+      "sort": "Sort",
+      "products_count": "{{count}} products",
+      "no_products": "No products in this category",
+      "price_range": "Price Range",
+      "clear_filters": "Clear Filters",
+      "show_results": "Show Results"
+    },
+    "shop": {
+      "title": "Shop",
+      "search_placeholder": "Search products...",
+      "all_products": "All Products",
+      "collections": "Collections"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search for products...",
+      "suggestions": "Search Suggestions",
+      "products": "Products",
+      "view_all": "View All",
+      "no_results": "No results found",
+      "try_different": "Try different search terms",
+      "results_for": "Search results for",
+      "results": "{{count}} results",
+      "sort_by": "Sort by",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "newest": "Newest",
+      "highest_rated": "Highest Rated",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "apply": "Apply",
+      "filter": "Filter"
+    },
+    "about": {
+      "title": "About Us",
+      "story_label": "Our Story",
+      "mission_label": "Our Mission",
+      "values_label": "Our Values"
+    },
+    "order": {
+      "can_edit_or_delete_your_review_within": "You can edit or delete your review within",
+      "edit_period_ended": "The period to edit the review has ended",
+      "delete_period_ended": "The period to delete the review has ended",
+      "days_since_added": "days since it was added"
+    },
+    "blog": {
+      "title": "Blog",
+      "subtitle": "Discover the latest articles and tips",
+      "articles_count": "articles",
+      "read_blog": "Browse articles",
+      "read_more": "Read more",
+      "no_blogs": "No blogs yet",
+      "no_blogs_desc": "Blogs will appear here soon",
+      "no_articles": "No articles yet",
+      "no_articles_desc": "Articles will appear here soon",
+      "back_to_blogs": "Back to blogs",
+      "back_to_articles": "Back to articles",
+      "views": "views",
+      "share_article": "Share this article",
+      "related_articles": "Related Articles",
+      "copied": "Copied",
+      "all_articles": "All articles",
+      "categories": "Blog categories"
+    }
+  },
+  "collection": {
+    "no_products": "No products in this collection",
+    "clear_filters": "Clear all",
+    "results_for": "Results for"
+  },
+  "cart": {
+    "empty": "Your cart is empty",
+    "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+    "empty_title": "Your cart is empty",
+    "empty_subtitle": "Discover something you love",
+    "browse": "Explore collections",
+    "continue_shopping": "Continue Shopping",
+    "out_of_stock": "Can't add to cart — this product is out of stock"
+  },
+  "search": {
+    "filter": "Filter",
+    "sort_by": "Sort by",
+    "newest": "Newest",
+    "price_low_high": "Price: Low to High",
+    "price_high_low": "Price: High to Low",
+    "highest_rated": "Highest Rated"
+  },
+  "product": {
+    "sale": "Sale"
+  },
+  "cta": {
+    "expired": "Offer ended",
+    "copy_code": "Copy code",
+    "copied": "Copied"
+  },
+  "hero": {
+    "empty_title": "Add your first hero slide",
+    "empty_desc": "In the Theme Editor click \"Add slide\", upload a close-up product photo and write a short headline."
+  },
+  "routine": {
+    "add_all": "Add the whole routine",
+    "added_all": "Routine added",
+    "total": "Routine total",
+    "morning": "Morning",
+    "evening": "Evening",
+    "step": "Step",
+    "empty_title": "Add your routine steps",
+    "empty_desc": "In the Theme Editor click \"Add step\", then pick a product and name the step — e.g. \"Cleanse\"."
+  },
+  "skin": {
+    "empty_title": "Add skin types or concerns",
+    "empty_desc": "In the Theme Editor click \"Add skin type / concern\", set a label and URL, then upload an image or pick an icon."
+  },
+  "count": {
+    "product_one": "1 product",
+    "product_two": "2 products",
+    "product_few": "products",
+    "product_many": "products",
+    "article_one": "1 article",
+    "article_two": "2 articles",
+    "article_few": "articles",
+    "article_many": "articles"
+  }
+}

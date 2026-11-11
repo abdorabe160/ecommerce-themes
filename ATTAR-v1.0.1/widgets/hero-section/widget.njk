@@ -1,0 +1,409 @@
+{# ===== ATTAR HERO — Oriental Fragrance · Split Editorial · Smoke + Bottle ===== #}
+
+{% set slides = widget.blocks | default([]) %}
+{% set id = widget.id %}
+{% set showArrows = widget.data.show_nav_arrows | default(false) %}
+{% set showDots = widget.data.show_slide_counter if widget.data.show_slide_counter is defined else true %}
+{% set autoplay = widget.data.autoplay if widget.data.autoplay is defined else true %}
+{% if settings.enableAnimations == false %}{% set autoplay = false %}{% endif %}
+{% set autoplaySpeed = widget.data.autoplay_speed | default(6) %}
+{% set totalSlides = slides | length %}
+{% set bottleSide = widget.data.bottle_side | default('end') %}
+{% set scrollHint = widget.data.scroll_hint_text | default(t('hero.scroll_hint'), true) %}
+
+{# Title size — display scale #}
+{% set titleSizeVal = widget.data.title_size | default('large') %}
+{% if titleSizeVal == 'small' %}
+  {% set titleClamp = 'clamp(2rem, 4vw, 3rem)' %}
+{% elif titleSizeVal == 'medium' %}
+  {% set titleClamp = 'clamp(2.4rem, 5vw, 4rem)' %}
+{% else %}
+  {% set titleClamp = 'clamp(2.8rem, 6.4vw, 5.2rem)' %}
+{% endif %}
+
+{# Height — desktop / tablet / mobile #}
+{% set heightVal = widget.data.height | default('large') %}
+{% if heightVal == 'compact' %}
+  {% set heroMinH = '62svh' %}{% set heroMinHTablet = '58svh' %}{% set heroMaxH = '660px' %}
+{% elif heightVal == 'medium' %}
+  {% set heroMinH = '80svh' %}{% set heroMinHTablet = '70svh' %}{% set heroMaxH = '820px' %}
+{% elif heightVal == 'full' %}
+  {% set heroMinH = '100svh' %}{% set heroMinHTablet = '100svh' %}{% set heroMaxH = 'none' %}
+{% else %}
+  {% set heroMinH = '94svh' %}{% set heroMinHTablet = '82svh' %}{% set heroMaxH = '960px' %}
+{% endif %}
+
+{% set heightMobileVal = widget.data.height_mobile | default('large') %}
+{% if heightMobileVal == 'compact' %}
+  {% set heroMinHMobile = '78svh' %}
+{% elif heightMobileVal == 'medium' %}
+  {% set heroMinHMobile = '88svh' %}
+{% elif heightMobileVal == 'full' %}
+  {% set heroMinHMobile = '100svh' %}
+{% else %}
+  {% set heroMinHMobile = '94svh' %}
+{% endif %}
+
+<style>
+  /* ===== ATTAR Hero — Split Editorial ===== */
+  #attar-hero-{{ id }} {
+    position: relative;
+    overflow: hidden;
+    min-height: {{ heroMinH }};
+    max-height: {{ heroMaxH }};
+    color: var(--color-text-primary);
+    background: var(--color-bg-primary);
+  }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} { min-height: {{ heroMinHTablet }}; } }
+  @media (max-width: 1023px)  { #attar-hero-{{ id }} { min-height: {{ heroMinHMobile }}; max-height: none; } }
+
+  /* --- Ambient background: purple smoke + gold glow --- */
+  #attar-hero-{{ id }} .attar-hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(120% 90% at 72% 18%, color-mix(in srgb, var(--color-accent-secondary) 16%, transparent), transparent 55%),
+      radial-gradient(90% 80% at 26% 82%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 60%),
+      radial-gradient(130% 120% at 50% 40%, var(--color-bg-tertiary) 0%, var(--color-bg-primary) 52%, var(--color-footer) 100%);
+  }
+  /* Drifting smoke veil */
+  #attar-hero-{{ id }} .attar-hero-bg::before {
+    content: ''; position: absolute; inset: -20%;
+    background: radial-gradient(45% 40% at 60% 45%, color-mix(in srgb, var(--color-accent-secondary) 14%, transparent), transparent 70%);
+    filter: blur(30px);
+    animation: attarSmoke-{{ id }} 22s ease-in-out infinite alternate;
+  }
+  @keyframes attarSmoke-{{ id }} {
+    0%   { transform: translate3d(-4%, 2%, 0) scale(1); opacity: 0.7; }
+    100% { transform: translate3d(6%, -3%, 0) scale(1.12); opacity: 1; }
+  }
+  /* Fine grain vignette to seat the header + footer edges */
+  #attar-hero-{{ id }} .attar-hero-vignette {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(120% 100% at 50% 30%, transparent 55%, color-mix(in srgb, var(--color-footer) 55%, transparent) 100%);
+  }
+
+  /* --- Slide layout --- */
+  #attar-hero-{{ id }} .attar-hero-slide {
+    position: relative; z-index: 3;
+    display: flex; align-items: center;
+    min-height: {{ heroMinH }}; max-height: {{ heroMaxH }};
+    padding: 104px 0;
+  }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-slide { min-height: {{ heroMinHTablet }}; padding: 88px 0; } }
+  @media (max-width: 1023px)  { #attar-hero-{{ id }} .attar-hero-slide { min-height: {{ heroMinHMobile }}; padding: 96px 0 72px; } }
+
+  #attar-hero-{{ id }} .attar-hero-row {
+    display: flex; align-items: center; gap: 4rem; width: 100%;
+  }
+  #attar-hero-{{ id }} .attar-hero-row--reverse { flex-direction: row-reverse; }
+  #attar-hero-{{ id }} .attar-hero-textcol   { flex: 1 1 52%; min-width: 0; }
+  #attar-hero-{{ id }} .attar-hero-bottlecol { flex: 1 1 44%; min-width: 0; }
+
+  @media (max-width: 1023px) {
+    #attar-hero-{{ id }} .attar-hero-row,
+    #attar-hero-{{ id }} .attar-hero-row--reverse {
+      flex-direction: column-reverse; gap: 2.25rem; text-align: center;
+    }
+    #attar-hero-{{ id }} .attar-hero-textcol,
+    #attar-hero-{{ id }} .attar-hero-bottlecol { flex: 1 1 auto; width: 100%; }
+  }
+
+  /* --- Text --- */
+  #attar-hero-{{ id }} .attar-hero-text { max-width: 560px; }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-text { max-width: 620px; margin: 0 auto; } }
+
+  #attar-hero-{{ id }} .attar-hero-rule {
+    width: 54px; height: 1px; background: var(--color-accent); opacity: 0.9;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-rule { margin-inline: auto; } }
+
+  #attar-hero-{{ id }} .attar-hero-kicker {
+    display: block; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--color-accent); margin-bottom: 20px;
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-hero-kicker { letter-spacing: 0.10em; text-transform: none; font-size: 14px; }
+
+  #attar-hero-{{ id }} .attar-hero-title {
+    font-size: {{ titleClamp }}; line-height: 1.08; font-weight: 500;
+    letter-spacing: -0.01em; color: var(--color-text-primary); margin: 0 0 24px;
+    text-shadow: 0 2px 30px rgba(0,0,0,0.35);
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-hero-title { line-height: 1.24; font-weight: 700; }
+  #attar-hero-{{ id }} .attar-hero-title em { color: var(--color-accent); font-style: normal; }
+
+  #attar-hero-{{ id }} .attar-hero-desc {
+    font-size: clamp(1rem, 1.3vw, 1.15rem); font-weight: 300;
+    line-height: 1.9; color: var(--color-text-secondary);
+    max-width: 440px; margin: 0 0 38px;
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-hero-desc { font-weight: 400; }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-desc { margin-inline: auto; } }
+  #attar-hero-{{ id }} .attar-hero-desc p { margin: 0; max-width: none; font: inherit; }
+  #attar-hero-{{ id }} .attar-hero-desc p + p { margin-top: 0.6em; }
+
+  /* CTA — gold outline that fills gold */
+  #attar-hero-{{ id }} .attar-hero-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 17px 44px; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--color-accent); border: 1px solid var(--color-accent);
+    background: transparent; cursor: pointer; text-decoration: none;
+    transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-hero-btn { letter-spacing: 0.03em; text-transform: none; font-size: 14px; }
+  #attar-hero-{{ id }} .attar-hero-btn:hover {
+    background: var(--color-accent); color: var(--color-bg-primary);
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+
+  /* --- Bottle --- */
+  #attar-hero-{{ id }} .attar-bottle-wrap {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 1 / 1;
+  }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-bottle-wrap { aspect-ratio: 4 / 5; max-width: 340px; margin: 0 auto; } }
+
+  #attar-hero-{{ id }} .attar-bottle-halo {
+    position: absolute; width: min(78%, 460px); aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 30%, transparent) 0%, color-mix(in srgb, var(--color-accent) 6%, transparent) 52%, transparent 70%);
+    filter: blur(6px);
+    animation: attarPulse-{{ id }} 7s ease-in-out infinite;
+  }
+  @keyframes attarPulse-{{ id }} {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.05); }
+  }
+  #attar-hero-{{ id }} .attar-bottle-ring {
+    position: absolute; width: min(60%, 356px); aspect-ratio: 1; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 34%, transparent);
+  }
+  #attar-hero-{{ id }} .attar-bottle-ring::after {
+    content: ''; position: absolute; inset: 14px; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--color-accent-secondary) 20%, transparent);
+  }
+  #attar-hero-{{ id }} .attar-bottle {
+    position: relative; z-index: 2; max-height: 82%; width: auto; max-width: 88%;
+    object-fit: contain;
+    filter: drop-shadow(0 34px 46px rgba(0,0,0,0.6));
+    animation: attarFloat-{{ id }} 6.5s ease-in-out infinite;
+  }
+  @keyframes attarFloat-{{ id }} {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+  }
+  /* Empty-bottle wordmark fallback */
+  #attar-hero-{{ id }} .attar-bottle-empty {
+    position: relative; z-index: 2;
+    font-family: var(--font-heading-en); font-size: clamp(2rem, 4vw, 3.2rem);
+    letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-accent);
+    opacity: 0.9;
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-bottle-empty { font-family: var(--font-heading-ar); letter-spacing: 0; }
+
+  /* --- Scroll hint --- */
+  #attar-hero-{{ id }} .attar-hero-hint {
+    position: absolute; bottom: 26px; inset-inline-start: 0; inset-inline-end: 0;
+    z-index: 12; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--color-text-tertiary); pointer-events: none;
+  }
+  html[dir="rtl"] #attar-hero-{{ id }} .attar-hero-hint { letter-spacing: 0.08em; text-transform: none; font-size: 12px; }
+  #attar-hero-{{ id }} .attar-hero-hint span {
+    width: 1px; height: 34px;
+    background: linear-gradient(to bottom, var(--color-accent), transparent);
+    animation: attarHint-{{ id }} 2.4s ease-in-out infinite;
+  }
+  @keyframes attarHint-{{ id }} { 0%,100%{ opacity:0.3; transform: scaleY(0.7);} 50%{ opacity:1; transform: scaleY(1);} }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-hint { display: none; } }
+
+  /* --- Dots --- */
+  #attar-hero-{{ id }} .attar-hero-dots {
+    position: absolute; bottom: 10px; inset-inline-end: 34px; z-index: 20;
+    display: flex; align-items: center; gap: 0;
+  }
+  #attar-hero-{{ id }} .attar-hero-dot {
+    width: 26px; height: 2px; background: var(--color-text-primary); opacity: 0.3;
+    border: none; cursor: pointer;
+    box-sizing: content-box; padding: 21px 6px; background-clip: content-box; /* 44px hit area */
+    transition: opacity 0.4s ease, width 0.4s ease, background 0.4s ease;
+  }
+  #attar-hero-{{ id }} .attar-hero-dot--active { opacity: 1; width: 46px; background-color: var(--color-accent); }
+  @media (max-width: 1023px) {
+    #attar-hero-{{ id }} .attar-hero-dots { inset-inline-end: 0; inset-inline-start: 0; justify-content: center; bottom: 4px; }
+    #attar-hero-{{ id }} .attar-hero-dot:not(.attar-hero-dot--active) { width: 32px; }
+  }
+
+  /* --- Arrows --- */
+  #attar-hero-{{ id }} .attar-hero-nav {
+    position: absolute; bottom: 26px; inset-inline-start: 40px; z-index: 20; display: flex; gap: 8px;
+  }
+  #attar-hero-{{ id }} .attar-hero-arrow {
+    width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    color: var(--color-accent); background: transparent; border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+    cursor: pointer; transition: background 0.3s ease, color 0.3s ease; opacity: 0.85;
+  }
+  #attar-hero-{{ id }} .attar-hero-arrow:hover { background: var(--color-accent); color: var(--color-bg-primary); opacity: 1; }
+  #attar-hero-{{ id }} .attar-hero-arrow.swiper-button-disabled { opacity: 0.25; cursor: default; }
+  @media (max-width: 1023px) { #attar-hero-{{ id }} .attar-hero-nav { display: none; } }
+</style>
+
+<section id="attar-hero-{{ id }}" data-hero-top>
+
+  {# Ambient background — always present #}
+  <div class="attar-hero-bg"></div>
+  <div class="attar-hero-vignette"></div>
+
+  {% if slides and slides | length > 0 %}
+
+  <div class="swiper h-full" id="heroSwiper-{{ id }}">
+    <div class="swiper-wrapper">
+      {% for slide in slides %}
+      <div class="swiper-slide">
+        <div class="attar-hero-slide">
+          <div class="container mx-auto px-6 lg:px-12 w-full">
+            <div class="attar-hero-row {{ 'attar-hero-row--reverse' if bottleSide == 'start' }}">
+
+              {# ——— Text column ——— #}
+              <div class="attar-hero-textcol">
+                <div class="attar-hero-text flex flex-col max-md:items-center">
+                  <div class="attar-hero-rule"></div>
+
+                  {% if slide.data.slide_subtitle %}
+                    <span class="attar-hero-kicker font-body-ar">{{ slide.data.slide_subtitle | safe }}</span>
+                  {% endif %}
+
+                  {# a first slide with no title still gives the page its H1 #}
+                  {% if loop.first and not slide.data.slide_title %}<h1 class="sr-only">{{ store.name | default('ATTAR') }}</h1>{% endif %}
+                  {% if slide.data.slide_title %}
+                    {# one H1 on the page: only the first slide carries it #}
+                    {% if loop.first %}<h1 class="attar-hero-title font-heading-ar">{{ slide.data.slide_title | safe }}</h1>{% else %}<h2 class="attar-hero-title font-heading-ar">{{ slide.data.slide_title | safe }}</h2>{% endif %}
+                  {% endif %}
+
+                  {% if slide.data.slide_description %}
+                    <div class="attar-hero-desc font-body-ar">{{ slide.data.slide_description | safe }}</div>
+                  {% endif %}
+
+                  {% if slide.data.slide_button_text %}
+                    <a href="{{ slide.data.slide_button_url | default('#') }}" class="attar-hero-btn font-body-ar">
+                      {{ slide.data.slide_button_text | safe }}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+
+              {# ——— Bottle column ——— #}
+              <div class="attar-hero-bottlecol">
+                <div class="attar-bottle-wrap">
+                  <div class="attar-bottle-halo"></div>
+                  <div class="attar-bottle-ring"></div>
+                  {# no bottle uploaded yet → a bundled cut-out bottle (CC0, transparent PNG,
+                     docs/demo-images.md) so the halo never frames an empty space #}
+                  {% set heroImg = slide.data.slide_image.fileUrl if (slide.data.slide_image and slide.data.slide_image.fileUrl) else (['demo-hero-1.png', 'demo-hero-2.png', 'demo-hero-3.png'][loop.index0 % 3] | assets) %}
+                  {% if heroImg %}
+                    <img src="{{ heroImg }}"
+                         alt="{{ (slide.data.slide_title or store.name or '') | replace('<br>', ' ') | striptags }}"
+                         class="attar-bottle"
+                         loading="{% if loop.first %}eager{% else %}lazy{% endif %}"/>
+                  {% else %}
+                    <span class="attar-bottle-empty">{{ store.name | default('ATTAR') }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ===== Scroll hint ===== #}
+  {% if scrollHint %}
+  <div class="attar-hero-hint">
+    <span></span>
+    <p class="font-body-ar">{{ scrollHint }}</p>
+  </div>
+  {% endif %}
+
+  {# ===== Dots ===== #}
+  {% if showDots and totalSlides > 1 %}
+  <div class="attar-hero-dots" id="heroDots-{{ id }}">
+    {% for slide in slides %}
+      <button class="attar-hero-dot {% if loop.first %}attar-hero-dot--active{% endif %}"
+              data-index="{{ loop.index0 }}" aria-label="{{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ===== Arrows ===== #}
+  {% if showArrows and totalSlides > 1 %}
+  <div class="attar-hero-nav">
+    <button id="heroPrev-{{ id }}" class="attar-hero-arrow" aria-label="{{ t('common.prev') | default('السابق') }}">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M15 19l-7-7 7-7{% else %}M9 5l7 7-7 7{% endif %}"/>
+      </svg>
+    </button>
+    <button id="heroNext-{{ id }}" class="attar-hero-arrow" aria-label="{{ t('common.next') | default('التالي') }}">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M9 5l7 7-7 7{% else %}M15 19l-7-7 7-7{% endif %}"/>
+      </svg>
+    </button>
+  </div>
+  {% endif %}
+
+  {# ===== Swiper Init ===== #}
+  {% if totalSlides > 1 %}
+  <script>
+    (() => {
+      var dotsWrap = document.getElementById('heroDots-{{ id }}');
+      var dots = dotsWrap ? dotsWrap.querySelectorAll('.attar-hero-dot') : [];
+      function updateDots(idx) {
+        dots.forEach(function (d, i) { d.classList.toggle('attar-hero-dot--active', i === idx); });
+      }
+      var heroSwiper = new Swiper('#heroSwiper-{{ id }}', {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: true,
+        speed: 1000,
+        effect: 'fade',
+        fadeEffect: { crossFade: true },
+        {% if autoplay %}autoplay: { delay: {{ autoplaySpeed }} * 1000, disableOnInteraction: false },{% endif %}
+        {% if showArrows %}navigation: { prevEl: '#heroPrev-{{ id }}', nextEl: '#heroNext-{{ id }}' },{% endif %}
+      });
+      dots.forEach(function (dot) {
+        dot.addEventListener('click', function () { heroSwiper.slideToLoop(parseInt(dot.dataset.index)); });
+      });
+      heroSwiper.on('slideChange', function () { updateDots(heroSwiper.realIndex); });
+    })();
+  </script>
+  {% endif %}
+
+  {% else %}
+    {# ===== Empty state — single static composition ===== #}
+    <div class="attar-hero-slide">
+      <div class="container mx-auto px-6 lg:px-12 w-full">
+        <div class="attar-hero-row {{ 'attar-hero-row--reverse' if bottleSide == 'start' }}">
+          <div class="attar-hero-textcol">
+            <div class="attar-hero-text flex flex-col max-md:items-center">
+              <div class="attar-hero-rule"></div>
+              <h1 class="attar-hero-title font-heading-ar">{{ store.name | default('ATTAR') }}</h1>
+              {# setup hint: theme editor only, never shown to customers #}
+              <div class="attar-demo-only attar-hero-desc font-body-ar">{{ t('hero.builder_hint') }}</div>
+            </div>
+          </div>
+          <div class="attar-hero-bottlecol">
+            <div class="attar-bottle-wrap">
+              <div class="attar-bottle-halo"></div>
+              <div class="attar-bottle-ring"></div>
+              <span class="attar-bottle-empty">{{ store.name | default('ATTAR') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</section>

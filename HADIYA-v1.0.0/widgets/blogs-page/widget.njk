@@ -1,0 +1,168 @@
+{# ============================================================================
+   HADIYA BLOGS PAGE: /blogs
+   ----------------------------------------------------------------------------
+   The route sends categories only, so the articles are gathered in the browser
+   from each /blogs/<handle> page and shown with the same .hy-post card as the
+   rest of the theme. Categories become a filter above them, hidden when there is
+   only one.
+
+   Styling: style.css → "15.18 POST GRID" for the card, "15.27 BLOG" for the page
+   around it.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blogs = context.blogs | default([], true) %}
+{% set blogHandles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = blogHandles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+{% set count = blogHandles | length %}
+
+{% set showHead = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.blog.title') %}
+{% set subtitle = d.subtitle | default('', true) %}
+{% set cols = d.columns | default('3', true) %}
+
+{# No `background` select here on purpose: the page rides the theme's paper.
+   A per-section surface is still reachable through the custom-colours switch
+   below (`color_bg`), which is the one place a merchant changes it. #}
+<section id="hy-blogs-{{ id }}"
+         class="hy-blogpage"
+         style="--blog-cols: {{ cols }};">
+  <div class="hy-container">
+
+    <nav class="hy-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <span aria-current="page">{{ title }}</span>
+    </nav>
+
+    {% if showHead %}
+      <div class="hy-blog-head">
+        {% if eyebrow %}<span class="hy-blog-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="hy-blog-title">{{ title }}</h1>
+        {# A <div>, NOT a <p>. A `text` field comes back from Qumra as block HTML
+           (`<p>…</p>`), and a <p> cannot contain a <p>. #}
+        {% if subtitle %}<div class="hy-blog-desc">{{ subtitle | safe }}</div>{% endif %}
+      </div>
+    {% else %}
+      <h1 class="hy-sr-only">{{ title }}</h1>
+    {% endif %}
+
+    {# The message for shoppers. The skeleton beside it is for the builder only:
+       `hy-editor-only` is removed on the live store. #}
+    <div class="hy-empty" data-blogs-empty {% if count > 0 %}hidden{% endif %}>
+      <span class="hy-empty-title">{{ t('pages.blog.no_articles') }}</span>
+      <p class="m-0 text-sm">{{ t('pages.blog.no_articles_desc') }}</p>
+      <a href="/shop" class="hy-btn hy-btn--outline hy-btn--sm" style="margin-block-start: var(--space-4);">{{ t('pages.shop.all_products') }}</a>
+    </div>
+
+    {% if count > 0 %}
+      {% if count > 1 %}
+        <div class="hy-shop-rail" role="group" aria-label="{{ t('pages.blog.title') }}" data-blog-filters>
+          <a href="/blogs" class="hy-chip is-active" data-blog-filter="">{{ t('pages.blog.all') }}</a>
+          {% for blog in blogs %}
+            {% set bh = blog.handle or blog.slug %}
+            {% if bh and blog.title %}<a href="/blogs/{{ bh }}" class="hy-chip" data-blog-filter="{{ bh }}">{{ blog.title }}</a>{% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="hy-blog-grid hy-blog-grid--c{{ cols }}" data-blogs-grid aria-busy="true">
+        {% ui "placeholder.njk", kind='article', count=cols %}
+      </div>
+      <script>
+        (function () {
+          var root = document.getElementById('hy-blogs-{{ id }}');
+          var grid = root.querySelector('[data-blogs-grid]');
+          var empty = root.querySelector('[data-blogs-empty]');
+          var bar = root.querySelector('[data-blog-filters]');
+          var handles = {{ blogHandles | dump | safe }};
+          var MAX_PAGES = 5;
+          /* `?theme=` travels with the request: fetched bare, a theme being
+             previewed would get its cards rendered by the store's live theme. */
+          var theme = new URLSearchParams(location.search).get('theme');
+          function page(handle, n) {
+            var q = [];
+            if (n > 1) q.push('page=' + n);
+            if (theme) q.push('theme=' + encodeURIComponent(theme));
+            return fetch('/blogs/' + encodeURIComponent(handle) + (q.length ? '?' + q.join('&') : ''), { credentials: 'same-origin' })
+              .then(function (r) { return r.ok ? r.text() : ''; })
+              .then(function (html) { return new DOMParser().parseFromString(html, 'text/html'); })
+              .catch(function () { return null; });
+          }
+          function cards(doc, handle) {
+            if (!doc) return [];
+            return [].map.call(doc.querySelectorAll('[data-blog-articles] .hy-post'), function (el) {
+              el.setAttribute('data-blog', handle);
+              return document.importNode(el, true);
+            });
+          }
+          function load(handle) {
+            return page(handle, 1).then(function (doc) {
+              var first = cards(doc, handle);
+              var holder = doc && doc.querySelector('[data-pages]');
+              var pages = Math.min(Number(holder && holder.getAttribute('data-pages')) || 1, MAX_PAGES);
+              var rest = [];
+              for (var i = 2; i <= pages; i++) rest.push(page(handle, i));
+              return Promise.all(rest).then(function (docs) {
+                return docs.reduce(function (all, d) { return all.concat(cards(d, handle)); }, first);
+              });
+            });
+          }
+          function show(list, filter) {
+            grid.innerHTML = '';
+            list.forEach(function (card) {
+              if (filter && card.getAttribute('data-blog') !== filter) return;
+              grid.appendChild(card);
+            });
+          }
+          Promise.all(handles.map(load)).then(function (lists) {
+            var seen = {};
+            var all = lists.reduce(function (a, b) { return a.concat(b); }, []).filter(function (c) {
+              var href = c.getAttribute('href');
+              if (seen[href]) return false;
+              seen[href] = true;
+              return true;
+            }).sort(function (a, b) {
+              return String(b.getAttribute('data-date')).localeCompare(String(a.getAttribute('data-date')));
+            });
+            grid.removeAttribute('aria-busy');
+            if (!all.length) {
+              grid.hidden = true;
+              if (bar) bar.hidden = true;
+              empty.hidden = false;
+              return;
+            }
+            show(all, '');
+            if (!bar) return;
+            /* A category with no articles would filter to a blank page. */
+            bar.querySelectorAll('[data-blog-filter]').forEach(function (c) {
+              var h = c.getAttribute('data-blog-filter');
+              if (h && !all.some(function (x) { return x.getAttribute('data-blog') === h; })) c.remove();
+            });
+            if (bar.querySelectorAll('[data-blog-filter]').length < 3) { bar.hidden = true; return; }
+            bar.addEventListener('click', function (e) {
+              var chip = e.target.closest('[data-blog-filter]');
+              if (!chip) return;
+              e.preventDefault();
+              bar.querySelectorAll('[data-blog-filter]').forEach(function (c) { c.classList.remove('is-active'); });
+              chip.classList.add('is-active');
+              show(all, chip.getAttribute('data-blog-filter'));
+            });
+          });
+        })();
+      </script>
+    {% else %}
+      {# placeholders first: the shape of the page says more than the sentence #}
+      <div class="hy-blog-grid hy-editor-only">
+        {% ui "placeholder.njk", kind='article', count=cols %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-blogs-' ~ id, c=d %}

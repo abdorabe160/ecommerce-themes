@@ -1,0 +1,81 @@
+{#
+  ============================================================================
+  MORVA · LOOKBOOK — "— 03 / LOOKBOOK · FROM THE STREET"
+  ----------------------------------------------------------------------------
+    4 images → the signature asymmetric showcase (big · tall · wide · square)
+    1–3      → a clean uniform grid of 4:5 cells
+    0        → contour placeholders in the showcase shape, so the section is
+               visible (and editable) on a fresh store
+  Blocks: look { image, caption, url }
+  ============================================================================
+#}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+{% set looks = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings) | default({}) %}
+  {% if bd.image and bd.image.fileUrl %}{% set _ = looks.push(bd) %}{% endif %}
+{% endfor %}
+{# No images yet: four bundled demo photos stand in (captions still come
+   from the merchant's blocks), so the showcase is never a grey grid. #}
+{% if (looks | length) == 0 and (settings.demoContent | default(true)) %}
+  {% set demoCaps = ['شوارع القاهرة', 'الإصدار ٠٣', 'ليل وسط البلد', 'دورة الغبار'] %}
+  {#- demo-look1.jpg shows a woman: owner's rule, no women on stores. The file stays. -#}
+  {% set demoImgs = ['demo-p4.jpg', 'demo-look2.jpg', 'demo-look3.jpg', 'demo-look4.jpg'] %}
+  {% for i in range(0, 4) %}
+    {% set bd = (blocks[i].data | default(blocks[i].settings) | default({})) if blocks[i] else {} %}
+    {% set _ = looks.push({ image: { fileUrl: demoImgs[i] | assets },
+                            caption: bd.caption | default(demoCaps[i], true), url: bd.url | default('') }) %}
+  {% endfor %}
+{% endif %}
+{% set looks = looks.slice(0, 4) %}
+{% set n = looks | length %}
+{% set cells = ['mv-look--big', 'mv-look--tall', 'mv-look--wide', 'mv-look--square'] %}
+{% set h = d.height | default(520) %}
+
+<section class="mv-section" id="{{ d.anchor | default('look') }}">
+  <div class="mv-head">
+    <div class="reveal" style="--i: 0;">
+      <div class="mv-kicker">— {% if d.index %}{{ d.index }} / {% endif %}{{ d.kicker | default(t('morva.lookbook'), true) }}</div>
+      <h2 class="mv-h">{{ d.heading | default(t('morva.from_the_street'), true) }}</h2>
+    </div>
+    {% if d.view_all_url %}
+      <a href="{{ d.view_all_url }}" class="mv-viewall reveal" style="--i: 1;">
+        {{ d.view_all_text | default(t('morva.view_all'), true) }}
+        <span aria-hidden="true" class="mv-arrow">→</span>
+      </a>
+    {% endif %}
+  </div>
+
+  {% if n == 4 %}
+    <div class="mv-look-grid" style="--look-h: {{ h }}px;">
+      {% for l in looks %}
+        {% set tag = 'a' if l.url else 'div' %}
+        <{{ tag }} {% if l.url %}href="{{ l.url }}"{% endif %} class="mv-look {{ cells[loop.index0] }} reveal" style="--i: {{ loop.index0 }}; --ry: 40px; --rs: 0.96;">
+          <img class="mv-fill" src="{{ l.image.fileUrl }}" alt="{{ l.caption | default('') }}" loading="lazy"/>
+          {% if l.caption %}<div class="mv-look-cap">{{ l.caption }}</div>{% endif %}
+        </{{ tag }}>
+      {% endfor %}
+    </div>
+  {% elif n > 0 %}
+    <div class="mv-look-flow">
+      {% for l in looks %}
+        {% set tag = 'a' if l.url else 'div' %}
+        <{{ tag }} {% if l.url %}href="{{ l.url }}"{% endif %} class="mv-look reveal" style="--i: {{ loop.index0 }}; --ry: 40px; --rs: 0.96;">
+          <img class="mv-fill" src="{{ l.image.fileUrl }}" alt="{{ l.caption | default('') }}" loading="lazy"/>
+          {% if l.caption %}<div class="mv-look-cap">{{ l.caption }}</div>{% endif %}
+        </{{ tag }}>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mv-look-grid" style="--look-h: {{ h }}px;">
+      {% for i in range(0, 4) %}
+        {% set b = (blocks[i].data | default(blocks[i].settings) | default({})) if blocks[i] else {} %}
+        <div class="mv-look {{ cells[i] }} reveal" style="--i: {{ i }}; --ry: 40px; --rs: 0.96;">
+          {% ui "topo.njk" %}
+          <div class="mv-look-cap">{{ b.caption | default(t('morva.add_image'), true) }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>

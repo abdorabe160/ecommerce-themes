@@ -1,0 +1,257 @@
+{
+  "name": "قسم مخصص: قصّة",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": "قصّتنا"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Heading"
+      },
+      "default": "كشكشة رقيقة ولمسات ناعمة."
+    },
+    "body": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Body copy"
+      },
+      "default": "مصمّمة للحركة: خامات تتنفّس وقصّات مريحة. تفاصيل صغيرة تضيف شخصية من غير ما تفقد النعومة على البشرة."
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر — اتركيه فارغاً لإخفائه",
+        "en": "Button label — leave empty to hide it"
+      },
+      "default": "اعرفي أكثر"
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "Button link · available pages: / · /shop · /collections · /blogs"
+      },
+      "default": "/"
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الصورة — تُقصّ دائرية، فاختاري صورة موضوعها في النص",
+        "en": "▸ The image — cropped to a circle, so pick one with its subject centred"
+      }
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة",
+        "en": "Which side the image sits on"
+      },
+      "default": "end",
+      "options": [
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (يسار في العربية)",
+            "en": "End (left in Arabic)"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربية)",
+            "en": "Start (right in Arabic)"
+          }
+        }
+      ]
+    },
+    "circle_size": {
+      "type": "range",
+      "label": {
+        "ar": "قطر الدائرة · المرجع ٤٢٢",
+        "en": "Circle diameter · the reference is 422"
+      },
+      "default": 422,
+      "min": 260,
+      "max": 560,
+      "step": 2,
+      "unit": "px"
+    },
+    "media_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض عمود الصورة — نسبة من عرض القسم",
+        "en": "Image column width — share of the section"
+      },
+      "default": 48,
+      "min": 38,
+      "max": 58,
+      "step": 1,
+      "unit": "%"
+    },
+    "column_gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين العمودين",
+        "en": "Space between the columns"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "%"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "tag": {
+      "name": "ملصق على الصورة",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": "رائع"
+        },
+        "shape": {
+          "type": "select",
+          "label": {
+            "ar": "الشكل",
+            "en": "Shape"
+          },
+          "default": "pill",
+          "options": [
+            {
+              "value": "pill",
+              "label": {
+                "ar": "كبسولة",
+                "en": "Pill"
+              }
+            },
+            {
+              "value": "round",
+              "label": {
+                "ar": "دائرة",
+                "en": "Circle"
+              }
+            }
+          ]
+        },
+        "x": {
+          "type": "range",
+          "label": {
+            "ar": "الموضع الأفقي — نسبة من عرض الدائرة",
+            "en": "Horizontal position — % of the circle"
+          },
+          "default": 14,
+          "min": -10,
+          "max": 110,
+          "step": 1,
+          "unit": "%"
+        },
+        "y": {
+          "type": "range",
+          "label": {
+            "ar": "الموضع الرأسي — نسبة من ارتفاع الدائرة",
+            "en": "Vertical position — % of the circle"
+          },
+          "default": 18,
+          "min": -10,
+          "max": 110,
+          "step": 1,
+          "unit": "%"
+        },
+        "rotate": {
+          "type": "range",
+          "label": {
+            "ar": "الميل",
+            "en": "Tilt"
+          },
+          "default": -10,
+          "min": -40,
+          "max": 40,
+          "step": 1,
+          "unit": "°"
+        },
+        "color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الملصق",
+            "en": "Label colour"
+          },
+          "default": ""
+        },
+        "text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون النص",
+            "en": "Text colour"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "قسم مخصص: قصّة"
+    }
+  ]
+}

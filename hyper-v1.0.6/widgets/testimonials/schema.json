@@ -1,0 +1,218 @@
+{
+  "name": "شهادات العملاء",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "مقدار ظهور الشهادات المجاورة — سطح المكتب",
+        "en": "How much of the neighbours shows — desktop"
+      },
+      "default": "1.9",
+      "options": [
+        {
+          "value": "1.2",
+          "label": {
+            "ar": "قليل جداً",
+            "en": "Barely"
+          }
+        },
+        {
+          "value": "1.5",
+          "label": {
+            "ar": "قليل",
+            "en": "A little"
+          }
+        },
+        {
+          "value": "1.9",
+          "label": {
+            "ar": "متوسط (موصى به)",
+            "en": "Medium (recommended)"
+          }
+        },
+        {
+          "value": "2.4",
+          "label": {
+            "ar": "كثير",
+            "en": "A lot"
+          }
+        }
+      ]
+    },
+    "columns_tablet": {
+      "type": "select",
+      "label": {
+        "ar": "المقدار — التابلت",
+        "en": "How much — tablet"
+      },
+      "default": "1.4",
+      "options": [
+        {
+          "value": "1.05",
+          "label": {
+            "ar": "بالكاد",
+            "en": "Barely"
+          }
+        },
+        {
+          "value": "1.2",
+          "label": {
+            "ar": "قليل",
+            "en": "A little"
+          }
+        },
+        {
+          "value": "1.4",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "المقدار — الموبايل",
+        "en": "How much — mobile"
+      },
+      "default": "1.05",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "1.05",
+          "label": {
+            "ar": "بالكاد",
+            "en": "Barely"
+          }
+        },
+        {
+          "value": "1.15",
+          "label": {
+            "ar": "قليل",
+            "en": "A little"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "loop": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكرار لا نهائي",
+        "en": "Loop endlessly"
+      },
+      "default": true
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "التنقل التلقائي",
+        "en": "Autoplay"
+      },
+      "default": false
+    },
+    "autoplay_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدة عرض الشهادة",
+        "en": "Seconds per quote"
+      },
+      "default": 7,
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الاقتباس",
+        "en": "Quote colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "quote": {
+      "name": "شهادة",
+      "settings": {
+        "quote": {
+          "type": "text",
+          "label": {
+            "ar": "نص الشهادة (اكتب علامات التنصيص بنفسك)",
+            "en": "The quote (type the quotation marks yourself)"
+          },
+          "default": ""
+        },
+        "name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Customer name"
+          },
+          "default": ""
+        },
+        "role": {
+          "type": "string",
+          "label": {
+            "ar": "السطر تحت الاسم (المدينة · الصفة)",
+            "en": "Line under the name (city · role)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "شهادات العملاء"
+    }
+  ]
+}

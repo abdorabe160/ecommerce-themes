@@ -1,0 +1,34 @@
+{#
+  MORVA · FAQ — an accordion of questions. Add it to the page template
+  (pages/page.json) for an FAQ, shipping or returns page, or to the home page.
+  Blocks: question { question, answer }
+#}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+
+{% if (blocks | length) > 0 or d.title %}
+<section class="mv-section">
+  <div class="mv-faq">
+    {% if d.title %}<h2 class="mv-page-title">{{ d.title }}</h2>{% endif %}
+    <div class="mv-faq-list" x-data="{ open: {{ '0' if d.first_open else 'null' }} }">
+      {% for b in blocks %}
+        {% set q = b.data | default(b.settings) | default({}) %}
+        {% if q.question %}
+          <div class="mv-faq-item" :class="open === {{ loop.index0 }} && 'is-open'">
+            <button type="button" class="mv-faq-q" @click="open = open === {{ loop.index0 }} ? null : {{ loop.index0 }}"
+                    :aria-expanded="open === {{ loop.index0 }} ? 'true' : 'false'">
+              <span class="mv-faq-qtext">{{ q.question }}</span>
+              <span class="mv-faq-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.5"/></svg>
+              </span>
+            </button>
+            <div class="mv-faq-a" :aria-hidden="open === {{ loop.index0 }} ? 'false' : 'true'">
+              <div><div class="mv-prose">{{ q.answer | safe }}</div></div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

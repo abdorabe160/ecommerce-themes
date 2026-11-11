@@ -1,0 +1,5 @@
+{#- Store name, shortened to its first 3 words (full name goes in the caller's title=).
+    One rule for header, footer and sidebar. -#}
+{%- set storeName = (store.name or 'RIYADA') | trim -%}
+{%- set nameWords = (storeName | replace('  ', ' ')).split(' ') -%}
+{%- if nameWords | length > 3 -%}{{ nameWords.slice(0, 3).join(' ') }}…{%- else -%}{{ storeName }}{%- endif -%}

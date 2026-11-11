@@ -1,0 +1,19 @@
+{
+  "name": "زر العودة للأعلى",
+  "settings": {
+    "enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الزر",
+        "en": "Show the button"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "زر العودة للأعلى"
+    }
+  ]
+}

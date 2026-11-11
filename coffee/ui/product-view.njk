@@ -1,0 +1,260 @@
+{# Shared product page and quick-view body. Qumra product data feeds dcProduct for variant and cart behavior. #}
+{%- set p = data.product or product -%}
+{%- set mode = data.mode or 'page' -%}
+{%- set quick = mode == 'quick' -%}
+{%- set viewId = 'quick' if quick else 'page' -%}
+{#- real product attributes parsed from `key:value` tags — shown only when the data exists -#}
+{%- set originL = [] -%}
+{%- set roastL = [] -%}
+{%- set notesL = [] -%}
+{%- set brewL = [] -%}
+{%- for tg in (p.tags or []) -%}
+  {%- set ts = (tg.name or tg.displayName or tg.title or tg.label or tg.value or tg) | string -%}
+  {%- set kv = ts.split(':') -%}
+  {%- if kv.length > 1 -%}
+    {%- set k = kv[0] | trim | lower -%}
+    {%- set v = kv.slice(1).join(':') | trim -%}
+    {%- if k in ['origin', 'المنشأ', 'منشأ', 'بلد المنشأ'] %}{%- if originL.push(v) -%}{%- endif -%}{%- endif -%}
+    {%- if k in ['roast', 'التحميص', 'تحميص', 'درجة التحميص'] %}{%- if roastL.push(v) -%}{%- endif -%}{%- endif -%}
+    {%- if k in ['notes', 'النكهات', 'نكهات', 'الإيحاءات', 'إيحاءات', 'نكهة'] %}{%- if notesL.push(v) -%}{%- endif -%}{%- endif -%}
+    {%- if k in ['brew', 'التحضير', 'طريقة التحضير'] %}{%- if brewL.push(v) -%}{%- endif -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set originVal = originL[0] if originL.length else '' -%}
+{%- set roastVal = roastL[0] if roastL.length else '' -%}
+{%- set deliveryNote = settings['deliveryNote' + ('_en' if localization.language != 'ar' else '')] or settings.deliveryNote or t('product.delivery_text') -%}
+{%- set pcol = [] -%}
+{%- for c in (p.collections or []) -%}{%- if c and (not c.deleted) and not (c.salesChannels and c.salesChannels.onlineStore === false) and pcol.push(c) -%}{%- endif -%}{%- endfor -%}
+{%- set pcolId = '' -%}
+{%- if pcol.length %}{%- set pcolId = pcol[0]._id or pcol[0].id or (pcol[0] if (pcol[0] is string and pcol[0]) else '') -%}{%- endif -%}
+{%- set relSource = 'collection' if pcolId else 'top-rated' -%}
+{%- set pJson = p | dump -%}
+{%- set images = p.images or [] -%}
+{%- set slug = p.slug or p.handle or '' -%}
+{%- set url = ('/products/' ~ slug) if slug else '/shop' -%}
+<div class="dc-product-view {{ 'dc-product-view--quick dc-is-hidden' if quick }}" x-data="dcProduct({product: {{ pJson | escape }}})" data-product-view{% if quick %} data-quick-view x-ignore{% endif %}>
+  {%- if not quick %}
+  <nav class="dc-breadcrumb shell" aria-label="{{ t('a11y.breadcrumb') }}">
+    <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span>
+    <a href="/shop">{{ t('nav.shop') }}</a><span aria-hidden="true">/</span>
+    {%- if pcol.length and pcol[0].title and (pcol[0].handle or pcol[0].slug) %}
+    <a href="/collections/{{ pcol[0].handle or pcol[0].slug }}">{{ pcol[0].title }}</a><span aria-hidden="true">/</span>
+    {%- endif %}
+    <span aria-current="page">{{ p.title }}</span>
+  </nav>
+  {%- endif %}
+  <div class="dc-product-layout shell">
+    <div class="dc-product-gallery">
+      {%- if images.length %}
+      <div class="dc-product-stage">
+      <div class="dc-product-track" dir="ltr" x-ref="track" @scroll.passive="onTrackScroll()">
+        {%- for image in images %}
+        {%- set imageUrl = image.fileUrl or image.url or image -%}
+        <figure class="dc-product-slide" @click="openZoom({{ loop.index0 }})">
+          <img src="{{ imageUrl }}" alt="{{ p.title }} — {{ loop.index }}" width="1200" height="1200" {% if loop.first and not quick %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">
+        </figure>
+        {%- endfor %}
+      </div>
+      {%- if images.length > 1 %}
+      <div class="dc-gallery-nav" dir="ltr">
+        <button type="button" class="dc-gallery-nav__btn" @click="step(-1)" aria-label="{{ t('product.prev_image') }}">{% ui "icon.njk", name="chevron", size=18 %}</button>
+        <button type="button" class="dc-gallery-nav__btn is-next" @click="step(1)" aria-label="{{ t('product.next_image') }}">{% ui "icon.njk", name="chevron", size=18 %}</button>
+      </div>
+      <span class="dc-gallery-count" dir="ltr" aria-hidden="true"><span x-text="active + 1">1</span> / {{ images.length }}</span>
+      <div class="dc-gallery-dots" dir="ltr" aria-hidden="true">
+        {%- for image in images %}<span :class="active === {{ loop.index0 }} && 'is-active'"></span>{%- endfor %}
+      </div>
+      {%- endif %}
+      </div>
+      {%- if images.length > 1 %}
+      <div class="dc-product-thumbs" dir="ltr" role="group" aria-label="{{ t('product.gallery') }}">
+        {%- for image in images %}
+        {%- set imageUrl = image.fileUrl or image.url or image -%}
+        <button type="button" @click="goTo({{ loop.index0 }})" :aria-pressed="(active === {{ loop.index0 }}).toString()" aria-label="{{ t('product.image') }} {{ loop.index }}">
+          <img src="{{ imageUrl }}" alt="" width="96" height="96" loading="lazy" decoding="async">
+        </button>
+        {%- endfor %}
+      </div>
+      {%- endif %}
+      {#- PRD-02: full-screen viewer — tap/click toggles 2× zoom at the pointer, arrows + Esc -#}
+      <div class="dc-zoom" x-show="zoom" x-cloak x-transition.opacity @keydown.escape.window="zoom && closeZoom()" @keydown.arrow-left.window="zoom && stepZoom(-1)" @keydown.arrow-right.window="zoom && stepZoom(1)"
+           role="dialog" aria-modal="true" aria-label="{{ t('product.gallery') }}">
+        <button type="button" class="dc-zoom__close icon-btn" @click="closeZoom()" aria-label="{{ t('common.close') }}">{% ui "icon.njk", name="close", size=22 %}</button>
+        <div class="dc-zoom__stage" @click="toggleZoomScale($event)">
+          <img :src="zoomSrc" alt="{{ p.title }}" :class="zoomScaled && 'is-scaled'" :style="zoomOrigin">
+        </div>
+        {%- if images.length > 1 %}
+        <div class="dc-zoom__nav" dir="ltr">
+          <button type="button" class="dc-gallery-nav__btn" @click.stop="stepZoom(-1)" aria-label="{{ t('product.prev_image') }}">{% ui "icon.njk", name="chevron", size=20 %}</button>
+          <span x-text="(zoomIndex + 1) + ' / {{ images.length }}'"></span>
+          <button type="button" class="dc-gallery-nav__btn is-next" @click.stop="stepZoom(1)" aria-label="{{ t('product.next_image') }}">{% ui "icon.njk", name="chevron", size=20 %}</button>
+        </div>
+        {%- endif %}
+      </div>
+      {%- else %}
+      <div class="dc-product-no-image">{% ui "icon.njk", name="bean", size=54 %}</div>
+      {%- endif %}
+    </div>
+
+    <div class="dc-product-copy">
+      {%- if quick %}
+      <button type="button" class="dc-quick-close icon-btn" @click="closeQuick()" aria-label="{{ t('common.close') }}">{% ui "icon.njk", name="close", size=20 %}</button>
+      {%- endif %}
+      {#- the product's own collection: a fixed «قهوة مختصة» also landed on brewing equipment -#}
+      {%- if pcol.length and pcol[0].title %}<p class="eyebrow">{{ pcol[0].title }}</p>{%- endif %}
+      {#- the quick-view copy (hidden on the product page, fetched into the drawer elsewhere) must not add a 2nd H1 -#}
+      {#- the demo <template> is on every page: main.js turns its h2 into the H1 when the demo page opens -#}
+      {%- set titleTag = 'h2' if (quick or data.demoTpl == 'on') else 'h1' -%}
+      <{{ titleTag }} class="dc-product-title">{{ p.title }}</{{ titleTag }}>
+      {%- if p.subtitle %}<p class="dc-product-subtitle">{{ p.subtitle }}</p>{%- endif %}
+      {%- if notesL.length %}
+      <ul class="dc-product-notes dc-product-notes--head" role="list" aria-label="{{ t('product.notes') }}">{%- for n in notesL %}{% if loop.index <= 4 %}<li>{{ n }}</li>{% endif %}{%- endfor %}</ul>
+      {%- endif %}
+      {%- if p.reviewsCount and p.reviewsCount > 0 %}
+      <p class="dc-product-rating"><span aria-hidden="true">★</span> {{ p.averageRating | round(1) }} <span>({{ t('product.reviews') | replace('{count}', p.reviewsCount) }})</span></p>
+      {%- endif %}
+
+      <div class="dc-product-price">
+        <span class="price" x-text="formatMoney(price)">{{ p.pricing.price | default(p.price, true) | default(0, true) | money }}</span>
+        <s class="price__compare" x-show="compareAt > price" x-text="formatMoney(compareAt)"></s>
+        <span class="badge badge-sale" x-show="discount > 0" x-text="'\u200E-' + discount + '%'"></span>
+      </div>
+      <p class="dc-product-saving" x-show="compareAt > price" x-text="{{ t('product.you_save') | dump | escape }}.replace('{amount}', formatMoney(compareAt - price))"></p>
+
+      {%- if p.options and p.options.length %}
+      <div class="dc-product-options">
+        {%- for option in p.options %}
+        {%- if option.values and option.values.length %}
+        {%- set oi = loop.index0 -%}
+        {%- set optionRef = {'_id': option._id, 'name': option.name} | dump -%}
+        <fieldset class="dc-product-option" data-option-index="{{ oi }}">
+          <legend>{{ option.name }}<span x-text="selectedLabel({{ optionRef | escape }}, {{ oi }})"></span></legend>
+          <div class="dc-option-values">
+            {%- for value in option.values %}
+            {%- set valueRef = value | dump -%}
+            <button type="button" @click="choose({{ optionRef | escape }}, {{ oi }}, {{ valueRef | escape }})"
+                    :aria-pressed="isSelected({{ optionRef | escape }}, {{ oi }}, {{ valueRef | escape }}).toString()"
+                    :disabled="!isAvailable({{ optionRef | escape }}, {{ oi }}, {{ valueRef | escape }})"
+                    :class="isSelected({{ optionRef | escape }}, {{ oi }}, {{ valueRef | escape }}) && 'is-active'">
+              {{ value.label or value.value or value.name }}
+            </button>
+            {%- endfor %}
+          </div>
+        </fieldset>
+        {%- endif %}
+        {%- endfor %}
+      </div>
+      {%- endif %}
+
+      <p class="dc-product-stock" x-show="stock === 'in'">{{ t('product.in_stock') }}</p>
+      <p class="dc-product-stock dc-product-stock--low" x-show="stock === 'low'" x-cloak x-text="lowText()"></p>
+      <p class="dc-product-stock dc-product-stock--out" x-show="stock === 'out'" x-cloak>{{ t('product.out_of_stock') }}</p>
+      <p class="dc-product-notice" x-show="missing || notice || comboMissing" x-text="missing || notice || (comboMissing ? {{ t('product.unavailable_combo') | dump | escape }} : '')" role="status"></p>
+
+      <div class="dc-product-buy" x-ref="buy">
+        <label class="dc-product-qty-label" for="dc-product-quantity-{{ viewId }}-{{ p._id or p.id }}">{{ t('product.quantity') }}</label>
+        <div class="qty">
+          <button type="button" @click="dec()" :disabled="!canBuy" aria-label="{{ t('product.decrease') }}">{% ui "icon.njk", name="minus", size=16 %}</button>
+          <input id="dc-product-quantity-{{ viewId }}-{{ p._id or p.id }}" type="number" min="1" x-model.number="quantity" @change="clamp()" :max="maxQty" :disabled="!canBuy" aria-label="{{ t('product.quantity') }}">
+          <button type="button" @click="inc()" :disabled="!canBuy" aria-label="{{ t('product.increase') }}">{% ui "icon.njk", name="plus", size=16 %}</button>
+        </div>
+        <button type="button" class="btn btn-primary dc-product-add" @click="add()" :disabled="!canBuy || resolving" :aria-busy="resolving.toString()">
+          <span x-show="resolving" class="spinner" aria-hidden="true"></span>
+          <span class="btn__label">{{ t('product.add_to_cart') }}</span>
+        </button>
+        <button type="button" class="btn btn-dark dc-product-buy-now" @click="buy()" :disabled="!canBuy || resolving" :aria-busy="resolving.toString()"><span class="btn__label">{{ t('product.buy_now') }}</span></button>
+      </div>
+
+      <div class="dc-product-meta">
+        {%- if p.sku %}<p><span>{{ t('product.sku') }}</span><b dir="ltr">{{ p.sku }}</b></p>{%- endif %}
+        {%- if originVal %}<p><span>{{ t('product.origin') }}</span><b>{{ originVal }}</b></p>{%- endif %}
+        {%- if roastVal %}<p><span>{{ t('product.roast') }}</span><b>{{ roastVal }}</b></p>{%- endif %}
+        <div class="dc-share" role="group" aria-label="{{ t('product.share') }}">
+          <span class="dc-share__label">{{ t('product.share') }}</span>
+          <a class="dc-share__btn" :href="'https://wa.me/?text=' + encodeURIComponent(product.title + ' ' + shareUrl())" target="_blank" rel="noopener noreferrer" aria-label="{{ t('product.share_whatsapp') }}">{% ui "icon.njk", name="whatsapp", size=18 %}</a>
+          <a class="dc-share__btn" :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl())" target="_blank" rel="noopener noreferrer" aria-label="{{ t('product.share_facebook') }}">{% ui "icon.njk", name="facebook", size=18 %}</a>
+          <button type="button" class="dc-share__btn" @click="copyLink()" aria-label="{{ t('product.copy_link') }}">{% ui "icon.njk", name="check", size=18 %}</button>
+          <button type="button" class="dc-share__btn" x-show="canNativeShare" x-cloak @click="share()" aria-label="{{ t('product.share') }}">{% ui "icon.njk", name="arrow", size=18 %}</button>
+        </div>
+      </div>
+
+      <div class="dc-product-delivery">
+        {% ui "icon.njk", name="truck", size=20 %}
+        <div><b>{{ t('product.delivery') }}</b><p>{{ deliveryNote }}</p></div>
+      </div>
+
+      {%- if not quick and p.description %}
+      <details class="acc dc-product-description" open>
+        <summary>{{ t('product.description') }} <span class="acc__icon">+</span></summary>
+        <div class="acc__body prose-decafe">{{ p.description | safe }}</div>
+      </details>
+      {%- endif %}
+      {%- if not quick and notesL.length %}
+      <details class="acc">
+        <summary>{{ t('product.notes') }} <span class="acc__icon">+</span></summary>
+        <div class="acc__body"><ul class="dc-product-notes" role="list">{%- for n in notesL %}<li>{{ n }}</li>{%- endfor %}</ul></div>
+      </details>
+      {%- endif %}
+      {%- if not quick and brewL.length %}
+      <details class="acc">
+        <summary>{{ t('product.brewing') }} <span class="acc__icon">+</span></summary>
+        <div class="acc__body"><ul class="dc-product-notes" role="list">{%- for b in brewL %}<li>{{ b }}</li>{%- endfor %}</ul></div>
+      </details>
+      {%- endif %}
+      {%- if quick %}
+      <a class="dc-quick-details" href="{{ url }}">{{ t('product.view_details') }} {% ui "icon.njk", name="arrow", size=16 %}</a>
+      {%- endif %}
+    </div>
+  </div>
+
+  {%- if not quick %}
+  <div class="dc-sticky-buy" x-ref="stickyBar" x-show="stuck" x-cloak
+       x-transition:enter="dc-sticky-buy--enter" x-transition:enter-start="dc-sticky-buy--from" x-transition:leave="dc-sticky-buy--enter" x-transition:leave-end="dc-sticky-buy--from">
+    <div class="dc-sticky-buy__inner">
+      {%- if images.length %}<img src="{{ images[0].fileUrl or images[0].url or images[0] }}" alt="" width="48" height="48" loading="lazy" decoding="async">{%- endif %}
+      <div class="dc-sticky-buy__info">
+        <b>{{ p.title }}</b>
+        <span class="price" x-text="formatMoney(price)">{{ p.pricing.price | default(p.price, true) | default(0, true) | money }}</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" @click="add()" :disabled="!canBuy || resolving" :aria-busy="resolving.toString()">
+        <span x-show="resolving" class="spinner" aria-hidden="true"></span>
+        <span class="btn__label">{{ t('product.add_to_cart') }}</span>
+      </button>
+    </div>
+  </div>
+  {%- endif %}
+
+  {#- related products: the product's own collection when the platform provides one, otherwise the
+      store's top-rated picks — real catalogue data either way, never a fabricated relationship -#}
+  {%- if not quick %}
+  {#- PRD-16: platform `recommendations` (related products for this product) render server-side when present;
+      otherwise the client asks the store. Never the product itself; the section disappears when nothing is left. -#}
+  {%- set recs = [] -%}
+  {%- set recSrc = data.recs or recommendations or ((context or {}).related_products) or [] -%}
+  {%- for r in (recSrc if recSrc.length else []) -%}
+    {%- if (r._id or r.id) != (p._id or p.id) and recs.length < 4 -%}{%- if recs.push(r) -%}{%- endif -%}{%- endif -%}
+  {%- endfor -%}
+  {#- one card alone reads as a mistake: fewer than two asks the store, and the section hides if that also falls short -#}
+  {%- if recs.length > 1 %}
+  <section class="dc-related section-tight" aria-labelledby="dc-related-title">
+    <div class="shell">
+      <header class="dc-section-heading"><div><h2 id="dc-related-title" class="h-section">{{ t('product.related') }}</h2></div></header>
+      <div class="dc-product-grid">{%- for r in recs %}{% ui "product-card.njk", product=r %}{%- endfor %}</div>
+    </div>
+  </section>
+  {%- else %}
+  <section class="dc-related section-tight" x-data="dcProducts({source: {{ relSource | dump | escape }}, limit: 4, collectionId: {{ pcolId | dump | escape }}, kind: 'best', exclude: {{ (p._id or p.id or '') | string | dump | escape }}})" x-show="loading || items.length > 1" aria-labelledby="dc-related-title">
+    <div class="shell">
+      <header class="dc-section-heading">
+        <div><h2 id="dc-related-title" class="h-section">{{ t('product.related') }}</h2></div>
+      </header>
+      <div class="dc-product-grid" x-show="loading" aria-busy="true">{% ui "card-skeleton.njk", count=4 %}</div>
+      <div class="dc-product-grid" x-show="items.length">
+        <template x-for="p in items" :key="p._id">{% ui "card-js.njk" %}</template>
+      </div>
+      <p class="dc-preview-note" x-show="demo" x-cloak>{{ t('common.preview_hint') }}</p>
+    </div>
+  </section>
+  {%- endif %}
+  {%- endif %}
+</div>

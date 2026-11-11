@@ -1,0 +1,186 @@
+{
+  "name": "الواجهة الرئيسية (هيرو)",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "النص التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": "أكثر من مجرد قهوة"
+    },
+    "eyebrow_en": {
+      "type": "string",
+      "label": {
+        "ar": "النص التمهيدي (إنجليزي)",
+        "en": "Eyebrow (English)"
+      },
+      "default": "More than just coffee"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الرئيسي — اكتب \\n لسطر جديد",
+        "en": "Headline — type \\n for a line break"
+      },
+      "default": "قهوة تصنع\\nلحظات أفضل"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الرئيسي — اكتب \\n لسطر جديد (إنجليزي)",
+        "en": "Headline — type \\n for a line break (English)"
+      },
+      "default": "Coffee that makes\\nbetter moments"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": "تصفّح تشكيلتنا من القهوة واختر ما يناسب ذوقك."
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف (إنجليزي)",
+        "en": "Description (English)"
+      },
+      "default": "Browse our coffee range and pick what suits your taste."
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": "تسوق الآن"
+    },
+    "button_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر (إنجليزي)",
+        "en": "Button text (English)"
+      },
+      "default": "Shop now"
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر",
+        "en": "Button link"
+      },
+      "default": "/shop"
+    },
+    "video_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الفيديو (يوتيوب / فيميو / ملف MP4) — يظهر زر التشغيل عند إضافته فقط",
+        "en": "Video link (YouTube / Vimeo / MP4) — the play button shows only when set"
+      },
+      "default": ""
+    },
+    "video_label": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الفيديو",
+        "en": "Video button label"
+      },
+      "default": "شاهد القصة"
+    },
+    "video_label_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الفيديو (إنجليزي)",
+        "en": "Video button label (English)"
+      },
+      "default": "Watch the story"
+    },
+    "image_desktop": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الخلفية للشاشات الكبيرة (عرضية 2400×1120 — ضع العنصر الرئيسي في النصف الأيسر)",
+        "en": "Desktop background image (wide 2400×1120 — keep the subject on the left half)"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الموبايل (طولية 4:5)",
+        "en": "Mobile image (portrait 4:5)"
+      }
+    },
+    "flip_ltr": {
+      "type": "boolean",
+      "label": {
+        "ar": "اعكس الصورة أفقيًا في الواجهة الإنجليزية (ليبقى النص بعيدًا عن العنصر الرئيسي)",
+        "en": "Mirror the image in the English (LTR) storefront so the copy stays clear of the subject"
+      },
+      "default": true
+    },
+    "overlay_strength": {
+      "type": "range",
+      "label": {
+        "ar": "قوة التظليل خلف النص",
+        "en": "Shade behind the text"
+      },
+      "default": 60,
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%"
+    },
+    "rating_value": {
+      "type": "string",
+      "label": {
+        "ar": "التقييم (مثال: 4.9) — اتركه فارغًا لإخفاء شريط الثقة",
+        "en": "Rating (e.g. 4.9) — leave empty to hide the trust row"
+      },
+      "default": ""
+    },
+    "customers_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص العملاء (مثال: +2,500 عميل سعيد)",
+        "en": "Customers text (e.g. 2,500+ happy customers)"
+      },
+      "default": ""
+    },
+    "customers_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص العملاء (مثال: +2,500 عميل سعيد) (إنجليزي)",
+        "en": "Customers text (e.g. 2,500+ happy customers) (English)"
+      },
+      "default": ""
+    },
+    "avatar_1": {
+      "type": "media",
+      "label": {
+        "ar": "صورة عميل 1 (اختياري)",
+        "en": "Customer avatar 1 (optional)"
+      }
+    },
+    "avatar_2": {
+      "type": "media",
+      "label": {
+        "ar": "صورة عميل 2 (اختياري)",
+        "en": "Customer avatar 2 (optional)"
+      }
+    },
+    "avatar_3": {
+      "type": "media",
+      "label": {
+        "ar": "صورة عميل 3 (اختياري)",
+        "en": "Customer avatar 3 (optional)"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "الواجهة الرئيسية — صورة كاملة"
+    }
+  ]
+}

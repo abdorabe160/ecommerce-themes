@@ -1,0 +1,90 @@
+{# ============================================================================
+   MORVA SEARCH — full-width sheet sliding down from the top
+   ----------------------------------------------------------------------------
+   Large input · popular chips · live results with a "+" on each.
+   Opened with $store.modal.open('search'); logic is Alpine `mvSearch` in
+   assets/main.js. With no query it shows the store's newest pieces as
+   "trending"; typing searches /ajax/search/products. Enter goes to the full
+   results page (/shop?q=…), which works with JavaScript off as well.
+
+   Locals:  popular   comma-separated chips, e.g. "هودي, تيشيرت, كارجو"
+   ========================================================================= #}
+
+{% set popular = (data.popular | default('')) %}
+
+<div x-data="mvSearch({ popular: {{ popular | dump }} })" x-cloak>
+  <div class="mv-backdrop" :class="isOpen() && 'is-open'" @click="$store.modal.close()" aria-hidden="true"></div>
+
+  <div class="mv-search" :class="isOpen() && 'is-open'" data-lenis-prevent
+       role="dialog" aria-modal="true" aria-label="{{ t('morva.search_title') }}"
+       :aria-hidden="isOpen() ? 'false' : 'true'">
+    <div class="mv-search-inner">
+
+      <div class="mv-search-bar">
+        <span class="mv-search-label">{{ t('morva.search_title') }}</span>
+        <form class="mv-search-form" action="/shop" method="get" role="search" @submit="submit($event)">
+          <input x-ref="field" type="search" name="q" class="mv-search-input"
+                 x-model="q" @input.debounce.300ms="run()"
+                 placeholder="{{ t('morva.search_placeholder') }}"
+                 aria-label="{{ t('morva.search_placeholder') }}" autocomplete="off"/>
+        </form>
+        <button type="button" class="mv-search-clear" x-show="q" @click="clear()">{{ t('pages.search.clear') }}</button>
+        <button type="button" class="mv-close" @click="$store.modal.close()" aria-label="{{ t('common.close') }}">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+
+      <template x-if="!q.trim() && chips.length">
+        <div class="mv-search-chips">
+          <span class="mv-search-chips-label">{{ t('morva.popular') }}</span>
+          <template x-for="c in chips" :key="c">
+            <button type="button" class="mv-pchip" @click="pick(c)" x-text="c"></button>
+          </template>
+        </div>
+      </template>
+
+      <div class="mv-search-head">
+        <span x-text="q.trim() ? {{ t('morva.results') | dump }} : {{ t('morva.trending') | dump }}"></span>
+        <span>
+          <a x-show="q.trim().length > 1" :href="allUrl()" class="mv-search-all">{{ t('pages.search.view_all') }} <span class="mv-arrow" aria-hidden="true">→</span></a>
+          <span x-show="!(q.trim().length > 1)" class="mv-search-count" x-text="String(list().length).padStart(2, '0')"></span>
+        </span>
+      </div>
+
+      <div class="mv-search-results" x-show="loading && !list().length">
+        <div class="mv-result--skel mv-skel"></div>
+        <div class="mv-result--skel mv-skel"></div>
+        <div class="mv-result--skel mv-skel"></div>
+        <div class="mv-result--skel mv-skel"></div>
+      </div>
+
+      <p class="mv-empty" x-show="!loading && q.trim() && searched && !list().length">
+        {{ t('morva.no_results_for') }} &ldquo;<span x-text="q"></span>&rdquo;
+      </p>
+
+      <div class="mv-search-results" x-show="list().length">
+        <template x-for="p in list()" :key="p._id">
+          <article class="mv-result" x-data="productCard(p._id, url(p))">
+            <a :href="url(p)" class="mv-result-img">
+              <template x-if="img(p)"><img class="mv-fill" :src="img(p)" :alt="p.title" loading="lazy"/></template>
+              <span class="mv-result-tag" x-show="sale(p)" x-text="sale(p)"></span>
+            </a>
+            <a :href="url(p)" class="mv-result-meta">
+              <span class="mv-result-name" x-text="p.title"></span>
+              <span class="mv-price">
+                <s class="mv-was" x-show="was(p)" x-text="was(p)"></s>
+                <span x-text="price(p)"></span>
+              </span>
+            </a>
+            <button type="button" class="mv-addsq" @click="addToCart()" :disabled="cartLoading"
+                    :aria-label="{{ t('morva.add_to_bag') | dump }} + ': ' + p.title">
+              <span x-show="!cartLoading">+</span>
+              <span x-show="cartLoading" class="mv-spinner" style="width:12px;height:12px;"></span>
+            </button>
+          </article>
+        </template>
+      </div>
+
+    </div>
+  </div>
+</div>

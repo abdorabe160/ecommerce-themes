@@ -1,0 +1,104 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "image_ratio": "3x4",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "title_size": "md",
+        "show_savings": true,
+        "show_stock_status": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "الوصف",
+          "settings": {
+            "title": "الوصف",
+            "source": "description",
+            "open_by_default": true,
+            "text": ""
+          }
+        },
+        {
+          "block": "panel",
+          "name": "طريقة الاستخدام",
+          "settings": {
+            "title": "طريقة الاستخدام",
+            "source": "text",
+            "open_by_default": false,
+            "text": "نسّقيها مع قطعه اليومية أو أضيفي طبقة فوقها في الجو البارد. راجعي دليل المقاسات حسب العمر والوزن قبل الطلب."
+          }
+        },
+        {
+          "block": "panel",
+          "name": "العناية",
+          "settings": {
+            "title": "تعليمات العناية",
+            "source": "text",
+            "open_by_default": false,
+            "text": "غسيل بارد على الوجه الداخلي بمنظّف لطيف. بلا مُبيّض ولا مُنعّم، وكي على حرارة منخفضة. اغسليها قبل أول استخدام."
+          }
+        },
+        {
+          "block": "panel",
+          "name": "الشحن والإرجاع",
+          "settings": {
+            "title": "الشحن والإرجاع",
+            "source": "text",
+            "open_by_default": false,
+            "text": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "علامات تبويب المنتج: قد يعجبك أيضاً",
+      "widget": "collection-products",
+      "settings": {
+        "title": "قد يعجبك أيضاً",
+        "subtitle": "",
+        "view_all_text": "",
+        "view_all_url": "/shop",
+        "tab1_label": "",
+        "tab1_products": [],
+        "tab2_label": "",
+        "tab2_products": [],
+        "tab3_label": "",
+        "tab3_products": [],
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "3x4",
+        "background": "white",
+        "show_arrows": true,
+        "show_progress": true,
+        "promo_enabled": false,
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "آراء العملاء",
+        "title": "آراء عن منتجاتنا",
+        "subtitle": "",
+        "autoplay": 6,
+        "star_color": "#E8A33D",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

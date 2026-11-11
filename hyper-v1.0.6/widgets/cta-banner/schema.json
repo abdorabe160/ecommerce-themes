@@ -1,0 +1,202 @@
+{
+  "name": "المنتجات المفضلة",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة",
+        "en": "Image side"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربية)",
+            "en": "Start (left in English)"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (يسار في العربية)",
+            "en": "End (right in English)"
+          }
+        }
+      ]
+    },
+    "panel_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون اللوحة الجانبية",
+        "en": "Panel background"
+      },
+      "default": ""
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات — منتج واحد لكل شريحة بالترتيب (الأول للشريحة الأولى وهكذا)",
+        "en": "Products — one per slide, in order (the first goes with the first slide)"
+      }
+    },
+    "show_card": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار بطاقة المنتج فوق الصورة",
+        "en": "Show the product card over the image"
+      },
+      "default": true
+    },
+    "card_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض بطاقة المنتج",
+        "en": "Product card width"
+      },
+      "default": 300,
+      "min": 200,
+      "max": 400,
+      "step": 10,
+      "unit": "px"
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة صورة المنتج",
+        "en": "Product image ratio"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤",
+            "en": "3:4"
+          }
+        },
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "٢:٣ (طولي)",
+            "en": "2:3 (tall)"
+          }
+        }
+      ]
+    },
+    "show_nav": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل والعدّاد",
+        "en": "Show the arrows and counter"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية البطاقة",
+        "en": "Card surface"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الاقتباس",
+        "en": "Quote colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الأجواء",
+            "en": "Lifestyle image"
+          }
+        },
+        "quote": {
+          "type": "text",
+          "label": {
+            "ar": "الاقتباس (اكتب علامات التنصيص بنفسك)",
+            "en": "The quote (type the quotation marks yourself)"
+          },
+          "default": ""
+        },
+        "author_name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم صاحب الاقتباس",
+            "en": "Author name"
+          },
+          "default": ""
+        },
+        "author_role": {
+          "type": "string",
+          "label": {
+            "ar": "السطر تحت الاسم (بلد · صفة)",
+            "en": "Line under the name (country · role)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "المنتجات المفضلة"
+    }
+  ]
+}

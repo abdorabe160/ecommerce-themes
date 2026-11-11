@@ -1,0 +1,317 @@
+[
+  {
+    "label": {
+      "ar": "الهوية",
+      "en": "Identity"
+    },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": {
+          "ar": "أيقونة المتصفح (Favicon)",
+          "en": "Favicon"
+        }
+      },
+      "logoHeight": {
+        "type": "number",
+        "label": {
+          "ar": "ارتفاع الشعار (بكسل)",
+          "en": "Logo height (px)"
+        },
+        "default": 36,
+        "min": 20,
+        "max": 80,
+        "step": 1
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الألوان",
+      "en": "Colors"
+    },
+    "settings": {
+      "brandColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون العام (يغيّر الأزرار والروابط والشارات — اتركه فارغًا للون الثيم)",
+          "en": "Brand colour (buttons, links, badges — leave empty for the theme colour)"
+        },
+        "default": ""
+      },
+      "saleColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الخصم (الشارة والسعر) — اتركه فارغًا للون الثيم",
+          "en": "Sale colour (badge and price) — leave empty for the theme colour"
+        },
+        "default": ""
+      },
+      "successColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «متوفر» والنجاح — اتركه فارغًا للون الثيم",
+          "en": "In-stock and success colour — leave empty for the theme colour"
+        },
+        "default": ""
+      },
+      "warningColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «أوشك على النفاد» — اتركه فارغًا للون الثيم",
+          "en": "Low-stock colour — leave empty for the theme colour"
+        },
+        "default": ""
+      },
+      "custom_colors": {
+        "type": "boolean",
+        "label": {
+          "ar": "ألوان مخصصة (أغلقه للرجوع للتلقائي)",
+          "en": "Custom Colors (turn off to reset to auto)"
+        },
+        "default": false
+      },
+      "primaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون المميز (ذهبي عتيق)",
+          "en": "Accent Color (Antique Gold)"
+        },
+        "default": "#C9A227"
+      },
+      "primaryColorLight": {
+        "type": "color",
+        "label": {
+          "ar": "المميز الفاتح (وميض ذهبي)",
+          "en": "Accent Light (Gold Wash)"
+        },
+        "default": "#2B2410"
+      },
+      "primaryColorDark": {
+        "type": "color",
+        "label": {
+          "ar": "المميز الغامق",
+          "en": "Accent Dark"
+        },
+        "default": "#A5851C"
+      },
+      "secondaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون الثانوي (بنفسجي)",
+          "en": "Secondary Color (Purple)"
+        },
+        "default": "#A97BD0"
+      },
+      "secondaryColorLight": {
+        "type": "color",
+        "label": {
+          "ar": "الثانوي الفاتح",
+          "en": "Secondary Light"
+        },
+        "default": "#251A31"
+      },
+      "backgroundColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الخلفية (بنفسجي أسود)",
+          "en": "Background Color (Purple-Black)"
+        },
+        "default": "#1A1220"
+      },
+      "surfaceColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون السطح (البطاقات)",
+          "en": "Surface Color (Cards)"
+        },
+        "default": "#221730"
+      },
+      "textColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص الرئيسي (عاجي)",
+          "en": "Text Color (Cream)"
+        },
+        "default": "#F5EFE6"
+      },
+      "textSecondaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص الثانوي",
+          "en": "Secondary Text Color"
+        },
+        "default": "#C3B7CE"
+      },
+      "borderColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود",
+          "en": "Border Color"
+        },
+        "default": "#33263F"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخطوط",
+      "en": "Fonts"
+    },
+    "settings": {
+      "fontArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص العربي",
+          "en": "Arabic Body Font"
+        },
+        "default": "Almarai",
+        "options": [
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Cairo",
+            "label": "Cairo"
+          },
+          {
+            "value": "Noto Sans Arabic",
+            "label": "Noto Sans Arabic"
+          },
+          {
+            "value": "IBM Plex Sans Arabic",
+            "label": "IBM Plex Arabic"
+          }
+        ]
+      },
+      "fontEnglish": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص الإنجليزي",
+          "en": "English Body Font"
+        },
+        "default": "Jost",
+        "options": [
+          {
+            "value": "Jost",
+            "label": "Jost"
+          },
+          {
+            "value": "Inter",
+            "label": "Inter"
+          },
+          {
+            "value": "Montserrat",
+            "label": "Montserrat"
+          },
+          {
+            "value": "DM Sans",
+            "label": "DM Sans"
+          },
+          {
+            "value": "Poppins",
+            "label": "Poppins"
+          }
+        ]
+      },
+      "enableAnimations": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل الحركة في المتجر (إغلاقه يوقف كل الحركة)",
+          "en": "Enable animations (off stops all motion)"
+        },
+        "default": true
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "المنتجات والسلة",
+      "en": "Products and cart"
+    },
+    "settings": {
+      "lowStockThreshold": {
+        "type": "number",
+        "label": {
+          "ar": "حد «أوشك على النفاد» (عدد القطع)",
+          "en": "Low-stock threshold (units)"
+        },
+        "default": 3,
+        "min": 1,
+        "max": 100,
+        "step": 1
+      },
+      "freeShippingThreshold": {
+        "type": "number",
+        "label": {
+          "ar": "حد الشحن المجاني بعملة المتجر (0 = مخفي)",
+          "en": "Free-shipping threshold in store currency (0 = hidden)"
+        },
+        "default": 0,
+        "min": 0,
+        "step": 1
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "التواصل",
+      "en": "Contact"
+    },
+    "settings": {
+      "whatsappNumber": {
+        "type": "text",
+        "label": {
+          "ar": "رقم واتساب (بالصيغة الدولية مثل 9665xxxxxxxx) — يظهر زر واتساب العائم",
+          "en": "WhatsApp number (international, e.g. 9665xxxxxxxx) — shows the floating WhatsApp button"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "محركات البحث",
+      "en": "SEO"
+    },
+    "settings": {
+      "googleVerification": {
+        "type": "text",
+        "label": {
+          "ar": "كود التحقق من Google Search Console (الوسم كاملًا أو قيمة content)",
+          "en": "Google Search Console verification (full meta tag or content value)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "كود مخصص",
+      "en": "Custom code"
+    },
+    "settings": {
+      "customCSS": {
+        "type": "textarea",
+        "label": {
+          "ar": "CSS مخصص",
+          "en": "Custom CSS"
+        },
+        "default": ""
+      },
+      "customJS": {
+        "type": "textarea",
+        "label": {
+          "ar": "JavaScript مخصص",
+          "en": "Custom JavaScript"
+        },
+        "default": ""
+      }
+    }
+  }
+]

@@ -1,0 +1,190 @@
+{# ============================================================================
+   QUICK VIEW  (new theme)
+   ----------------------------------------------------------------------------
+   Fetched by main.js as: /products/{slug}?widgetKey=quick-view-product
+   Injected into #quick-view-content-dynamic (layouts/layout.njk), then
+   Alpine.initTree() runs over it. The panel around it is the side sheet in
+   the layout; styles: assets/sections.css → "QUICK VIEW".
+
+   Layout (desktop): the product's pictures stacked in their own scrolling
+   column, the details in a second one. On a phone the pictures become a
+   swipeable strip above the details.
+
+   ⚠️  JS CONTRACT — do not rename:
+     · reads `context.product`
+     · exposes window.quickViewProduct(), called by the x-data below
+     · buy logic is main.js HayatVariants (same engine as the product page):
+       Qumra.cart.add(id, qty, optionValueIds) and buyNow() → /checkout
+   ========================================================================= #}
+
+{% set p = context.product %}
+
+{% if p %}
+{% set price = p.pricing.price | default(0, true) %}
+{% set priceKnown = p.pricing.price or p.pricing.price == 0 or (p.variants and (p.variants | length) > 0) %}
+{% set was = p.pricing.compareAtPrice | default(0, true) %}
+{% set onSale = was and was > price %}
+{% set pct = (((was - price) / was * 100) | int) if onSale else 0 %}
+{% set images = p.images | default([], true) %}
+{% set url = '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true)) %}
+{% set brand = p.brand | default(p.vendor, true) | default('', true) %}
+{% set avg = p.averageRating | default(0, true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+<div class="hx-qv" x-data="quickViewProduct()" x-init="init()">
+
+  {# ═══ pictures ═══ #}
+  <div class="hx-qv-media" x-ref="media">
+    {% if (images | length) > 0 %}
+      {% for img in images %}
+        <figure class="hx-qv-shot{% if loop.first %} mh-hud{% endif %}" data-shot="{{ loop.index0 }}">
+          <img src="{{ img.fileUrl }}" alt="{{ p.title if loop.first else '' }}" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        </figure>
+      {% endfor %}
+    {% else %}
+      <figure class="hx-qv-shot is-empty" aria-hidden="true"></figure>
+    {% endif %}
+  </div>
+
+  {# ═══ details ═══ #}
+  <div class="hx-qv-info">
+    <span class="hx-badge-tag is-sale hx-qv-badge" x-show="hasDiscount()" {% if not onSale %}x-cloak{% endif %}>{{ t('featured.sale_badge') }}</span>
+
+    {% if brand %}<p class="hx-qv-brand">{{ brand }}</p>{% endif %}
+    <a href="{{ url }}" class="hx-qv-title">{{ p.title }}</a>
+
+    <div class="hx-card-rating hx-qv-rating">
+      <span class="hx-stars" style="--hx-stars:{{ (avg / 5 * 100) if avg <= 5 else 100 }}%">
+        <span class="hx-stars-bg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+        <span class="hx-stars-fg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span>
+      </span>
+      <span class="hx-card-count">({{ p.reviewsCount | default(0, true) }})</span>
+    </div>
+
+    {# Unit price: the stepper beside "add" changes the line, not the price. #}
+    <div class="hx-card-prices hx-qv-prices">
+      <span class="hx-card-price" :class="hasDiscount() && 'is-sale'" x-text="{{ 'displayUnitPrice()' if priceKnown else "''" }}">{% if not priceKnown %}{% elif price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+      <s class="hx-card-was" x-show="hasDiscount()" x-text="unitComparePrice ? formatMoney(unitComparePrice) : ''" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ was | money }}{% endif %}</s>
+      <span class="hx-card-off" x-show="hasDiscount() && discountPercent > 0" x-text="'-' + discountPercent + '%'" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}-{{ pct }}%{% endif %}</span>
+    </div>
+
+    {# ---- options: colour values are circles (their own hex, or picture),
+       everything else a labelled box. data-* carry the label so a quote in it
+       can never break the handler (same as the PDP). ---- #}
+    {% for option in p.options %}
+      {% if (option.values | length) > 0 %}
+        <div class="hx-qv-opt">
+          <p class="hx-opt-name">{{ option.name }}:
+            <b data-opt="{{ option.name }}" x-text="selectedLabels[$el.dataset.opt] || ''"></b></p>
+          <div class="hx-opt-vals" role="group" aria-label="{{ option.name }}">
+            {% for v in option.values %}
+              {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+              {% set vHex = v.value if (v.type == 'color' and v.value) else '' %}
+              <button type="button" class="hx-opt {{ 'is-swatch' if (vImg or vHex) }}"
+                      data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                      :class="{ 'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val, 'is-off': valueDisabled($el.dataset.opt, $el.dataset.val) }"
+                      :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                      @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)"
+                      title="{{ v.label }}" aria-label="{{ v.label }}">
+                {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% elif vHex %}<i style="background: {{ vHex }};"></i>{% else %}<span>{{ v.label }}</span>{% endif %}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    {# ---- qty + add, then buy now ---- #}
+    <div class="hx-qv-buy">
+      <div class="hx-qty">
+        <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
+        <span x-text="qty">1</span>
+        <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <button type="button" class="hx-btn-soft" @click="addToCart()" :disabled="addDisabled()">
+        <span x-show="addingToCart" class="hx-spin" x-cloak></span>
+        <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+        <span x-show="!addingToCart && !addedSuccess" x-text="isOutOfStock ? '{{ t('pages.product.out_of_stock') }}' : '{{ t('pages.product.add_to_cart') }}'">{{ t('pages.product.add_to_cart') }}</span>
+      </button>
+    </div>
+    <button type="button" class="hx-btn-solid" @click="buyNow()" :disabled="addDisabled()" x-show="!isOutOfStock">{{ t('pages.product.buy_now') }}</button>
+
+    <p class="hy-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+    {% if p.description %}
+      <div class="hx-qv-desc">{{ p.description | safe }}</div>
+    {% endif %}
+
+    <a href="{{ url }}" class="hx-qv-full">{{ t('pages.product.view_full_details') }}
+      <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>
+    </a>
+  </div>
+</div>
+
+<script>
+  window.quickViewProduct = function () {
+    return Object.assign(window.HayatVariants({
+      productId: '{{ p._id }}',
+      sku: {{ (p.sku | default('', true)) | dump | safe }},
+      price: {{ price | default(0, true) }},
+      compareAtPrice: {{ was | default(0, true) }},
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+      groups: [
+        {% for option in p.options %}{% if (option.values | length) > 0 %}
+        { name: {{ option.name | dump | safe }},
+          values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ v.label | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+        {% endif %}{% endfor %}
+      ],
+      variants: [
+        {% for variant in p.variants %}
+        {
+          id: '{{ variant._id }}',
+          {% set vp = variant.pricing.price %}{% set av = variant.inventoryLevel.available %}
+          price: {{ (vp if (vp or vp == 0) else price) | default(0, true) }},
+          compareAtPrice: {{ (variant.pricing.compareAtPrice or was) | default(0, true) }},
+          sku: {{ (variant.sku | default('', true)) | dump | safe }},
+          quantity: {{ variant.quantity | default(0, true) }},
+          available: {{ av if (av or av == 0) else 'null' }},
+          trackQuantity: {{ 'false' if variant.trackQuantity == false else 'true' }},
+          allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+          options: {{ variant.options | default([], true) | dump | safe }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      strings: {
+        selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+        comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+        maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+        outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+        variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+        addError:           {{ t('common.error') | dump | safe }},
+        listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+      }
+    }), {
+      formatMoney: function (v) { return window.formatMoney ? window.formatMoney(v) : v; },
+      init() {
+        this.initVariants();
+        var self = this;
+        /* Open with the first available value of each option chosen. */
+        this.$nextTick(function () {
+          self.$el.querySelectorAll('.hx-qv-opt').forEach(function (g) {
+            var b = g.querySelector('.hx-opt:not([disabled])');
+            if (b && !g.querySelector('.hx-opt.is-active')) b.click();
+          });
+        });
+        /* keep "what is left for this shopper" live: re-read the cart lines
+           whenever the cart changes (here, in the drawer, anywhere) */
+        window.addEventListener('cart:updated', function (e) {
+          var d = e.detail || {}; if (d.items) { self.cartLines = d.items; return; }
+          Qumra.cart.get().then(function (c) { self.cartLines = (c && c.items) || []; }).catch(function () {});
+        });
+        Qumra.cart.get()
+          .then(function (data) { self.cartLines = (data && data.items) || []; })
+          .catch(function () { self.cartLines = []; });
+      }
+    });
+  };
+</script>
+{% endif %}

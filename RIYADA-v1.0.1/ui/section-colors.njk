@@ -1,0 +1,117 @@
+{# ============================================================================
+   RIYADA SECTION COLOURS — a per-widget palette override
+   ----------------------------------------------------------------------------
+   Every widget in this theme paints itself from the same design tokens
+   (--color-text-primary, --color-flame, --color-border …). So redefining those
+   tokens on the section's own root element is all it takes to recolour
+   everything inside it — the widget's bespoke CSS *and* the shared primitives
+   it borrows (.riyada-btn, .riyada-chip, .riyada-badge, .riyada-eyebrow,
+   .riyada-card …) — without editing a single existing rule.
+
+   ── Contract ───────────────────────────────────────────────────────────────
+   The caller passes exactly two things:
+
+     scope   the section's CSS selector, e.g. '#riyada-hero-' ~ id
+     c       the widget's whole data object (widget.data)
+
+   Every widget exposes the same field names, so the call is one identical line
+   at the end of each widget file:
+
+     {% ui "section-colors.njk", scope='#riyada-xx-' ~ id, c=d %}
+
+   ── The switch ─────────────────────────────────────────────────────────────
+   `colors_enabled` off → this file emits NOTHING, and the section falls
+   straight back to the theme palette. That is the revert: the merchant's
+   picked colours stay saved and come back the moment the switch goes on again.
+   An individual picker left empty does the same for that one surface, so
+   nobody has to clear a field to undo it.
+
+   ── Three things that are load-bearing ─────────────────────────────────────
+   1. This MUST be included AFTER the widget's own <style> block. Both target
+      the same id with identical specificity, so source order decides the
+      winner — and `background` in particular is set by the widget on its own
+      root, so an earlier block would silently lose.
+   2. The flame tints are derived with color-mix() rather than exposed as more
+      pickers. A merchant who picks one brand colour should not then have to
+      hand-pick its hover, its wash and its line — and if they did, nothing
+      would stop the four drifting out of relation to each other.
+   3. The mix targets are direction-aware. This theme is dark-first, so the
+      "hover" tint brightens toward #FFF and the "wash" darkens toward #000 —
+      the opposite of what a light theme wants. Flip those two if this file is
+      ever ported to a light-ground theme.
+   ========================================================================= #}
+
+{% set c = data.c | default({}) %}
+{% set sc = data.scope %}
+
+{% if c.colors_enabled and sc %}
+<style>
+  {{ sc }} {
+    {% if c.color_bg %}
+    --color-bg-primary: {{ c.color_bg }};
+    --color-bg-secondary: {{ c.color_bg }};
+    --color-section-a: {{ c.color_bg }};
+    --color-section-b: {{ c.color_bg }};
+    {% endif %}
+
+    {% if c.color_card %}
+    --color-surface: {{ c.color_card }};
+    --color-surface-alt: {{ c.color_card }};
+    --color-bg-tertiary: {{ c.color_card }};
+    {% endif %}
+
+    {# titles and any strong text #}
+    {% if c.color_title %}--color-text-primary: {{ c.color_title }};{% endif %}
+
+    {# body copy and captions ride together — splitting them gives the merchant
+       a way to make captions unreadable and no way to notice #}
+    {% if c.color_text %}
+    --color-text-secondary: {{ c.color_text }};
+    --color-text-tertiary: {{ c.color_text }};
+    {% endif %}
+
+    {% if c.color_accent %}
+    --color-flame: {{ c.color_accent }};
+    --color-flame-solid: {{ c.color_accent }};
+    --color-border-focus: {{ c.color_accent }};
+    --color-flame-hover: color-mix(in srgb, {{ c.color_accent }} 82%, #FFF);
+    --color-flame-dark:  color-mix(in srgb, {{ c.color_accent }} 78%, #000);
+    --color-flame-wash:  color-mix(in srgb, {{ c.color_accent }} 16%, #000);
+    --color-flame-line:  color-mix(in srgb, {{ c.color_accent }} 42%, #000);
+    {% endif %}
+
+    {% if c.color_border %}
+    --color-border: {{ c.color_border }};
+    --color-border-strong: {{ c.color_border }};
+    --color-border-hover: {{ c.color_border }};
+    {% endif %}
+
+    {# the widget sets this on its own root from the `background` select; this
+       block is later in the source, so it wins #}
+    {% if c.color_bg %}background: {{ c.color_bg }};{% endif %}
+  }
+
+  {# The CTA gets its own pair. It is routinely a different colour from the
+     accent that tints links, icons and the highlighted word in the title. #}
+  {% if c.color_btn_bg %}
+  {{ sc }} .riyada-btn--primary {
+    background: {{ c.color_btn_bg }};
+    border-color: {{ c.color_btn_bg }};
+  }
+  {{ sc }} .riyada-btn--primary:hover:not(:disabled) {
+    background: color-mix(in srgb, {{ c.color_btn_bg }} 82%, #FFF);
+    border-color: color-mix(in srgb, {{ c.color_btn_bg }} 82%, #FFF);
+  }
+  {{ sc }} .riyada-btn--outline,
+  {{ sc }} .riyada-btn--ghost {
+    border-color: {{ c.color_btn_bg }};
+    color: {{ c.color_btn_bg }};
+  }
+  {% endif %}
+
+  {% if c.color_btn_text %}
+  {{ sc }} .riyada-btn--primary,
+  {{ sc }} .riyada-btn--primary:hover:not(:disabled) { color: {{ c.color_btn_text }}; }
+  {% endif %}
+</style>
+{% endif %}

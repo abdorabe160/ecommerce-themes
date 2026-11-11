@@ -1,0 +1,116 @@
+{
+  "name": "رحلة القهوة",
+  "settings": {
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة القصة",
+        "en": "Story image"
+      }
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "رحلة الحبة من المزرعة إلى كوبك"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "From the farm to your cup"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "القصة",
+        "en": "Story"
+      },
+      "default": "من المزرعة إلى التحميص ثم التجهيز: مراحل تمر بها حبة القهوة قبل أن تصل إلى كوبك."
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "القصة (إنجليزي)",
+        "en": "Story (English)"
+      },
+      "default": "From the farm to roasting and packing: the stages a coffee bean goes through before it reaches your cup."
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الدعوة",
+        "en": "CTA text"
+      },
+      "default": "اكتشف رحلتنا"
+    },
+    "button_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الدعوة (إنجليزي)",
+        "en": "CTA text (English)"
+      },
+      "default": "Discover our journey"
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط زر الدعوة",
+        "en": "CTA URL"
+      },
+      "default": "/shop"
+    }
+  },
+  "blocks": {
+    "stage": {
+      "name": "مرحلة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          }
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          }
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          }
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (إنجليزي)",
+            "en": "Description (English)"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "رحلة القهوة — من المزرعة إلى الفنجان"
+    }
+  ]
+}

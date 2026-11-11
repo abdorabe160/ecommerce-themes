@@ -1,0 +1,81 @@
+{
+  "name": "النشرة البريدية",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      }
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      }
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Text"
+      }
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "النص (إنجليزي)",
+        "en": "Text (English)"
+      }
+    },
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط خدمة النشرة (Mailchimp / Klaviyo / Brevo…) — يُرسل النموذج إليه",
+        "en": "Newsletter provider URL (Mailchimp / Klaviyo / Brevo…)"
+      },
+      "default": ""
+    },
+    "field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد لدى المزوّد",
+        "en": "Email field name used by the provider"
+      },
+      "default": "email"
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الاشتراك",
+        "en": "Subscribe button text"
+      }
+    },
+    "button_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الاشتراك (إنجليزي)",
+        "en": "Subscribe button text (English)"
+      }
+    },
+    "surface": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Surface"
+      },
+      "default": "dark",
+      "options": [
+        { "value": "dark", "label": "داكنة" },
+        { "value": "cream", "label": "فاتحة" }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "أقسام الصفحة",
+      "name": "النشرة البريدية"
+    }
+  ]
+}

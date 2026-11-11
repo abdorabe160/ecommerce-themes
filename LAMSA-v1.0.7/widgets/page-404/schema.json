@@ -1,0 +1,82 @@
+{
+  "name": "صفحة 404",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "الصفحة غير موجودة"
+    },
+    "message": {
+      "type": "text",
+      "label": {
+        "ar": "الرسالة",
+        "en": "Message"
+      },
+      "default": "الرابط اللي فتحتيه مش موجود أو اتغيّر. جرّبي البحث أو تصفّحي المتجر."
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار حقل البحث",
+        "en": "Show the search field"
+      },
+      "default": true
+    },
+    "shop_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط المتجر",
+        "en": "Shop URL"
+      },
+      "default": "/shop"
+    },
+    "home_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الرئيسية",
+        "en": "Home URL"
+      },
+      "default": "/"
+    }
+  },
+  "blocks": {
+    "link": {
+      "name": "رابط سريع",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "URL"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة 404",
+      "name": "صفحة 404"
+    }
+  ]
+}

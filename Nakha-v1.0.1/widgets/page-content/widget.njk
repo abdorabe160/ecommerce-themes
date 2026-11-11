@@ -1,0 +1,135 @@
+{# ============================================================================
+   NAKHA PAGE CONTENT — the custom/static page body
+   ----------------------------------------------------------------------------
+   Renders /pages/{slug} — about, contact, terms, privacy, shipping policy…
+
+   ⚠️  UNVERIFIED FIELD NAME. `docs/qalab/variables.md` documents `page.title`,
+   `page.type` and `page.url` — and nothing else. It never says where a custom
+   page's BODY lives, and there is no example in this theme to copy. So instead
+   of betting on one name, this reads the plausible ones in order:
+
+       context.page.content → .body → .description → .html
+       page.content         → .body → .description
+       the widget's own fallback_text setting
+
+   The first non-empty one wins. If every one of them is empty the widget shows
+   a setup hint in the editor rather than an empty page — a silently blank
+   /pages/terms is exactly the kind of thing nobody notices until a customer
+   does. Once you confirm the real field with `qumra theme dev`, collapse this
+   to that single lookup and delete the rest.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('') %}
+{% set width = d.width | default('narrow', true) %}
+{% set boxed = d.boxed | default(true) %}
+{% set bg = d.background | default('canvas', true) %}
+{% set fallbackText = d.fallback_text | default('') %}
+{% set showUpdated = d.show_updated | default(false) %}
+
+{% set bgVal = 'var(--color-surface)' if bg == 'white' else 'var(--color-bg-primary)' %}
+
+{# ---- the page record: context.page if the runtime provides one, else the global ---- #}
+{% set cp = context.page | default({}) %}
+
+{# ---- title: setting wins, then the page record, then the global ---- #}
+{% set pageTitle = d.title_override | default('') %}
+{% if not pageTitle %}{% set pageTitle = cp.title | default('') %}{% endif %}
+{% if not pageTitle %}{% set pageTitle = page.title | default('') %}{% endif %}
+
+{# ---- body: first non-empty source wins ---- #}
+{% set body = cp.content | default('') %}
+{% if not body %}{% set body = cp.body | default('') %}{% endif %}
+{% if not body %}{% set body = cp.description | default('') %}{% endif %}
+{% if not body %}{% set body = cp.html | default('') %}{% endif %}
+{% if not body %}{% set body = page.content | default('') %}{% endif %}
+{% if not body %}{% set body = page.body | default('') %}{% endif %}
+{% if not body %}{% set body = page.description | default('') %}{% endif %}
+{% if not body %}{% set body = fallbackText %}{% endif %}
+
+{% set updated = cp.updatedAt | default(cp.createdAt) | default('') %}
+
+
+<style>
+  #nakha-pg-{{ id }} { background: {{ bgVal }}; }
+
+  .nakha-pg-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.5rem, 3vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: normal;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-pg-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .nakha-pg-{{ id }}-title { line-height: 1.3; letter-spacing: normal; }
+
+  {% if boxed %}
+  .nakha-pg-{{ id }}-box {
+    padding: clamp(20px, 4vw, 40px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  {% endif %}
+
+  /* a policy page is mostly long prose — give it the full reading measure */
+  .nakha-pg-{{ id }}-body { max-width: none; }
+</style>
+
+
+<section id="nakha-pg-{{ id }}" class="nakha-section">
+  <div class="nakha-container {{ 'nakha-container--narrow' if width == 'narrow' }}">
+
+    {% if showBreadcrumb %}
+      <nav class="nakha-crumbs mb-5" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a>
+        <svg class="nakha-crumbs-sep shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <span aria-current="page">{{ pageTitle | default(t('common.home'), true) }}</span>
+      </nav>
+    {% endif %}
+
+    {% if showTitle and pageTitle %}
+      <div class="nakha-head">
+        {% if eyebrow %}<span class="nakha-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="nakha-pg-{{ id }}-title nakha-h2">{{ pageTitle }}</h1>
+        {% if showUpdated and updated %}
+          <p class="nakha-caption m-0 mt-2">{{ t('pages.about.last_updated') }} <span class="nakha-num">{{ updated }}</span></p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="{{ 'nakha-pg-' ~ id ~ '-box' if boxed }}">
+      {% if body %}
+        <div class="nakha-rte nakha-pg-{{ id }}-body">{{ body | safe }}</div>
+      {% else %}
+        {# editor-only: never let a custom page render as a blank slab #}
+        <div class="nakha-empty">
+          <span class="nakha-empty-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>
+            </svg>
+          </span>
+          <span class="nakha-empty-title">{{ t('pages.page.empty_title') }}</span>
+          <p class="nakha-text-sm m-0 max-w-md mx-auto">{{ t('pages.page.empty_desc') }}</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-pg-' ~ id, c=d %}

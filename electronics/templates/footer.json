@@ -1,0 +1,33 @@
+{
+  "title": "الفوتر",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر",
+      "widget": "footer",
+      "settings": {
+        "about_text": "",
+        "menu_1_title": "روابط سريعة",
+        "menu_1_title_en": "Quick links",
+        "menu_1": "footer-menu",
+        "menu_2_title": "خدمة العملاء",
+        "menu_2_title_en": "Customer service"
+      }
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {
+        "phone_number": "",
+        "message": ""
+      }
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

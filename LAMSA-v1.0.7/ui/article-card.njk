@@ -1,0 +1,67 @@
+{# ============================================================================
+   LAMSA ARTICLE CARD — shared by blogs-page, blog-page and article-page
+   Locals: article (required) · show_date · show_excerpt · compact
+   No <style> block: it repeats, so all styling lives in style.css.
+   ========================================================================= #}
+
+{% set a = data.article %}
+
+{% if a %}
+  {# the cover arrives as { fileUrl }, imageUrl or a plain URL; a bare id is no image #}
+  {% if a.image and a.image.fileUrl and not a.image.notFound %}{% set img = a.image.fileUrl %}{% elif a.imageUrl %}{% set img = a.imageUrl %}{% elif a.image and (a.image is string) and a.image.indexOf('/') > -1 %}{% set img = a.image %}{% else %}{% set img = '' %}{% endif %}
+  {# A local passed through the ui tag arrives as a STRING. A flag set to
+     the literal false reaches here as "false" — non-empty, therefore truthy.
+     Compare against the text; a real boolean from a variable still works. #}
+  {% set showDate = (data.show_date | string) != 'false' and (data.show_date | string) != 'off' if data.show_date is defined else true %}
+  {% set showExcerpt = (data.show_excerpt | string) != 'false' and (data.show_excerpt | string) != 'off' if data.show_excerpt is defined else true %}
+  {% set compact = data.compact | default(false) %}
+  {% set url = '/articles/' ~ (a.handle | default(a.slug) | default(a._id)) %}
+  {# article.category is an OBJECT ({ title, handle, … }) — printing it bare
+     rendered "[object Object]". Older payloads may still send a plain string. #}
+  {% set catTitle = (a.category.title if a.category.title else (a.category if a.category is string else '')) if a.category else '' %}
+  {# Qumra calls the excerpt `description`; keep `excerpt` as a fallback #}
+  {% set excerpt = a.excerpt | default(a.description, true) | default('', true) %}
+
+<a href="{{ url }}" class="lamsa-acard{{ ' lamsa-acard--compact' if compact }}" data-date="{{ a.createdAt }}">
+
+  <div class="lamsa-acard-media">
+    {% if img %}
+      <img src="{{ img }}" alt="{{ a.title }}" loading="lazy"/>
+    {% else %}
+      <span class="absolute inset-0 flex items-center justify-center" style="color: var(--color-accent-soft);">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.75" cy="9" r="1.75"/>
+          <path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+        </svg>
+      </span>
+    {% endif %}
+
+    {% if catTitle %}
+      <span class="lamsa-acard-cat">{{ catTitle }}</span>
+    {% endif %}
+  </div>
+
+  <div class="lamsa-acard-body">
+    {% if showDate and a.createdAt %}
+      {# formatted client-side: Nunjucks has no date filter #}
+      <time class="lamsa-caption font-num" x-data x-init="$el.textContent =
+              new Date('{{ a.createdAt }}').toLocaleDateString('{{ localization.language | default('ar') }}',
+                { year: 'numeric', month: 'long', day: 'numeric' })">{{ a.createdAt }}</time>
+    {% endif %}
+
+    <h3 class="lamsa-acard-title line-clamp-2">{{ a.title }}</h3>
+
+    {% if showExcerpt and excerpt %}
+      <p class="lamsa-acard-excerpt line-clamp-2">{{ excerpt | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('<br>', ' ') | striptags }}</p>
+    {% endif %}
+
+    <span class="lamsa-link mt-auto pt-1">
+      {{ t('pages.blog.read_more') }}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+    </span>
+  </div>
+</a>
+{% endif %}

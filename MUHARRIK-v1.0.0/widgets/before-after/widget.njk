@@ -1,0 +1,217 @@
+{#
+  ============================================================================
+  MUHARRIK · BEFORE / AFTER · الفرق واضح
+  ----------------------------------------------------------------------------
+     ┌──────────────────────────────────┐   — 02 / DETAILING
+     │ BEFORE            ║        AFTER │   SEE THE DIFFERENCE
+     │                   ║              │   text
+     │   dirty car       ║ detailed car │   01  ×3 gloss
+     │                   ◆              │   02  12-month protection
+     │                   ║              │   03  water-repellent layer
+     │                   ║              │   [ SHOP DETAILING → ]
+     └──────────────────────────────────┘
+
+  One framed compare of two photos with the SAME framing: the "after" is the
+  ground, the "before" is clipped to the start side of a yellow divider. The
+  divider is a real slider: pointer events (mouse, touch, pen), keyboard on
+  the handle (role="slider", arrows / Home / End / PageUp / PageDown) and RTL
+  (the before side is always the START side, so the clip and the keys flip
+  with the page direction).
+
+  Position lives in ONE CSS var, --ba-x (0–100). Until the user grabs it, CSS
+  derives it from --mh-p, which assets/mh-motion.js sets on [data-mh-progress]
+  while the stage crosses the viewport: the divider sweeps from the before
+  edge to the start position (default 50%) as the stage scrolls in. The first
+  pointerdown / key adds .is-live, and from then on the script owns --ba-x.
+  No motion script → --mh-p is unset → the fallback (1) shows the start
+  position at once; nothing stays hidden.
+
+  Images: both default to the theme's graded pair (mh-ba-before/after.jpg)
+  and are replaceable from the editor. Blocks are the result bullets; no
+  blocks → three car-care results in the visitor's language.
+
+  Styles: assets/mh-w-b.css → "01. BEFORE / AFTER".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{# ---- defaults per language ---- #}
+{% if isAr %}
+  {% set D = {
+    kicker: 'التلميع · الحماية', title: 'الفرق', hl: 'واضح',
+    text: 'نفس السيارة، نفس الإضاءة: غسيل، ثم تلميع، ثم طبقة حماية. اسحب الخط وشاهد الفرق.',
+    before: 'قبل', after: 'بعد', cta: 'تسوّق العناية',
+    results: ['غسيل', 'تلميع', 'طبقة حماية'],
+    aria: 'اسحب لمقارنة قبل وبعد'
+  } %}
+{% else %}
+  {% set D = {
+    kicker: 'Detailing · Protection', title: 'See the', hl: 'difference',
+    text: 'Same car, same light: a wash, a polish and a protective coat. Drag the line and judge for yourself.',
+    before: 'Before', after: 'After', cta: 'Shop detailing',
+    results: ['Wash', 'Polish', 'Protective coat'],
+    aria: 'Drag to compare before and after'
+  } %}
+{% endif %}
+
+{% set beforeRaw = mediaUrl(d.image_before) | trim %}
+{% set afterRaw = mediaUrl(d.image_after) | trim %}
+{% set imgBefore = beforeRaw if (beforeRaw | length) else ('mh-ba-before.jpg' | assets) %}
+{% set imgAfter = afterRaw if (afterRaw | length) else ('mh-ba-after.jpg' | assets) %}
+
+{% set results = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set txt = bd.text | default('', true) | trim %}
+  {% if txt %}{% set _ = results.push(txt) %}{% endif %}
+{% endfor %}
+{% if (results | length) == 0 %}{% set results = D.results %}{% endif %}
+
+{% set kicker = d.kicker | default(D.kicker, true) %}
+{% set title = d.title | default(D.title, true) %}
+{% set hl = D.hl if not d.title else (d.title_hl | default('', true)) %}
+{% set text = d.text | default(D.text, true) %}
+{% set lblBefore = d.label_before | default(D.before, true) %}
+{% set lblAfter = d.label_after | default(D.after, true) %}
+{% set ctaText = d.cta_text | default(D.cta, true) %}
+{% set ctaUrl = d.cta_url | default('/shop', true) %}
+{% set start = d.start if (d.start or d.start === 0) else 50 %}
+{% set layout = d.layout | default('side', true) %}
+
+<section id="mh-ba-{{ id }}"
+         class="mh-ba mh-ba--{{ layout }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 72 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 72 }}px; --ba-start: {{ start }};">
+  <div class="mh-ba-wrap">
+
+    <div class="mh-ba-stage{{ ' mh-hud' if d.show_hud != false }}" data-mh-ba data-mh-progress data-mh-reveal="clip"
+         role="group" aria-label="{{ D.aria }}" dir="{{ 'rtl' if isAr else 'ltr' }}">
+      {# AFTER is the ground, BEFORE is clipped on top of it #}
+      <div class="mh-ba-layer mh-ba-layer--after">
+        <img src="{{ imgAfter }}" alt="{{ lblAfter | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" loading="lazy" decoding="async" draggable="false"/>
+        <span class="mh-ba-lbl mh-ba-lbl--after mh-mono">{{ lblAfter | safe }}</span>
+      </div>
+      <div class="mh-ba-layer mh-ba-layer--before" aria-hidden="true">
+        <img src="{{ imgBefore }}" alt="" loading="lazy" decoding="async" draggable="false"/>
+        <span class="mh-ba-lbl mh-ba-lbl--before mh-mono">{{ lblBefore | safe }}</span>
+      </div>
+
+      <div class="mh-ba-divider">
+        <button type="button" class="mh-ba-handle" data-ba-handle
+                role="slider" aria-orientation="horizontal"
+                aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ start }}"
+                aria-label="{{ D.aria }}">
+          <svg width="22" height="12" viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true">
+            <path d="M7 1 2 6l5 5M15 1l5 5-5 5"/>
+          </svg>
+        </button>
+      </div>
+
+      {# mono readout of the split, bottom start corner #}
+      <span class="mh-ba-read mh-mono" aria-hidden="true" dir="ltr"><span data-ba-read>{{ start }}</span>%</span>
+    </div>
+
+    <div class="mh-ba-copy" data-mh-stagger>
+      {% if kicker %}<p class="mh-kicker" data-mh-item><span class="mh-kicker-num">02</span><span class="mh-ba-ksep">/</span>{{ kicker | safe }}</p>{% endif %}
+      {% if title or hl %}
+        <h2 class="mh-h mh-ba-title" data-mh-item>{{ title | safe }}{% if hl %} <span class="mh-hl">{{ hl | safe }}</span>{% endif %}</h2>
+      {% endif %}
+      {% if text %}<p class="mh-ba-text" data-mh-item>{{ text | safe }}</p>{% endif %}
+      <ul class="mh-ba-results" role="list">
+        {% for r in results %}
+          <li class="mh-ba-res" data-mh-item>
+            <span class="mh-ba-res-i mh-mono">{{ pad(loop.index) }}</span>
+            <span class="mh-ba-res-t">{{ r | safe }}</span>
+            <span class="mh-ba-res-led" aria-hidden="true"></span>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if ctaText %}
+        <div class="mh-ba-cta" data-mh-item>
+          <a href="{{ ctaUrl }}" class="mh-btn hy-btn--solid">{{ ctaText | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var root = document.getElementById('mh-ba-{{ id }}');
+      var stage = root && root.querySelector('[data-mh-ba]');
+      if (!stage || stage.__mhBa) return;
+      stage.__mhBa = true;
+
+      var handle = stage.querySelector('[data-ba-handle]');
+      var read = stage.querySelector('[data-ba-read]');
+      var rtl = (stage.getAttribute('dir') || document.documentElement.getAttribute('dir')) === 'rtl';
+      var x = {{ start | default(0, true) }};
+      var dragging = false;
+
+      function set(v, live) {
+        x = Math.max(0, Math.min(100, v));
+        if (live) stage.classList.add('is-live');
+        stage.style.setProperty('--ba-x', String(x));
+        var r = Math.round(x);
+        handle.setAttribute('aria-valuenow', String(r));
+        if (read) read.textContent = String(r);
+      }
+      function fromPointer(e) {
+        var rect = stage.getBoundingClientRect();
+        if (!rect.width) return x;
+        var f = (e.clientX - rect.left) / rect.width;
+        if (rtl) f = 1 - f;
+        return f * 100;
+      }
+
+      stage.addEventListener('pointerdown', function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        dragging = true;
+        stage.classList.add('is-dragging');
+        try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+        set(fromPointer(e), true);
+        e.preventDefault();
+      });
+      stage.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        set(fromPointer(e), true);
+      });
+      function stop(e) {
+        if (!dragging) return;
+        dragging = false;
+        stage.classList.remove('is-dragging');
+        try { stage.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+      stage.addEventListener('pointerup', stop);
+      stage.addEventListener('pointercancel', stop);
+      stage.addEventListener('lostpointercapture', stop);
+
+      handle.addEventListener('keydown', function (e) {
+        // Arrows move the divider in the PHYSICAL direction pressed, so the
+        // key always does what the hand expects, in either page direction.
+        var step = e.shiftKey ? 10 : 2;
+        var toStart = rtl ? 'ArrowRight' : 'ArrowLeft';
+        var toEnd = rtl ? 'ArrowLeft' : 'ArrowRight';
+        var v = null;
+        if (e.key === toStart || e.key === 'ArrowDown') v = x - step;
+        else if (e.key === toEnd || e.key === 'ArrowUp') v = x + step;
+        else if (e.key === 'PageDown') v = x - 10;
+        else if (e.key === 'PageUp') v = x + 10;
+        else if (e.key === 'Home') v = 0;
+        else if (e.key === 'End') v = 100;
+        if (v === null) return;
+        e.preventDefault();
+        set(v, true);
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-ba-' ~ id, c=d %}

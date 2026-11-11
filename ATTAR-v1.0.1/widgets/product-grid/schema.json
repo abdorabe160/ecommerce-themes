@@ -1,0 +1,117 @@
+{
+  "name": "المنتجات المميزة",
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان السكشن",
+        "en": "Section Title"
+      }
+    },
+    "subtitle": {
+      "type": "textarea",
+      "label": {
+        "ar": "النص التوضيحي",
+        "en": "Subtitle"
+      }
+    },
+    "featuredCollection": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات",
+        "en": "Products"
+      },
+      "default": []
+    },
+    "view_all_url": {
+      "type": "path",
+      "label": {
+        "ar": "رابط عرض الكل",
+        "en": "View All URL"
+      }
+    },
+    "display_mode": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة العرض",
+        "en": "Display Mode"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "سلايدر",
+            "en": "Slider"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة",
+            "en": "Grid"
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "number",
+      "label": {
+        "ar": "عدد الأعمدة (للشاشات الكبيرة)",
+        "en": "Columns (desktop)"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    },
+    "rows": {
+      "type": "number",
+      "label": {
+        "ar": "عدد الصفوف",
+        "en": "Rows"
+      },
+      "default": 1,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صورة الكارت",
+        "en": "Card Image Ratio"
+      },
+      "default": "portrait",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "مستطيل",
+            "en": "Landscape"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "المنتجات المميزة"
+    }
+  ]
+}

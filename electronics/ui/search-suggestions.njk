@@ -1,0 +1,79 @@
+{# نتائج البحث الذكي الفورية — مشتركة بين نافذة البحث (ui/search.njk) ومربع بحث صفحة المتجر (collection-products).
+   الحالة كلها في qumraApp (search / suggestions / recentSearches).
+   الاستخدام: {% ui "search-suggestions.njk", input="lg-search-input" %} — input: id الحقل الذي يعود إليه التركيز بعد اختيار كلمة #}
+{% set input = data.input | default('lg-search-input') %}
+{# قبل الكتابة: آخر عمليات البحث، وإلا تلميح #}
+<template x-if="searchShort(search)">
+  <div>
+    <template x-if="recentSearches.length">
+      <div class="p-2">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <p class="text-xs font-semibold text-muted">{{t('search.recent')}}</p>
+          <button type="button" class="lg-tap text-xs font-semibold text-primary" @click="clearRecentSearches()">{{t('search.clear_recent')}}</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="r in recentSearches" :key="r">
+            <button type="button" class="lg-chip" @click="useSearch(r, {{ input | dump | escape }})">
+              {% ui "icon.njk", name="search", cls="w-3.5 h-3.5 text-muted" %}<bdi x-text="r"></bdi>
+            </button>
+          </template>
+        </div>
+      </div>
+    </template>
+    <p x-show="!recentSearches.length" class="lg-search-hint">
+      <span class="lg-search-hint__icon">{% ui "icon.njk", name="search", cls="w-4 h-4" %}</span>
+      {{t('search.type_to_search')}}
+    </p>
+  </div>
+</template>
+
+{# "هل تقصد؟" — النتائج وجدت بتصحيح الكلمة #}
+<template x-if="!searchShort(search) && suggestions.corrected && !suggestions.loading">
+  <p class="lg-search-hint">
+    <span class="lg-search-hint__icon">{% ui "icon.njk", name="bolt", cls="w-4 h-4" %}</span>
+    <span>{{t('search.did_you_mean')}} <button type="button" class="lg-did-you-mean" @click="useSearch(suggestions.corrected, {{ input | dump | escape }})">{{t('common.quote_open')}}<bdi x-text="suggestions.corrected"></bdi>{{t('common.quote_close')}}</button>{{t('common.question_mark')}}</span>
+  </p>
+</template>
+
+<template x-if="!searchShort(search) && !suggestions.loading && !suggestions.products.length && !suggestions.collections.length">
+  <p class="lg-search-hint">
+    <span class="lg-search-hint__icon">{% ui "icon.njk", name="search", cls="w-4 h-4" %}</span>
+    {{t('search.no_results')}}
+  </p>
+</template>
+
+<template x-if="suggestions.collections.length">
+  <div class="p-2">
+    <p class="text-xs font-semibold text-muted mb-2">{{t('search.collections')}}</p>
+    <div class="flex flex-wrap gap-2">
+      <template x-for="c in suggestions.collections" :key="c._id || c.handle">
+        <a :href="'/collections/' + (c.handle || c.slug)" class="lg-chip" x-html="hl(c.title)"></a>
+      </template>
+    </div>
+  </div>
+</template>
+
+<template x-if="suggestions.products.length">
+  <div class="p-2">
+    <p class="text-xs font-semibold text-muted mb-2">{{t('search.products')}}</p>
+    <div class="space-y-1">
+      <template x-for="(p, idx) in suggestions.products" :key="p._id">
+        <a :href="productUrl(p)" class="lg-suggest" :class="suggestions.active === idx && 'is-active'" @mouseenter="suggestions.active = idx">
+          <span class="w-14 h-14 shrink-0 rounded-xl bg-white/60 overflow-hidden grid place-items-center">
+            <img x-show="productImage(p)" :src="productImage(p)" :alt="p.title" class="w-full h-full object-contain p-1" loading="lazy">
+          </span>
+          <span class="flex-1 min-w-0">
+            {# العنوان مع تمييز كلمات البحث — HTML آمن (كل النص مُهرَّب في SmartSearch.highlight) #}
+            <span class="block text-sm font-medium truncate" x-html="hl(p.title)"></span>
+            <span class="text-sm font-bold" x-text="productPrice(p) === 0 ? i18n.free : formatMoney(productPrice(p))"></span>
+            <span class="text-xs lg-price--old ms-1" x-show="productCompare(p) > productPrice(p)" x-text="formatMoney(productCompare(p))"></span>
+            <span class="lg-stock lg-stock--out !text-xs ms-2" x-show="productOut(p)" x-text="i18n.out"></span>
+          </span>
+        </a>
+      </template>
+    </div>
+    <button type="button" class="btn btn-glass btn-block mt-3" @click="setSearch(suggestions.corrected && !suggestions.loading && suggestions.total ? suggestions.corrected : search)">
+      {{t('search.view_all')}} <span class="text-muted" x-show="suggestions.total" x-text="'(' + suggestions.total + ')'"></span> {% ui "icon.njk", name="arrow", cls="w-4 h-4 lg-flip-rtl" %}
+    </button>
+  </div>
+</template>

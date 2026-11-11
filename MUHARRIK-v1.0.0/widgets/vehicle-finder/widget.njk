@@ -1,0 +1,329 @@
+{#
+  ============================================================================
+  MUHARRIK · VEHICLE FINDER · اختار عربيتك
+  ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────────┐ ⌐
+     │ — ابحث بسيارتك          │ 01 الماركة ▾ │ 02 الموديل ▾ │ 03 السنة ▾ │ [ عرض القطع → ] │
+     │ اختار عربيتك            │              │              │            │                 │
+     │ اختر الماركة والموديل…  ├──────────────┴──────────────┴────────────┴─────────────────┤
+     │                         │ ● يتم حفظ اختيارك على هذا الجهاز   سيارتي: Toyota Corolla 2021 ✕ │
+   ⌐ └──────────────────────────────────────────────────────────────────┘
+
+  The conversion element of a car-parts store: a hairline HUD panel that
+  overlaps the bottom of the hero (negative margin, `overlap` setting) with
+  three linked selects — Make → Model → Year — and a yellow "Show parts"
+  button. `chips` mode shows only the makes, as typographic wordmarks, for a
+  store that does not map models.
+
+  Data comes from BLOCKS:
+    make  {name, collection | url}
+    model {make (the make's name), name, years "2018-2024" | "2019, 2021",
+           collection | url}
+  A model whose make has no block still shows: its make is created on the fly.
+  No blocks at all → eight demo makes with 2–3 common models each, all linking
+  to the fallback (/shop).
+
+  Navigation: the model's collection (/shop/<handle>) → the make's → the
+  fallback URL. The chosen car is remembered in localStorage (`mh-garage`,
+  guarded by try/catch) and shown as a "سيارتي: … ✕" chip; the selects are
+  pre-filled from it on the next visit.
+
+  Alpine: `x-data="mhVehicleFinder('<id>')"` — the factory below reads this
+  widget's JSON from the <script type="application/json"> next to it, so no
+  data is ever inlined into an attribute. Without JS the form still submits
+  to the fallback URL as a plain GET.
+
+  Styles: assets/mh-w-a.css → "VEHICLE FINDER".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{# first picked collection → /shop/<handle>; anything else → '' #}
+{% macro colUrl(c) %}{% if c %}{% set c0 = c[0] if (c[0] is defined) else c %}{% if c0 and not (c0 is string) %}{% set h = c0.handle | default(c0.slug, true) | default('', true) %}{% if h %}/shop/{{ h }}{% endif %}{% endif %}{% endif %}{% endmacro %}
+
+{% set fallback = d.fallback_url | default('/shop', true) %}
+{% set mode = d.mode | default('selects', true) %}
+{% set overlap = d.overlap if d.overlap is defined and d.overlap !== '' else 56 %}
+{% set showNote = d.show_note != false %}
+{% set showHud = d.show_hud != false %}
+
+{# ---- Strings ---- #}
+{% if isAr %}
+  {% set S = {
+    kicker: 'ابحث بسيارتك', title: 'اختار عربيتك',
+    text: 'اختر الماركة والموديل والسنة ونعرض لك القطع المناسبة فقط.',
+    go: 'عرض القطع', make: 'الماركة', model: 'الموديل', year: 'سنة الصنع',
+    pickMake: 'اختر الماركة', pickModel: 'اختر الموديل', pickYear: 'اختر السنة',
+    anyModel: 'كل الموديلات', anyYear: 'كل السنوات',
+    note: 'يتم حفظ اختيارك على هذا الجهاز', myCar: 'سيارتي:', remove: 'إزالة السيارة المحفوظة',
+    pickAny: 'اختر ماركتك'
+  } %}
+{% else %}
+  {% set S = {
+    kicker: 'Search by car', title: 'Find parts for your car',
+    text: 'Pick make, model and year and we show only the parts that fit.',
+    go: 'Show parts', make: 'Make', model: 'Model', year: 'Year',
+    pickMake: 'Choose a make', pickModel: 'Choose a model', pickYear: 'Choose a year',
+    anyModel: 'All models', anyYear: 'All years',
+    note: 'Your selection is saved on this device', myCar: 'My car:', remove: 'Remove the saved car',
+    pickAny: 'Pick your make'
+  } %}
+{% endif %}
+{% set kicker = d.kicker | default(S.kicker, true) %}
+{% set title = d.title | default(S.title, true) %}
+{% set text = d.text | default(S.text, true) %}
+{% set goLabel = d.button_text | default(S.go, true) %}
+
+{# ---- Blocks → entries (grouped into makes[] by the Alpine factory) ----
+   Qalab (Nasij) does not allow calling methods such as `.push()` from a
+   template, and a `set` inside a loop does not leave the loop. So every block
+   is printed as one flat JSON entry (or null) and the grouping of models
+   under their make happens in JS. Only a model block carries `make`. #}
+{% set DEMO = [
+    { name: 'Toyota', url: '', models: [ { name: 'Corolla', years: '2014-2025', url: '' }, { name: 'Camry', years: '2012-2025', url: '' }, { name: 'Land Cruiser', years: '2008-2025', url: '' } ] },
+    { name: 'Hyundai', url: '', models: [ { name: 'Elantra', years: '2016-2025', url: '' }, { name: 'Accent', years: '2012-2024', url: '' }, { name: 'Tucson', years: '2016-2025', url: '' } ] },
+    { name: 'Nissan', url: '', models: [ { name: 'Sunny', years: '2012-2025', url: '' }, { name: 'Sentra', years: '2013-2024', url: '' }, { name: 'Patrol', years: '2010-2025', url: '' } ] },
+    { name: 'Kia', url: '', models: [ { name: 'Cerato', years: '2014-2025', url: '' }, { name: 'Sportage', years: '2016-2025', url: '' }, { name: 'Picanto', years: '2012-2024', url: '' } ] },
+    { name: 'Mercedes-Benz', url: '', models: [ { name: 'C-Class', years: '2015-2025', url: '' }, { name: 'E-Class', years: '2016-2025', url: '' }, { name: 'GLC', years: '2016-2025', url: '' } ] },
+    { name: 'BMW', url: '', models: [ { name: '3 Series', years: '2012-2025', url: '' }, { name: '5 Series', years: '2017-2025', url: '' }, { name: 'X5', years: '2014-2025', url: '' } ] },
+    { name: 'Chevrolet', url: '', models: [ { name: 'Optra', years: '2008-2020', url: '' }, { name: 'Cruze', years: '2010-2019', url: '' }, { name: 'Captiva', years: '2012-2024', url: '' } ] },
+    { name: 'Mitsubishi', url: '', models: [ { name: 'Lancer', years: '2008-2017', url: '' }, { name: 'Pajero', years: '2008-2021', url: '' }, { name: 'Xpander', years: '2020-2025', url: '' } ] }
+  ] %}
+{% set cfg = { demo: DEMO, fallback: fallback, mode: mode, s: S } %}
+
+<section id="mh-vf-{{ id }}"
+         class="mh-vf is-{{ mode }}{{ ' has-overlap' if overlap > 0 }}"
+         data-mh-reveal="up"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 0 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 40 }}px; --vf-overlap: {{ overlap }}px;">
+  <div class="mh-vf-wrap">
+    <script type="application/json" id="mh-vf-data-{{ id }}">{"cfg":{{ cfg | dump | replace('<', '\\u003c') | safe }},"entries":[{% for b in blocks %}{% set bd = b.data | default(b.settings, true) | default({}, true) %}{% set kind = b.type | default(b.block, true) | default('', true) %}{% if not kind %}{% set kind = 'model' if (bd.make is defined or bd.years is defined) else 'make' %}{% endif %}{% set c = bd.collection %}{% set c0 = (c[0] if (c and c[0] is defined) else c) %}{% set h = (c0.handle | default(c0.slug, true) | default('', true)) if (c0 and c0.handle is defined or c0 and c0.slug is defined) else '' %}{% set cu = ('/shop/' ~ h) if h else '' %}{{ ',' if not loop.first }}{{ { k: kind, name: ((bd.name | default('', true)) | trim) ~ '', make: ((bd.make | default('', true)) | trim) ~ '', years: ((bd.years | default('', true)) | trim) ~ '', url: ((bd.url | trim) ~ '') if bd.url else cu } | dump | replace('<', '\\u003c') | safe }}{% endfor %}]}</script>
+
+    <div class="mh-vf-panel{{ ' mh-hud' if showHud }}" x-data="mhVehicleFinder('{{ id }}')">
+
+      <div class="mh-vf-head">
+        {% if kicker %}<p class="mh-kicker mh-vf-kicker">{{ kicker | safe }}</p>{% endif %}
+        <h2 class="mh-h mh-h--sm mh-vf-title">{{ title | safe }}</h2>
+        {% if text %}<p class="mh-vf-text">{{ text | safe }}</p>{% endif %}
+      </div>
+
+      {% if mode == 'chips' %}
+        {# ---- Makes only: typographic wordmarks (no logos — trademarks) ---- #}
+        <nav class="mh-vf-chips" aria-label="{{ S.pickAny }}">
+          <template x-for="(m, i) in makes" :key="m.name">
+            <a class="mh-vf-chip" :href="m.url || '{{ fallback }}'" @click="pick(i)">
+              <span class="mh-vf-chip-i mh-mono" aria-hidden="true" x-text="String(i + 1).padStart(2, '0')"></span>
+              <span class="mh-vf-chip-n" x-text="m.name"></span>
+            </a>
+          </template>
+        </nav>
+      {% else %}
+        {# ---- Make → Model → Year ---- #}
+        {# Custom listboxes (the native <select> popup could not be styled and only
+           opened on its text). Each cell is one big button; its list drops below
+           as a dark hairline panel. Keyboard: ↓ opens / moves, ↑ moves back,
+           Esc closes. The hidden inputs keep the no-JS GET fallback. #}
+        <form class="mh-vf-form" action="{{ fallback }}" method="get" @submit.prevent="go()">
+          <input type="hidden" name="make" :value="make"/>
+          <input type="hidden" name="model" :value="model"/>
+          <input type="hidden" name="year" :value="year"/>
+          <div class="mh-vf-field" :class="{ 'is-off': false, 'is-open': open === 'make' }" @keydown.escape.stop="close('make')">
+            <button type="button" class="mh-vf-trigger" x-ref="t_make"
+                    @click="toggle('make')" @keydown.arrow-down.prevent="toggle('make', true)"
+                    :disabled="false" aria-haspopup="listbox" :aria-expanded="open === 'make'">
+              <span class="mh-vf-label mh-mono"><span class="mh-vf-label-n">01</span>{{ S.make }}</span>
+              <span class="mh-vf-value" :class="{ 'is-empty': !make }" x-text="make || (s.pickMake)">{{ S.pickMake }}</span>
+              <span class="mh-vf-chev" aria-hidden="true"></span>
+            </button>
+            <div class="mh-vf-pop" role="listbox" x-show="open === 'make'" x-cloak
+                 x-transition:enter="mh-vf-pop-enter" x-transition:enter-start="mh-vf-pop-from" x-transition:leave="mh-vf-pop-leave" x-transition:leave-end="mh-vf-pop-from"
+                 @click.outside="close('make')">
+              <template x-for="(o, i) in makes.map(function (m) { return m.name; })" :key="String(o)">
+                <button type="button" class="mh-vf-opt" role="option" :aria-selected="String(make) === String(o)"
+                        :class="{ 'is-on': String(make) === String(o) }" :style="'--k:' + i"
+                        @click="setMake(o)" @keydown.arrow-down.prevent="$el.nextElementSibling && $el.nextElementSibling.focus()"
+                        @keydown.arrow-up.prevent="$el.previousElementSibling && $el.previousElementSibling.tagName === 'BUTTON' ? $el.previousElementSibling.focus() : $refs.t_make.focus()">
+                  <span class="mh-vf-opt-i mh-mono" x-text="String(i + 1).padStart(2, '0')"></span>
+                  <span class="mh-vf-opt-n" x-text="o"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+          <div class="mh-vf-field" :class="{ 'is-off': !make || !models.length, 'is-open': open === 'model' }" @keydown.escape.stop="close('model')">
+            <button type="button" class="mh-vf-trigger" x-ref="t_model"
+                    @click="toggle('model')" @keydown.arrow-down.prevent="toggle('model', true)"
+                    :disabled="!make || !models.length" aria-haspopup="listbox" :aria-expanded="open === 'model'">
+              <span class="mh-vf-label mh-mono"><span class="mh-vf-label-n">02</span>{{ S.model }}</span>
+              <span class="mh-vf-value" :class="{ 'is-empty': !model }" x-text="model || (make && !models.length ? s.anyModel : s.pickModel)">{{ S.pickModel }}</span>
+              <span class="mh-vf-chev" aria-hidden="true"></span>
+            </button>
+            <div class="mh-vf-pop" role="listbox" x-show="open === 'model'" x-cloak
+                 x-transition:enter="mh-vf-pop-enter" x-transition:enter-start="mh-vf-pop-from" x-transition:leave="mh-vf-pop-leave" x-transition:leave-end="mh-vf-pop-from"
+                 @click.outside="close('model')">
+              <template x-for="(o, i) in models.map(function (m) { return m.name; })" :key="String(o)">
+                <button type="button" class="mh-vf-opt" role="option" :aria-selected="String(model) === String(o)"
+                        :class="{ 'is-on': String(model) === String(o) }" :style="'--k:' + i"
+                        @click="setModel(o)" @keydown.arrow-down.prevent="$el.nextElementSibling && $el.nextElementSibling.focus()"
+                        @keydown.arrow-up.prevent="$el.previousElementSibling && $el.previousElementSibling.tagName === 'BUTTON' ? $el.previousElementSibling.focus() : $refs.t_model.focus()">
+                  <span class="mh-vf-opt-i mh-mono" x-text="String(i + 1).padStart(2, '0')"></span>
+                  <span class="mh-vf-opt-n" x-text="o"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+          <div class="mh-vf-field" :class="{ 'is-off': !model || !years.length, 'is-open': open === 'year' }" @keydown.escape.stop="close('year')">
+            <button type="button" class="mh-vf-trigger" x-ref="t_year"
+                    @click="toggle('year')" @keydown.arrow-down.prevent="toggle('year', true)"
+                    :disabled="!model || !years.length" aria-haspopup="listbox" :aria-expanded="open === 'year'">
+              <span class="mh-vf-label mh-mono"><span class="mh-vf-label-n">03</span>{{ S.year }}</span>
+              <span class="mh-vf-value" :class="{ 'is-empty': !year }" x-text="year || (model && !years.length ? s.anyYear : s.pickYear)">{{ S.pickYear }}</span>
+              <span class="mh-vf-chev" aria-hidden="true"></span>
+            </button>
+            <div class="mh-vf-pop" role="listbox" x-show="open === 'year'" x-cloak
+                 x-transition:enter="mh-vf-pop-enter" x-transition:enter-start="mh-vf-pop-from" x-transition:leave="mh-vf-pop-leave" x-transition:leave-end="mh-vf-pop-from"
+                 @click.outside="close('year')">
+              <template x-for="(o, i) in years" :key="String(o)">
+                <button type="button" class="mh-vf-opt" role="option" :aria-selected="String(year) === String(o)"
+                        :class="{ 'is-on': String(year) === String(o) }" :style="'--k:' + i"
+                        @click="setYear(o)" @keydown.arrow-down.prevent="$el.nextElementSibling && $el.nextElementSibling.focus()"
+                        @keydown.arrow-up.prevent="$el.previousElementSibling && $el.previousElementSibling.tagName === 'BUTTON' ? $el.previousElementSibling.focus() : $refs.t_year.focus()">
+                  <span class="mh-vf-opt-i mh-mono" x-text="String(i + 1).padStart(2, '0')"></span>
+                  <span class="mh-vf-opt-n" x-text="o"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <button type="submit" class="mh-btn hy-btn--solid mh-vf-go" :disabled="!ready">{{ goLabel | safe }} <span class="mh-arrow" aria-hidden="true">→</span></button>
+        </form>
+      {% endif %}
+
+      <div class="mh-vf-foot">
+        {% if showNote %}
+          <p class="mh-vf-note mh-led">{{ S.note }}</p>
+        {% endif %}
+        <div class="mh-vf-garage" x-show="saved" x-cloak>
+          <a class="mh-vf-garage-car" :href="saved ? saved.url : '{{ fallback }}'">
+            <span class="mh-vf-garage-k mh-mono">{{ S.myCar }}</span>
+            <span class="mh-vf-garage-v" x-text="saved ? label(saved) : ''"></span>
+            <span class="mh-arrow" aria-hidden="true">→</span>
+          </a>
+          <button type="button" class="mh-vf-garage-x" @click="clear()" aria-label="{{ S.remove }}">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    if (window.mhVehicleFinder) return;
+    var KEY = 'mh-garage';
+    function parseYears(s) {
+      var out = [];
+      String(s || '').split(/[,،]/).forEach(function (p) {
+        p = p.trim();
+        var m = p.match(/^(\d{4})\s*[-–—]\s*(\d{4})$/);
+        if (m) {
+          var a = +m[1], b = +m[2], t;
+          if (a > b) { t = a; a = b; b = t; }
+          if (b - a > 80) b = a + 80;
+          for (var y = a; y <= b; y++) out.push(y);
+        } else if (/^\d{4}$/.test(p)) out.push(+p);
+      });
+      out = out.filter(function (y, i) { return out.indexOf(y) === i; });
+      out.sort(function (a, b) { return b - a; });
+      return out;
+    }
+    function read() { try { var s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.make ? s : null; } catch (e) { return null; } }
+    function write(s) { try { if (s) localStorage.setItem(KEY, JSON.stringify(s)); else localStorage.removeItem(KEY); } catch (e) {} }
+
+    // entries → [{ name, url, models: [{ name, years, url }] }]; demo when empty
+    function build(entries, demo) {
+      var out = [];
+      function find(n) { n = String(n).toLowerCase(); return out.find(function (m) { return m.name.toLowerCase() === n; }); }
+      entries.forEach(function (e) {
+        if (e && e.k === 'make' && e.name && !find(e.name)) out.push({ name: e.name, url: e.url || '', models: [] });
+      });
+      entries.forEach(function (e) {
+        if (!e || e.k !== 'model' || !e.make || !e.name) return;
+        var m = find(e.make);
+        if (!m) { m = { name: e.make, url: '', models: [] }; out.push(m); }
+        m.models.push({ name: e.name, years: e.years || '', url: e.url || '' });
+      });
+      return out.length ? out : demo;
+    }
+
+    window.mhVehicleFinder = function (id) {
+      var el = document.getElementById('mh-vf-data-' + id);
+      var raw = {};
+      try { raw = JSON.parse(el ? el.textContent : '{}') || {}; } catch (e) {}
+      var cfg = raw.cfg || {};
+      var makes = build(raw.entries || [], cfg.demo || []);
+      var fallback = cfg.fallback || '/shop';
+      return {
+        makes: makes, s: cfg.s || {},
+        make: '', model: '', year: '', saved: null,
+        init: function () {
+          var s = read();
+          this.saved = s;
+          if (s && cfg.mode !== 'chips') {
+            var self = this;
+            var mk = makes.find(function (m) { return m.name === s.make; });
+            if (mk) {
+              this.make = mk.name;
+              var md = (mk.models || []).find(function (m) { return m.name === s.model; });
+              // the model / year <option>s are rendered by x-for, one tick
+              // after their parent value changes — so each step waits a tick
+              if (md) this.$nextTick(function () {
+                self.model = md.name;
+                self.$nextTick(function () { if (parseYears(md.years).indexOf(+s.year) > -1) self.year = String(s.year); });
+              });
+            }
+          }
+        },
+        get mk() { var n = this.make; return makes.find(function (m) { return m.name === n; }) || null; },
+        get models() { return this.mk ? (this.mk.models || []) : []; },
+        get md() { var n = this.model; return this.models.find(function (m) { return m.name === n; }) || null; },
+        get years() { return this.md ? parseYears(this.md.years) : []; },
+        get ready() {
+          if (!this.mk) return false;
+          if (this.models.length && !this.md) return false;
+          if (this.years.length && !this.year) return false;
+          return true;
+        },
+        get target() { return (this.md && this.md.url) || (this.mk && this.mk.url) || fallback; },
+        open: null,
+        toggle: function (k, focusFirst) {
+          this.open = this.open === k ? null : k;
+          if (this.open && focusFirst) {
+            var self = this;
+            this.$nextTick(function () { var b = self.$root.querySelector('.mh-vf-field.is-open .mh-vf-opt'); if (b) b.focus(); });
+          }
+        },
+        close: function (k) { if (this.open === k) { this.open = null; var t = this.$refs['t_' + k]; if (t) t.focus(); } },
+        setMake: function (v) { this.make = v; this.onMake(); this.open = null; var self = this; if (this.models.length) this.$nextTick(function () { self.open = 'model'; }); },
+        setModel: function (v) { this.model = v; this.onModel(); this.open = null; var self = this; if (this.years.length) this.$nextTick(function () { self.open = 'year'; }); },
+        setYear: function (v) { this.year = String(v); this.open = null; },
+        onMake: function () { this.model = ''; this.year = ''; },
+        onModel: function () { this.year = ''; },
+        go: function () {
+          if (!this.ready) return;
+          this.save({ make: this.make, model: this.model, year: this.year, url: this.target });
+          window.location.href = this.target;
+        },
+        pick: function (i) {
+          var m = makes[i];
+          if (m) this.save({ make: m.name, model: '', year: '', url: m.url || fallback });
+        },
+        save: function (s) { this.saved = s; write(s); },
+        clear: function () { this.saved = null; write(null); this.make = ''; this.model = ''; this.year = ''; },
+        label: function (s) { return [s.make, s.model, s.year].filter(Boolean).join(' '); }
+      };
+    };
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-vf-' ~ id, c=d %}

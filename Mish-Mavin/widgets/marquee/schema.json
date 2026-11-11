@@ -1,0 +1,19 @@
+{
+  "name": "marquee",
+  "settings": {
+    "items": {
+      "type": "text",
+      "label": {
+        "ar": "العناصر (سطر لكل عنصر)",
+        "en": "Items (one per line)"
+      },
+      "default": "New arrivals\nTraining essentials\nShop by category"
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "marquee"
+    }
+  ]
+}

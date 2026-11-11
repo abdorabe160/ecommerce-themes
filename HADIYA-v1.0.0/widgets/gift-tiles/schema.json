@@ -1,0 +1,339 @@
+{
+  "name": "كروت المناسبات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اتركه فارغاً لإخفائه",
+        "en": "Title — leave empty to hide"
+      },
+      "default": "بمناسبة إيه؟"
+    },
+    "more_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط «الكل» — اتركه فارغاً لإخفائه",
+        "en": "\"See all\" link text — leave empty to hide"
+      },
+      "default": "كل المناسبات"
+    },
+    "more_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط «الكل»",
+        "en": "\"See all\" link"
+      },
+      "default": "/collections"
+    },
+    "style": {
+      "type": "select",
+      "label": {
+        "ar": "▸ الشكل",
+        "en": "▸ Look"
+      },
+      "default": "arch",
+      "options": [
+        {
+          "value": "arch",
+          "label": {
+            "ar": "أقواس — للمناسبات",
+            "en": "Arches — for occasions"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "كروت طويلة — لـ«لمين الهدية؟»",
+            "en": "Tall cards — for \"who is it for?\""
+          }
+        }
+      ]
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — ديسكتوب",
+        "en": "Columns — desktop"
+      },
+      "default": "6",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "3",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "4",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "5",
+            "en": "5"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "6",
+            "en": "6"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة — موبايل (الأقواس بتتحوّل لشريط بيتسحب)",
+        "en": "Columns — mobile (arches become a swipe strip)"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "1",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "ورق الهدايا الدافئ",
+            "en": "Warm gift paper"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الروابط والعناصر النشطة",
+        "en": "Accent — links and active elements"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "tile": {
+      "name": "كارت",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الاسم",
+            "en": "Name"
+          },
+          "default": ""
+        },
+        "hint": {
+          "type": "string",
+          "label": {
+            "ar": "سطر تحت الاسم — يظهر في شكل الكروت الطويلة",
+            "en": "Line under the name — shown in the tall-card look"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — صفحة التصنيف، مثلاً /shop/wedding",
+            "en": "Link — the collection page, e.g. /shop/wedding"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Picture"
+          }
+        },
+        "tint": {
+          "type": "color",
+          "label": {
+            "ar": "لون الكارت قبل الصورة أو من غيرها",
+            "en": "Card colour before (or without) a picture"
+          },
+          "default": ""
+        },
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة — بتظهر جوّه الكارت لما مفيش صورة، وصغيرة فوقها لما فيه صورة",
+            "en": "Icon — fills the tile without a picture, small over it with one"
+          },
+          "default": "gift",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "cake",
+              "label": {
+                "ar": "تورتة · عيد ميلاد",
+                "en": "Cake · birthday"
+              }
+            },
+            {
+              "value": "rings",
+              "label": {
+                "ar": "دبل · زفاف وخطوبة",
+                "en": "Rings · wedding"
+              }
+            },
+            {
+              "value": "baby",
+              "label": {
+                "ar": "مولود",
+                "en": "Newborn"
+              }
+            },
+            {
+              "value": "cap",
+              "label": {
+                "ar": "قبعة تخرّج",
+                "en": "Graduation cap"
+              }
+            },
+            {
+              "value": "lantern",
+              "label": {
+                "ar": "فانوس · رمضان",
+                "en": "Lantern · Ramadan"
+              }
+            },
+            {
+              "value": "moon",
+              "label": {
+                "ar": "هلال · العيد",
+                "en": "Crescent · Eid"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب · شكر وحب",
+                "en": "Heart · thanks & love"
+              }
+            },
+            {
+              "value": "flower",
+              "label": {
+                "ar": "وردة",
+                "en": "Flower"
+              }
+            },
+            {
+              "value": "her",
+              "label": {
+                "ar": "ليها",
+                "en": "For her"
+              }
+            },
+            {
+              "value": "him",
+              "label": {
+                "ar": "ليه",
+                "en": "For him"
+              }
+            },
+            {
+              "value": "kids",
+              "label": {
+                "ar": "للأطفال · بالونة",
+                "en": "Kids · balloon"
+              }
+            },
+            {
+              "value": "briefcase",
+              "label": {
+                "ar": "للشركات",
+                "en": "Corporate"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "كروت المناسبات"
+    }
+  ]
+}

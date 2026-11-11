@@ -1,0 +1,44 @@
+{#
+  MEDIA GALLERY · معرض الوسائط — a row of pictures / muted looping clips, each
+  clip with a play-pause button. Blocks; with none, four demo pictures (CC0).
+  Styles: assets/sections.css → "MEDIA GALLERY".
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set items = [] %}
+{% for block in widget.blocks | default([]) %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% set src = mediaUrl(b.media) | trim %}
+  {% if (src | length) > 0 %}{% set _ = items.push({ src: src, url: b.url | default(''), caption: b.caption | default('') }) %}{% endif %}
+{% endfor %}
+{% set hxDemo = (items | length) == 0 %}
+{% if (items | length) == 0 %}
+  {% for im in ['hx-demo-3.jpg', 'pg-demo-5.jpg', 'pg-demo-2.jpg', 'hx-demo-6.jpg'] %}{% set _ = items.push({ src: im | assets, url: '', caption: '' }) %}{% endfor %}
+{% endif %}
+{% set title = (d.title or t('extra.media')) if d.show_title != false else '' %}
+<section id="hx-mg-{{ id }}" {% if hxDemo %}data-hx-demo{% endif %} class="hx-mg is-r-{{ d.ratio | default('square') }}"
+         style="--mg-per: {{ d.columns_desktop | default(4) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}<h2 class="hx-sec-h">{{ title | safe }}</h2>{% endif %}
+    <ul class="hx-mg-grid" role="list">
+      {% for it in items %}
+        {% set low = it.src | lower %}
+        {% set clip = low.indexOf('.mp4') > -1 or low.indexOf('.webm') > -1 or low.indexOf('.mov') > -1 %}
+        <li class="hx-mg-item" {% if clip %}x-data="{ on: true }"{% endif %}>
+          {% if it.url %}<a href="{{ it.url }}" class="hx-mg-hit" aria-label="{{ it.caption | default(title) | replace('<', ' <') | striptags }}"></a>{% endif %}
+          {% if clip %}
+            <video src="{{ it.src }}" autoplay muted loop playsinline preload="metadata" x-ref="v"></video>
+            <button type="button" class="hx-mg-play" @click="on = !on; on ? $refs.v.play() : $refs.v.pause()" :aria-label="on ? '{{ t('common.pause') }}' : '{{ t('common.play') }}'">
+              <svg x-show="on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg x-show="!on" x-cloak width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>
+            </button>
+          {% else %}
+            <img src="{{ it.src }}" alt="{{ it.caption | replace('<', ' <') | striptags }}" loading="lazy"/>
+          {% endif %}
+          {% if it.caption %}<span class="hx-mg-cap">{{ it.caption | safe }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>

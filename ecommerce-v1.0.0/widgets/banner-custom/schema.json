@@ -1,0 +1,292 @@
+{
+  "name": "لافتة مخصصة",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ صورة الخلفية — فارغ = صورة الثيم التجريبية",
+        "en": "▸ Background image — empty = the theme's demo picture"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الموبايل — فارغ = نفس الصورة",
+        "en": "Mobile image — empty = same picture"
+      }
+    },
+    "image_focus": {
+      "type": "select",
+      "label": {
+        "ar": "تركيز الصورة عند القص",
+        "en": "Image focus when cropped"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "top",
+          "label": {
+            "ar": "أعلى",
+            "en": "Top"
+          }
+        },
+        {
+          "value": "bottom",
+          "label": {
+            "ar": "أسفل",
+            "en": "Bottom"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Line start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية السطر",
+            "en": "Line end"
+          }
+        }
+      ]
+    },
+    "bg_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية — يظهر خلف/بدون الصورة",
+        "en": "Background colour — behind or without the picture"
+      },
+      "default": ""
+    },
+    "overlay": {
+      "type": "select",
+      "label": {
+        "ar": "تظليل لقراءة النص",
+        "en": "Shade for legibility"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "في المنتصف خلف النص",
+            "en": "In the middle, behind the text"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "على الصورة كلها",
+            "en": "Over the whole picture"
+          }
+        }
+      ]
+    },
+    "overlay_opacity": {
+      "type": "range",
+      "label": {
+        "ar": "قوة التظليل",
+        "en": "Shade strength"
+      },
+      "default": 70,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
+    },
+    "height": {
+      "type": "range",
+      "label": {
+        "ar": "الارتفاع — كمبيوتر",
+        "en": "Height — desktop"
+      },
+      "default": 150,
+      "min": 100,
+      "max": 500,
+      "step": 10,
+      "unit": "px"
+    },
+    "height_mobile": {
+      "type": "range",
+      "label": {
+        "ar": "الارتفاع — موبايل",
+        "en": "Height — mobile"
+      },
+      "default": 200,
+      "min": 120,
+      "max": 500,
+      "step": 10,
+      "unit": "px"
+    },
+    "radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة الأركان",
+        "en": "Corner radius"
+      },
+      "default": 6,
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px"
+    },
+    "align": {
+      "type": "select",
+      "label": {
+        "ar": "مكان النص",
+        "en": "Text position"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Line start"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية السطر",
+            "en": "Line end"
+          }
+        }
+      ]
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "link_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الرابط",
+        "en": "Link colour"
+      },
+      "default": ""
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Small line above the title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "link_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Link text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "link_url": {
+      "type": "string",
+      "label": {
+        "ar": "الرابط — مثال: /shop أو /pages/about",
+        "en": "Link — e.g. /shop or /pages/about"
+      },
+      "default": "/shop"
+    },
+    "show_link": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الرابط",
+        "en": "Show the link"
+      },
+      "default": true
+    },
+    "whole_link": {
+      "type": "boolean",
+      "label": {
+        "ar": "اللافتة كلها قابلة للضغط",
+        "en": "Make the whole banner clickable"
+      },
+      "default": true
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة ببطء عند مرور الماوس",
+        "en": "Slow zoom on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "presets": [
+    {
+      "category": "العروض",
+      "name": "لافتة مخصصة"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "قائمة المفضلة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (فارغ = الافتراضي)",
+        "en": "Title (empty = default)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "قائمة المفضلة"
+    }
+  ]
+}

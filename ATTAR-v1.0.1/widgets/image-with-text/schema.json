@@ -1,0 +1,213 @@
+{
+  "name": "صورة مع نص",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      }
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Text"
+      }
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة",
+        "en": "Image"
+      }
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد الصورة",
+        "en": "Image Ratio"
+      },
+      "default": "portrait",
+      "options": [
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي 3:4",
+            "en": "Portrait 3:4"
+          }
+        },
+        {
+          "value": "tall",
+          "label": {
+            "ar": "طويل 4:5",
+            "en": "Tall 4:5"
+          }
+        },
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "عريض 4:3",
+            "en": "Landscape 4:3"
+          }
+        }
+      ]
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button Text"
+      },
+      "default": ""
+    },
+    "button_url": {
+      "type": "path",
+      "label": {
+        "ar": "رابط الزر",
+        "en": "Button URL"
+      },
+      "default": ""
+    },
+    "signature": {
+      "type": "string",
+      "label": {
+        "ar": "توقيع (اختياري)",
+        "en": "Signature (optional)"
+      },
+      "default": ""
+    },
+    "image_position": {
+      "type": "select",
+      "label": {
+        "ar": "موضع الصورة",
+        "en": "Image Position"
+      },
+      "default": "left",
+      "options": [
+        {
+          "value": "right",
+          "label": {
+            "ar": "يمين",
+            "en": "Right"
+          }
+        },
+        {
+          "value": "left",
+          "label": {
+            "ar": "يسار",
+            "en": "Left"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "ivory",
+      "options": [
+        {
+          "value": "ivory",
+          "label": {
+            "ar": "عاجي",
+            "en": "Ivory"
+          }
+        },
+        {
+          "value": "sand",
+          "label": {
+            "ar": "رملي",
+            "en": "Sand"
+          }
+        },
+        {
+          "value": "charcoal",
+          "label": {
+            "ar": "فحمي",
+            "en": "Charcoal"
+          }
+        }
+      ]
+    },
+    "show_stats": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الإحصائيات",
+        "en": "Show Stats"
+      },
+      "default": false
+    },
+    "stat_1_number": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 1 - الرقم",
+        "en": "Stat 1 - Number"
+      },
+      "default": ""
+    },
+    "stat_1_label": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 1 - النص",
+        "en": "Stat 1 - Label"
+      },
+      "default": ""
+    },
+    "stat_2_number": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 2 - الرقم",
+        "en": "Stat 2 - Number"
+      },
+      "default": ""
+    },
+    "stat_2_label": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 2 - النص",
+        "en": "Stat 2 - Label"
+      },
+      "default": ""
+    },
+    "stat_3_number": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 3 - الرقم",
+        "en": "Stat 3 - Number"
+      },
+      "default": ""
+    },
+    "stat_3_label": {
+      "type": "string",
+      "label": {
+        "ar": "إحصائية 3 - النص",
+        "en": "Stat 3 - Label"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "صورة مع نص"
+    }
+  ]
+}

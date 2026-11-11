@@ -1,0 +1,17 @@
+{
+  "name": "محتوى الصفحة",
+  "description": "محتوى صفحة عامة زي من نحن أو سياسة الاسترجاع بتنسيق Dark Blood",
+  "settings": {
+    "content": {
+      "type": "text",
+      "label": "محتوى احتياطي (بيظهر لو الصفحة مافيهاش محتوى)",
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "name": "محتوى الصفحة (Dark Blood)",
+      "category": "عام"
+    }
+  ]
+}

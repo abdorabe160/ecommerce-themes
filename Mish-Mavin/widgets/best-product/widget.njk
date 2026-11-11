@@ -1,0 +1,15 @@
+{# منتج مميز — منتج واحد مختار من المحرر ببطاقة المنتج نفسها (السعر والخصم والمخزون وزر الإضافة). يختفي لو مفيش منتج. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set pd = wd.product %}
+{% if pd and pd.title %}
+<section class="mw-section">
+  <div class="container">
+    {% if wd.title %}
+    <div class="mw-section__head mw-align-{{ wd.heading_align | default('center') }}">
+      <h2 class="mw-section__title">{{ wd.title }}</h2>
+    </div>
+    {% endif %}
+    <div class="mw-spotlight">{% ui "product-card.njk", product=pd %}</div>
+  </div>
+</section>
+{% endif %}

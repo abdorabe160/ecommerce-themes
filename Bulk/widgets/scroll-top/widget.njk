@@ -1,0 +1,8 @@
+{#- Dark Blood — زر العودة للأعلى (معيار ثيمات قمرة): بيظهر بعد شاشة تمرير، في الركن المقابل لزر الواتساب.
+    التحكم في main.js ([data-blk-top]) ومع «تقليل الحركة» بيطلع فورًا من غير تمرير ناعم -#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- if wd.enabled != false %}
+<button type="button" class="blk-fab blk-fab--top" data-blk-top hidden aria-label="{{ t('common.back_to_top') }}">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+</button>
+{%- endif %}

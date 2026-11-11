@@ -1,0 +1,122 @@
+{
+  "name": "الفوتر الرئيسي",
+  "settings": {
+    "footer_logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار الفوتر",
+        "en": "Footer Logo"
+      }
+    },
+    "footer_description": {
+      "type": "textarea",
+      "label": {
+        "ar": "وصف المتجر",
+        "en": "Store Description"
+      },
+      "default": ""
+    },
+    "footer_menu_1_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان القائمة الأولى",
+        "en": "Menu 1 Title"
+      },
+      "default": ""
+    },
+    "footer_menu_1": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الأولى",
+        "en": "Menu 1"
+      },
+      "default": "footer-menu"
+    },
+    "footer_menu_2_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان القائمة الثانية",
+        "en": "Menu 2 Title"
+      },
+      "default": ""
+    },
+    "footer_menu_2": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الثانية",
+        "en": "Menu 2"
+      }
+    },
+    "footer_social_x": {
+      "type": "url",
+      "label": {
+        "ar": "رابط X (تويتر)",
+        "en": "X (Twitter) URL"
+      }
+    },
+    "footer_social_instagram": {
+      "type": "url",
+      "label": {
+        "ar": "رابط انستقرام",
+        "en": "Instagram URL"
+      }
+    },
+    "footer_social_tiktok": {
+      "type": "url",
+      "label": {
+        "ar": "رابط تيك توك",
+        "en": "TikTok URL"
+      }
+    },
+    "footer_social_snapchat": {
+      "type": "url",
+      "label": {
+        "ar": "رابط سناب شات",
+        "en": "Snapchat URL"
+      }
+    },
+    "footer_social_facebook": {
+      "type": "url",
+      "label": {
+        "ar": "رابط فيسبوك",
+        "en": "Facebook URL"
+      }
+    },
+    "footer_social_youtube": {
+      "type": "url",
+      "label": {
+        "ar": "رابط يوتيوب",
+        "en": "YouTube URL"
+      }
+    },
+    "footer_social_whatsapp": {
+      "type": "url",
+      "label": {
+        "ar": "رابط واتساب",
+        "en": "WhatsApp URL"
+      }
+    },
+    "privacy_url": {
+      "type": "url",
+      "label": {
+        "ar": "رابط سياسة الخصوصية (فارغ = إخفاء)",
+        "en": "Privacy policy link (empty = hide)"
+      },
+      "default": ""
+    },
+    "terms_url": {
+      "type": "url",
+      "label": {
+        "ar": "رابط الشروط والأحكام (فارغ = إخفاء)",
+        "en": "Terms link (empty = hide)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر الرئيسي"
+    }
+  ]
+}

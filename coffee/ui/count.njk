@@ -1,0 +1,4 @@
+{#- «منتج واحد، منتجان، 3 منتجات، 11 منتج». {% ui "count.njk", n=5 %} — JS twin: countProducts() in main.js -#}
+{%- set n = (data.n | default(0, true)) | int -%}
+{%- set r = n % 100 -%}
+{%- if n == 1 -%}{{ t('common.count_one') }}{%- elif n == 2 -%}{{ t('common.count_two') }}{%- elif r >= 3 and r <= 10 -%}{{ t('common.count_few') | replace('{count}', n) }}{%- else -%}{{ t('common.count_many') | replace('{count}', n) }}{%- endif -%}

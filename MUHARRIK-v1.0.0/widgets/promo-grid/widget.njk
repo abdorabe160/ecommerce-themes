@@ -1,0 +1,194 @@
+{#
+  ============================================================================
+  PROMO GRID · شبكة العروض الترويجية
+  ----------------------------------------------------------------------------
+  A bento of promo tiles. The ORDER of the blocks is the layout — on desktop
+  (4 columns × 3 rows):
+
+      ┌───────────────────────────┬─────────┐
+      │                           │    2    │
+      │             1             ├─────────┤
+      │                           │         │
+      ├─────────┬─────────────────┤    3    │
+      │    4    │        5        │         │
+      └─────────┴─────────────────┴─────────┘
+
+  1–4 tiles collapse into a smaller version of the same shape, and tiles past
+  the fifth continue below as half-width rows. Styles: assets/sections.css,
+  re-skinned for MUHARRIK in assets/mh-home-a.css (dark panels, mono kicker
+  with an index, HUD corners on hover, mono discount readout).
+
+  Each tile is one link (a stretched <a> over the whole tile), so the button
+  inside is a styled <span>, never a second link. A tile's media can be an
+  image or a video clip: Qumra has only the `media` type, so the file's
+  extension decides.
+
+  ⚠️ Nasij: no method calls through a subscript, and macros return a
+  SafeString that is truthy even when empty — test with `| length`.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+
+{% set tiles = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% set _ = tiles.push(b) %}
+{% endfor %}
+{% set layout = d.layout | default('bento', true) %}
+{# No tiles yet → demo tiles with the theme's own pictures and texts in the
+   visitor's language, so a freshly added section is never blank. #}
+{% set isDemo = (tiles | length) == 0 %}
+{# MUHARRIK: demo tiles are dark panels (graphite / panel / carbon) with light
+   text; the discount badge is the only red. A merchant's own bg_color is
+   artwork and is kept as picked. #}
+{% if isDemo and layout == 'duo' %}
+  {% set tiles = [
+    { text_tone: 'light', scrim: 'soft', content_position: 'top', eyebrow: t('pgrid.d1.eyebrow'), eyebrow_style: 'plain', title: t('pgrid.d1.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link', bg_color: '#141618', ground: 'carbon' },
+    { text_tone: 'light', scrim: 'soft', content_position: 'top', eyebrow: t('pgrid.d2.eyebrow'), eyebrow_style: 'plain', title: t('pgrid.d2.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link', bg_color: '#0B0C0D' }
+  ] %}
+{% elif isDemo and layout == 'quad' %}
+  {% set tiles = [
+    { image_mode: 'product', demo_image: 'q1', bg_color: '#141618', ground: 'carbon', text_tone: 'light', content_position: 'bottom', title: t('pgrid.q1.title'), text: t('pgrid.q1.text'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link', badge_main: '45%', badge_bottom: t('cgroup.off'), badge_shape: 'tab', accent_color: '#E5322D', badge_text_color: '#FFFFFF' },
+    { image_mode: 'product', demo_image: 'q2', bg_color: '#1A1D21', text_tone: 'light', content_position: 'bottom', title: t('pgrid.q2.title'), text: t('pgrid.q2.text'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link', badge_main: '35%', badge_bottom: t('cgroup.off'), badge_shape: 'tab', accent_color: '#E5322D', badge_text_color: '#FFFFFF' },
+    { image_mode: 'product', demo_image: 'q3', bg_color: '#0B0C0D', text_tone: 'light', content_position: 'top', title: t('pgrid.q3.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link' },
+    { image_mode: 'product', demo_image: 'q4', bg_color: '#141618', text_tone: 'light', content_position: 'top', title: t('pgrid.q4.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link' },
+    { image_mode: 'product', demo_image: 'q5', bg_color: '#101214', ground: 'carbon', text_tone: 'light', content_position: 'bottom', title: t('pgrid.q5.title'), text: t('pgrid.q5.text'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'link' }
+  ] %}
+{% elif isDemo %}
+  {% set tiles = [
+    { bg_color: '#0B0C0D', ground: 'carbon', text_tone: 'light', content_position: 'center', image_focus: 'center', eyebrow: t('pgrid.b1.eyebrow'), eyebrow_style: 'highlight', title: t('pgrid.b1.title'), text: t('pgrid.b1.text'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'button', badge_top: t('pgrid.b1.badge_top'), badge_main: '45%', badge_shape: 'tab', accent_color: '#E5322D' },
+    { bg_color: '#141618', text_tone: 'light', scrim: 'soft', image_focus: 'center', eyebrow: t('pgrid.b2.eyebrow'), title: t('pgrid.b2.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop' },
+    { bg_color: '#1A1D21', text_tone: 'light', scrim: 'soft', content_position: 'bottom', image_focus: 'center', title: t('pgrid.b3.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop', cta_style: 'button' },
+    { bg_color: '#141618', text_tone: 'light', scrim: 'soft', image_focus: 'bottom', eyebrow: t('pgrid.b4.eyebrow'), title: t('pgrid.b4.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop' },
+    { bg_color: '#101214', ground: 'carbon', text_tone: 'light', scrim: 'soft', image_focus: 'bottom', title: t('pgrid.b5.title'), cta_text: t('cgroup.shop_now'), cta_url: '/shop' }
+  ] %}
+{% endif %}
+{% set count = tiles | length %}
+{% set shape = 5 if count > 5 else count %}
+
+{% set rowH  = d.row_height | default(210, true) %}
+{% set rowHm = d.row_height_mobile | default(220, true) %}
+{% set gap   = d.gap | default(8) %}
+{% set rad   = d.radius | default(6) %}
+{% set padT  = d.padding_top | default(32) %}
+{% set padB  = d.padding_bottom | default(32) %}
+{% set zoom  = d.hover_zoom | default(true) %}
+{% set vtog  = d.show_video_toggle | default(true) %}
+{% set full  = d.full_width | default(true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro media(src, cls, alt) %}
+  {% set low = src | lower %}
+  {% if low.indexOf('.mp4') > -1 or low.indexOf('.webm') > -1 or low.indexOf('.mov') > -1 or low.indexOf('.m4v') > -1 or low.indexOf('.ogv') > -1 %}
+    <video class="hx-pg-media {{ cls }}" src="{{ src }}" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+  {% else %}
+    <img class="hx-pg-media {{ cls }}" src="{{ src }}" alt="{{ alt }}" loading="lazy"/>
+  {% endif %}
+{% endmacro %}
+
+<section id="hx-pg-{{ id }}"{% if isDemo %} data-hy-empty{% endif %}
+         class="hx-pg {{ 'is-zoom' if zoom }}"
+         style="--pg-row: {{ rowH }}px; --pg-row-m: {{ rowHm }}px; --pg-gap: {{ gap }}px; --pg-rad: {{ rad }}px; --pt: {{ padT }}px; --pb: {{ padB }}px;{% if d.band_bg %} --pg-band: {{ d.band_bg }};{% endif %}{% if d.colors_enabled and d.color_accent %} --pg-sec-link: {{ d.color_accent }};{% endif %}">
+  <div class="hx-pg-wrap {{ 'is-full' if full }}">
+
+      {% set secTitle = (d.title or (t('pgrid.q.title') if layout == 'quad' else '')) if d.show_title != false else '' %}
+      {# morva head: mono kicker "01 / …" over the uppercase display title,
+         closed by a hairline (.mh-head). #}
+      {% set secIdx = d.index | default('', true) %}
+      {% set secKicker = d.kicker | default('', true) %}
+      {% if secTitle %}
+        <div class="mh-head hx-pg-headrow">
+          <div class="mh-head-main">
+            {% if secIdx or secKicker %}
+              <p class="mh-kicker">{% if secIdx %}<span class="mh-kicker-num">{{ secIdx }}{% if secKicker %} /{% endif %}</span>{% endif %}{% if secKicker %}<span>{{ secKicker | safe }}</span>{% endif %}</p>
+            {% endif %}
+            <h2 class="hx-pg-head mh-h">{{ secTitle | safe }}</h2>
+          </div>
+          {% if d.note %}<p class="mh-sub">{{ d.note | safe }}</p>{% endif %}
+        </div>
+      {% endif %}
+      <div class="hx-pg-grid {{ 'hx-pg--duo' if layout == 'duo' else ('hx-pg--quad' if layout == 'quad' else ('hx-pg--n' ~ shape)) }}">
+        {% for b in tiles %}
+          {% set src  = mediaUrl(b.image) | trim %}
+          {% set srcM = mediaUrl(b.image_mobile) | trim %}
+          {# Qumra drops any `media` value that was not uploaded through the
+             editor, so the theme's own demo pictures (assets/pg-demo-N.jpg) come
+             from a select instead. An uploaded image always wins. #}
+          {# `auto` (the default) gives tiles 1–5 the picture made for their slot,
+             so the grid arrives dressed even when the store's saved page data
+             predates this setting. #}
+          {% set demo = b.demo_image | default('auto', true) %}
+          {% set demoMax = 2 if layout == 'duo' else 5 %}
+          {% if demo == 'auto' %}{% set demo = (loop.index | string) if loop.index <= demoMax else 'none' %}{% endif %}
+          {% set qimg = { q1: 'mh-cat-care.jpg', q2: 'mh-cat-electronics.jpg', q3: 'mh-cat-exterior.jpg', q4: 'mh-cat-interior.jpg', q5: 'mh-cat-lighting.jpg' } %}
+          {% if layout == 'quad' and demo != 'none' and not qimg[demo] %}{% set demo = 'q' ~ loop.index %}{% endif %}
+          {% if (src | length) == 0 and (srcM | length) == 0 and demo != 'none' %}
+            {% if qimg[demo] %}{% set src = qimg[demo] | assets %}
+            {% else %}{% set src = ((['mh-hero-3', 'mh-garage'][(demo | int) - 1] if layout == 'duo' else ('mh-build-' ~ demo)) ~ '.jpg') | assets %}{% endif %}
+          {% endif %}
+          {% set hasD = (src | length) > 0 %}
+          {% set hasM = (srcM | length) > 0 %}
+          {% set allSrc = (src ~ ' ' ~ srcM) | lower %}
+          {% set isClip = allSrc.indexOf('.mp4') > -1 or allSrc.indexOf('.webm') > -1 or allSrc.indexOf('.mov') > -1 or allSrc.indexOf('.m4v') > -1 or allSrc.indexOf('.ogv') > -1 %}
+          {% set url   = b.cta_url | default('', true) %}
+          {% set tone  = b.text_tone | default('dark', true) %}
+          {% set pos   = b.content_position | default('top', true) %}
+          {% set scrim = b.scrim | default('none', true) %}
+          {% set focus = b.image_focus | default('end', true) %}
+          {% set hasBadge = (b.badge_main | default('', true) | length) > 0 %}
+
+          <article class="hx-pg-tile mh-hud hx-pg-t{{ loop.index }} is-{{ tone }} is-pos-{{ pos }} is-focus-{{ focus }} {{ 'is-mirror' if b.mirror_ltr }} {{ 'is-product' if b.image_mode == 'product' }} {{ 'is-hero' if loop.first }} {{ 'is-carbon' if b.ground == 'carbon' }}"
+                   style="--pg-tile-bg: {{ b.bg_color | default('var(--color-bg-tertiary)', true) }}; --pg-tile-accent: {{ b.accent_color | default('var(--color-deal)', true) }}; --pg-badge-fg: {{ b.badge_text_color | default('var(--color-text-on-deal)', true) }};"
+                   {% if isClip %}x-data="{ on: true, init() { if (document.documentElement.classList.contains('hx-no-anim') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { this.on = false; this.$el.querySelectorAll('video').forEach(v => { v.removeAttribute('autoplay'); v.pause(); }); } }, toggle() { this.on = !this.on; this.$el.querySelectorAll('video').forEach(v => this.on ? v.play() : v.pause()); } }"{% endif %}>
+
+            {% if hasD or hasM %}
+              <div class="hx-pg-frame">
+                {% if hasD and hasM %}
+                  {{ media(src, 'hx-pg-d', b.title | default('', true) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags) }}
+                  {{ media(srcM, 'hx-pg-m', b.title | default('', true) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags) }}
+                {% else %}
+                  {{ media(src if hasD else srcM, '', b.title | default('', true) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags) }}
+                {% endif %}
+              </div>
+            {% endif %}
+
+            {% if scrim != 'none' %}<span class="hx-pg-scrim is-{{ scrim }}" aria-hidden="true"></span>{% endif %}
+
+            <div class="hx-pg-body">
+              {% if b.eyebrow %}<p class="hx-pg-eyebrow {{ 'is-hl' if b.eyebrow_style == 'highlight' }}">{{ b.eyebrow | safe }}</p>{% endif %}
+              {% if b.title %}<h3 class="hx-pg-title">{{ b.title | safe }}</h3>{% endif %}
+              {% if b.text %}<p class="hx-pg-text">{{ b.text | safe }}</p>{% endif %}
+              {% if b.cta_text %}<span class="hx-pg-cta is-{{ b.cta_style | default('link', true) }}" aria-hidden="true">{{ b.cta_text | safe }} <span class="mh-arrow">→</span></span>{% endif %}
+            </div>
+
+            {% if hasBadge %}
+              <span class="hx-pg-badge is-{{ b.badge_shape | default('circle', true) }}">
+                {% if b.badge_top %}<small>{{ b.badge_top | safe }}</small>{% endif %}
+                <strong>{{ b.badge_main | safe }}</strong>
+                {% if b.badge_bottom %}<small class="is-bottom">{{ b.badge_bottom | safe }}</small>{% endif %}
+              </span>
+            {% endif %}
+
+            {% if url %}
+              <a class="hx-pg-hit" href="{{ url }}" aria-label="{{ (b.title | default(b.cta_text, true) | default(url, true)) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}"></a>
+            {% endif %}
+
+            {% if isClip and vtog %}
+              <button type="button" class="hx-pg-play" @click="toggle()"
+                      :aria-label="on ? '{{ t('common.pause') }}' : '{{ t('common.play') }}'" aria-label="{{ t('common.pause') }}">
+                <svg x-show="on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                <svg x-show="!on" x-cloak width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg>
+              </button>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#hx-pg-' ~ id, c=d %}

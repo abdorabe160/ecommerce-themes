@@ -1,0 +1,18 @@
+{
+  "layout": "layout",
+  "name": "المتجر",
+  "title": "المتجر",
+  "widgets": [
+    {
+      "name": "كل المنتجات",
+      "widget": "collection-products",
+      "settings": {
+        "show_header": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns": "3"
+      }
+    }
+  ]
+}
+

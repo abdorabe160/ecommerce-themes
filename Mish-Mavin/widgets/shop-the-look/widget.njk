@@ -1,0 +1,37 @@
+{# تسوق الإطلالة — مطابق لـ mavin-wear.com: صورة كبيرة 3:4 بنقاط على المنتجات + عنوان كبير وبطاقة منتج بسهمين وشريط تقدم. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set blocks = widget.blocks | default([]) %}
+{% set items = [] %}
+{% for b in blocks %}
+  {% set bp = b.settings.product %}
+  {% set prod = bp[0] if (bp and bp.length) else bp %}
+  {% if prod and prod.title %}{% set items = items.concat([{ p: prod, x: b.settings.x | default(50), y: b.settings.y | default(40) }]) %}{% endif %}
+{% endfor %}
+{% set img = wd.image.fileUrl if (wd.image and wd.image.fileUrl) else ('mw-look.jpg' | assets) %}
+{% if img or items | length %}
+<section class="mw-look" x-data="{ i: 0, n: {{ items | length or 2 }} }">
+  <div class="mw-look__grid">
+    <div class="mw-look__media">
+      {% if img %}<img src="{{ img }}" alt="{{ wd.title | default('Shop the look') }}" loading="lazy" decoding="async" width="900" height="1200"/>{% endif %}
+      {% for it in items %}
+        <button type="button" class="mw-look__dot" :class="{ 'is-active': i === {{ loop.index0 }} }" style="left: {{ it.x }}%; top: {{ it.y }}%" @click="i = {{ loop.index0 }}" aria-label="{{ it.p.title }}"></button>
+      {% endfor %}
+    </div>
+    <div class="mw-look__content">
+      {% if wd.title %}<h2 class="mw-look__title">{{ wd.title }}</h2>{% endif %}
+      <div class="mw-look__products"{% if not items | length %} data-mw-demo="look" data-mw-demo-limit="2"{% endif %}>
+        {%- for it in items %}
+          <div {% if not loop.first %}x-cloak {% endif %}x-show="i === {{ loop.index0 }}">{% ui "product-card.njk", product=it.p %}</div>
+        {% endfor -%}
+      </div>
+      <div class="mw-look__nav">
+        <div class="mw-look__progress"><span :style="'width:' + ((i + 1) / n * 100) + '%'"></span></div>
+        <div class="mw-arrows">
+          <button type="button" class="mw-arrow" @click="i = (i - 1 + n) % n" aria-label="{{t('common.previous') | default('Previous') }}"><svg viewBox="0 0 24 24" fill="none"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="mw-arrow" @click="i = (i + 1) % n" aria-label="{{t('common.next') | default('Next') }}"><svg viewBox="0 0 24 24" fill="none"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}

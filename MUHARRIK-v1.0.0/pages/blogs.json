@@ -1,0 +1,25 @@
+{
+  "name": "المدونة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "كل المقالات",
+      "widget": "blog-grid",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_heading": true,
+        "columns_desktop": 3,
+        "image_ratio": "wide",
+        "show_category": true,
+        "show_date": true,
+        "show_excerpt": true,
+        "hover_zoom": true,
+        "padding_top": 16,
+        "padding_bottom": 48
+      }
+    }
+  ]
+}

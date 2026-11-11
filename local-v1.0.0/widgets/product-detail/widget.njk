@@ -1,0 +1,694 @@
+{# ============================================================================
+   LOCAL · PRODUCT PAGE (PDP)
+   ----------------------------------------------------------------------------
+   ⚠️  DATA REALITY: Qumra products expose only _id, title, handle, description
+   (HTML), sku, quantity, pricing, images[], options[], variants[], tags[],
+   averageRating, reviewsCount — there are NO metafields. So per-product copy
+   lives in `description` (a panel with source="description" renders it) and
+   store-wide copy (shipping, returns, care) in a panel with source="text".
+   Nothing here invents a data source that does not exist.
+
+   ⚠️  JS CONTRACT — carried over verbatim from the previous version. The whole
+   <script> at the bottom is unchanged; only the markup around it was rebuilt:
+     · reads `context.product` (NOT the bare `product` global)
+     · exposes window['productPage_<widget.id>'], which x-data calls directly
+     · matches variants client-side against the dumped `variants` array,
+       comparing `variant.options` (an array of option-VALUE ids)
+     · adds to cart via Qumra.cart.add(id, qty, optionIds)
+   Restyle freely; do not change those four things.
+
+   Markup: the Local layout — rounded gallery frame + thumb row, the shared
+   .lc-buy-* box (same as the "منتج مميز" section), an accordion, related
+   products as ui/lc-product-card.njk, and a slim sticky bar.
+   Styling lives in assets/style.css → "15.23 PRODUCT PAGE · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# context.product on live Qumra; the documented global as a fallback #}
+{% set p = (context or {}).product or product %}
+{% set panels = widget.blocks | default([], true) %}
+
+{% set ratio = d.image_ratio | default('3x4') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+{% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+{% set showCrumbs = d.show_breadcrumb | default(true) %}
+
+{# The h1 text belongs to the product, so what the merchant gets is its SIZE.
+   It ships as one multiplier rather than a font-size, because the title carries
+   two different clamps — Arabic runs smaller than the Latin display face at the
+   same nominal size — and a raw px value would flatten that distinction. The
+   scale multiplies whichever clamp is in force, so both stay in proportion.
+   Weight is deliberately NOT offered: layout.njk loads a SINGLE weight per
+   font family, so a weight picker would only ever trigger synthetic bolding. #}
+{% set tSize = d.title_size | default('md') %}
+{% if tSize == 'sm' %}{% set titleScale = '0.85' %}
+{% elif tSize == 'lg' %}{% set titleScale = '1.15' %}
+{% elif tSize == 'xl' %}{% set titleScale = '1.32' %}
+{% else %}{% set titleScale = '1' %}{% endif %}
+{% set showSavings = d.show_savings | default(true) %}
+{% set showStock = d.show_stock_status | default(true) %}
+{# The point at which a count stops being "available" and starts being
+   "hurry". Below it the bar and the "only N left" line show; at or above it
+   the plain "in stock" pill does.
+
+   ⚠️  Comes from the theme setting `lowStockThreshold`, which `lowStock` in the
+   `cardDefaults` block of layouts/layout.njk reads too.
+
+   It was 50 here while both of those were 5, so a variant with 45 in hand
+   announced "بقي ٤٥ فقط!" on the product page and nothing at all on its card.
+   It also made the bar meaningless: the fill is measured against THIS number,
+   so 2 of 50 drew a 4% sliver next to a line claiming urgency. #}
+{% set lowStockAt = settings.lowStockThreshold | default(3, true) %}
+{% set relatedTitle = t('pages.product.related') %}
+{% set relatedLimit = 4 %}
+{% set related = context.related | default([], true) %}
+{% set showZoom = d.show_zoom | default(true) %}
+{# widgets do not inherit the layout's `set` locals — resolve it here #}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+
+{% set images = p.images | default([], true) %}
+{% set imgCount = images | length %}
+{% set untracked = p.allowBackorder or (not p.trackQuantity) %}
+{% set canPurchase = untracked or (p.quantity | default(0, true)) > 0 %}
+{% set hasDiscount = p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+
+
+{% if p %}
+<section id="lc-pdp-{{ id }}" class="lc-pdp" x-data="productPage_{{ id }}()"
+         style="--lc-pdp-title-scale: {{ titleScale }}; --lc-pdp-ratio: {{ ratioVal }};">
+  <div class="lc-hwrap">
+
+    {% if showCrumbs %}
+      <nav class="lc-crumbs" aria-label="{{ t('common.home') }}">
+        <a href="/">{{ t('common.home') }}</a>
+        <span aria-hidden="true">/</span>
+        <a href="/shop">{{ t('pages.shop.all_products') }}</a>
+        <span aria-hidden="true">/</span>
+        {# The product's collection, when the payload carries one — guarded
+           for a missing list and for an id STRING in place of an object. #}
+        {% set pCols = p.collections | default([], true) %}
+        {% set pCol = pCols[0] if (pCols | length) > 0 else null %}
+        {% set pColTitle = (pCol.title | default('', true)) if pCol else '' %}
+        {% if pColTitle %}
+          {% set pColSlug = pCol.handle | default(pCol.slug) | default('', true) %}
+          <a href="{{ ('/shop/' ~ pColSlug) if pColSlug else '/shop' }}">{{ pColTitle }}</a>
+          <span aria-hidden="true">/</span>
+        {% endif %}
+        <span aria-current="page">{{ p.title }}</span>
+      </nav>
+    {% endif %}
+
+    <div class="lc-pdp-grid">
+
+      {# ═══════════════ gallery ═══════════════
+         A rounded frame with the picture contained on the card's ground, the
+         zoom glass in the corner, and a thumbnail row under it.
+         `#pdZoom-<id>-<index>` is a CONTRACT — openZoom() clicks the one that
+         matches activeImageIndex to open GLightbox. #}
+      <div class="lc-pdp-media">
+        <div class="lc-pdp-frame"
+             @touchstart.passive="swipeStart($event)"
+             @touchend.passive="swipeEnd($event)">
+          {% if imgCount > 0 %}
+            {% for img in images %}
+              <a id="pdZoom-{{ id }}-{{ loop.index0 }}"
+                 class="lc-pdp-shot {{ 'glightbox' if showZoom }}"
+                 {% if showZoom %}href="{{ img.fileUrl }}" data-gallery="pd-{{ id }}"{% else %}href="#" @click.prevent{% endif %}
+                 x-show="activeImageIndex === {{ loop.index0 }}"
+                 {% if not loop.first %}x-cloak{% endif %}
+                 aria-label="{{ p.title }}">
+                <img src="{{ img.fileUrl }}" alt="{{ p.title }}"
+                     {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </a>
+            {% endfor %}
+            {% if showZoom %}
+              <span class="lc-pdp-zoom" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path stroke-linecap="round" d="m20 20-4.6-4.6M10.5 7.8v5.4M7.8 10.5h5.4"/></svg>
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="lc-pcard-noimg lc-pdp-noimg"></span>
+          {% endif %}
+        </div>
+
+        {% if imgCount > 1 %}
+          <div class="lc-pdp-thumbs" role="group" aria-label="{{ p.title }}">
+            {% for img in images %}
+              <button type="button" class="lc-pdp-thumb"
+                      :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                      @click="setImage({{ loop.index0 }})"
+                      aria-label="{{ loop.index }}">
+                <img src="{{ img.fileUrl }}" alt="" loading="lazy"/>
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# ═══════════════ buy column — the shared .lc-buy-* box ═══════════════ #}
+      <div class="lc-pdp-info">
+        <h1 class="lc-pdp-title">{{ p.title }}</h1>
+
+        {# Only when there IS something to report — five hollow stars read as a
+           zero score and make a new product look rejected. #}
+        {% set rvCount = p.reviewsCount | default(0, true) %}
+        {% set rvAvg = p.averageRating | default(0, true) %}
+        {% if rvCount > 0 and rvAvg > 0 %}
+          {% set rvPct = rvAvg / 5 * 100 %}
+          <div class="lc-pcard-rating lc-buy-rating" aria-label="{{ rvAvg }} / 5">
+            <span class="lc-stars" aria-hidden="true">
+              <span class="lc-stars-base">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+              <span class="lc-stars-fill" style="width: {{ rvPct }}%;">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+            </span>
+            <span class="lc-pcard-rcount">{{ rvAvg }} · {{ t('pages.product.reviews_count') | replace('{count}', rvCount) }}</span>
+          </div>
+        {% endif %}
+
+        {# The headline figure is the LINE TOTAL (unit × qty), so the stepper
+           visibly moves the number being read. #}
+        <div class="lc-buy-price lc-pdp-price">
+          <span class="lc-buy-now" x-text="displayPrice()">{% if (p.pricing.price | default(0, true)) == 0 %}{{ t('common.free') }}{% else %}{{ p.pricing.price | default(0, true) | money }}{% endif %}</span>
+          <span class="lc-buy-save" x-show="hasDiscount()" {% if not hasDiscount %}x-cloak{% endif %}>
+            <s x-text="displayComparePrice()">{% if hasDiscount %}{{ p.pricing.compareAtPrice | money }}{% endif %}</s>
+            {% if showSavings %}
+              {# the sign and the figure isolated together, or "−" drifts to the
+                 logical end of an Arabic line #}
+              <small class="lc-pdp-off"><bdi>−<span x-text="discountPercent"></span>%</bdi></small>
+            {% endif %}
+          </span>
+        </div>
+        <p class="lc-pdp-unit" x-show="qty > 1" x-cloak>
+          <bdi x-text="displayUnitPrice()"></bdi> <span aria-hidden="true">×</span> <bdi x-text="qty"></bdi>
+        </p>
+
+        {# ═══════════ options ═══════════ #}
+        {% for option in p.options %}
+          {% if (option.values | length) > 0 %}
+            <div class="lc-buy-opt">
+              <p class="lc-buy-opt-name">
+                {{ option.name }}:
+                {# nothing is pre-selected, so the value slot doubles as the prompt #}
+                <span class="lc-pdp-optval" data-opt="{{ option.name }}"
+                      data-prompt="{{ t('pages.product.select_option') | replace('{{option}}', option.name) }}"
+                      :class="!selectedOptions[$el.dataset.opt] && 'is-empty'"
+                      x-text="selectedLabels[$el.dataset.opt] || $el.dataset.prompt"></span>
+              </p>
+              <div class="lc-buy-vals" role="group" aria-label="{{ option.name }}">
+                {% for v in option.values %}
+                  {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+                  {# data- attributes, not interpolation: a quote in a label would
+                     close the attribute and take Alpine down with it #}
+                  <button type="button" class="lc-buy-val {{ 'has-img' if vImg }}"
+                          data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                          :class="{ 'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val,
+                                    'is-off': valueDisabled($el.dataset.opt, $el.dataset.val) }"
+                          :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                          :title="valueDisabled($el.dataset.opt, $el.dataset.val) ? _strings.variantSoldOut : $el.dataset.label"
+                          @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)">
+                    {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% endif %}
+                    <span>{{ v.label }}</span>
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {# ═══════════ stock — four exclusive states ═══════════
+           sold out · all already in YOUR cart · running low (≤ lowStockAt) ·
+           available. Every line reads availableNow() = shelf − your cart. #}
+        <div class="lc-pdp-stock">
+          <span class="lc-pdp-flag lc-pdp-flag--out" x-show="isOutOfStock" {% if canPurchase %}x-cloak{% endif %}>{{ t('pages.product.out_of_stock') }}</span>
+          {% if showStock %}
+            <template x-if="!isOutOfStock && availableNow() === 0">
+              <span class="lc-pdp-flag lc-pdp-flag--low">{{ t('pages.product.all_in_cart') }}</span>
+            </template>
+            <template x-if="!isOutOfStock && availableNow() !== null && availableNow() > 0 && availableNow() <= {{ lowStockAt }}">
+              <div class="lc-pdp-low">
+                <span class="lc-pdp-flag lc-pdp-flag--low" x-text="lowStockText()"></span>
+                <span class="lc-pdp-meter" aria-hidden="true">
+                  <i :style="'width:' + Math.max(4, Math.min(100, (availableNow() / {{ lowStockAt }}) * 100)) + '%'"></i>
+                </span>
+              </div>
+            </template>
+            <span class="lc-pdp-flag lc-pdp-flag--in" x-cloak
+                  x-show="!isOutOfStock && availableNow() !== 0 && !(availableNow() !== null && availableNow() > 0 && availableNow() <= {{ lowStockAt }})">
+              <span x-text="inStockText()">{{ t('pages.product.in_stock') }}</span>
+            </span>
+          {% endif %}
+        </div>
+
+        {# ═══════════ actions ═══════════ #}
+        <div class="lc-buy-actions" id="pdInfo-{{ id }}">
+          <div class="lc-buy-qty">
+            <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+            </button>
+            <span x-text="qty">1</span>
+            <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          {# Not disabled while the choice is incomplete — clicking says which
+             option is missing. Only "cannot be bought" disables it. #}
+          <button type="button" class="lc-buy-add" @click="addToCart()" :disabled="addDisabled()">
+            <span x-show="addingToCart" x-cloak class="lc-spinner" style="width:16px;height:16px;"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+            <span x-show="!addingToCart && !addedSuccess">
+              <span x-show="!isOutOfStock" {% if not canPurchase %}x-cloak{% endif %}>{{ t('pages.product.add_to_cart') }}</span>
+              <span x-show="isOutOfStock" {% if canPurchase %}x-cloak{% endif %}>{{ t('pages.product.out_of_stock') }}</span>
+            </span>
+          </button>
+          <button type="button" class="lc-buy-buy" @click="buyNow()" :disabled="addDisabled()">{{ t('pages.product.buy_now') }}</button>
+        </div>
+        <p class="lc-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+        <div class="lc-pdp-meta">
+          {# the SELECTED variant's code once one resolves #}
+          <span x-show="currentSku" {% if not p.sku %}x-cloak{% endif %}>
+            {{ t('pages.product.sku') }}: <bdi x-text="currentSku">{{ p.sku | default('', true) }}</bdi>
+          </span>
+          <button type="button" class="lc-pdp-share" @click="share()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>
+            <span x-text="shared ? copiedText : shareText">{{ t('common.share') }}</span>
+          </button>
+        </div>
+
+        {# ═══════════ panels — accordion between hairlines ═══════════
+           The first panel that asks for the description gets it; the rest fall
+           back to their own text (a pushed array carries state across the loop —
+           Nunjucks has no namespace()). #}
+        {% if (panels | length) > 0 %}
+          <div class="lc-pdp-panels">
+            {% set descTaken = [] %}
+            {% for block in panels %}
+              {% set b = block.data %}
+              {% set wantsDesc = b.source == 'description' and (descTaken | length) == 0 %}
+              {% if wantsDesc %}{% set _ = descTaken.push(1) %}{% endif %}
+              {% set body = p.description if wantsDesc else (b.text | default('', true)) %}
+              {% if b.title and body %}
+                <div class="lc-pdp-panel" x-data="{ open: {{ 'true' if b.open_by_default else 'false' }} }">
+                  <button type="button" class="lc-pdp-panel-head" @click="open = !open" :aria-expanded="open ? 'true' : 'false'">
+                    <span>{{ b.title }}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/><path class="lc-pdp-plus" stroke-linecap="round" d="M12 5v14"/></svg>
+                  </button>
+                  <div class="lc-pdp-panel-body" x-show="open" x-collapse {% if not b.open_by_default %}x-cloak{% endif %}>{{ body | safe }}</div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════ you may also like — context.related ═══════════════
+     The current product is filtered out; a pushed array counts SHOWN cards so
+     the row still gets four when the product is among its own candidates. #}
+  {% if (related | length) > 0 %}
+    <div class="lc-hwrap lc-pdp-related">
+      <h2 class="lc-sec-title">{{ relatedTitle }}</h2>
+      <div class="lc-pdp-relgrid">
+        {% set shownRel = [] %}
+        {% for rp in related %}
+          {% if rp._id != p._id and (shownRel | length) < relatedLimit %}
+            {% set _ = shownRel.push(1) %}
+            {% ui "lc-product-card.njk", product=rp %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ═══════════════ sticky buy bar ═══════════════ #}
+  <div class="lc-pdp-bar" x-show="showBar" x-cloak
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 translate-y-2"
+       x-transition:enter-end="opacity-100 translate-y-0">
+    <div class="lc-hwrap lc-pdp-bar-row">
+      {% if imgCount > 0 %}<img class="lc-pdp-bar-img" src="{{ images[0].fileUrl }}" alt=""/>{% endif %}
+      <div class="lc-pdp-bar-info">
+        <span class="lc-pdp-bar-title">{{ p.title }}</span>
+        <span class="lc-pdp-bar-price" x-text="displayPrice()"></span>
+      </div>
+      <button type="button" class="lc-buy-add lc-pdp-bar-btn" @click="addToCart()" :disabled="addDisabled()">
+        <span x-show="addingToCart" class="lc-spinner" style="width:14px;height:14px;"></span>
+        <span x-show="!addingToCart">
+          <span x-show="!isOutOfStock">{{ t('pages.product.add_to_cart') }}</span>
+          <span x-show="isOutOfStock" x-cloak>{{ t('pages.product.out_of_stock') }}</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</section>
+
+
+{# ═══════════════════ JSON-LD ═══════════════════
+   Structured data for the Product. The seo tag writes the title, the
+   description and the Open Graph tags; it does not write this, and a search
+   result carrying a price and an in-stock line is the difference between a
+   listing and a rich one.
+
+   ⚠️  `| dump` on every string. This is JSON inside a <script>, so one quote or
+   newline in a merchant's title breaks the document — silently, because a
+   malformed ld+json is ignored rather than reported. `dump` is also what
+   escapes a stray closing script tag out of a description.
+
+   ⚠️  The price goes out as the bare number the store holds. Live Qumra prices
+   are already in MAJOR units (`123456 | money` → «123,456ج.م»); the old `/ 100`
+   told search engines a 260 EGP product cost 2.6.
+
+   Availability mirrors the SAME three fields the buy button reads, so a page
+   that tells a shopper "in stock" cannot tell a crawler otherwise. #}
+{% set ldStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ p.title | default('', true) | dump | safe }},
+  {% if imgCount > 0 %}"image": [{% for img in images %}{{ (img.fileUrl | default('', true)) | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": {{ (p.description | default('', true) | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('<br>', ' ') | striptags | truncate(300)) | dump | safe }},
+  {% if p.sku %}"sku": {{ p.sku | dump | safe }},{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "url": {{ ((store.url | default('', true)) ~ '/products/' ~ (p.slug | default(p.handle) | default(p._id))) | dump | safe }},
+    "priceCurrency": {{ (localization.currency.currencyCode | default('EGP')) | dump | safe }},
+    "price": "{{ p.pricing.price | default(0, true) }}",
+    "availability": "https://schema.org/{{ 'InStock' if ldStock else 'OutOfStock' }}"
+  }
+}
+</script>
+
+<script>
+  /* ==========================================================================
+     Factory hung on `window` (NOT Alpine.data) — the x-data above calls
+     productPage_<id>() directly. Same contract as the previous version.
+     ======================================================================= */
+  (function () {
+    var wid = '{{ id }}';
+
+    window['productPage_' + wid] = function () {
+      /* Buy-side state and logic come from the shared engine in main.js so the
+         product page and the quick view can never disagree about what is
+         addable. Everything below it is page-only: gallery, share, sticky bar,
+         and the two sentences that need a placeholder swapped. */
+      return Object.assign(window.LocalVariants({
+        productId: '{{ p._id }}',
+        sku: {{ (p.sku | default('', true)) | dump | safe }},
+        price: {{ p.pricing.price | default(0, true) }},
+        compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+        quantity: {{ p.quantity | default(0, true) }},
+        trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+        allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+
+        groups: [
+          {% for option in p.options %}{% if (option.values | length) > 0 %}
+          { name: {{ (option.name | default('', true)) | dump | safe }},
+            values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ (v.label | default(v.name, true) | default('', true)) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+          {% endif %}{% endfor %}
+        ],
+
+        {# `pricing` may be an empty object on a variant that inherits the
+           product's price — `default` turns the missing number into the
+           product's own rather than into zero. #}
+                {# option VALUE → gallery index, for a value that carries its own
+         picture (a colour swatch) when no variant image resolves. Matched on
+         the image id, then on the file URL. #}
+      valueImages: {
+        {% for option in p.options %}{% for v in option.values | default([], true) %}{% if v.image %}
+          {% set vid = ((v.image._id if v.image._id else '') | string) %}
+          {% set vurl = v.image.fileUrl | default('', true) %}
+          {% set vhit = [] %}
+          {% for img in p.images | default([], true) %}
+            {% if (vid and (img._id | string) == vid) or (vurl and img.fileUrl == vurl) %}{% set _ = vhit.push(loop.index0) %}{% endif %}
+          {% endfor %}
+          {% if (vhit | length) > 0 %}'{{ v._id }}': {{ vhit[0] | default(0, true) }},{% endif %}
+        {% endif %}{% endfor %}{% endfor %}
+      },
+        variants: [
+          {% for variant in p.variants %}
+          {# ── which of the product's photos belongs to this variant ──
+             `variant.images` holds IDs that point back into `p.images`, so the
+             index is resolved HERE, once, instead of shipping the whole gallery
+             to the client to search at runtime.
+
+             The match is pushed into an array and read back with `[0]`: a plain
+             `{% set idx = loop.index0 %}` inside the loop does NOT survive it —
+             Nunjucks scopes `set` to the iteration and there is no
+             `namespace()`. `-1` means "this variant has no photo of its own",
+             and the gallery is then left where the shopper put it. #}
+          {% set vRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else '' %}
+          {% set vImgId = (vRaw._id if vRaw._id else vRaw) | string %}
+          {% set hit = [] %}
+          {% for img in p.images | default([], true) %}
+            {# ⚠️  `| string` on BOTH sides. These ids are not JavaScript
+               strings — they are ObjectId-like objects that serialise to the
+               same hex through `| dump` and print identically, and still
+               compare FALSE. Measured on the live page: `img._id == vImgId`
+               was false while `(img._id | string) == (vImgId | string)` was
+               true, for ids that render character-for-character the same.
+               Without the cast every variant resolved to -1 and the gallery
+               never moved. #}
+            {% if vImgId and (img._id | string) == vImgId %}{% set _ = hit.push(loop.index0) %}{% endif %}
+          {% endfor %}
+          {
+            id: '{{ variant._id }}',
+            imageIndex: {{ hit[0] if (hit | length) > 0 else -1 }},
+            {# variant price lives in `pricing` on current payloads; flat `price` on older ones #}
+            price: {{ (variant.pricing.price if variant.pricing else variant.price) | default(p.pricing.price, true) | default(0, true) }},
+            compareAtPrice: {{ (variant.pricing.compareAtPrice if variant.pricing else variant.compareAtPrice) | default(p.pricing.compareAtPrice) | default(0, true) }},
+            sku: {{ (variant.sku | default('', true)) | dump | safe }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            {# what the server actually counts — see the note in LocalVariants #}
+            available: {{ variant.inventoryLevel.available | default(variant.quantity) | default(0, true) }},
+            trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            options: {{ (variant.options | default([], true)) | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+
+        strings: {
+          selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+          comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+          maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+          outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+          variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+          addError:           {{ t('common.error') | dump | safe }},
+          listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+        }
+      }), {
+
+        /* ---------------- page-only state ---------------- */
+        activeImageIndex: 0,
+        imageCount: {{ imgCount | default(0, true) }},
+        shared: false,
+        showBar: false,
+        shareText: {{ t('pages.product.share') | dump | safe }},
+        copiedText: {{ t('pages.blog.copied') | dump | safe }},
+
+        init() {
+          var self = this;
+
+          this.initVariants();
+
+          /* ---- the gallery follows the chosen variant ----
+             Watched rather than wired into every swatch: the variant can change
+             from a swatch, from the arrow keys, or from a combination becoming
+             valid once a second option is picked, and all three have to move the
+             photo. `currentVariantId` is the one thing all of them change.
+
+             A variant with no photo of its own (-1) leaves the gallery alone —
+             snapping back to image 0 would undo a shopper who had just swiped to
+             look at something. */
+          this.$watch('currentVariantId', function (id) { self.syncVariantImage(id); });
+          this.syncVariantImage(this.currentVariantId);
+
+          /* ---- What is already in the cart ----
+             Read for the CAP, not to pre-fill the stepper.
+
+             This block used to set `qty` to the quantity already in the cart —
+             and it never ran: it matched on `item.product` and
+             `item.productData._id`, and a Qumra cart line carries neither. The
+             documented shape is `productId` / `variantId`, with `productData`
+             holding only title, handle and image. So `found` was always
+             undefined and the feature was dead from the start.
+
+             It is not being repaired, it is being replaced, because the idea
+             was wrong even if the fields had matched: /ajax/cart/add ADDS a
+             quantity, and there is a separate /ajax/cart/change that sets one.
+             Pre-filling the stepper with 8 and then pressing a button that adds
+             what the stepper says turns 8 into 16.
+
+             What the number is genuinely good for is the ceiling. Stock is what
+             the STORE has; what this shopper may still take is that minus what
+             they are already holding. Without it, five in stock could be added
+             five at a time, forever — which is what a cart counting past forty
+             on a product with five units looks like. */
+          var readCart = function () {
+            Qumra.cart.get().then(function (data) {
+              self.cartLines = (data && data.items) || [];
+            }).catch(function () { self.cartLines = []; });
+          };
+          readCart();
+          window.addEventListener('cart:updated', readCart);
+
+          /* the sticky bar appears only once the real buy button is off-screen */
+          var anchor = document.getElementById('pdInfo-' + wid);
+          if (anchor && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              self.showBar = !entries[0].isIntersecting;
+            }, { rootMargin: '-140px 0px 0px 0px' }).observe(anchor);
+          }
+        },
+
+        setImage(idx) { this.activeImageIndex = idx; },
+        /* the engine's hook — see _syncImage in main.js */
+        onVariantImage(idx) { if (idx < this.imageCount) this.setImage(idx); },
+
+        /* Moves the gallery to the selected variant's photo. Guards on the
+           index being a real slot in THIS product's gallery: the index is
+           resolved server-side against `p.images`, so a stale or mismatched id
+           arrives as -1 rather than as a number that would blank the stage. */
+        syncVariantImage(id) {
+          if (!id) return;
+          var v = (this._variants || []).find(function (x) { return x.id === id; });
+          if (!v) return;
+          var i = v.imageIndex;
+          if (typeof i === 'number' && i >= 0 && i < this.imageCount) this.setImage(i);
+        },
+
+        /* ---- Touch swipe on the main shot ----
+           The gallery switched on thumbnail taps only, so on a phone — where
+           the strip is small and the photograph fills the screen — the obvious
+           gesture did nothing.
+
+           Written by hand rather than by turning the stage into a Swiper: the
+           `#pdZoom-<id>-<index>` ids are a contract with openZoom(), the
+           `x-show` stack is what GLightbox's `.glightbox` anchors hang off, and
+           a carousel would have to reproduce both. Twenty lines against a
+           rewrite of two contracts.
+
+           Guards, each for a real gesture:
+             · single touch only — two fingers is a pinch-zoom, not a swipe;
+             · |dx| must beat |dy|, or a vertical page scroll that drifts
+               sideways would flip the image out from under the reader;
+             · 40px floor, so a tap with a shake in it stays a tap. */
+        _swipeX: 0,
+        _swipeY: 0,
+        _swipeOK: false,
+
+        swipeStart(e) {
+          this._swipeOK = e.touches && e.touches.length === 1;
+          if (!this._swipeOK) return;
+          this._swipeX = e.touches[0].clientX;
+          this._swipeY = e.touches[0].clientY;
+        },
+
+        swipeEnd(e) {
+          if (!this._swipeOK || this.imageCount < 2) return;
+          this._swipeOK = false;
+          var t = e.changedTouches && e.changedTouches[0];
+          if (!t) return;
+          var dx = t.clientX - this._swipeX;
+          var dy = t.clientY - this._swipeY;
+          if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+
+          /* Direction follows the reading order, the same way Swiper resolves
+             it from `dir`: dragging the picture toward the start of the line
+             brings the NEXT one in. In Arabic that is a drag to the right. */
+          var forward = {{ 'dx > 0' if isAr else 'dx < 0' }};
+          var n = this.imageCount;
+          this.activeImageIndex = forward
+            ? (this.activeImageIndex + 1) % n
+            : (this.activeImageIndex - 1 + n) % n;
+        },
+
+
+        openZoom() {
+          {% if showZoom and imgCount > 0 %}
+          var link = document.getElementById('pdZoom-' + wid + '-' + this.activeImageIndex);
+          if (link) link.click();
+          {% endif %}
+        },
+
+        /* the locale string carries a {{count}} placeholder — swap it here so
+           the sentence stays translatable instead of being glued together */
+        /* NOTE: The placeholder is assembled from pieces on purpose.
+           Written literally, Nunjucks reads `{{count}}` as one of ITS
+           expressions while compiling this file: `count` is undefined, so it
+           renders as an empty string and the call becomes `.replace('', qty)`
+           — which pastes the number at position 0 and leaves the literal
+           `{{count}}` sitting in the sentence for the shopper to read.
+
+           Qumra's t() ignores its second argument, so the substitution has to
+           happen here either way. */
+        /* "متوفر" on its own, or with the count when there is one to give.
+           Same `availableNow()` every other line on this page reads, so the
+           number here can never disagree with the cap on the stepper. */
+        inStockText() {
+          var n = this.availableNow();
+          if (n === null || n === undefined) return {{ t('pages.product.in_stock') | dump | safe }};
+          return String({{ t('pages.product.in_stock_count') | dump | safe }}).split('{count}').join(n);
+        },
+
+        lowStockText() {
+          var ph = '{' + '{count}' + '}';
+          return String({{ t('pages.product.low_stock') | dump | safe }}).split(ph)
+            .join(this.availableNow());
+        },
+
+        async share() {
+          var url = window.location.href;
+          /* native share sheet on mobile, clipboard on desktop */
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: {{ (p.title | default('', true)) | dump | safe }}, url: url });
+              return;
+            } catch (e) { /* dismissed — fall through to copy */ }
+          }
+          try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+          this.shared = true;
+          var self = this;
+          setTimeout(function () { self.shared = false; }, 2000);
+        }
+      });
+    };
+  })();
+
+  {% if showZoom and imgCount > 0 %}
+  /* On DOMContentLoaded, not inline.
+     GLightbox is loaded with `defer` (see layouts/layout.njk), so at the moment
+     this script is parsed the library does not exist yet and the guard below
+     would return early — the zoom would silently never bind. Deferred scripts
+     all finish executing BEFORE DOMContentLoaded fires, so by here it is there.
+     This is what buys the head 18KB of blocking transfer on every page in the
+     shop that is not a product page. */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof GLightbox === 'undefined') return;
+    GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true });
+  });
+  {% endif %}
+</script>
+{% else %}
+{# No product in the page data (deleted / unpublished handle): a real answer and
+   a way back, never a blank page or a script error. #}
+<section id="lc-pdp-{{ id }}" class="lc-pdp">
+  <div class="lc-hwrap">
+    <div class="lc-empty" style="padding-block: 72px;">
+      <h1 class="lc-empty-title">{{ t('pages.404.title') }}</h1>
+      <p class="m-0 text-sm">{{ t('pages.404.message') }}</p>
+      <a href="/shop" class="lc-btn lc-btn--outline lc-btn--sm" style="margin-block-start: var(--space-4);">{{ t('pages.404.browse_shop') }}</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#lc-pdp-' ~ id, c=d %}

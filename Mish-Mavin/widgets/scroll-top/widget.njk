@@ -1,0 +1,11 @@
+{# زر العودة للأعلى — يظهر بعد شاشة كاملة من التمرير، في الركن العكسي لزر واتساب، ويحترم تقليل الحركة #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% if wd.enabled != false %}
+<button type="button" class="mw-fab mw-fab--top" x-data="{ on: false }"
+        x-init="const f = () => on = window.scrollY > window.innerHeight; f(); window.addEventListener('scroll', f, { passive: true })"
+        x-show="on" x-cloak x-transition.opacity
+        @click="window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.classList.contains('mw-no-motion') ? 'auto' : 'smooth' })"
+        aria-label="{{ t('common.back_to_top') }}">
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 15 7-7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+{% endif %}

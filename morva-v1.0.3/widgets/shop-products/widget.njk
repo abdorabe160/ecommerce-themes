@@ -1,0 +1,82 @@
+{# ============================================================================
+   MORVA · SHOP PRODUCTS — the grid Qumra injects into the shop page
+   ----------------------------------------------------------------------------
+   NOTE: Qumra mounts this widget into
+       #products-grid-wrapper[data-qumra-section="shop-products"] and re-renders
+       it on every filter / sort / page change. It runs INSIDE the
+       collectionFilter() Alpine scope, so goToPage() is available here.
+   NOTE: Contracts:
+     · .shop-products-content — style.css hides this markup unless it sits
+       inside [data-qumra-section], so a stray copy can never appear twice.
+     · #products-count-data — copied into the toolbar after every run.
+     · cards come from ui/product-card.njk — the same card as everywhere else.
+   ========================================================================= #}
+<div class="shop-products-content">
+{% set products = context.shop.products | default([]) %}
+{% set pagination = context.shop.pagination %}
+{% set totalItems = pagination.totalItems if pagination else (products | length) %}
+
+<div id="products-count-data" style="display: none;">{% if totalItems > 0 %}{% ui "count.njk", n=totalItems %}{% endif %}</div>
+
+{% if (products | length) > 0 %}
+  <div class="mv-grid mv-grid--shop" data-mv-stagger>
+    {% for p in products %}
+      {% ui "product-card.njk", product=p %}
+    {% endfor %}
+  </div>
+
+  {% if pagination and pagination.totalPages > 1 %}
+    <nav class="mv-pager" aria-label="pagination">
+      <button type="button" class="mv-pager-btn" {% if pagination.currentPage <= 1 %}disabled{% endif %}
+              @click="goToPage({{ pagination.currentPage - 1 }})" aria-label="{{ t('common.prev') }}"><span class="mv-arrow">←</span></button>
+      {% for n in range(1, pagination.totalPages + 1) %}
+        {% if n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+          <button type="button" class="mv-pager-btn {{ 'is-active' if n == pagination.currentPage }}" @click="goToPage({{ n }})"
+                  {% if n == pagination.currentPage %}aria-current="page"{% endif %}>{{ n }}</button>
+        {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+          <span class="mv-pager-gap">…</span>
+        {% endif %}
+      {% endfor %}
+      <button type="button" class="mv-pager-btn" {% if pagination.currentPage >= pagination.totalPages %}disabled{% endif %}
+              @click="goToPage({{ pagination.currentPage + 1 }})" aria-label="{{ t('common.next') }}"><span class="mv-arrow">→</span></button>
+    </nav>
+  {% endif %}
+{% else %}
+  {#- Live sends applied filters as the object context.shop.filters.applied: dump is «{}» when none are on. -#}
+  {% set hasFilters = (context.shop.appliedFilters | default([]) | length) > 0 or (context.shop.query | default('') | length) > 0 or ((context.shop.filters.applied | dump | length) > 2) %}
+  {% if not hasFilters and not context.collection and not context.shop.collection and (settings.demoContent | default(true)) %}
+    {# A store with no products yet: the demo pieces, so the page can be
+       judged before the catalogue exists. Gone the moment a product is added. #}
+    {#- Demo pieces are for the Theme Editor only; the live store gets the
+        honest empty state below (`.mv-live-only`). -#}
+    <div class="mv-empty-box mv-live-only">
+      <span class="mv-empty-title">{{ t('morva.shop_empty') }}</span>
+    </div>
+    <div class="mv-grid mv-grid--shop" data-mv-stagger data-mv-live-hide>
+      {% for i in range(0, 8) %}
+        {% set di = '' ~ i %}
+        {% ui "product-card.njk", demo=di %}
+      {% endfor %}
+    </div>
+    <p class="mv-note" style="margin-top: 16px; text-align: center;" data-mv-editor-only hidden>{{ t('morva.demo_note') }}</p>
+  {% else %}
+  <div class="mv-empty-box">
+    <span class="mv-empty-title">{{ t('pages.search.no_results') if hasFilters else t('morva.shop_empty') }}</span>
+    {% if hasFilters %}<p class="mv-empty-text">{{ t('pages.search.try_different') }}</p>{% endif %}
+    <a href="/shop" class="mv-btn mv-btn--ghost mv-btn--sm">{{ t('morva.all_pieces') }}</a>
+  </div>
+  {% endif %}
+{% endif %}
+
+<script>
+  (function () {
+    var wrap = document.getElementById('products-grid-wrapper');
+    var content = document.currentScript && document.currentScript.closest('.shop-products-content');
+    if (wrap && content && !wrap.contains(content)) wrap.appendChild(content);
+    var src = document.getElementById('products-count-data');
+    var dst = document.getElementById('products-count-toolbar');
+    if (src && dst) dst.innerHTML = src.innerHTML;
+    if (window.MorvaStagger) window.MorvaStagger(wrap);
+  })();
+</script>
+</div>

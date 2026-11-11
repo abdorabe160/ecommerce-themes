@@ -1,0 +1,220 @@
+{#
+  ============================================================================
+  MUHARRIK · CAR ZONES · تسوّق حسب جزء العربية
+  ----------------------------------------------------------------------------
+     — تسوّق بذكاء                                   ┌ 01 الإضاءة        → ┐
+     تسوّق حسب جزء العربية                             │ 02 الخارجية       → │
+                 06            04  05                 │ 03 الإطارات       → │
+            ╭────■─────────────■───■╮                 │ 04 الداخلية       → │
+       ╭────╯  ┌──────┐┌──────┐     ╲__07__ 01■       │ 05 الإلكترونيات   → │
+       │       └──────┘└──────┘  02■        ╲         │ 06 العناية        → │
+       ╰──╭──╮─────────────────────╭──╮──────╯        │ 07 الصيانة        → │
+          ╲__╱                     ╲03╱               ├────────┬────────────┤
+     ───────────────────────────────────────          │ [img]  │ الإضاءة     │
+                                                      │        │ text  تسوّق →│
+                                                      └────────┴────────────┘
+  The signature widget: a side-view sedan drawn as inline SVG line-art
+  (hairline strokes, currentColor) with hotspots placed by % coordinates.
+  Hotspots are pulsing accent squares with a mono index; hover / focus / tap
+  opens the zone's panel (image · name · text · "تسوّق →"). A numbered list
+  of the zones runs beside the car; the list and the hotspots are linked
+  (hovering one highlights the other).
+
+  Motion — contract only (assets/mh-motion.js), no scroll listeners:
+    data-mh-progress on the section → --mh-p. The CSS maps it to
+    --cz-draw (outline), --cz-draw2 (details) and a per-hotspot --cz-pop, so
+    the car DRAWS ITSELF as it scrolls in (pathLength="1" +
+    stroke-dashoffset) and the hotspots pop in staggered. Without the
+    script --mh-p is unset and every var() falls back to 1: fully drawn.
+    data-mh-reveal on the head and the list.
+
+  RTL: the drawing is mirrored with scaleX(-1) and the hotspots are placed
+  with inset-inline-start, so the two always agree; the car points toward
+  the reading direction in both languages.
+
+  Blocks: one `zone` each — type (sets the default copy, image and position),
+  label, text, x/y %, collection | url, image. No blocks → seven demo zones.
+  Zone images default to the theme's category photos (mh-cat-*.jpg).
+
+  Styles: assets/mh-w-a.css → "CAR ZONES".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro colUrl(c) %}{% if c %}{% set c0 = c[0] if (c[0] is defined) else c %}{% if c0 and not (c0 is string) %}{% set h = c0.handle | default(c0.slug, true) | default('', true) %}{% if h %}/shop/{{ h }}{% endif %}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{# ---- Zone types: copy per language, default hotspot (% of the drawing,
+        car facing the reading direction) and default image ---- #}
+{% set Z = {
+  lighting:    { ar: 'الإضاءة',            en: 'Lighting',          tar: 'مصابيح LED وزينون وإضاءة داخلية.',          ten: 'LED and xenon lamps, interior lighting.',   x: 91.2, y: 58.3, img: 'mh-cat-lighting.jpg' },
+  exterior:    { ar: 'الخارجية',           en: 'Exterior',          tar: 'مرايات وأجنحة وشبكات وحمايات.',               ten: 'Mirrors, spoilers, grilles and guards.',    x: 59,   y: 62.4, img: 'mh-cat-exterior.jpg' },
+  tyres:       { ar: 'الإطارات والجنوط',   en: 'Tyres and wheels',  tar: 'إطارات وجنوط وأغطية صمامات.',                 ten: 'Tyres, rims and valve caps.',               x: 76.8, y: 75.7, img: 'mh-cat-tyres.jpg' },
+  interior:    { ar: 'الداخلية',           en: 'Interior',          tar: 'أغطية مقاعد ودواسات ومنظّمات.',               ten: 'Seat covers, mats and organisers.',         x: 56,   y: 36.2, img: 'mh-cat-interior.jpg' },
+  electronics: { ar: 'الإلكترونيات',       en: 'Electronics',       tar: 'شاشات وكاميرات وشواحن.',                      ten: 'Screens, cameras and chargers.',            x: 64,   y: 42.4, img: 'mh-cat-electronics.jpg' },
+  care:        { ar: 'العناية',            en: 'Care',              tar: 'شامبو وتلميع وسيراميك حماية.',                ten: 'Shampoo, polish and ceramic coats.',        x: 27,   y: 50, img: 'mh-cat-care.jpg' },
+  engine:      { ar: 'الصيانة',            en: 'Maintenance',       tar: 'زيوت وفلاتر وبطاريات.',                        ten: 'Oils, filters and batteries.',              x: 81.2, y: 56.2, img: 'mh-garage.jpg' }
+} %}
+{% set ORDER = ['lighting', 'exterior', 'tyres', 'interior', 'electronics', 'care', 'engine'] %}
+
+{% if isAr %}
+  {% set S = { kicker: 'تسوّق بذكاء', title: 'تسوّق حسب جزء العربية', text: 'المس أي نقطة على السيارة لتصل مباشرة إلى قطعها وإكسسواراتها.', cta: 'تسوّق', map: 'خريطة السيارة', hint: 'مرّر على نقطة', zones: 'مناطق' } %}
+{% else %}
+  {% set S = { kicker: 'Shop smarter', title: 'Shop by car zone', text: 'Tap a point on the car to jump straight to its parts and accessories.', cta: 'Shop', map: 'Car map', hint: 'Hover a point', zones: 'Zones' } %}
+{% endif %}
+{% set kicker = d.kicker | default(S.kicker, true) %}
+{% set title = d.title | default(S.title, true) %}
+{% set text = d.text | default(S.text, true) %}
+{% set cta = d.cta_text | default(S.cta, true) %}
+{% set showIndex = d.show_index != false %}
+{% set spin = d.spin_wheels != false %}
+
+{# ---- Blocks → zones ---- #}
+{% set zones = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set key = bd.zone if (bd.zone and Z[bd.zone]) else 'lighting' %}
+  {% set zt = Z[key] %}
+  {% set imgRaw = mediaUrl(bd.image) | trim %}
+  {% set cu = colUrl(bd.collection) | trim %}
+  {% set _ = zones.push({
+    key: key,
+    label: bd.label | default((zt.ar if isAr else zt.en), true),
+    text: bd.text | default((zt.tar if isAr else zt.ten), true),
+    x: bd.x if (bd.x is defined and bd.x !== '' and bd.x > 0) else zt.x,
+    y: bd.y if (bd.y is defined and bd.y !== '' and bd.y > 0) else zt.y,
+    url: (bd.url | trim) if bd.url else ((cu | string) if (cu | length) else '/shop'),
+    img: imgRaw if (imgRaw | length) else (zt.img | assets)
+  }) %}
+{% endfor %}
+{% if (zones | length) == 0 %}
+  {% for key in ORDER %}
+    {% set zt = Z[key] %}
+    {% set _ = zones.push({ key: key, label: zt.ar if isAr else zt.en, text: zt.tar if isAr else zt.ten, x: zt.x, y: zt.y, url: '/shop', img: zt.img | assets }) %}
+  {% endfor %}
+{% endif %}
+{% set n = zones | length %}
+
+<section id="mh-cz-{{ id }}"
+         class="mh-cz{{ ' has-index' if showIndex }}{{ ' has-spin' if spin }}"
+         data-mh-progress
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 72 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 72 }}px;">
+  <div class="mh-cz-wrap" x-data="{ a: 0 }">
+
+    <header class="mh-head mh-cz-head" data-mh-reveal="up">
+      <div class="mh-head-main">
+        {% if kicker %}<p class="mh-kicker"><span class="mh-kicker-num">{{ pad(n) }}</span>{{ kicker | safe }}</p>{% endif %}
+        <h2 class="mh-h mh-cz-title">{{ title | safe }}</h2>
+      </div>
+      {% if text %}<p class="mh-sub">{{ text | safe }}</p>{% endif %}
+    </header>
+
+    <div class="mh-cz-grid">
+
+      {# ================= the car ================= #}
+      <div class="mh-cz-stage">
+        <p class="mh-cz-tag mh-mono" aria-hidden="true"><span class="mh-led">{{ S.map }}</span><span class="mh-cz-tag-hint">{{ S.hint }}</span></p>
+
+        <svg class="mh-cz-car" viewBox="0 0 1000 420" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          {# ground #}
+          <path class="mh-cz-ground" pathLength="1" d="M 30 386 H 970"/>
+
+          {# body silhouette (one closed path, drawn first) #}
+          <path class="mh-cz-body" pathLength="1" d="M 118 318 C 98 318 86 306 86 288 L 86 244 C 86 226 96 214 118 210 L 262 198 L 334 132 C 356 110 388 100 434 98 L 540 96 C 580 96 610 106 636 128 L 704 196 L 898 220 C 932 224 950 238 952 262 L 952 290 C 952 308 940 318 920 318 L 846 318 A 78 78 0 0 0 690 318 L 330 318 A 78 78 0 0 0 174 318 Z"/>
+          {# shoulder line: trunk deck → cowl #}
+          <path class="mh-cz-body" pathLength="1" d="M 262 198 L 704 196"/>
+          {# glass #}
+          <path class="mh-cz-body mh-cz-glass" pathLength="1" d="M 296 194 L 350 142 C 366 126 392 118 434 118 L 478 118 L 478 194 Z"/>
+          <path class="mh-cz-body mh-cz-glass" pathLength="1" d="M 498 194 L 498 118 L 540 118 C 574 118 598 126 616 142 L 672 194 Z"/>
+
+          {# details #}
+          <g class="mh-cz-detail">
+            <path pathLength="1" d="M 488 198 L 490 318"/>
+            <path pathLength="1" d="M 318 198 L 318 272"/>
+            <path pathLength="1" d="M 398 224 h 36 v 8 h -36 Z"/>
+            <path pathLength="1" d="M 566 224 h 36 v 8 h -36 Z"/>
+            <path pathLength="1" d="M 678 196 L 681 181 L 706 178 L 711 196 Z"/>
+            <path pathLength="1" d="M 716 206 L 880 224"/>
+            <path class="mh-cz-soft" pathLength="1" d="M 340 290 L 672 290"/>
+            <path pathLength="1" d="M 904 294 L 946 294"/>
+            <path pathLength="1" d="M 92 292 L 130 292"/>
+            {# lamps — the one place the accent touches the drawing #}
+            <path class="mh-cz-lamp" pathLength="1" d="M 880 228 L 946 246 L 944 262 L 876 250 Z"/>
+            <path class="mh-cz-lamp is-rear" pathLength="1" d="M 90 232 L 150 224 L 150 242 L 90 250 Z"/>
+          </g>
+
+          {# wheels #}
+          {% for cx in [252, 768] %}
+            <g class="mh-cz-wheel" transform="translate({{ cx }} 318)">
+              {# circles as two-arc paths: pathLength="1" is only reliable on <path> #}
+              <path class="mh-cz-tyre" pathLength="1" d="M -64 0 A 64 64 0 1 0 64 0 A 64 64 0 1 0 -64 0 Z"/>
+              <g class="mh-cz-rim">
+                <path pathLength="1" d="M -42 0 A 42 42 0 1 0 42 0 A 42 42 0 1 0 -42 0 Z"/>
+                <path pathLength="1" d="M -7 0 A 7 7 0 1 0 7 0 A 7 7 0 1 0 -7 0 Z"/>
+                <path pathLength="1" d="M 10 0 L 38 0 M 3.09 9.51 L 11.74 36.14 M -8.09 5.88 L -30.74 22.34 M -8.09 -5.88 L -30.74 -22.34 M 3.09 -9.51 L 11.74 -36.14"/>
+              </g>
+            </g>
+          {% endfor %}
+        </svg>
+
+        {# hotspots — % of the drawing; inset-inline-start follows the mirror #}
+        {% for z in zones %}
+          {% set i = loop.index0 %}
+          <button type="button"
+                  class="mh-cz-dot{{ ' is-active' if i == 0 }}"
+                  style="--x: {{ z.x }}%; --y: {{ z.y }}%; --i: {{ i }};"
+                  :class="{ 'is-active': a === {{ i }} }"
+                  :aria-pressed="a === {{ i }}"
+                  @mouseenter="a = {{ i }}" @focus="a = {{ i }}" @click="a = {{ i }}"
+                  aria-label="{{ z.label | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}"
+                  aria-controls="mh-cz-card-{{ id }}-{{ i }}">
+            <span class="mh-cz-dot-sq" aria-hidden="true"></span>
+            {% if showIndex %}<span class="mh-cz-dot-i mh-mono" aria-hidden="true">{{ pad(i + 1) }}</span>{% endif %}
+          </button>
+        {% endfor %}
+      </div>
+
+      {# ================= list + panel ================= #}
+      <div class="mh-cz-side">
+        <ol class="mh-cz-list" data-mh-stagger>
+          {% for z in zones %}
+            {% set i = loop.index0 %}
+            <li data-mh-item>
+              <a class="mh-cz-row{{ ' is-active' if i == 0 }}" href="{{ z.url }}"
+                 :class="{ 'is-active': a === {{ i }} }"
+                 @mouseenter="a = {{ i }}" @focus="a = {{ i }}">
+                <span class="mh-cz-row-i mh-mono">{{ pad(i + 1) }}</span>
+                <span class="mh-cz-row-n">{{ z.label | safe }}</span>
+                <span class="mh-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ol>
+
+        <div class="mh-cz-panel">
+          {% for z in zones %}
+            {% set i = loop.index0 %}
+            <article id="mh-cz-card-{{ id }}-{{ i }}" class="mh-cz-card mh-hud{{ ' is-active' if i == 0 }}" :class="{ 'is-active': a === {{ i }} }">
+              <a class="mh-cz-card-media mh-carbon" href="{{ z.url }}" tabindex="-1" aria-hidden="true">
+                <img src="{{ z.img }}" alt="" loading="lazy" decoding="async" onerror="this.remove()"/>
+                <span class="mh-cz-card-num mh-mono">{{ pad(i + 1) }}</span>
+              </a>
+              <div class="mh-cz-card-body">
+                <p class="mh-kicker is-bare mh-cz-card-k"><span class="mh-kicker-num">{{ pad(i + 1) }} / {{ pad(n) }}</span>{{ S.zones }}</p>
+                <h3 class="mh-h mh-h--sm mh-cz-card-t">{{ z.label | safe }}</h3>
+                <p class="mh-cz-card-x">{{ z.text | safe }}</p>
+                <a class="mh-viewall mh-cz-card-cta" href="{{ z.url }}">{{ cta | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#mh-cz-' ~ id, c=d %}

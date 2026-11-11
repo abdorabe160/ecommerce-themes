@@ -1,0 +1,55 @@
+{# صفحة التصنيف / المتجر / الأحدث — بنفس لغة تصميم mavin-wear.com.
+   - الفلاتر (FLT-01…12): لو التاجر ضابط فلاتر من لوحة التحكم (collection.filters.<name> أو shop.filters.available) بتظهر هي
+     والفلترة بتحصل على السيرفر (filters[name][]=… في الرابط، على كل الصفحات). غير كده بتظهر فلاتر من وسوم المنتجات
+     (key:value) وقيم الخيارات (مقاس/لون) الموجودة فعلاً + «المتوفر فقط» + السعر، وبتفلتر المعروض في الصفحة.
+   - الموبايل/التابلت (≤1023px): الفلاتر في درج بزر «عرض النتائج» و«إلغاء» (الإلغاء بيرجّع الحالة اللي اتفتح بيها).
+   - الترتيب على السيرفر (?sort= بقيم المنصة createdAt-desc | price-asc | price-desc | rating-desc). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# قمرة بتبعت بيانات الصفحة جوه context: /shop و /shop/<تصنيف> → context.shop ، /latest → context.products — بنقرا الاتنين #}
+{% set ctx = context or {} %}
+{% set shop = ctx.shop or {} %}
+{% set col = collection or ctx.collection or shop.collection or {} %}
+{% set products = col.products or wd.products or products or ctx.products or shop.products or [] %}
+{% set pg = col.pagination or ctx.pagination or shop.pagination or {} %}
+{% set total = pg.totalItems if (pg.totalItems is number and pg.totalItems >= (products | length)) else (products | length) %}
+{% set pgHandle = (ctx.page.handle if (ctx.page and ctx.page.handle) else '') %}
+{% set heading = col.title or wd.title or (t('collection.latest') if pgHandle == 'latest' else (t('collection.shop_all') if (shop.mode == 'all' or pgHandle == 'shop') else t('common.products'))) %}
+{# فلاتر لوحة التحكم #}
+{% set rawF = col.filters or shop.filters or ctx.filters or {} %}
+{% set dash = [] %}
+{% if rawF.available is defined %}
+  {% for f in rawF.available or [] %}{% set fk = f.key or f.name or f.handle or f.id %}{% set fv = f.values or f.options or [] %}
+    {% if fk and fk != 'price' and (fv | length) %}{% set _ = dash.push({ key: fk, label: f.label or f.title or fk, values: fv }) %}{% endif %}
+  {% endfor %}
+{% elif rawF.length is not defined and not (rawF is string) %}
+  {% for fk, fv in rawF %}{% if fk != 'price' and fk != 'applied' and fv and fv.length and not (fv is string) %}{% set _ = dash.push({ key: fk, label: fk, values: fv }) %}{% endif %}{% endfor %}
+{% endif %}
+{% set dashKeys = [] %}{% for f in dash %}{% set _ = dashKeys.push(f.key) %}{% endfor %}
+{% set subs = col.children or col.subCollections or col.subcollections or [] %}
+{% set cfg = { 'serverKeys': dashKeys, 'labels': {
+  'brand': t('collection.filter_brand'), 'material': t('collection.filter_material'), 'color': t('collection.filter_color'),
+  'size': t('collection.filter_size'), 'type': t('collection.filter_type'), 'feature': t('collection.filter_feature') } } %}
+<section class="mw-page mw-collection" x-data="mwCollection({{ cfg | dump | escape }})">
+  <div class="container">
+    <nav class="mw-breadcrumb" aria-label="{{ t('common.breadcrumb') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      {% if col.title and shop.mode != 'all' %}<a href="/shop">{{ t('collection.shop_all') }}</a><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{% endif %}
+      <span aria-current="page">{{ heading }}</span>
+    </nav>
+    <div class="mw-collection-hero{% if col.image and col.image.fileUrl %} has-image{% endif %}">
+      <div>
+        <h1 class="mw-collection-hero__title">{{ heading }}</h1>
+        {% if col.description %}<div class="mw-collection-hero__desc" dir="auto">{{ col.description | replace('</p>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(240) }}</div>{% endif %}
+      </div>
+      {% if col.image and col.image.fileUrl and not ('/system/assets/' in col.image.fileUrl) %}<img class="mw-collection-hero__img" src="{{ col.image.fileUrl }}" alt="" width="720" height="420" decoding="async"/>{% endif %}
+    </div>
+    {% if subs | length %}
+    <div class="mw-subcols">
+      {% for sc in subs %}{% if sc and sc.title and (sc.handle or sc.slug) %}<a class="mw-chip-s" href="/collections/{{ sc.handle or sc.slug }}">{{ sc.title }}</a>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    {% ui "listing.njk", products=products, total=total, dash=dash, showSort=(wd.show_sort != false), empty='collection' %}
+  </div>
+</section>

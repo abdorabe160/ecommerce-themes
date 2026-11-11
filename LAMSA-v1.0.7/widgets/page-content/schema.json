@@ -1,0 +1,18 @@
+{
+  "name": "محتوى الصفحة",
+  "settings": {
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مسار الصفحة", "en": "Show breadcrumb" },
+      "default": true
+    },
+    "fallback_text": {
+      "type": "text",
+      "label": { "ar": "نص يظهر لو الصفحة فاضية", "en": "Text shown when the page is empty" },
+      "default": "<p>محتوى هذه الصفحة سيُضاف قريبًا.</p>"
+    }
+  },
+  "presets": [
+    { "category": "الصفحات", "name": "محتوى الصفحة" }
+  ]
+}

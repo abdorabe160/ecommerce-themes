@@ -1,0 +1,81 @@
+{
+  "name": "الأسئلة الشائعة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "الأسئلة الشائعة"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "FAQ"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Text"
+      },
+      "default": ""
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف (إنجليزي)",
+        "en": "Text (English)"
+      }
+    }
+  },
+  "blocks": {
+    "question": {
+      "name": "سؤال",
+      "settings": {
+        "question": {
+          "type": "string",
+          "label": {
+            "ar": "السؤال",
+            "en": "Question"
+          },
+          "default": "سؤال"
+        },
+        "question_en": {
+          "type": "string",
+          "label": {
+            "ar": "السؤال (إنجليزي)",
+            "en": "Question (English)"
+          },
+          "default": "Question"
+        },
+        "answer": {
+          "type": "text",
+          "label": {
+            "ar": "الإجابة",
+            "en": "Answer"
+          },
+          "default": "الإجابة"
+        },
+        "answer_en": {
+          "type": "text",
+          "label": {
+            "ar": "الإجابة (إنجليزي)",
+            "en": "Answer (English)"
+          },
+          "default": "Answer"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "الأسئلة الشائعة"
+    }
+  ]
+}

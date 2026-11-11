@@ -1,0 +1,49 @@
+{
+  "name": "الصفحة غير موجودة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "",
+        "title": "",
+        "message": "",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/",
+        "show_strip": true,
+        "strip_text": ""
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "كل القطع",
+          "settings": {
+            "label": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "الأقسام",
+          "settings": {
+            "label": "",
+            "url": "/collections"
+          }
+        },
+        {
+          "block": "link",
+          "name": "أدلة الصيانة",
+          "settings": {
+            "label": "",
+            "url": "/blogs"
+          }
+        }
+      ]
+    }
+  ]
+}

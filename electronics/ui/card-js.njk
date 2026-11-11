@@ -1,0 +1,49 @@
+{# بطاقة منتج تُرسم بالـ JS (Alpine) — نفس تصميم ومنطق product-card.njk تماماً.
+   الاستخدام داخل: <template x-for="p in items" :key="p._id"> {% ui "card-js.njk" %} </template>
+   بطاقات المعاينة التوضيحية (p.__demo): الرابط يفتح صفحة المنتج التوضيحي والإضافة تذهب لسلة المعاينة (main.js).
+   بدون زر مفضلة (الثيم بلا مفضلة ولا تسجيل دخول). #}
+<article class="lg-card glass glass-hover">
+  <div class="lg-card__media">
+    <div class="lg-card__badges">
+      <template x-if="cardBadge(p)">
+        <span class="lg-badge" dir="auto" :class="cardBadge(p).cls" x-text="cardBadge(p).label"></span>
+      </template>
+    </div>
+
+    <template x-if="productLowQty(p)">
+      <span class="lg-card__low" role="status">{% ui "icon.njk", name="alert", cls="w-3.5 h-3.5 shrink-0" %}<span x-text="lowLeft(productLowQty(p))"></span></span>
+    </template>
+
+    <a :href="productUrl(p)" class="block w-full h-full" tabindex="-1" aria-hidden="true">
+      <template x-if="productImage(p)">
+        <img :src="productImage(p)" :alt="p.title" loading="lazy" decoding="async" width="400" height="330" class="lg-card__main">
+      </template>
+      <template x-if="!productImage(p)">
+        <div class="w-full h-full grid place-items-center text-muted">{% ui "icon.njk", name="device", cls="w-14 h-14 opacity-40" %}</div>
+      </template>
+    </a>
+  </div>
+
+  <div class="flex flex-col flex-1 gap-1.5 px-2 pt-3 pb-1">
+    <h3 class="lg-card__title">
+      <a :href="productUrl(p)" class="hover:text-primary transition-colors" x-text="p.title"></a>
+    </h3>
+    <p class="lg-card__sub"><bdi x-text="cardSub(p)"></bdi></p>
+
+    <template x-if="p.reviewsCount > 0">
+      <div class="flex items-center gap-1.5 text-xs text-muted" :aria-label="(Number(p.averageRating) || 0).toFixed(1) + ' / 5'">
+        <span class="lg-stars">
+          <template x-for="i in 5" :key="i"><span class="inline-flex" :class="i > cardRating(p) && 'is-empty'">{% ui "icon.njk", name="star", cls="w-3.5 h-3.5 fill-current" %}</span></template>
+        </span>
+        <span x-text="'(' + p.reviewsCount + ')'"></span>
+      </div>
+    </template>
+
+    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-auto pt-1">
+      <span class="lg-price" x-text="productPrice(p) === 0 ? i18n.free : formatMoney(productPrice(p))"></span>
+      <span class="lg-price--old" x-show="productCompare(p) > productPrice(p)" x-text="formatMoney(productCompare(p))"></span>
+    </div>
+
+    {% ui "card-actions-js.njk" %}
+  </div>
+</article>

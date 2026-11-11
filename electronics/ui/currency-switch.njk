@@ -1,0 +1,13 @@
+{# مبدّل العملة (GEN-15) — قائمة التاجر (كودات ISO من إعدادات الهيدر) + ما تتيحه قمرة في localization.availableCurrencies.
+   الأزرار تُركَّب في main.js (initCurrencySwitch) فقط عند وجود عملتين فأكثر؛ المتجر بعملة واحدة لا يرى شيئاً.
+   قمرة تحدد العملة من كوكي "currency" فيُكتب الكوكي ويُعاد تحميل الصفحة. الاستخدام: {% ui "currency-switch.njk", list=…, cls="…" %} #}
+{% set curCode = '' %}
+{% if localization and localization.currency and localization.currency.currencyCode %}{% set curCode = localization.currency.currencyCode %}
+{% elif localization and localization.market and localization.market.targetCurrencyCode %}{% set curCode = localization.market.targetCurrencyCode %}{% endif %}
+{% set pcodes = [] %}
+{% for c in (localization.availableCurrencies if (localization and localization.availableCurrencies) else []) %}
+  {% set code = (c if (c is string) else (c.currencyCode or c.code or c.currency or '')) | upper %}
+  {% if code and pcodes.push(code) %}{% endif %}
+{% endfor %}
+<div class="lg-currency {{ data.cls }}" data-currency-host hidden role="group" aria-label="{{ t('currency.label') }}"
+     data-currencies="{{ (data.list or '') | trim }}" data-platform="{{ pcodes | join(',') }}" data-current="{{ curCode | upper }}"></div>

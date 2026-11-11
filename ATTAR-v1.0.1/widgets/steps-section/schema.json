@@ -1,0 +1,48 @@
+{
+  "name": "الخطوات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "steps_title": {
+      "type": "text",
+      "label": {
+        "ar": "عنوان الخطوات",
+        "en": "Steps Title"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "step": {
+      "name": "خطوة",
+      "settings": {
+        "step_title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          }
+        },
+        "step_description": {
+          "type": "textarea",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "الخطوات"
+    }
+  ]
+}

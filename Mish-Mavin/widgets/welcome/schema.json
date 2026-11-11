@@ -1,0 +1,79 @@
+{
+  "name": "welcome",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Heading"
+      },
+      "default": ""
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "نوع العنوان",
+        "en": "Heading tag"
+      },
+      "default": "h2",
+      "options": [
+        {
+          "value": "h2",
+          "label": "H2 — عنوان قسم / Section heading"
+        },
+        {
+          "value": "h1",
+          "label": "H1 — عنوان الصفحة (مرة واحدة فقط) / Page title"
+        }
+      ]
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        }
+      ]
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": ""
+    },
+    "buttonText": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    },
+    "buttonUrl": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر",
+        "en": "Button link"
+      },
+      "default": "/shop"
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "welcome"
+    }
+  ]
+}

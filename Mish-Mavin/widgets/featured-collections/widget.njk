@@ -1,0 +1,34 @@
+{# مجموعات مميزة — مطابق لـ mavin-wear.com: عنوان + أسهم، وسلايدر 3 بطاقات (3:4) والعنوان أبيض أسفل البطاقة.
+   المصدر: البلوكات (صورة + عنوان + رابط) أولاً، وإن لم توجد فالتصنيفات المختارة. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set blocks = widget.blocks | default([]) %}
+{% set collections = wd.collections | default([]) %}
+<section class="mw-fcols" x-data="mwScroller()">
+  <div class="container">
+    <div class="mw-row-head">
+      {% if wd.title %}<h2 class="mw-fcols__title">{{ wd.title }}</h2>{% endif %}
+      <div class="mw-arrows">
+        <button type="button" class="mw-arrow" @click="prev()" :disabled="atStart" aria-label="{{t('common.previous') | default('Previous') }}"><svg viewBox="0 0 24 24" fill="none"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="mw-arrow" @click="next()" :disabled="atEnd" aria-label="{{t('common.next') | default('Next') }}"><svg viewBox="0 0 24 24" fill="none"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+    <div class="mw-scroller mw-fcols__track" x-ref="track" @scroll.debounce.50ms="update()"{% if not (blocks | length) and not (collections | length) %} data-mw-demo="fcols"{% endif %}>
+      {%- if blocks | length %}
+        {% for b in blocks %}{% set s = b.settings %}
+          <a href="{{ s.url | default('/collections') }}" class="mw-fcol">
+            {% set img = s.image.fileUrl if (s.image and s.image.fileUrl) else ((('mw-fc-' + loop.index + '.jpg') | assets) if loop.index <= 6 else '') %}
+            {% if img %}<img src="{{ img }}" alt="{{ s.title | default('') }}" loading="lazy" decoding="async" width="600" height="800"/>{% endif %}
+            {% if s.title %}<h3 class="mw-fcol__title">{{ s.title }}</h3>{% endif %}
+          </a>
+        {% endfor %}
+      {% else %}
+        {% for c in collections %}{% if c and c.title and (c.handle or c.slug) %}
+          <a href="/collections/{{ c.handle or c.slug }}" class="mw-fcol">
+            {% if c.image and c.image.fileUrl and not ('/system/assets/' in c.image.fileUrl) %}<img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="600" height="800"/>{% endif %}
+            <h3 class="mw-fcol__title">{{ c.title }}</h3>
+          </a>
+        {% endif %}{% endfor %}
+      {% endif -%}
+    </div>
+  </div>
+</section>

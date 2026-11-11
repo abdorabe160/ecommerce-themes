@@ -1,0 +1,61 @@
+{
+  "title": "Footer Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الفوتر الرئيسي",
+      "widget": "footer",
+      "settings": {
+        "footer_description": "لمسة — عناية ومكياج بمكوّنات واضحة ونِسَب مكتوبة.",
+        "contact_heading": "تواصلي معنا",
+        "contact_phone": "",
+        "contact_whatsapp": "",
+        "contact_email": "",
+        "contact_hours": "",
+        "social_heading": "تابعينا",
+        "show_payments": false,
+        "pay_mada": true,
+        "pay_visa": true,
+        "pay_mastercard": true,
+        "pay_apple_pay": true,
+        "pay_stc_pay": false,
+        "pay_tabby": false,
+        "pay_tamara": false,
+        "pay_cod": true,
+        "payment_heading": "طرق الدفع",
+        "bottom_menu": "footer-menu",
+        "show_back_to_top": true
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "المتجر",
+          "settings": {
+            "title": "المتجر",
+            "menu": "footer-menu"
+          }
+        },
+        {
+          "block": "column",
+          "name": "المساعدة",
+          "settings": {
+            "title": "المساعدة",
+            "menu": "footer-menu"
+          }
+        }
+      ]
+    },
+    {
+      "name": "زر واتساب العائم",
+      "widget": "whatsapp-float",
+      "settings": {}
+    },
+    {
+      "name": "زر العودة للأعلى",
+      "widget": "scroll-top",
+      "settings": {}
+    }
+  ]
+}

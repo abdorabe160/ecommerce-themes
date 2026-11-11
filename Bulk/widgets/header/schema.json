@@ -1,0 +1,223 @@
+{
+  "name": "الهيدر الرئيسي - Bulck",
+  "description": "هيدر متجر ملابس رياضية بهوية Dark Blood",
+  "settings": {
+    "store_name": {
+      "type": "string",
+      "label": "اسم المتجر (فاضي = اسم المتجر من الإعدادات العامة)",
+      "default": ""
+    },
+    "logo_image": {
+      "type": "media",
+      "label": "شعار المتجر (صورة، اختياري)",
+      "default": ""
+    },
+    "sticky_header": {
+      "type": "boolean",
+      "label": "تثبيت الهيدر أعلى الصفحة أثناء التمرير",
+      "default": true
+    },
+    "show_announcement": {
+      "type": "boolean",
+      "label": "إظهار شريط الإعلان أعلى الهيدر (العميل يقدر يقفله)",
+      "default": false
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": "نص شريط الإعلان",
+      "default": "تشكيلة التمرين الجديدة وصلت"
+    },
+    "announcement_text_en": {
+      "type": "string",
+      "label": "نص شريط الإعلان (إنجليزي)",
+      "default": ""
+    },
+    "announcement_link": {
+      "type": "string",
+      "label": "رابط شريط الإعلان (اختياري)",
+      "default": ""
+    },
+    "main_menu": {
+      "type": "menu",
+      "label": "القائمة الرئيسية (اختياري — لو اخترتها بتظهر بدل الأقسام الأربعة، وبتدعم 3 مستويات)",
+      "default": ""
+    },
+    "nav_label_1": {
+      "type": "string",
+      "label": "اسم القسم الأول",
+      "default": "رجالي"
+    },
+    "nav_menu_1": {
+      "type": "menu",
+      "label": "قائمة القسم الأول",
+      "default": "header-menu"
+    },
+    "nav_url_1": {
+      "type": "string",
+      "label": "رابط صفحة القسم الأول (اسم القسم بيفتحها، ولو فيه قائمة بتظهر فيها \"عرض الكل\")",
+      "default": "/shop?category=men"
+    },
+    "nav_columns_1": {
+      "type": "select",
+      "label": "عدد أعمدة القسم الأول",
+      "options": [
+        {
+          "label": "عمود واحد",
+          "value": "1"
+        },
+        {
+          "label": "عمودان",
+          "value": "2"
+        },
+        {
+          "label": "ثلاثة أعمدة",
+          "value": "3"
+        }
+      ],
+      "default": "2"
+    },
+    "nav_label_2": {
+      "type": "string",
+      "label": "اسم القسم الثاني",
+      "default": "بناطيل"
+    },
+    "nav_menu_2": {
+      "type": "menu",
+      "label": "قائمة القسم الثاني",
+      "default": "header-menu"
+    },
+    "nav_url_2": {
+      "type": "string",
+      "label": "رابط صفحة القسم الثاني (اسم القسم بيفتحها، ولو فيه قائمة بتظهر فيها \"عرض الكل\")",
+      "default": "/shop?category=pants"
+    },
+    "nav_columns_2": {
+      "type": "select",
+      "label": "عدد أعمدة القسم الثاني",
+      "options": [
+        {
+          "label": "عمود واحد",
+          "value": "1"
+        },
+        {
+          "label": "عمودان",
+          "value": "2"
+        },
+        {
+          "label": "ثلاثة أعمدة",
+          "value": "3"
+        }
+      ],
+      "default": "2"
+    },
+    "nav_label_3": {
+      "type": "string",
+      "label": "اسم القسم الثالث",
+      "default": "أحذية"
+    },
+    "nav_menu_3": {
+      "type": "menu",
+      "label": "قائمة القسم الثالث",
+      "default": "header-menu"
+    },
+    "nav_url_3": {
+      "type": "string",
+      "label": "رابط صفحة القسم الثالث (اسم القسم بيفتحها، ولو فيه قائمة بتظهر فيها \"عرض الكل\")",
+      "default": "/shop?category=shoes"
+    },
+    "nav_columns_3": {
+      "type": "select",
+      "label": "عدد أعمدة القسم الثالث",
+      "options": [
+        {
+          "label": "عمود واحد",
+          "value": "1"
+        },
+        {
+          "label": "عمودان",
+          "value": "2"
+        },
+        {
+          "label": "ثلاثة أعمدة",
+          "value": "3"
+        }
+      ],
+      "default": "1"
+    },
+    "nav_label_4": {
+      "type": "string",
+      "label": "اسم القسم الرابع",
+      "default": "إكسسوارات"
+    },
+    "nav_menu_4": {
+      "type": "menu",
+      "label": "قائمة القسم الرابع",
+      "default": "header-menu"
+    },
+    "nav_url_4": {
+      "type": "string",
+      "label": "رابط صفحة القسم الرابع (اسم القسم بيفتحها، ولو فيه قائمة بتظهر فيها \"عرض الكل\")",
+      "default": "/shop?category=accessories"
+    },
+    "nav_columns_4": {
+      "type": "select",
+      "label": "عدد أعمدة القسم الرابع",
+      "options": [
+        {
+          "label": "عمود واحد",
+          "value": "1"
+        },
+        {
+          "label": "عمودان",
+          "value": "2"
+        },
+        {
+          "label": "ثلاثة أعمدة",
+          "value": "3"
+        }
+      ],
+      "default": "1"
+    },
+    "support_url": {
+      "type": "string",
+      "label": "رابط الدعم الفني",
+      "default": ""
+    },
+    "show_currency": {
+      "type": "boolean",
+      "label": "إظهار تبديل العملة (لو المتجر فيه أكتر من عملة)",
+      "default": true
+    },
+    "currencies": {
+      "type": "string",
+      "label": "أكواد العملات المتاحة للتبديل مفصولة بفاصلة (مثال: EGP, USD) — فاضي = عملات المتجر",
+      "default": ""
+    },
+    "search_trigger_text": {
+      "type": "string",
+      "label": "نص زر البحث في الهيدر",
+      "default": "دور على منتجك..."
+    },
+    "search_input_placeholder": {
+      "type": "string",
+      "label": "نص placeholder داخل صندوق البحث",
+      "default": "دور عن منتج، ماركة أو قسم..."
+    },
+    "accent_color": {
+      "type": "string",
+      "label": "اللون الأساسي (كود Hex)",
+      "default": ""
+    },
+    "bg_color": {
+      "type": "string",
+      "label": "لون خلفية الهيدر (كود Hex)",
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "category": "header"
+    }
+  ]
+}

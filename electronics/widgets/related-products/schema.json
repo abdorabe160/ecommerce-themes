@@ -1,0 +1,45 @@
+{
+  "name": "منتجات ذات صلة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "قد يعجبك أيضاً"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "You may also like"
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات بديلة (تُستخدم إذا لم تتوفر منتجات مقترحة تلقائياً)",
+        "en": "Fallback products"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "أقصى عدد",
+        "en": "Max products"
+      },
+      "default": 8,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "منتجات ذات صلة"
+    }
+  ]
+}

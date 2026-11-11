@@ -1,0 +1,251 @@
+{# ============================================================================
+   PEBBLE COLLECTION LINKS — a list of words, and the photograph each one opens
+   ----------------------------------------------------------------------------
+     ┌───────────────────────┐ ┌───────────────────────┐
+     │                       │ │        إطلالة لـ       │
+     │      photograph       │ │                       │
+     │                       │ │     الحركة 👕         │  ← active: dark, an
+     │                       │ │     ‾‾‾‾‾‾‾           │    icon, a wavy rule
+     │  MOVE COLLECTION      │ │      اللعب            │
+     │  Made to Move,        │ │      المدرسة          │
+     │  Built for Comfort    │ │      النزهة           │
+     │  ( Shop Now ▸ )       │ │                       │
+     │                       │ │   مجموعة الحركة       │
+     └───────────────────────┘ └── وصف قصير في سطرين ──┘
+
+   Hovering a word — or tabbing to it — swaps the photograph, the copy over it
+   and the description underneath. The word itself is a LINK to the collection,
+   so the section works with no JavaScript at all: the first panel renders, the
+   words navigate, and nothing about that depends on the swap.
+
+   ── The picture is shown WHOLE by default ──
+   The panel is nearly square and a product photograph is usually portrait, so
+   `cover` takes a fifth of its height off — measured on a real one, the model's
+   head. `contain` is therefore the default: nothing is lost and the panel's own
+   ground shows around it, which is why that ground is a setting rather than a
+   fixed grey. `cover` is still there, with a focus control, because it is the
+   right answer for a photograph shot to the panel's shape.
+
+   ── Why the word is a link and not a button ──
+   It goes somewhere. A button that only previews would leave the shopper with
+   no way to reach the collection except the photo's own button, and would drop
+   four collection links out of the page for a crawler. The cost is that a tap
+   on a touch screen follows it rather than previewing — which is the right
+   answer there too, because a phone gets the stacked layout where each panel
+   is already visible.
+
+   Measured off the reference at 1440px: two 595px panels with an 8px gap in a
+   1200 container, the list panel #EDEEB4, the words 48px on an 82px rhythm and
+   centred, the photo's copy inset 40px with a 34px headline on a 60px line.
+
+   All styling lives in assets/style.css → "15.13.3 COLLECTION LINKS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set links = widget.blocks | default([]) %}
+{% set count = links | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set mediaPos = d.media_position | default('start') %}
+{% set panelColor = d.panel_color | default('var(--color-section-b)', true) %}
+{% set minH = d.min_height | default(640) %}
+{% set mediaBg = d.media_bg | default('var(--color-section-b)', true) %}
+{% set fit = d.image_fit | default('contain') %}
+{% set focus = d.image_focus | default('top') %}
+{% set ctaText = d.cta_text | default('') %}
+{% set showWave = d.show_wave %}
+{% set showWave = true if showWave is not defined else showWave %}
+
+{# A `media` setting arrives as an object once the merchant uploads through the
+   Theme Editor, but a plain URL string is what a hand-written page JSON (and
+   every preview/seed value) can express. Accept both, plus `url` as well as
+   `fileUrl`, so neither source silently renders nothing. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+<section id="hy-cl-{{ id }}" class="hy-cl hy-cl--media-{{ mediaPos }} hy-cl--fit-{{ fit }}">
+  <style>
+    /* The `-set` suffix is load-bearing: this is an ID selector, so anything it
+       writes outranks every class rule in the stylesheet, responsive ones
+       included. The stylesheet reads these as the DESKTOP values and decides
+       what the narrower breakpoints use. */
+    #hy-cl-{{ id }} {
+      --hy-cl-panel-set: {{ panelColor }};
+      --hy-cl-h-set: {{ minH }}px;
+      --hy-cl-media-bg: {{ mediaBg }};
+      --hy-cl-focus: {{ focus }};
+    }
+    {% for b in links %}
+    #hy-cl-{{ id }} [data-hy-link="{{ loop.index0 }}"] .hy-cl-icon {
+      --hy-cl-icon-bg: {{ b.data.icon_bg | default('var(--color-accent-light)', true) }};
+    }
+    {% endfor %}
+  </style>
+
+  <div class="hy-container">
+    <div class="hy-cl-grid">
+
+      {# ---- the photograph ----
+         Every panel is rendered and only one is `.is-active`. They are stacked,
+         so the section's height never changes as they swap and there is nothing
+         to fetch on a hover. Only the first image is eager. #}
+      <div class="hy-cl-stage">
+        {% for b in links %}
+          {% set img = mediaUrl(b.data.image) | trim %}
+          {# Demo picture while empty — see assets/demo-*.jpg. #}
+          {# demo-link-* show women and girls (house rule: none), so they stay unused. #}
+          {% if (img | length) == 0 %}
+            {% set demoN = loop.index0 % 4 %}
+            {% if demoN == 0 %}{% set img = 'demo-bundle.jpg' | assets %}
+            {% elif demoN == 1 %}{% set img = 'demo-stack-2.jpg' | assets %}
+            {% elif demoN == 2 %}{% set img = 'demo-highlight.jpg' | assets %}
+            {% else %}{% set img = 'demo-stack-1.jpg' | assets %}{% endif %}
+          {% endif %}
+          {% set url = b.data.url | default('/shop') %}
+          <div class="hy-cl-pane {{ 'is-active' if loop.first }}" data-hy-pane="{{ loop.index0 }}">
+            {# ⚠️  Test a macro's result with `| length`, never for truthiness. A
+               macro returns a SafeString OBJECT, and an object is truthy even
+               when it holds an empty string — so a bare `if img` reads as true
+               for every pane and an empty src renders as a broken box. #}
+            {% if (img | length) > 0 %}
+              <img src="{{ img }}" alt="{{ b.data.title | default(b.data.label) | default('') }}"
+                   {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+            {% endif %}
+
+            <div class="hy-cl-copy">
+              {% if b.data.image_eyebrow %}
+                <p class="hy-cl-copy-eyebrow">{{ b.data.image_eyebrow }}</p>
+              {% endif %}
+              {% if b.data.title %}
+                <p class="hy-cl-copy-title">{{ b.data.title }}</p>
+              {% endif %}
+              {% if ctaText %}
+                <a href="{{ url }}" class="hy-btn hy-btn--pill hy-btn--arrow hy-btn--light hy-cl-cta"
+                   {% if not loop.first %}tabindex="-1"{% endif %}>
+                  <span>{{ ctaText }}</span>
+                  <i class="hy-btn-arrow" aria-hidden="true">
+                    <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                         stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                  </i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+
+        {% if count == 0 %}
+          <div class="hy-cl-pane is-active" data-hy-placeholder aria-hidden="true"></div>
+        {% endif %}
+      </div>
+
+      {# ---- the list ---- #}
+      <div class="hy-cl-panel">
+        {% if eyebrow %}<p class="hy-cl-eyebrow">{{ eyebrow }}</p>{% endif %}
+
+        <ul class="hy-cl-list">
+          {% for b in links %}
+            {% set icon = mediaUrl(b.data.icon) | trim %}
+            <li>
+              <a href="{{ b.data.url | default('/shop') }}"
+                 class="hy-cl-word {{ 'is-active' if loop.first }}"
+                 data-hy-link="{{ loop.index0 }}">
+                <span class="hy-cl-word-text">{{ b.data.label | default('') }}</span>
+                {% if (icon | length) > 0 %}
+                  <span class="hy-cl-icon" aria-hidden="true">
+                    <img src="{{ icon }}" alt="" loading="lazy"/>
+                  </span>
+                {% endif %}
+                {% if showWave %}
+                  {# A drawn rule, not `text-decoration: wavy`: that one inherits
+                     the text's colour and thickness and cannot be animated, and
+                     its wavelength is whatever the platform decides. This is the
+                     same shape on every browser and it can be revealed. #}
+                  <svg class="hy-cl-wave" viewBox="0 0 120 8" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M0 4 Q 7.5 0, 15 4 T 30 4 T 45 4 T 60 4 T 75 4 T 90 4 T 105 4 T 120 4"
+                          fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  </svg>
+                {% endif %}
+              </a>
+            </li>
+          {% endfor %}
+
+          {% if count == 0 %}
+            {# Nothing added yet. The list is drawn at its real rhythm so the
+               merchant sees the shape they are filling rather than a gap. #}
+            {% for i in range(0, 4) %}
+              <li><span class="hy-cl-word" data-hy-placeholder aria-hidden="true">
+                <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 52%;"></span>
+              </span></li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+
+        {# The description belongs to the active link, so it lives in the same
+           stack the photograph does. #}
+        <div class="hy-cl-notes">
+          {% for b in links %}
+            <div class="hy-cl-note {{ 'is-active' if loop.first }}" data-hy-note="{{ loop.index0 }}">
+              {% if b.data.label %}<p class="hy-cl-note-title">{{ b.data.label }}</p>{% endif %}
+              {% if b.data.description %}
+                {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+                   and a <p> cannot contain a <p> — the browser closes the outer
+                   one and the copy becomes a SIBLING, out of reach of its own
+                   styles. #}
+                <div class="hy-cl-note-body">{{ b.data.description | safe }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('hy-cl-{{ id }}');
+    if (!root || {{ count }} < 2) return;
+
+    var words = root.querySelectorAll('[data-hy-link]');
+    var panes = root.querySelectorAll('[data-hy-pane]');
+    var notes = root.querySelectorAll('[data-hy-note]');
+    var at = 0;
+
+    function show(i) {
+      if (i === at) return;
+      at = i;
+      for (var w = 0; w < words.length; w++) words[w].classList.toggle('is-active', w === i);
+      for (var p = 0; p < panes.length; p++) panes[p].classList.toggle('is-active', p === i);
+      for (var n = 0; n < notes.length; n++) notes[n].classList.toggle('is-active', n === i);
+      /* Only the visible pane's button may be reached by Tab. Without this, Tab
+         walks through four buttons that are stacked invisibly behind each other
+         and the focus ring lands on nothing the shopper can see. */
+      var ctas = root.querySelectorAll('.hy-cl-cta');
+      for (var c = 0; c < ctas.length; c++) {
+        if (c === i) ctas[c].removeAttribute('tabindex');
+        else ctas[c].setAttribute('tabindex', '-1');
+      }
+    }
+
+    for (var i = 0; i < words.length; i++) {
+      (function (n) {
+        /* `mouseenter`, not `mouseover`: the word contains an icon and an SVG,
+           and mouseover fires again on every one of them. `focus` covers the
+           keyboard — a shopper tabbing through should see what they are on. */
+        words[n].addEventListener('mouseenter', function () { show(n); });
+        words[n].addEventListener('focus', function () { show(n); });
+      })(i);
+    }
+
+    /* Leaving the list does NOT reset it. The reference keeps the last word,
+       and snapping back to the first the moment the pointer drifts away would
+       undo the choice the shopper just made while they were reading it. */
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-cl-' ~ id, c=d %}

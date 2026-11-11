@@ -1,0 +1,13 @@
+{# One place for a counted noun: «منتج واحد، منتجان، 3 منتجات، 11 منتج».
+   `Utils.count()` in assets/main.js is its twin for what JS renders, and reads the
+   same locale keys through the `counts` block in layouts/layout.njk.
+   Locals: n (number) · kind 'product' | 'article' | 'collection'. #}
+{%- set n = data.n | default(0, true) | int -%}
+{%- set kind = data.kind | default('product', true) -%}
+{%- if kind == 'article' -%}
+  {%- if n == 1 -%}{{ t('counts.article_one') }}{%- elif n == 2 -%}{{ t('counts.article_two') }}{%- elif n >= 3 and n <= 10 -%}{{ t('counts.article_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.article_many') | replace('{n}', n) }}{%- endif -%}
+{%- elif kind == 'collection' -%}
+  {%- if n == 1 -%}{{ t('counts.collection_one') }}{%- elif n == 2 -%}{{ t('counts.collection_two') }}{%- elif n >= 3 and n <= 10 -%}{{ t('counts.collection_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.collection_many') | replace('{n}', n) }}{%- endif -%}
+{%- else -%}
+  {%- if n == 1 -%}{{ t('counts.product_one') }}{%- elif n == 2 -%}{{ t('counts.product_two') }}{%- elif n >= 3 and n <= 10 -%}{{ t('counts.product_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.product_many') | replace('{n}', n) }}{%- endif -%}
+{%- endif -%}

@@ -1,0 +1,565 @@
+{
+  "name": "مجموعة المجموعات",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل القسم",
+        "en": "▸ Section layout"
+      },
+      "default": "cards",
+      "options": [
+        {
+          "value": "cards",
+          "label": {
+            "ar": "بطاقات ملونة بأرقام خصم (بلوك «بطاقة مجموعة»)",
+            "en": "Coloured cards with savings (“Collection card” blocks)"
+          }
+        },
+        {
+          "value": "columns",
+          "label": {
+            "ar": "أعمدة: عنوان + بطاقة كبيرة + 3 مربعات (بلوك «عمود تصنيفات»)",
+            "en": "Columns: heading + big card + 3 tiles (“Category column” blocks)"
+          }
+        }
+      ]
+    },
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "tile_style": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل البطاقات",
+        "en": "▸ Tile look"
+      },
+      "default": "dark",
+      "options": [
+        {
+          "value": "dark",
+          "label": {
+            "ar": "غرافيت — بطاقات داكنة بإطار رفيع وأرقام فهرس (تتجاهل ألوان البلوكات)",
+            "en": "Graphite — dark hairline tiles with index numbers (ignores the block colours)"
+          }
+        },
+        {
+          "value": "colour",
+          "label": {
+            "ar": "ملوّنة — كل بطاقة بلونها المختار في البلوك",
+            "en": "Coloured — each tile in the colour picked on its block"
+          }
+        }
+      ]
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد البطاقات/الأعمدة في الصف — كمبيوتر",
+        "en": "Cards / columns per row — desktop"
+      },
+      "default": 6,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    },
+    "columns_tablet": {
+      "type": "range",
+      "label": {
+        "ar": "عدد البطاقات في الصف — تابلت",
+        "en": "Cards per row — tablet"
+      },
+      "default": 3,
+      "min": 1,
+      "max": 4,
+      "step": 1
+    },
+    "mobile_layout": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الموبايل",
+        "en": "Mobile layout"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "شريط يتسحب بالعرض",
+            "en": "A sideways swipe row"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة عمودين",
+            "en": "Two-column grid"
+          }
+        }
+      ]
+    },
+    "card_height": {
+      "type": "range",
+      "label": {
+        "ar": "أقل ارتفاع للبطاقة",
+        "en": "Minimum card height"
+      },
+      "default": 320,
+      "min": 220,
+      "max": 520,
+      "step": 10,
+      "unit": "px"
+    },
+    "gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين البطاقات",
+        "en": "Gap between cards"
+      },
+      "default": 8,
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px"
+    },
+    "radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة الأركان",
+        "en": "Corner radius"
+      },
+      "default": 6,
+      "min": 0,
+      "max": 28,
+      "step": 2,
+      "unit": "px"
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير صورة المنتج عند مرور الماوس",
+        "en": "Zoom the product picture on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "بطاقة مجموعة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "▸ صورة المنتج — يفضّل PNG بخلفية شفافة",
+            "en": "▸ Product picture — a transparent PNG works best"
+          }
+        },
+        "demo_image": {
+          "type": "select",
+          "label": {
+            "ar": "صورة جاهزة من الثيم — تظهر فقط لو لم ترفع صورة",
+            "en": "Built-in picture — shown only when nothing is uploaded"
+          },
+          "default": "auto",
+          "options": [
+            {
+              "value": "auto",
+              "label": {
+                "ar": "تلقائي حسب ترتيب البطاقة",
+                "en": "Automatic, by card position"
+              }
+            },
+            {
+              "value": "1",
+              "label": {
+                "ar": "لابتوب",
+                "en": "Laptop"
+              }
+            },
+            {
+              "value": "2",
+              "label": {
+                "ar": "تابلت بلوحة مفاتيح",
+                "en": "Tablet with keyboard"
+              }
+            },
+            {
+              "value": "3",
+              "label": {
+                "ar": "شاشة كمبيوتر",
+                "en": "Desktop monitor"
+              }
+            },
+            {
+              "value": "4",
+              "label": {
+                "ar": "موبايل",
+                "en": "Phone"
+              }
+            },
+            {
+              "value": "5",
+              "label": {
+                "ar": "سماعة رأس",
+                "en": "Headphones"
+              }
+            },
+            {
+              "value": "6",
+              "label": {
+                "ar": "سماعات أذن",
+                "en": "Earbuds"
+              }
+            },
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            }
+          ]
+        },
+        "bg_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون البطاقة",
+            "en": "Card colour"
+          },
+          "default": ""
+        },
+        "bg_color_2": {
+          "type": "color",
+          "label": {
+            "ar": "لون ثانٍ لتدرّج — فارغ = لون واحد",
+            "en": "Second colour for a gradient — empty = solid"
+          },
+          "default": ""
+        },
+        "text_tone": {
+          "type": "select",
+          "label": {
+            "ar": "لون النص",
+            "en": "Text colour"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "فاتح — على بطاقة داكنة",
+                "en": "Light — on a dark card"
+              }
+            },
+            {
+              "value": "dark",
+              "label": {
+                "ar": "داكن — على بطاقة فاتحة",
+                "en": "Dark — on a light card"
+              }
+            }
+          ]
+        },
+        "accent_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الرقم الكبير — فارغ = لون النص",
+            "en": "Big number colour — empty = text colour"
+          },
+          "default": ""
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير فوق الرقم — فارغ = النص الافتراضي بلغة الزائر",
+            "en": "Small line above the number — empty = default text in the visitor's language"
+          },
+          "default": ""
+        },
+        "value": {
+          "type": "string",
+          "label": {
+            "ar": "الرقم الكبير — مثال: 35 أو 199",
+            "en": "Big number — e.g. 35 or 199"
+          },
+          "default": ""
+        },
+        "value_type": {
+          "type": "select",
+          "label": {
+            "ar": "نوع الرقم",
+            "en": "Number type"
+          },
+          "default": "percent",
+          "options": [
+            {
+              "value": "percent",
+              "label": {
+                "ar": "نسبة خصم — يظهر بجانبه % خصم",
+                "en": "Discount — shows % Off beside it"
+              }
+            },
+            {
+              "value": "amount",
+              "label": {
+                "ar": "مبلغ — تظهر العملة بجانبه",
+                "en": "Amount — shows the currency beside it"
+              }
+            },
+            {
+              "value": "plain",
+              "label": {
+                "ar": "رقم فقط",
+                "en": "Number only"
+              }
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        },
+        "link_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الرابط — فارغ = النص الافتراضي بلغة الزائر",
+            "en": "Link text — empty = default text in the visitor's language"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — مثال: /shop/laptops",
+            "en": "Link — e.g. /shop/laptops"
+          },
+          "default": "/shop"
+        }
+      }
+    },
+    "column": {
+      "name": "عمود تصنيفات",
+      "settings": {
+        "heading": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان العمود — مثال: الأعلى تقييمًا",
+            "en": "Column heading — e.g. Top Rated"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط العنوان — مثال: /shop/handle",
+            "en": "Heading link — e.g. /shop/handle"
+          },
+          "default": "/shop"
+        },
+        "feature_title": {
+          "type": "string",
+          "label": {
+            "ar": "▸ البطاقة الكبيرة: العنوان",
+            "en": "▸ Big card: title"
+          },
+          "default": ""
+        },
+        "feature_image": {
+          "type": "media",
+          "label": {
+            "ar": "البطاقة الكبيرة: الصورة — يفضّل PNG بخلفية شفافة",
+            "en": "Big card: picture — a transparent PNG works best"
+          }
+        },
+        "feature_bg": {
+          "type": "color",
+          "label": {
+            "ar": "البطاقة الكبيرة: اللون",
+            "en": "Big card: colour"
+          },
+          "default": ""
+        },
+        "feature_bg_2": {
+          "type": "color",
+          "label": {
+            "ar": "البطاقة الكبيرة: لون ثانٍ لتدرّج — فارغ = لون واحد",
+            "en": "Big card: second gradient colour — empty = solid"
+          },
+          "default": ""
+        },
+        "feature_tone": {
+          "type": "select",
+          "label": {
+            "ar": "البطاقة الكبيرة: لون النص",
+            "en": "Big card: text colour"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "فاتح",
+                "en": "Light"
+              }
+            },
+            {
+              "value": "dark",
+              "label": {
+                "ar": "داكن",
+                "en": "Dark"
+              }
+            }
+          ]
+        },
+        "feature_url": {
+          "type": "string",
+          "label": {
+            "ar": "البطاقة الكبيرة: الرابط — فارغ = رابط العنوان",
+            "en": "Big card: link — empty = the heading link"
+          },
+          "default": ""
+        },
+        "item1_label": {
+          "type": "string",
+          "label": {
+            "ar": "▸ المربع 1: الاسم",
+            "en": "▸ Tile 1: name"
+          },
+          "default": ""
+        },
+        "item1_image": {
+          "type": "media",
+          "label": {
+            "ar": "المربع 1: الصورة",
+            "en": "Tile 1: picture"
+          }
+        },
+        "item1_url": {
+          "type": "string",
+          "label": {
+            "ar": "المربع 1: الرابط",
+            "en": "Tile 1: link"
+          },
+          "default": "/shop"
+        },
+        "item2_label": {
+          "type": "string",
+          "label": {
+            "ar": "▸ المربع 2: الاسم",
+            "en": "▸ Tile 2: name"
+          },
+          "default": ""
+        },
+        "item2_image": {
+          "type": "media",
+          "label": {
+            "ar": "المربع 2: الصورة",
+            "en": "Tile 2: picture"
+          }
+        },
+        "item2_url": {
+          "type": "string",
+          "label": {
+            "ar": "المربع 2: الرابط",
+            "en": "Tile 2: link"
+          },
+          "default": "/shop"
+        },
+        "item3_label": {
+          "type": "string",
+          "label": {
+            "ar": "▸ المربع 3: الاسم",
+            "en": "▸ Tile 3: name"
+          },
+          "default": ""
+        },
+        "item3_image": {
+          "type": "media",
+          "label": {
+            "ar": "المربع 3: الصورة",
+            "en": "Tile 3: picture"
+          }
+        },
+        "item3_url": {
+          "type": "string",
+          "label": {
+            "ar": "المربع 3: الرابط",
+            "en": "Tile 3: link"
+          },
+          "default": "/shop"
+        },
+        "tile_bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون المربعات الصغيرة",
+            "en": "Small tiles colour"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "مجموعة المجموعات"
+    }
+  ]
+}

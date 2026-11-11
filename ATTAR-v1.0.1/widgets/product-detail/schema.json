@@ -1,0 +1,172 @@
+{
+  "name": "product-detail",
+  "settings": {
+    "_section_defaults": {
+      "type": "header",
+      "label": {
+        "ar": "الألوان والأحجام",
+        "en": "Colors & Sizes"
+      }
+    },
+    "use_default_pd_styles": {
+      "type": "boolean",
+      "label": {
+        "ar": "استخدام القيم الافتراضية",
+        "en": "Use Default Values"
+      },
+      "default": true
+    },
+    "_section_title": {
+      "type": "header",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      }
+    },
+    "title_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title Color"
+      },
+      "default": ""
+    },
+    "title_size": {
+      "type": "number",
+      "label": {
+        "ar": "حجم العنوان (px)",
+        "en": "Title Size (px)"
+      },
+      "default": 26
+    },
+    "_section_price": {
+      "type": "header",
+      "label": {
+        "ar": "السعر قبل وبعد",
+        "en": "Price"
+      }
+    },
+    "price_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون السعر الحالي",
+        "en": "Current Price Color"
+      },
+      "default": ""
+    },
+    "price_size": {
+      "type": "number",
+      "label": {
+        "ar": "حجم السعر الحالي (px)",
+        "en": "Current Price Size (px)"
+      },
+      "default": 26
+    },
+    "compare_price_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون السعر قبل الخصم",
+        "en": "Compare Price Color"
+      },
+      "default": ""
+    },
+    "compare_price_size": {
+      "type": "number",
+      "label": {
+        "ar": "حجم السعر قبل الخصم (px)",
+        "en": "Compare Price Size (px)"
+      },
+      "default": 15
+    },
+    "_section_desc": {
+      "type": "header",
+      "label": {
+        "ar": "الوصف القصير",
+        "en": "Short Description"
+      }
+    },
+    "desc_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الوصف",
+        "en": "Description Color"
+      },
+      "default": ""
+    },
+    "desc_size": {
+      "type": "number",
+      "label": {
+        "ar": "حجم الوصف (px)",
+        "en": "Description Size (px)"
+      },
+      "default": 15
+    },
+    "_section_savings": {
+      "type": "header",
+      "label": {
+        "ar": "شارة وفّرت",
+        "en": "Savings Badge"
+      }
+    },
+    "show_savings": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شارة وفّرت",
+        "en": "Show Savings Badge"
+      },
+      "default": true
+    },
+    "savings_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص وفّرت",
+        "en": "Savings Text Color"
+      },
+      "default": ""
+    },
+    "savings_size": {
+      "type": "number",
+      "label": {
+        "ar": "حجم نص وفّرت (px)",
+        "en": "Savings Text Size (px)"
+      },
+      "default": 13
+    },
+    "_section_reviews": {
+      "type": "header",
+      "label": {
+        "ar": "التقييمات",
+        "en": "Reviews"
+      }
+    },
+    "show_reviews": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التقييمات",
+        "en": "Show Reviews"
+      },
+      "default": true
+    },
+    "_section_stock": {
+      "type": "header",
+      "label": {
+        "ar": "حالة المخزون",
+        "en": "Stock Status"
+      }
+    },
+    "show_stock_status": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار حالة المخزون",
+        "en": "Show Stock Status"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "تفاصيل المنتج"
+    }
+  ]
+}

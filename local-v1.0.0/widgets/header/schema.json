@@ -1,0 +1,577 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ تثبيت الهيدر أعلى الصفحة أثناء التمرير",
+        "en": "▸ Keep the header pinned while scrolling"
+      },
+      "default": true
+    },
+    "header_logo": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الشعار — اتركه فارغًا ليُستخدم شعار المتجر",
+        "en": "▸ Logo — leave empty to use the store logo"
+      }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "min": 24,
+      "max": 90,
+      "step": 2,
+      "unit": "px",
+      "default": 44
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ إظهار حقل البحث",
+        "en": "▸ Show the search field"
+      },
+      "default": true
+    },
+    "search_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص الحقل — اتركه فارغًا للنص المترجم",
+        "en": "Field prompt — leave empty for the translated text"
+      },
+      "default": ""
+    },
+    "search_show_suggestions": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار كلمات البحث المقترحة",
+        "en": "Show suggested search terms"
+      },
+      "default": true
+    },
+    "action_link_url": {
+      "type": "string",
+      "label": {
+        "ar": "▸ زر مخصّص بجانب السلة — قمرة ليس بها صفحة حساب، فضع هنا أي رابط (واتساب، تتبّع الطلب، صفحة تواصل…) · فارغ = مخفي",
+        "en": "▸ Custom button beside the cart — Qumra has no account page, so link anything here (WhatsApp, order tracking, contact page…) · empty hides it"
+      },
+      "default": ""
+    },
+    "action_link_label": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر المخصّص",
+        "en": "Custom button label"
+      },
+      "default": ""
+    },
+    "action_link_icon": {
+      "type": "select",
+      "label": {
+        "ar": "أيقونة الزر المخصّص",
+        "en": "Custom button icon"
+      },
+      "default": "whatsapp",
+      "options": [
+        {
+          "value": "user",
+          "label": {
+            "ar": "شخص",
+            "en": "Person"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة",
+            "en": "Truck"
+          }
+        },
+        {
+          "value": "heart",
+          "label": {
+            "ar": "قلب",
+            "en": "Heart"
+          }
+        }
+      ]
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السلة",
+        "en": "Show the cart"
+      },
+      "default": true
+    },
+    "cart_show_total": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار إجمالي السلة داخل الزر",
+        "en": "Show the cart total inside the button"
+      },
+      "default": true
+    },
+    "cart_free_shipping": {
+      "type": "number",
+      "label": {
+        "ar": "▸ حد الشحن المجاني — بعملة المتجر · ٠ = إخفاء شريط التقدّم",
+        "en": "▸ Free-shipping threshold — in store currency · 0 hides the progress bar"
+      },
+      "default": 0,
+      "min": 0,
+      "step": 1
+    },
+    "cart_upsell_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان «أكمل طلبك» — اتركه فارغًا لإخفاء الشريط",
+        "en": "Cross-sell heading — leave empty to hide the strip"
+      },
+      "default": ""
+    },
+    "cart_upsell_products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات «أكمل طلبك» — قمرة ليس بها اقتراحات تلقائية للسلة، فالاختيار يدوي",
+        "en": "Cross-sell products — Qumra has no cart-recommendation API, so these are picked by hand"
+      }
+    },
+    "cart_empty_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيفات تظهر عندما تكون السلة فارغة",
+        "en": "Collections shown when the cart is empty"
+      }
+    },
+    "cart_footer_dark": {
+      "type": "boolean",
+      "label": {
+        "ar": "خلفية داكنة لتذييل السلة",
+        "en": "Dark ground under the cart total"
+      },
+      "default": true
+    },
+    "cart_note": {
+      "type": "string",
+      "label": {
+        "ar": "سطر أسفل الإجمالي",
+        "en": "Line under the total"
+      },
+      "default": ""
+    },
+    "nav_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الصف الثاني — روابط التنقّل",
+        "en": "▸ Second row — navigation links"
+      },
+      "default": true
+    },
+    "nav_extra_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط إضافية بعد العناصر أعلاه",
+        "en": "Extra links after the items above"
+      },
+      "default": "header-menu"
+    },
+    "show_locale": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر تبديل اللغة في الصف الثاني",
+        "en": "Show the language switch in the second row"
+      },
+      "default": true
+    },
+    "info1_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ معلومة سريعة 1 — أيقونة وسطران في نهاية الصف الثاني",
+        "en": "▸ Quick info 1 — an icon and two lines at the end of the second row"
+      },
+      "default": false
+    },
+    "info1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الأيقونة",
+        "en": "Icon"
+      },
+      "default": "store",
+      "options": [
+        {
+          "value": "store",
+          "label": {
+            "ar": "متجر / فرع",
+            "en": "Storefront"
+          }
+        },
+        {
+          "value": "box",
+          "label": {
+            "ar": "صندوق / شحنة",
+            "en": "Parcel"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة توصيل",
+            "en": "Delivery truck"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location pin"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Shield"
+          }
+        }
+      ]
+    },
+    "info1_eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير",
+        "en": "Small line"
+      },
+      "default": ""
+    },
+    "info1_title": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الرئيسي",
+        "en": "Main line"
+      },
+      "default": ""
+    },
+    "info1_url": {
+      "type": "string",
+      "label": {
+        "ar": "الرابط (اختياري) — مثال: /pages/contact أو رابط واتساب",
+        "en": "Link (optional) — e.g. /pages/contact or a WhatsApp link"
+      },
+      "default": ""
+    },
+    "info2_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ معلومة سريعة 2 — أيقونة وسطران في نهاية الصف الثاني",
+        "en": "▸ Quick info 2 — an icon and two lines at the end of the second row"
+      },
+      "default": false
+    },
+    "info2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "الأيقونة",
+        "en": "Icon"
+      },
+      "default": "box",
+      "options": [
+        {
+          "value": "store",
+          "label": {
+            "ar": "متجر / فرع",
+            "en": "Storefront"
+          }
+        },
+        {
+          "value": "box",
+          "label": {
+            "ar": "صندوق / شحنة",
+            "en": "Parcel"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة توصيل",
+            "en": "Delivery truck"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "موقع",
+            "en": "Location pin"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Shield"
+          }
+        }
+      ]
+    },
+    "info2_eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير",
+        "en": "Small line"
+      },
+      "default": ""
+    },
+    "info2_title": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الرئيسي",
+        "en": "Main line"
+      },
+      "default": ""
+    },
+    "info2_url": {
+      "type": "string",
+      "label": {
+        "ar": "الرابط (اختياري) — مثال: /pages/contact أو رابط واتساب",
+        "en": "Link (optional) — e.g. /pages/contact or a WhatsApp link"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الشريط",
+        "en": "Bar background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون الروابط والشعار والنص الرئيسي",
+        "en": "Links, logo and main text"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون زر السلة",
+        "en": "Cart button colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "nav_item": {
+      "name": "عنصر تنقّل",
+      "settings": {
+        "nav_label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "nav_url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — / · /shop · /collections · /blogs · /cart",
+            "en": "Link — / · /shop · /collections · /blogs · /cart"
+          },
+          "default": "/shop"
+        },
+        "nav_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "قائمة منسدلة (اختيارية)",
+            "en": "Dropdown menu (optional)"
+          },
+          "default": "header-menu"
+        },
+        "nav_columns": {
+          "type": "select",
+          "label": {
+            "ar": "أعمدة القائمة المنسدلة",
+            "en": "Dropdown columns"
+          },
+          "default": "1",
+          "options": [
+            {
+              "value": "1",
+              "label": {
+                "ar": "عمود واحد",
+                "en": "One column"
+              }
+            },
+            {
+              "value": "2",
+              "label": {
+                "ar": "عمودان",
+                "en": "Two columns"
+              }
+            },
+            {
+              "value": "3",
+              "label": {
+                "ar": "ثلاثة أعمدة",
+                "en": "Three columns"
+              }
+            },
+            {
+              "value": "4",
+              "label": {
+                "ar": "أربعة أعمدة",
+                "en": "Four columns"
+              }
+            }
+          ]
+        },
+        "nav_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة ترويجية داخل القائمة (تظهر مع عمودين فأكثر)",
+            "en": "Promo image inside the dropdown (two columns or more)"
+          }
+        },
+        "nav_image_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الصورة الترويجية",
+            "en": "Promo image link"
+          },
+          "default": ""
+        },
+        "nav_image_caption": {
+          "type": "string",
+          "label": {
+            "ar": "تعليق الصورة الترويجية",
+            "en": "Promo image caption"
+          },
+          "default": ""
+        },
+        "nav_badge": {
+          "type": "string",
+          "label": {
+            "ar": "شارة صغيرة بجانب النص",
+            "en": "Small badge next to the label"
+          },
+          "default": ""
+        },
+        "nav_highlight": {
+          "type": "boolean",
+          "label": {
+            "ar": "إبراز العنصر باللون المميّز",
+            "en": "Highlight with the accent colour"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الرئيسي"
+    }
+  ]
+}

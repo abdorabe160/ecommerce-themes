@@ -1,0 +1,29 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المتجر",
+      "widget": "shop-page",
+      "settings": {
+        "title": "",
+        "description": "",
+        "show_breadcrumb": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "1x1",
+        "columns_tablet": "3",
+        "show_count": true
+      }
+    },
+    {
+      "name": "منتجات المتجر",
+      "widget": "shop-products",
+      "settings": {}
+    }
+  ]
+}

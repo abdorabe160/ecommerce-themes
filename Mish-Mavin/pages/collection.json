@@ -1,0 +1,14 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "collection-products",
+      "widget": "collection-products",
+      "settings": {
+        "products_per_page": 12,
+        "show_sort": true
+      }
+    }
+  ],
+  "name": "collection"
+}

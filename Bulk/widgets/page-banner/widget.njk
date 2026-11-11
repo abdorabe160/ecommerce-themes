@@ -1,0 +1,52 @@
+{# =========================================================
+   Dark Blood - بانر عنوان الصفحة + مسار التنقل
+   العنوان بيتاخد تلقائياً من التصنيف/المقال/الصفحة لو مكتبتوش في الإعدادات
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# العنوان التلقائي: المجموعة (collection أو context.collection) ← المقال ← الصفحة #}
+{% set ctxCol = (context.collection if (context and context.collection and context.collection.title) else null) or (context.shop.collection if (context and context.shop and context.shop.collection and context.shop.collection.title) else null) %}
+{% set bnCol = collection if (collection and collection.title) else ctxCol %}
+{% set bnArticle = article if (article and article.title) else (context.article if (context and context.article and context.article.title) else null) %}
+{# /blogs/<تصنيف>: اسم التصنيف بدل عنوان «المدونة» الثابت #}
+{% set bnBlog = context.blog if (context and context.blog and context.blog.title) else null %}
+{% set autoTitle = (bnCol.title if bnCol) or (bnArticle.title if bnArticle) or (page.title if page and page.title) %}
+{# /shop/<مجموعة>: اسم المجموعة بدل عنوان «المتجر» الثابت #}
+{% set shopCol = context and context.shop and context.shop.mode == 'collection' and bnCol %}
+{% set bannerTitle = (bnCol.title if shopCol else '') or (bnBlog.title if bnBlog else '') or s.title or autoTitle or t('common.page') %}
+{# مفيش عنوان: الـ JS بيبدّله باسم القسم لو اللينك /collections/<قسم> #}
+{% set isFallback = not (s.title or autoTitle) %}
+{% set bannerText = s.subtitle or (bnCol.description | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(160) if bnCol and bnCol.description) %}
+{% set bgImg = s.background_image.fileUrl | default(s.background_image) if s.background_image else '' %}
+
+<section class="blk-page-banner {% if bgImg %}has-image{% endif %} blk-banner-{{ s.height | default('md') }}" id="blkBanner-{{ widget.id }}">
+  {% if bgImg %}
+    <div class="blk-page-banner-bg">
+      <img src="{{ bgImg }}" alt="" class="blk-zoom-effect" />
+    </div>
+  {% endif %}
+  <div class="blk-page-banner-glow" aria-hidden="true"></div>
+
+  <div class="blk-container blk-page-banner-inner">
+    {% if s.show_breadcrumb != false %}
+      <nav class="blk-breadcrumb blk-anim-fade-up" aria-label="{{t('common.breadcrumb')}}">
+        <a href="/">{{t('common.home')}}</a>
+        <span class="blk-breadcrumb-sep">/</span>
+        {% if bnCol %}
+          <a href="/collections">{{t('common.categories')}}</a>
+          <span class="blk-breadcrumb-sep">/</span>
+        {% elif bnArticle or bnBlog %}
+          <a href="/blogs">{{t('common.blog')}}</a>
+          <span class="blk-breadcrumb-sep">/</span>
+        {% endif %}
+        <span aria-current="page" data-banner-title{% if isFallback %} data-banner-fallback{% endif %}>{% ui "blk-t.njk", text=bannerTitle %}</span>
+      </nav>
+    {% endif %}
+
+    {# data-banner-title: في صفحة قسم على /shop?category= الـ JS بيكتب اسم القسم مكان "المتجر" #}
+    <h1 class="blk-page-banner-title blk-anim-fade-up" style="--anim-delay: 0.1s;" data-banner-title{% if isFallback %} data-banner-fallback{% endif %}>{% ui "blk-t.njk", text=bannerTitle %}</h1>
+
+    {% if bannerText %}
+      <p class="blk-page-banner-text blk-anim-fade-up" style="--anim-delay: 0.2s;">{% ui "blk-t.njk", text=bannerText %}</p>
+    {% endif %}
+  </div>
+</section>

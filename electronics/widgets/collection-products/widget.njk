@@ -1,0 +1,338 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# بيانات الصفحة: قمرة تمرّرها للويدجت داخل context — نقرأ الأسماء كلها:
+   /collections/<h> و /latest → context.collection / products / pagination / filters
+   /shop → context.shop = { products, pagination, filters: { available, applied }, sort, collection } #}
+{% set ctx = context or {} %}
+{% set shop = ctx.shop or {} %}
+{% set pageHandle = (ctx.page and ctx.page.handle) or '' %}
+{% set col = collection or ctx.collection or shop.collection or {} %}
+{% set products = col.products or products or ctx.products or shop.products or [] %}
+{% set pagination = col.pagination or pagination or ctx.pagination or shop.pagination or {} %}
+{% set total = pagination.total or pagination.totalItems or col.productsCount or (products | length) %}
+{% set rawFilters = col.filters or filters or ctx.filters or (shop.filters and shop.filters.available) or {} %}
+{# عنوان الصفحة: التصنيف، وإلا اسم الصفحة المعروفة (المتجر / الأحدث) بلغة الزائر #}
+{% set pageTitle = col.title or (t('nav.shop') if pageHandle == 'shop' else (t('nav.latest') if pageHandle == 'latest' else (page.title or t('common.products')))) %}
+
+{# صفحة المتجر (/shop): رأس خاص — وصف + بحث ذكي باقتراحات فورية (نفس نافذة البحث) + أزرار تصنيفات.
+   فلترة /shop بالتصنيف غير مدعومة في السيرفر، فأزرار التصنيفات روابط لصفحات التصنيفات نفسها. #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set isShop = pageHandle == 'shop' or (ctx.shop and not col.title) %}
+{% set shopQuery = (shop.query or '') if isShop else '' %}
+{% set shopCols = [] %}
+{% for c in wd.shop_collections | default([]) %}
+  {% if c and c.title and (c.handle or c.slug) and (c.handle or c.slug) != 'home-page' and c.status != 'inactive' and c.status != 'draft' and c.active != false and c.isActive != false and c.deleted != true and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% if shopCols.push(c) %}{% endif %}{% endif %}
+{% endfor %}
+
+{# توحيد شكل الفلاتر: مصفوفة (قمرة: { handle, name: {ar,en}, inputType, values }) أو كائن { name: [ {value,label,count} ] }.
+   فلتر السعر (range) له حقول خاصة أسفل القائمة. #}
+{% set filterList = [] %}
+{% if rawFilters[0] %}
+  {% for f in rawFilters %}
+    {% set vals = f.values or f.options or f.items or [] %}
+    {% set fkey = f.handle or f.key or f.name %}
+    {% set fname = (f.name[localization.language] or f.name.ar or f.name.en) if (f.name and (f.name.ar or f.name.en)) else f.name %}
+    {% if fkey and (vals | length) and fkey != 'price' and f.inputType != 'range' %}
+      {% if filterList.push({ name: fkey, label: f.label or f.title or fname or fkey, values: vals }) %}{% endif %}
+    {% endif %}
+  {% endfor %}
+{% else %}
+  {% for name, f in rawFilters %}
+    {% set vals = f if f[0] else (f.values or f.options or []) %}
+    {% if (vals | length) and name != 'price' %}
+      {% if filterList.push({ name: name, label: f.label or f.title or name, values: vals }) %}{% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{# الإعدادات قد تصل فارغة ({}) — الافتراضي "مفعّل" كما في schema.json #}
+{% set showFilters = wd.show_filters != false %}
+{% set showHeader = wd.show_header != false %}
+{% set showSort = wd.show_sort != false %}
+{% set subs = [] %}
+{% for c in (col.children or col.subCollections or col.subcollections or []) %}
+  {% if c and c.status != 'inactive' and c.status != 'draft' and c.published != false and c.active != false and c.isActive != false and c.deleted != true and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% if subs.push(c) %}{% endif %}{% endif %}
+{% endfor %}
+{% set i18n = { priceInvalid: t('collection.price_invalid') } %}
+{# فلتر السعر: السيرفر يطبّق filters[price] على /shop و /collections/<h> فقط (وضع server)؛
+   /latest وغيرها يتجاهله فيُطبَّق في المتصفح فوراً على البطاقات (وضع client). أسعار البطاقات لحساب "لا نتائج". #}
+{% set priceMode = 'server' if (isShop or col.title or pageHandle == 'collection') else 'client' %}
+{% set priceList = [] %}
+{% for item in products %}{% if priceList.push(item.pricing.price if (item.pricing and item.pricing.price) else 0) %}{% endif %}{% endfor %}
+
+<section class="lg-section !pt-4" data-qumra-section="collection-products"
+         x-data="lgFilters({{ { i18n: i18n, mode: priceMode, prices: priceList } | dump | escape }})">
+  <div class="lg-container">
+
+    {# ===== رأس التصنيف (COL-01) ===== #}
+    {% if showHeader %}
+      <nav aria-label="{{t('common.breadcrumb')}}" class="lg-breadcrumb mb-3 text-sm text-muted">
+        <ol class="flex flex-wrap items-center gap-1.5">
+          <li><a href="/" class="hover:text-primary">{{t('common.home')}}</a></li>
+          <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+          <li aria-current="page" class="text-[color:var(--color-text)]">{{ pageTitle }}</li>
+        </ol>
+      </nav>
+      {% if isShop %}
+        {# ===== رأس صفحة المتجر ===== #}
+        <header class="glass lg-shop-head mb-5">
+          <div class="p-5 md:p-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center">
+            <div class="space-y-2 min-w-0">
+              <h1 class="lg-title !text-2xl md:!text-3xl">{{ pageTitle }}</h1>
+              <p class="lg-subtitle">{{ (wd['shop_subtitle' + L] or wd.shop_subtitle) | default(t('shop.subtitle'), true) }}</p>
+              {% if total > 0 %}<p class="text-sm font-semibold text-primary">{% ui "count.njk", n=total %}</p>{% endif %}
+            </div>
+            {% if wd.show_shop_search != false %}
+              {# نفس نظام نافذة البحث (ui/search-suggestions.njk): اقتراحات فورية بالبحث الذكي (الهمزات وة/ه والتشكيل وترتيب الكلمات
+                 والأخطاء الإملائية)، "هل تقصد؟"، آخر عمليات البحث، الأسهم وEnter — وEnter بلا اختيار ← صفحة /search.
+                 الحالة مشتركة مع qumraApp (search / suggestions). action="/search" يعمل بدون JS أيضاً #}
+              <form action="/search" method="GET" role="search" class="lg-shop-search min-w-0"
+                    x-data="{ drop: false }"
+                    x-init="if ({{ shopQuery | dump | escape }}) search = {{ shopQuery | dump | escape }}"
+                    @submit.prevent="setSearch(search)"
+                    @focusin="drop = true; warmSearch()"
+                    @focusout="if (!$el.contains($event.relatedTarget)) drop = false"
+                    @click.outside="drop = false"
+                    @keydown.escape.stop="drop = false">
+                <div class="lg-search-field" @click="$refs.shopQ.focus()">
+                  <span class="lg-search-field__icon">{% ui "icon.njk", name="search", cls="w-[18px] h-[18px]" %}</span>
+                  <label for="lg-shop-q" class="sr-only">{{t('shop.search_button')}}</label>
+                  <input id="lg-shop-q" x-ref="shopQ" type="search" name="q" value="{{ shopQuery }}" class="lg-search-field__input"
+                         x-model="search"
+                         @input.debounce.300ms="drop = true; loadSuggestions()"
+                         @keydown="if ($event.key !== 'Escape') drop = true; suggestKey($event)"
+                         role="combobox" aria-autocomplete="list" aria-controls="lg-shop-suggest" :aria-expanded="drop"
+                         placeholder="{{t('shop.search_placeholder')}}" autocomplete="off" enterkeyhint="search">
+                  <span x-show="suggestions.loading" x-cloak class="lg-spinner text-primary shrink-0"></span>
+                  <button type="button" class="lg-search-field__clear" x-show="search && !suggestions.loading" x-cloak
+                          @click.stop="search = ''; loadSuggestions(); $refs.shopQ.focus()" aria-label="{{t('search.clear')}}">
+                    <span>{% ui "icon.njk", name="close", cls="w-3.5 h-3.5" %}</span>
+                  </button>
+                  <button type="submit" class="lg-shop-head__go" aria-label="{{t('shop.search_button')}}">{% ui "icon.njk", name="arrow", cls="w-4 h-4 lg-flip-rtl" %}</button>
+                </div>
+                <div id="lg-shop-suggest" class="lg-shop-search__drop glass glass-strong" x-show="drop" x-cloak
+                     x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
+                  <div class="lg-shop-search__list lg-scroll">
+                    {% ui "search-suggestions.njk", input="lg-shop-q" %}
+                  </div>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+          {# أزرار التصنيفات السريعة: "كل المنتجات" + المختارة من الإعدادات + "كل التصنيفات" #}
+          <nav class="lg-shop-head__cats" aria-label="{{t('header.categories')}}">
+            <a href="/shop" class="lg-chip {% if not shopQuery %}is-active{% endif %}" {% if not shopQuery %}aria-current="page"{% endif %}>{% ui "icon.njk", name="grid", cls="w-4 h-4" %}{{t('shop.all')}}</a>
+            {% for c in shopCols %}
+              <a href="/collections/{{ c.handle or c.slug }}" class="lg-chip">{{ c.title }}</a>
+            {% endfor %}
+            <a href="/collections" class="lg-chip">{{t('shop.browse_categories')}} {% ui "icon.njk", name="arrow", cls="w-3.5 h-3.5 lg-flip-rtl" %}</a>
+          </nav>
+        </header>
+        {% if shopQuery %}
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p class="font-semibold">{{t('shop.results_for')}} {{t('common.quote_open')}}<bdi>{{ shopQuery }}</bdi>{{t('common.quote_close')}}</p>
+            <a href="/shop" class="btn btn-glass">{{t('shop.show_all')}}</a>
+          </div>
+        {% endif %}
+      {% else %}
+      <header class="glass overflow-hidden mb-5 grid {% if col.image and col.image.fileUrl and not col.image.notFound %}md:grid-cols-[1.4fr_1fr]{% endif %} items-center">
+        <div class="p-5 md:p-8 space-y-2">
+          <h1 class="lg-title !text-2xl md:!text-3xl">{{ pageTitle }}</h1>
+          {% if col.description %}<div class="lg-prose text-sm max-w-2xl">{{ col.description | safe }}</div>{% endif %}
+          {% if total > 0 %}<p class="text-sm text-muted">{% ui "count.njk", n=total %}</p>{% endif %}
+        </div>
+        {% if col.image and col.image.fileUrl and not col.image.notFound %}
+          <div class="hidden md:block h-full max-h-56">
+            <img src="{{ col.image.fileUrl }}" alt="{{ col.title }}" class="w-full h-full object-cover" width="480" height="224">
+          </div>
+        {% endif %}
+      </header>
+      {% endif %}
+    {% endif %}
+
+    {# ===== تصنيفات فرعية (COL-09) ===== #}
+    {% if subs | length %}
+      <div class="mb-5">
+        <p class="text-sm font-semibold mb-2">{{t('collection.subcollections')}}</p>
+        <ul class="flex flex-wrap gap-2">
+          {% for c in subs %}
+            <li><a href="/collections/{{ c.handle or c.slug }}" class="lg-chip">{{ c.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# مسافة حول الكلاس داخل الوسم حتى يلتقطه Tailwind عند البناء #}
+    <div class="grid gap-6 {% if showFilters %} lg:gap-8 lg:grid-cols-[290px_1fr] xl:grid-cols-[320px_1fr] {% endif %}">
+
+      {# ===== فلاتر الديسكتوب (تطبيق فوري) — الزجاج خارج منطقة التمرير حتى لا تُنشئ حافته شريط تمرير ===== #}
+      {% if showFilters %}
+        <aside class="hidden lg:block" aria-label="{{t('collection.filters')}}">
+          <div class="glass lg-filters">
+            <div class="lg-filters__body">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="lg-filters__title">{% ui "icon.njk", name="sliders", cls="w-5 h-5 text-primary" %}{{t('collection.filters')}}</h2>
+              <button type="button" class="text-sm text-primary font-semibold min-h-[36px]" x-show="activeCount > 0" x-cloak @click="clearAll()">{{t('collection.clear_all')}}</button>
+            </div>
+
+            {% for f in filterList %}
+              <fieldset x-data="{ more: false }">
+                <legend>{{ f.label }}</legend>
+                <div class="space-y-0.5" :class="!more && 'max-h-[264px] overflow-hidden'">
+                  {% for v in f.values %}
+                    {% set val = v.value if (v.value is defined) else (v._id or v) %}
+                    <label class="lg-check">
+                      <input type="checkbox" :checked="isOn({{ f.name | dump | escape }}, {{ val | string | dump | escape }})" @change="toggle({{ f.name | dump | escape }}, {{ val | string | dump | escape }})">
+                      <span class="flex-1">{{ v.label or v.title or val }}</span>
+                      {% if v.count is defined %}<span class="text-xs text-muted">({{ v.count }})</span>{% endif %}
+                    </label>
+                  {% endfor %}
+                </div>
+                {% if f.values | length > 6 %}
+                  <button type="button" class="text-sm text-primary font-semibold mt-1 min-h-[36px]" @click="more = !more">
+                    <span x-show="!more">{{t('collection.show_more')}}</span><span x-show="more" x-cloak>{{t('collection.show_less')}}</span>
+                  </button>
+                {% endif %}
+              </fieldset>
+            {% endfor %}
+
+            <fieldset>
+              <legend>{{t('collection.price')}}</legend>
+              <div class="grid grid-cols-2 gap-2.5">
+                <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.min" placeholder="{{t('collection.min')}}" aria-label="{{t('collection.min')}}">
+                <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.max" placeholder="{{t('collection.max')}}" aria-label="{{t('collection.max')}}">
+              </div>
+              <p class="text-sm text-[color:var(--color-danger)] mt-1.5" x-show="priceError" x-cloak x-text="priceError"></p>
+              <button type="button" class="btn btn-soft btn-block mt-3" @click="applyPrice()">{{t('collection.apply')}}</button>
+            </fieldset>
+            </div>
+          </div>
+        </aside>
+      {% endif %}
+
+      <div class="min-w-0">
+        {# ===== شريط الأدوات ===== #}
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          {% if showFilters %}
+            <button type="button" class="btn btn-glass lg:hidden" @click="openDrawer()">
+              {% ui "icon.njk", name="sliders", cls="w-4 h-4" %}{{t('collection.filter')}}
+              <span class="lg-badge lg-badge--best" x-show="activeCount > 0" x-cloak x-text="activeCount"></span>
+            </button>
+          {% endif %}
+          {# العدد يُخفى عند الصفر (المنتجات التوضيحية في المعاينة لا تُحسب) #}
+          {% if total > 0 %}<p class="text-sm text-muted hidden sm:block">{% ui "count.njk", n=total %}</p>{% endif %}
+          {% if showSort %}
+            <label class="ms-auto flex items-center gap-2 text-sm">
+              <span class="text-muted hidden sm:inline">{{t('collection.sort_by')}}</span>
+              <select class="lg-input !min-h-[44px] !w-auto !py-2 !pe-8" x-model="sort" @change="setSort(sort)" aria-label="{{t('collection.sort_by')}}">
+                <option value="">{{t('collection.sort_default')}}</option>
+                <option value="createdAt-desc">{{t('collection.sort_newest')}}</option>
+                <option value="price-asc">{{t('collection.sort_price_asc')}}</option>
+                <option value="price-desc">{{t('collection.sort_price_desc')}}</option>
+                <option value="rating-desc">{{t('collection.sort_rating')}}</option>
+              </select>
+            </label>
+          {% endif %}
+        </div>
+
+        {# ===== الفلاتر النشطة (chips) ===== #}
+        {% if showFilters %}
+          <div class="flex flex-wrap gap-2 mb-4" x-show="activeCount > 0" x-cloak>
+            {% for f in filterList %}
+              {% for v in f.values %}
+                {% set val = v.value if (v.value is defined) else (v._id or v) %}
+                <button type="button" class="lg-chip is-active" x-show="isOn({{ f.name | dump | escape }}, {{ val | string | dump | escape }})"
+                        @click="toggle({{ f.name | dump | escape }}, {{ val | string | dump | escape }})" aria-label="{{ v.label or val }} ×">
+                  {{ v.label or v.title or val }} {% ui "icon.njk", name="close", cls="w-3.5 h-3.5" %}
+                </button>
+              {% endfor %}
+            {% endfor %}
+            <button type="button" class="lg-chip is-active" x-show="priceActive" x-cloak @click="price = { min: '', max: '' }; commitPrice({ min: null, max: null })"
+                    :aria-label="{{ t('collection.price') | dump | escape }} + ' ×'">
+              <span x-text="{{ t('collection.price') | dump | escape }} + ': ' + fmtPrice(range.min !== null ? range.min : 0) + ' – ' + (range.max !== null ? fmtPrice(range.max) : '∞')"></span>
+              {% ui "icon.njk", name="close", cls="w-3.5 h-3.5" %}
+            </button>
+            <button type="button" class="lg-chip" @click="clearAll()">{{t('collection.clear_all')}}</button>
+          </div>
+        {% endif %}
+
+        {# ===== المنتجات ===== #}
+        {% if products | length %}
+          <div class="lg-grid" data-cols="{{ wd.columns | default('3') }}" x-effect="syncLone($el)" @resize.window.debounce.200ms="syncLone($el)">
+            {% for item in products %}
+              <div class="contents" x-show="priceOk({{ item.pricing.price if (item.pricing and item.pricing.price) else 0 }})">{% ui "product-card.njk", product=item %}</div>
+            {% endfor %}
+          </div>
+          <div x-show="visibleCount === 0" x-cloak>
+            {% ui "empty.njk", icon="search", title=t('collection.no_match') %}
+            <div class="text-center mt-4"><button type="button" class="btn btn-primary" @click="clearAll()">{{t('collection.clear_all')}}</button></div>
+          </div>
+          {% ui "pagination.njk", pagination=pagination %}
+        {% elif shopQuery %}
+          {# بحث داخل المتجر بلا نتائج: رسالة واضحة وزر لكل المنتجات (لا منتجات توضيحية هنا) #}
+          {% ui "empty.njk", icon="search", title=t('shop.no_results'), text=t('shop.no_results_hint'), url="/shop", button=t('shop.show_all') %}
+        {% else %}
+          {# بدون منتجات: منتجات توضيحية في المعاينة فقط (lgAutoProducts) #}
+          <div x-data="lgAutoProducts(24)">
+            <template x-if="visible.length">
+              <div>
+                <div class="lg-grid" data-cols="{{ wd.columns | default('3') }}">
+                  <template x-for="p in visible" :key="p._id">{% ui "card-js.njk" %}</template>
+                </div>
+              </div>
+            </template>
+            <div x-show="!loading && activeCount > 0 && !visible.length" x-cloak>
+              {% ui "empty.njk", icon="search", title=t('collection.no_match') %}
+              <div class="text-center mt-4"><button type="button" class="btn btn-primary" @click="clearAll()">{{t('collection.clear_all')}}</button></div>
+            </div>
+            <div x-show="activeCount === 0 && !loading && !items.length" x-cloak>
+              {% ui "empty.njk", icon="grid", title=t('collection.empty'), url="/collections", button=t('collection.all_collections') %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ===== Drawer فلاتر الموبايل (FLT-11) — تطبيق / إلغاء ===== #}
+  {% if showFilters %}
+    <div x-cloak x-show="drawer" class="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="{{t('collection.filters')}}" @keydown.escape.window="drawer && cancelDrawer()">
+      <div class="lg-overlay" @click="cancelDrawer()" x-show="drawer" x-transition.opacity></div>
+      <div class="lg-drawer lg-drawer--start glass" x-show="drawer"
+           x-transition:enter="lg-win-enter" x-transition:enter-start="lg-win-from lg-win-from--start" x-transition:enter-end="lg-win-to">
+        <div class="flex items-center justify-between p-4 border-b border-[color:var(--color-hairline)]">
+          <h2 class="font-semibold">{{t('collection.filters')}}</h2>
+          <button type="button" class="btn btn-glass btn-icon" @click="cancelDrawer()" aria-label="{{t('common.close')}}">{% ui "icon.njk", name="close" %}</button>
+        </div>
+        <div class="flex-1 lg-scroll p-4 space-y-5">
+          {% for f in filterList %}
+            <fieldset>
+              <legend class="text-sm font-semibold mb-2">{{ f.label }}</legend>
+              <div class="flex flex-wrap gap-2">
+                {% for v in f.values %}
+                  {% set val = v.value if (v.value is defined) else (v._id or v) %}
+                  <button type="button" class="lg-chip" :aria-pressed="isPending({{ f.name | dump | escape }}, {{ val | string | dump | escape }})"
+                          @click="togglePending({{ f.name | dump | escape }}, {{ val | string | dump | escape }})">
+                    {{ v.label or v.title or val }}{% if v.count is defined %} <span class="opacity-70 text-xs">({{ v.count }})</span>{% endif %}
+                  </button>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endfor %}
+          <fieldset>
+            <legend class="text-sm font-semibold mb-2">{{t('collection.price')}}</legend>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.min" placeholder="{{t('collection.min')}}" aria-label="{{t('collection.min')}}">
+              <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.max" placeholder="{{t('collection.max')}}" aria-label="{{t('collection.max')}}">
+            </div>
+            <p class="text-xs text-[color:var(--color-danger)] mt-1" x-show="priceError" x-cloak x-text="priceError"></p>
+          </fieldset>
+        </div>
+        <div class="p-4 grid grid-cols-3 gap-2 border-t border-[color:var(--color-hairline)]">
+          <button type="button" class="btn btn-glass text-sm" @click="clearAll()">{{t('collection.clear_all')}}</button>
+          <button type="button" class="btn btn-glass text-sm" @click="cancelDrawer()">{{t('collection.cancel')}}</button>
+          <button type="button" class="btn btn-primary text-sm" @click="applyDrawer()">{{t('collection.apply')}}</button>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>

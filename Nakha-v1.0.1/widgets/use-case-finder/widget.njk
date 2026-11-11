@@ -1,0 +1,375 @@
+{# ============================================================================
+   NAKHA SHOP BY GOAL — "هتتمرّن ليه؟"
+   ----------------------------------------------------------------------------
+   Sports shoppers rarely arrive knowing a product; they arrive knowing an
+   intention — نفسي في حاجة حلوة، عايز فطار، مستعجل. This section is the entry
+   ramp from that intention into a filtered listing, and it is the browse axis
+   the header rail and the drawer both promise.
+
+   Three layouts:
+     goals  photo tile, scrim, shouted label, flame bar  (default — the brief)
+     tiles  icon chip + label + description in a box     (no photography needed)
+     rail   one scrollable strip, for a secondary placement
+
+   `goals` renders through the shared .nakha-goal primitive (style.css §07), so
+   its hover, scrim and bar behaviour match anywhere else goals appear.
+
+   A goal with no photo falls back to the icon on a flame wash rather than an
+   empty grey box — the merchant will populate photography later, and a section
+   that looks broken in the editor gets deleted before it ever gets photos.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([]) %}
+{% set count = items | length %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.start_here'), true) %}
+{% set title = d.title | default(t('defaults.what_craving'), true) %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('goals', true) %}
+{% set isTiles = layout == 'tiles' %}
+{% set isRail = layout == 'rail' %}
+{% set isGoals = not isTiles and not isRail %}
+
+{% set ratio = d.card_ratio | default('4x5', true) %}
+{% if ratio == '1x1' %}{% set ratioCls = 'nakha-ratio-1x1' %}
+{% elif ratio == '4x3' %}{% set ratioCls = 'nakha-ratio-4x3' %}
+{% elif ratio == '3x4' %}{% set ratioCls = 'nakha-ratio-3x4' %}
+{% else %}{% set ratioCls = 'nakha-ratio-4x5' %}{% endif %}
+
+{% set bg = d.background | default('canvas', true) %}
+{% set cols = d.columns | default('4', true) %}
+{% set colsInt = cols | int %}
+{% set colsMid = 3 if colsInt > 3 else colsInt %}
+
+{% set headerAlign = d.header_align | default('split', true) %}
+{% set isCenter = headerAlign == 'center' %}
+{% set showDesc = d.show_descriptions | default(true) %}
+
+{% set viewAllUrl = d.view_all_url | default('/shop') %}
+{% set viewAllRaw = d.view_all_text | default(t('defaults.full_menu'), true) %}
+{% if viewAllRaw %}{% set viewAllText = viewAllRaw %}{% else %}{% set viewAllText = t('common.view_all') %}{% endif %}
+
+{# ---- background ---- #}
+{# `void` and `dark` are the same answer — a charcoal band. Both MUST set
+   isDark, because that is what adds .nakha-invert; a charcoal ground without
+   it is dark text on a dark panel. #}
+{% set isDark = bg == 'dark' or bg == 'void' %}
+{% if bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'well' %}{% set bgVal = 'var(--color-bg-tertiary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'void' %}{% set bgVal = 'var(--color-char)' %}
+{% elif isDark %}{% set bgVal = 'var(--color-char)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+
+{# ============================ ICON LIBRARY ============================
+   Line icons on a 24×24 grid, 1.7 stroke — same rules as the features bar.
+   These are training intentions, not product categories.
+   ==================================================================== #}
+{% macro icon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true">
+  {% if name == 'breakfast' or name == 'muscle' %}
+    {# sunrise — the morning shift #}
+    <path d="M12 3.2v3M4.9 6.1l2.1 2.1M2.4 13.2h3M18.6 13.2h3M17 8.2l2.1-2.1"/>
+    <path d="M7.6 13.2a4.4 4.4 0 0 1 8.8 0"/><path d="M2.8 17h18.4M6 20.4h12"/>
+  {% elif name == 'lunch' %}
+    {# plate + cutlery — the main meal #}
+    <circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="4.6"/>
+  {% elif name == 'dinner' %}
+    {# cloche #}
+    <path d="M3 17.6h18"/><path d="M4.6 17.6a7.4 7.4 0 0 1 14.8 0"/><path d="M12 6.6V4.4"/>
+  {% elif name == 'dessert' %}
+    {# cupcake #}
+    <path d="M5.4 12.6h13.2L17.4 20a1.6 1.6 0 0 1-1.6 1.3H8.2A1.6 1.6 0 0 1 6.6 20z"/>
+    <path d="M6.4 12.6a3 3 0 0 1 .6-5.2 3.4 3.4 0 0 1 5-2.5 3.4 3.4 0 0 1 5 2.5 3 3 0 0 1 .6 5.2"/>
+  {% elif name == 'drinks' %}
+    {# cup to go #}
+    <path d="M6.2 8.4h11.6l-1.2 11a1.9 1.9 0 0 1-1.9 1.7H9.3a1.9 1.9 0 0 1-1.9-1.7z"/>
+    <path d="M5 5.4h14l-.5 3H5.5z"/><path d="M10 12.6h4"/>
+  {% elif name == 'family' %}
+    {# shared table #}
+    <circle cx="8" cy="7.6" r="2.6"/><circle cx="16" cy="7.6" r="2.6"/>
+    <path d="M3 19.4a5 5 0 0 1 10 0M11 19.4a5 5 0 0 1 10 0"/>
+  {% elif name == 'spicy' %}
+    <path d="M12 21.4c3.6 0 6.4-2.6 6.4-6 0-4.4-4.2-6.6-4.2-10.4-2 .8-3 2.6-3 4.4-1.2-.6-1.8-1.8-1.8-3-1.8 1.6-3.8 4.2-3.8 9 0 3.4 2.8 6 6.4 6Z"/>
+  {% elif name == 'healthy' %}
+    <path d="M20.4 3.6c0 9.2-4.6 13.8-11.4 13.8a5.4 5.4 0 0 1-5.4-5.4C3.6 8.2 8.2 3.6 20.4 3.6Z"/>
+    <path d="M4.4 20.4c3-6.4 7-9.6 12-11.4"/>
+  {% elif name == 'bakery' %}
+    <path d="M4 9.6c0-2.2 3.6-4 8-4s8 1.8 8 4v5.2c0 2.2-3.6 4-8 4s-8-1.8-8-4z"/>
+    <path d="M8.6 6.4v11.4M12 5.8v12.4M15.4 6.4v11.4"/>
+  {% elif name == 'budget' %}
+    <circle cx="12" cy="12" r="8.6"/><path d="M12 7.2v9.6M14.6 9.4a3 3 0 0 0-5.2 1.8c0 2.6 5.2 1.4 5.2 4a3 3 0 0 1-5.2 1.4"/>
+  {% elif name == 'star' %}
+    <path d="m12 2.9 2.8 5.8 6.4.9-4.6 4.5 1.1 6.4L12 17.5l-5.7 3 1.1-6.4-4.6-4.5 6.4-.9z"/>
+  {% elif name == 'fast' %}
+    <circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.3 2"/>
+  {% else %}
+    <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{# Tint → icon chip colours, for the `tiles` and `rail` layouts. #}
+{% macro tintStyle(tint) %}
+  {%- if tint == 'light' -%}
+    background: var(--color-surface-alt); color: var(--color-text-primary);
+  {%- elif tint == 'neutral' -%}
+    background: var(--color-bg-tertiary); color: var(--color-text-secondary);
+  {%- else -%}
+    background: var(--color-appetite-wash); color: var(--color-appetite);
+  {%- endif -%}
+{% endmacro %}
+
+
+{% if count > 0 %}
+
+<style>
+  #nakha-uc-{{ id }} { background: {{ bgVal }}; }
+
+  /* ================= grid ================= */
+  .nakha-uc-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: {{ '10px' if isGoals else '12px' }};
+  }
+  @media (min-width: 768px) {
+    .nakha-uc-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .nakha-uc-{{ id }}-grid { grid-template-columns: repeat({{ colsInt }}, minmax(0, 1fr)); }
+  }
+
+  /* ================= goal tile ================= */
+  /* The shared .nakha-goal primitive carries the scrim, the hover zoom and the
+     bar. Only the photo-less fallback is local to this widget. */
+  .nakha-uc-{{ id }}-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-appetite-wash);
+    color: var(--color-appetite);
+  }
+
+  /* ================= icon tile ================= */
+  .nakha-uc-{{ id }}-tile {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    min-width: 0;
+    transition: border-color var(--t-fast) var(--ease-out),
+                background var(--t-fast) var(--ease-out);
+  }
+  .nakha-uc-{{ id }}-tile:hover { border-color: var(--color-appetite); }
+
+  .nakha-uc-{{ id }}-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border-radius: var(--radius-sm);
+    transition: transform var(--t-base) var(--ease-out);
+  }
+  .nakha-uc-{{ id }}-tile:hover .nakha-uc-{{ id }}-chip { transform: scale(1.07); }
+
+  .nakha-uc-{{ id }}-label {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-uc-{{ id }}-label { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.03em; }
+  .nakha-uc-{{ id }}-desc {
+    margin-top: 3px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .nakha-uc-{{ id }}-arrow {
+    flex: none;
+    color: var(--color-text-tertiary);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .nakha-uc-{{ id }}-tile:hover .nakha-uc-{{ id }}-arrow { color: var(--color-appetite); }
+
+  /* ================= rail ================= */
+  .nakha-uc-{{ id }}-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 17px;
+    flex: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+    transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+  }
+  html[dir="ltr"] .nakha-uc-{{ id }}-pill { letter-spacing: 0.06em; }
+  .nakha-uc-{{ id }}-pill:hover { border-color: var(--color-appetite); background: var(--color-appetite-wash); }
+  .nakha-uc-{{ id }}-pill svg { color: var(--color-appetite); flex: none; }
+</style>
+
+
+<section id="nakha-uc-{{ id }}" class="nakha-section {{ 'nakha-invert' if isDark }}">
+  <div class="nakha-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="nakha-head nakha-head--center">
+          <div class="nakha-head-inner">
+            {% if eyebrow %}<span class="nakha-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="nakha-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="nakha-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="nakha-head nakha-head--split">
+          <div class="nakha-head-inner">
+            {% if eyebrow %}<span class="nakha-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="nakha-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="nakha-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+          {% if viewAllUrl %}
+            <a href="{{ viewAllUrl }}" class="nakha-btn nakha-btn--outline nakha-btn--sm shrink-0 nakha-hide-sm">
+              {{ viewAllText }}
+              <svg class="nakha-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═══════════════ items ═══════════════ #}
+    {% if isRail %}
+
+      <div class="nakha-rail">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% if c.label %}
+            <a href="{{ c.url | default('/shop') }}" class="nakha-uc-{{ id }}-pill">
+              {{ icon(c.icon | default('star'), 15) }}
+              {{ c.label }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% else %}
+
+      <div class="nakha-uc-{{ id }}-grid">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% if c.label %}
+            {% set url = c.url | default('/shop') %}
+            {% set img = c.image.fileUrl if c.image and c.image.fileUrl else '' %}
+            {# Out of the box: the built-in icons have a bundled demo photo; custom icons keep the icon tile #}
+            {% if not img and c.icon in ['breakfast', 'lunch', 'bakery', 'dessert', 'drinks', 'spicy', 'healthy', 'fast'] %}{% set img = ('demo-uc-' ~ c.icon ~ '.jpg') | assets %}{% endif %}
+
+            {% if isGoals %}
+              {# ---------- goal tile — the shared primitive ---------- #}
+              <a href="{{ url }}" class="nakha-goal {{ ratioCls }}{{ ' nakha-goal--noimg' if not img }}">
+                {% if img %}
+                  <img src="{{ img }}" alt="{{ c.label }}" loading="lazy" class="nakha-goal-img"/>
+                  <span class="nakha-goal-scrim"></span>
+                {% else %}
+                  {# No photo yet — the icon on an appetite wash, never an empty box.
+                     The tile also carries .nakha-goal--noimg so the label flips
+                     from cream to the text token; cream copy on this wash is
+                     invisible. See style.css §08. #}
+                  <span class="nakha-uc-{{ id }}-noimg">{{ icon(c.icon | default('star'), 44) }}</span>
+                {% endif %}
+                <div class="nakha-goal-body">
+                  <span class="nakha-goal-label">{{ c.label }}</span>
+                  {% if showDesc and c.description %}
+                    <span class="nakha-goal-desc nakha-clamp-2">{{ c.description }}</span>
+                  {% endif %}
+                  <span class="nakha-goal-bar"></span>
+                </div>
+              </a>
+
+            {% else %}
+              {# ---------- icon tile ---------- #}
+              <a href="{{ url }}" class="nakha-uc-{{ id }}-tile">
+                <span class="nakha-uc-{{ id }}-chip" style="{{ tintStyle(c.tint | default('appetite')) }}">
+                  {{ icon(c.icon | default('star'), 22) }}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="nakha-uc-{{ id }}-label block nakha-clamp-1">{{ c.label }}</span>
+                  {% if showDesc and c.description %}
+                    <span class="nakha-uc-{{ id }}-desc block nakha-clamp-2">{{ c.description }}</span>
+                  {% endif %}
+                </span>
+                <svg class="nakha-uc-{{ id }}-arrow nakha-flip" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% endif %}
+
+    {# ═══════════════ view all — centered header, or mobile ═══════════════ #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-8 max-sm:mt-6 {{ '' if isCenter else 'nakha-only-sm' }}">
+        <a href="{{ viewAllUrl }}" class="nakha-btn nakha-btn--outline">
+          {{ viewAllText }}
+          <svg class="nakha-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section data-nakha-demo id="nakha-uc-{{ id }}" class="nakha-section {{ 'nakha-invert' if isDark }}" style="background: {{ bgVal }};">
+    <div class="nakha-container">
+      <div class="nakha-empty">
+        <span class="nakha-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 8v8M4 9.5v5M17.5 8v8M20 9.5v5M6.5 12h11"/>
+          </svg>
+        </span>
+        <span class="nakha-empty-title">{{ t('usecase.empty_title') }}</span>
+        <p class="nakha-text-sm m-0">{{ t('usecase.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-uc-' ~ id, c=d %}

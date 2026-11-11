@@ -1,0 +1,185 @@
+{# ============================================================================
+   HYPER · شهادات العملاء  (testimonials)
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────┐
+     │                    ماذا يقول عملاؤنا                          │
+     │  …باهت   ‹   «كل قطعة تبدو كتحفة فنية.»   ›   …باهت           │
+     │                       داود مارتينيز                           │
+     │                        أوستن، تكساس                           │
+     └──────────────────────────────────────────────────────────────┘
+
+   Centred slides with the neighbours showing through at low opacity. The
+   section is a full-bleed colour, so the quotes spilling past the centre one
+   sit on the same ground and read as "there are more" rather than as content
+   that got clipped.
+
+   ── The arrows track the slide, not the viewport ──
+   They sit just outside the ACTIVE slide, and the nav row is capped at the
+   slide's own width plus an allowance. Pinning them to the container edges
+   drifted them into the copy the moment the column count changed at a
+   breakpoint. See the note in assets/style.css → "15.13.4".
+
+   ── RTL ──
+   Swiper reads direction off the `dir` attribute on the `.swiper` (it has no
+   `rtl` option). The nav is `justify-content: space-between` with prev first in
+   the DOM, so prev lands on the correct side in both directions with nothing to
+   override, and `.rtl-flip` mirrors the chevron glyph.
+
+   Styling lives in assets/style.css → "15.13.4 TESTIMONIALS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set quotes = widget.blocks | default([]) %}
+{% set count = quotes | length %}
+
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set cols = d.columns | default('1.9', true) %}
+{% set colsMd = d.columns_tablet | default('1.4', true) %}
+{% set colsSm = d.columns_mobile | default('1.05', true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set animationsOn = settings.enableAnimations != false %}
+{% set autoplay = animationsOn and d.autoplay | default(false) %}
+{% set speed = d.autoplay_speed | default(7, true) %}
+{% set loop = d.loop | default(true) %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+{# The whole section is one flat colour, so the neighbours read as part of it.
+   The band and its ink are FIXED here rather than exposed as their own pickers
+   — the 🎨 block below is the one place a merchant recolours this section, and
+   two competing sets of colour fields is how they ended up disagreeing. The
+   literals stay literals: they are this section's design, not theme tokens. #}
+<section id="hy-q-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-quotes"
+         style="background: var(--hy-sec-bg, var(--color-pop));
+                padding-block: var(--section-py);">
+  <style>
+    #hy-q-{{ id }} {
+      /* `--hy-q-fg` is this section's own ink, and EVERYTHING here paints from
+         it — the eyebrow, the quote, the name, the place and the arrows. It
+         used to be hard-set from a `text_color` picker, so the custom-colour fields below
+         (which move `--color-text-*`) reached nothing and looked dead. Reading
+         `--hy-sec-title` first hands the override a way in, with the section's
+         own ink as the fallback. */
+      --hy-q-fg: var(--hy-sec-title, var(--color-pop-text));
+      /* the place under the name — its own token so "لون النص الثانوي"
+         can part company with the quote instead of just dimming it */
+      --hy-q-fg-2: var(--hy-sec-text, var(--hy-q-fg));
+      /* Must match `slidesPerView` below — the CSS sizes the slides too, so the
+         row is right on the first frame instead of flashing one full-width
+         quote while Swiper boots. */
+      --q-cols: {{ colsSm }};
+    }
+    @media (min-width: 768px) { #hy-q-{{ id }} { --q-cols: {{ colsMd }}; } }
+    @media (min-width: 1024px) { #hy-q-{{ id }} { --q-cols: {{ cols }}; } }
+  </style>
+
+  <div class="hy-container">
+    {% if eyebrow %}
+      <p class="hy-quotes-eyebrow">{{ eyebrow }}</p>
+    {% endif %}
+  </div>
+
+  <div class="hy-quotes-stage">
+    {# `dir` is load-bearing — Swiper reads it off the element. #}
+    <div id="hy-qSw-{{ id }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+      <div class="swiper-wrapper">
+
+        {% if count == 0 %}
+          {# Nothing added yet. Three greyed quotes at the real size — a preset
+             cannot seed blocks, so this section arrives empty. See style.css
+             → "15.29.1". #}
+          {% for i in range(0, 3) %}
+            <div class="swiper-slide">
+              <div class="hy-quotes-slide" data-hy-placeholder aria-hidden="true">
+                <div class="hy-ph-stack" style="align-items: center; max-width: 22ch;">
+                  <span class="hy-ph-line hy-ph-line--lg"></span>
+                  <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 82%;"></span>
+                  <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 54%;"></span>
+                </div>
+                <span class="hy-ph-line" style="--ph-line-w: 130px; margin-block-start: 14px;"></span>
+                <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 96px;"></span>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        {% for block in quotes %}
+          {% set b = block.data %}
+          <div class="swiper-slide">
+            <figure class="hy-quotes-slide">
+              {% if b.quote %}
+                {# ⚠️  A <div>, NOT a <p>: a `text` field returns block HTML and a
+                   <p> cannot contain a <p> — the browser splits them and every
+                   style on this class stops reaching the quote. #}
+                <div class="hy-quotes-text">{{ b.quote | safe }}</div>
+              {% endif %}
+
+              {% if b.name or b.role %}
+                <figcaption class="hy-quotes-who">
+                  {% if b.name %}<span class="hy-quotes-name">{{ b.name }}</span>{% endif %}
+                  {% if b.role %}<span class="hy-quotes-role">{{ b.role }}</span>{% endif %}
+                </figcaption>
+              {% endif %}
+            </figure>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if showArrows and count > 1 %}
+      <div class="hy-quotes-nav">
+        <button type="button" id="hy-qPrev-{{ id }}" class="hy-quotes-arrow" aria-label="{{ t('common.prev') }}">
+          <svg class="rtl-flip" width="19" height="19" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+          </svg>
+        </button>
+        <button type="button" id="hy-qNext-{{ id }}" class="hy-quotes-arrow" aria-label="{{ t('common.next') }}">
+          <svg class="rtl-flip" width="19" height="19" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var el = document.getElementById('hy-qSw-{{ id }}');
+    /* Nothing added yet — the wrapper holds skeletons, not quotes. */
+    if (!el || {{ count }} === 0 || typeof Swiper === 'undefined') return;
+
+    new Swiper(el, {
+      /* Centred, so the neighbours show on both sides. Direction comes from the
+         element's `dir` attribute — Swiper has no `rtl` option. */
+      centeredSlides: true,
+      slidesPerView: {{ colsSm | float }},
+      spaceBetween: 0,
+      breakpoints: {
+        768:  { slidesPerView: {{ colsMd }} },
+        1024: { slidesPerView: {{ cols }} }
+      },
+      {# A loop needs more slides than fit at once or Swiper cannot build the
+         duplicates and warns; below that it falls back to a plain rewind. #}
+      {% if loop %}
+      loop: {{ 'true' if count > 2 else 'false' }},
+      rewind: {{ 'false' if count > 2 else 'true' }},
+      {% endif %}
+      {% if autoplay %}
+      autoplay: { delay: {{ (speed | float) * 1000 }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#hy-qPrev-{{ id }}', nextEl: '#hy-qNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-q-' ~ id, c=d %}

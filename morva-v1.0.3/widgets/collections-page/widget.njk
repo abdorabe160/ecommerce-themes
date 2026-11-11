@@ -1,0 +1,51 @@
+{#
+  MORVA · COLLECTIONS — /collections
+  A grid of collection tiles in the gallery-cell style (image · hairline ·
+  name + count).
+  NOTE: Each tile carries data-hy-coll-* stamps: HayatAuto.collections() in
+  main.js reads them from this page to fill collection slots elsewhere.
+#}
+{% set d = widget.data %}
+{% set cols = context.collections | default([]) %}
+{% set ratio = {'1x1': '1 / 1', '4x5': '4 / 5', '5x6': '1 / 1.2', '3x4': '3 / 4'}[d.image_ratio | default('5x6')] | default('1 / 1.2') %}
+
+{#- Skip incomplete collections, hidden ones and the platform's own «Home Page». -#}
+{% set shownCols = [] %}
+{% for c in cols %}
+  {% if c.title and (c.slug or c.handle or c._id) and c.handle != 'home-page' and c.slug != 'home-page' and not c.deleted and (not c.salesChannels or c.salesChannels.onlineStore != false) %}{% set _ = shownCols.push(c) %}{% endif %}
+{% endfor %}
+
+<section class="mv-section">
+  <div class="mv-head">
+    <div>
+      <div class="mv-kicker">— {{ d.kicker | default(t('morva.collections'), true) }}</div>
+      <h1 class="mv-h">{{ d.title | default(t('pages.collections.title'), true) }}</h1>
+    </div>
+    {% if (shownCols | length) > 0 %}<div class="mv-sub">{{ ('0' ~ (shownCols | length)) if (shownCols | length) < 10 else (shownCols | length) }}</div>{% endif %}
+  </div>
+
+  {% if (shownCols | length) > 0 %}
+    <div class="mv-tiles" style="--tile-ratio: {{ ratio }};" data-mv-stagger>
+      {% for c in shownCols %}
+        {% set cHandle = c.slug or c.handle or c._id %}
+        {#- image.notFound marks the platform's grey stand-in, not a merchant photo -#}
+        {% set img = c.image.fileUrl if c.image and c.image.fileUrl and (not c.image.notFound) else '' %}
+        {% set url = '/shop/' ~ cHandle %}
+        <a href="{{ url }}" class="mv-tile" data-hy-coll
+           data-hy-coll-title="{{ c.title }}" data-hy-coll-url="{{ url }}"
+           data-hy-coll-img="{{ img }}" data-hy-coll-count="{{ c.productsCount | default(0) }}">
+          <div class="mv-tile-img">
+            {% if img %}<img class="mv-fill" src="{{ img }}" alt="{{ c.title }}" loading="lazy"/>{% else %}{% ui "topo.njk" %}{% endif %}
+          </div>
+          <div class="mv-tile-cap">
+            <span class="mv-tile-name">{{ c.title }}</span>
+            {% if (d.show_count | default(true)) and c.productsCount %}<span class="mv-tile-count">{{ ('0' ~ c.productsCount) if c.productsCount < 10 else c.productsCount }}</span>{% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+    {% ui "pagination.njk" %}
+  {% else %}
+    <p class="mv-empty">{{ t('morva.collections_empty') }}</p>
+  {% endif %}
+</section>

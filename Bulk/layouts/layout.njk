@@ -1,0 +1,278 @@
+{%- set lang = localization.language | default('ar') -%}
+{%- set isLtr = lang == 'en' or lang == 'fr' -%}
+{#- رقم نسخة الأصول: لازم يتغيّر مع أي تعديل في assets/*.css أو *.js (الـ CDN بيخزّن الملفات) -#}
+{%- set assetv = '6bedd2d3' -%}
+{#- الخطوط من الإعدادات (fontHeading / fontBody) — Inter دايمًا للأرقام والإنجليزي -#}
+{%- set fontMap = {
+  'anton': { 'family': 'Anton', 'q': 'Anton' },
+  'tajawal': { 'family': 'Tajawal', 'q': 'Tajawal:wght@300;400;500;700;800;900' },
+  'cairo': { 'family': 'Cairo', 'q': 'Cairo:wght@400;500;600;700;800' },
+  'alexandria': { 'family': 'Alexandria', 'q': 'Alexandria:wght@400;500;600;700' },
+  'readex': { 'family': 'Readex Pro', 'q': 'Readex+Pro:wght@400;500;600;700' },
+  'ibm-plex': { 'family': 'IBM Plex Sans Arabic', 'q': 'IBM+Plex+Sans+Arabic:wght@400;500;600;700' }
+} -%}
+{%- set fh = fontMap[settings.fontHeading] or fontMap['anton'] -%}
+{%- set fb = fontMap[settings.fontBody] or fontMap['tajawal'] -%}
+{%- if fb.family == 'Anton' -%}{%- set fb = fontMap['tajawal'] -%}{%- endif -%}
+{%- set fontQ = [fh.q] -%}
+{%- if fb.q != fh.q and fontQ.push(fb.q) -%}{%- endif -%}
+{%- if fh.family == 'Anton' and fb.family != 'Tajawal' and fontQ.push(fontMap['tajawal'].q) -%}{%- endif -%}
+{#- «اللون العام» (brandColor) بيغطي اللون الأساسي في كل مكان؛ فاضي = اللون الأساسي -#}
+{%- set brand = (settings.brandColor | trim) if (settings.brandColor and (settings.brandColor | trim | length)) else (settings.accentColor or '#C81E1E') -%}
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'ltr' if isLtr else 'rtl' }}">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="#0A0A0A"/>
+    {#- قبل أي رسم: معاينة البيلدر (iframe / ?theme=) أو التاجر مفعّل «منتجات تجريبية» ← html.blk-demo-ok.
+        من غيرها المنتجات والأقسام التجريبية مابتظهرش للعميل (HOME-11 / EDGE-01). والحركات حسب الإعداد -#}
+    <script>
+      (function (h) {
+        var preview = false;
+        try {
+          var l = window.location;
+          preview = l.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(l.hostname)
+            || /[?&](theme|theme_id|preview_theme_id|editor|preview)=/.test(l.search) || window.self !== window.top;
+        } catch (e) { preview = true; }
+        if (typeof window.__blkPreview === 'boolean') preview = window.__blkPreview;
+        if (preview) h.classList.add('blk-preview');
+        if (preview || {{ 'true' if settings.demoProducts == true else 'false' }}) h.classList.add('blk-demo-ok');
+        {% if settings.enableAnimations == false %}h.classList.add('blk-no-anim');{% endif %}
+      })(document.documentElement);
+    </script>
+    {# الخطوط الأول عشان المتصفح يبدأ يحمّلها بدري؛ سكريبت Clarity تحتها ولسه قبل seo و qumra_head #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={{ fontQ | join('&family=') | safe }}&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {# Microsoft Clarity بيتضاف من المنصة (مش من الثيم)، ومانع الإعلانات (زي Brave Shields) بيقفله فبيطلع
+       ERR_BLOCKED_BY_CLIENT أحمر في الكونسول. السكريبت ده بيمنع إضافة سكريبت Clarity للصفحة، فمفيش طلب أصلاً ولا رسالة.
+       لازم يفضل قبل qumra_head و qumra_scripts.
+       ده بيوقف إحصائيات Clarity لكل الزوار؛ لتشغيلها تاني: إعدادات الثيم ← محركات البحث والإحصائيات ← "تعطيل Microsoft Clarity" #}
+    {% if settings.disable_clarity !== false %}
+    <script>
+      (function () {
+        function isClarity(node) {
+          if (!node || node.nodeName !== 'SCRIPT') return false;
+          var src = String(node.src || (node.getAttribute && node.getAttribute('src')) || '');
+          return src.indexOf('clarity.ms/') !== -1;
+        }
+        ['insertBefore', 'appendChild'].forEach(function (method) {
+          var original = Node.prototype[method];
+          Node.prototype[method] = function (node) {
+            if (isClarity(node)) return node;
+            return original.apply(this, arguments);
+          };
+        });
+      })();
+    </script>
+    {% endif %}
+    {% seo %}
+    {% qumra_head %}
+    {#- Google Search Console: الوسم كامل <meta name="google-site-verification" content="…"> أو قيمة content بس -#}
+    {%- set gsv = (settings.googleVerification or '') | trim -%}
+    {%- if 'content=' in gsv %}{%- set gsv = (gsv.split('content=')[1] | replace('"', '') | replace("'", '') | replace('/>', '') | replace('>', '') | trim).split(' ')[0] -%}{%- endif %}
+    {%- if gsv %}
+    <meta name="google-site-verification" content="{{ gsv }}"/>
+    {%- endif %}
+    {#- QLT-11: Organization + WebSite (الـ Product و BreadcrumbList في صفحة المنتج) -#}
+    {%- set sdName = store.name if (store and store.name) else 'BULK' -%}
+    {%- set sdUrl = store.url if (store and store.url) else '' -%}
+    {%- set sdLogo = store.logo.fileUrl if (store and store.logo and store.logo.fileUrl) else (settings.favicon.fileUrl if (settings.favicon and settings.favicon.fileUrl) else '') -%}
+    <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Organization', 'name': sdName, 'url': sdUrl, 'logo': sdLogo } | dump | replace('</', '<\\/') | safe }}</script>
+    <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'WebSite', 'name': sdName, 'url': sdUrl, 'potentialAction': { '@type': 'SearchAction', 'target': sdUrl ~ '/search?q={search_term_string}', 'query-input': 'required name=search_term_string' } } | dump | replace('</', '<\\/') | safe }}</script>
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+    <link rel="stylesheet" href="{{ 'pages.css' | assets }}?v={{ assetv }}"/>
+    {#- GEN-05: html:root أقوى من :root بتاع style.css، فألوان التاجر بتكسب دايمًا (حتى لو ترتيب الملفات اتغيّر).
+        الدرجات الفاتحة/الغامقة بتتحسب من اللون، واللون الافتراضي بيسيب درجات الثيم الأصلية -#}
+    <style>
+      html:root {
+        --blk-logo-max: {{ settings.logoMaxWidth | default(160, true) }}px;
+        --blk-logo-h: {{ settings.logoHeight | default(40, true) }}px;
+        --blk-accent: {{ brand }};
+        {% if (brand | lower) != '#c81e1e' %}
+        --blk-accent-dark: color-mix(in srgb, {{ brand }} 70%, #000);
+        --blk-accent-light: color-mix(in srgb, {{ brand }} 82%, #fff);
+        --blk-primary: color-mix(in srgb, {{ brand }} 88%, #fff);
+        {% endif %}
+        --blk-sale: {{ settings.saleColor | default('#E5484D', true) }};
+        --blk-success: {{ settings.successColor | default('#22C55E', true) }};
+        --blk-warning: {{ settings.warningColor | default('#F59E0B', true) }};
+        --blk-font-display: '{{ fh.family }}', '{{ 'Tajawal' if fh.family == 'Anton' else fb.family }}', sans-serif;
+        --blk-font-ar: '{{ fb.family }}', 'Inter', sans-serif;
+        --blk-font-body: 'Inter', '{{ fb.family }}', sans-serif;
+        --blk-radius-card: {{ settings.cornerRadius if (settings.cornerRadius === 0 or settings.cornerRadius > 0) else 14 }}px;
+      }
+    </style>
+    {% if settings.favicon and settings.favicon.fileUrl %}
+    <link rel="icon" href="{{ settings.favicon.fileUrl }}">
+    <link rel="apple-touch-icon" href="{{ settings.favicon.fileUrl }}">
+    {% endif %}
+    {%- if settings.customCSS %}
+    <style id="blk-custom-css">{{ settings.customCSS | safe }}</style>
+    {%- endif %}
+  </head>
+  {# العملة من إعدادات المتجر بس (مفيش رمز عملة مكتوب في الثيم): نفس القيمة اللي ui/blk-price.njk بيستخدمها #}
+  {% set blkCurrency = localization.currency if localization and localization.currency else {} %}
+  <body data-currency-symbol="{{ blkCurrency.currencySymbol or blkCurrency.currencyCode or '' }}" data-currency-code="{{ blkCurrency.currencyCode or '' }}">
+    {# نصوص الـ JS المترجمة (pages.js / main.js بيقروها بـ blkT) #}
+    <div id="blkI18n" hidden
+      data-add-to-cart="{{t('product.add_to_cart')}}"
+      data-free="{{t('common.free')}}"
+      data-choose-options="{{t('product.choose_options')}}"
+      data-buy-now="{{t('product.buy_now')}}"
+      data-out-of-stock="{{t('product.out_of_stock')}}"
+      data-in-stock="{{t('product.in_stock')}}"
+      data-low-stock="{{t('product.low_stock')}}"
+      data-choose-option="{{t('product.choose_option')}}"
+      data-choose-option-error="{{t('product.choose_option_error')}}"
+      data-adding="{{t('product.adding')}}"
+      data-added="{{t('product.added')}}"
+      data-added-toast="{{t('product.added_toast')}}"
+      data-add-failed="{{t('product.add_failed')}}"
+      data-variant-unavailable="{{t('product.variant_unavailable')}}"
+      data-max-qty="{{t('product.max_qty')}}"
+      data-all-in-cart="{{t('product.all_in_cart')}}"
+      data-added-partial="{{t('product.added_partial')}}"
+      data-qty-adjusted="{{t('cart.qty_adjusted')}}"
+      data-remove-unavailable="{{t('cart.remove_unavailable')}}"
+      data-clear-filters="{{t('filters.clear')}}"
+      data-no-results="{{t('filters.no_results')}}"
+      data-price-swapped="{{t('filters.price_swapped')}}"
+      data-cookies-blocked="{{t('cart.cookies_blocked')}}"
+      data-demo-only="{{t('product.demo_only')}}"
+      data-demo-note="{{t('product.demo_note')}}"
+      data-demo-description="{{t('product.demo_description')}}"
+      data-needs-options-redirect="{{t('product.needs_options_redirect')}}"
+      data-new-arrivals="{{t('collection.new_arrivals')}}"
+      data-reviews-word="{{t('product.reviews_word')}}"
+      data-no-reviews="{{t('product.no_reviews')}}"
+      data-no-reviews-long="{{t('product.no_reviews_long')}}"
+      data-based-on="{{t('product.based_on')}}"
+      data-tab-desc="{{t('product.tab_desc')}}"
+      data-tab-specs="{{t('product.tab_specs')}}"
+      data-tab-reviews="{{t('product.tab_reviews')}}"
+      data-customer="{{t('common.customer')}}"
+      data-save="{{t('product.save')}}"
+      data-image="{{t('common.image')}}"
+      data-images="{{t('product.images')}}"
+      data-prev-image="{{t('product.prev_image')}}"
+      data-next-image="{{t('product.next_image')}}"
+      data-fullscreen="{{t('product.fullscreen')}}"
+      data-size-guide="{{t('product.size_guide')}}"
+      data-size="{{t('product.size')}}"
+      data-no-description="{{t('product.no_description')}}"
+      data-category="{{t('product.category')}}"
+      data-tags="{{t('product.tags')}}"
+      data-status="{{t('product.status')}}"
+      data-sku="{{t('product.sku')}}"
+      data-wait="{{t('product.wait')}}"
+      data-quantity="{{t('product.quantity')}}"
+      data-qty-increase="{{t('product.qty_increase')}}"
+      data-qty-decrease="{{t('product.qty_decrease')}}"
+      data-delivery-between="{{t('product.delivery_between')}}"
+      data-delivery-and="{{t('product.delivery_and')}}"
+      data-trust-shipping="{{t('defaults.pdp_shipping')}}"
+      data-trust-returns="{{t('defaults.pdp_returns')}}"
+      data-trust-secure="{{t('defaults.pdp_secure')}}"
+      data-share="{{t('product.share')}}"
+      data-share-whatsapp="{{t('product.share_whatsapp')}}"
+      data-share-facebook="{{t('product.share_facebook')}}"
+      data-copy-link="{{t('product.copy_link')}}"
+      data-link-copied="{{t('product.link_copied')}}"
+      data-copy-failed="{{t('product.copy_failed')}}"
+      data-article-link-copied="{{t('blog.link_copied')}}"
+      data-product-details="{{t('product.details')}}"
+      data-related="{{t('product.related')}}"
+      data-breadcrumb="{{t('common.breadcrumb')}}"
+      data-home="{{t('common.home')}}"
+      data-close="{{t('common.close')}}"
+      data-back="{{t('product.back')}}"
+      data-product-not-found="{{t('product.not_found_toast')}}"
+      data-free-shipping-reached="{{t('cart.free_shipping_reached')}}"
+      data-free-left-prefix="{{t('cart.free_left_prefix')}}"
+      data-free-left-suffix="{{t('cart.free_left_suffix')}}"
+      data-cart-error="{{t('cart.error')}}"
+      data-hot="{{t('common.hot')}}"
+      data-preview="{{t('common.preview')}}"
+      data-quick-view="{{t('common.quick_view')}}"
+      data-out-of5="{{t('common.out_of_5')}}"
+      data-products-word="{{t('common.products_word')}}"
+      data-count-one="{{t('common.count_one')}}"
+      data-count-two="{{t('common.count_two')}}"
+      data-count-few="{{t('common.count_few')}}"
+      data-count-many="{{t('common.count_many')}}"
+      data-view-product="{{t('product.view_product')}}"
+      data-exclusive="{{t('collection.exclusive')}}"
+      data-shop-now="{{t('common.shop_now')}}"
+      data-all-results="{{t('search.all_results')}}"
+      data-search-prompt="{{t('search.prompt')}}"
+      data-results-for="{{t('search.results_for')}}"
+      data-search-error="{{t('search.error')}}"
+      data-load-failed="{{t('collection.load_failed')}}"
+      data-demo-badge="{{t('product.demo_badge')}}"
+      data-demo-cart-note="{{t('cart.demo_note')}}"
+      data-demo-checkout-blocked="{{t('cart.demo_checkout_blocked')}}"
+      data-demo-line="{{t('cart.demo_line')}}"
+      data-remove="{{t('cart.remove')}}"
+      data-low-stock-count="{{t('product.low_stock_count')}}"
+      data-wishlist-add="{{t('product.wishlist_add')}}"
+      data-wishlist-remove="{{t('product.wishlist_remove')}}"
+      data-wishlist-added="{{t('product.wishlist_added')}}"
+      data-wishlist-removed="{{t('product.wishlist_removed')}}"
+      data-wishlist-error="{{t('product.wishlist_error')}}"
+      data-clear-all="{{t('filters.clear_all')}}"
+      data-price-label="{{t('filters.price')}}"
+      data-remove-filter="{{t('filters.remove')}}"
+      data-showing-of="{{t('filters.showing_of')}}"
+      data-currency-switch="{{t('header.currency_switch')}}"></div>
+    {# عينة من فلتر | money للرقم 123456: main.js بيستنتج منها تنسيق الأسعار في الـ JS (الرمز ومكانه والخانات ووحدة السعر) #}
+    <a href="#main" class="blk-skip-link">{{t('common.skip_to_content')}}</a>
+    <script type="application/json" id="blkMoneySample">{{ 123456 | money | dump | replace('</', '<\\/') | safe }}</script>
+    {% template "header" %}
+    <main id="main" tabindex="-1">{% content %}</main>
+    {#- H1 واحد بالظبط: الـ layout مايعرفش أقسام الصفحة وقت الرندر، فالتاجر لو شال الهيرو بيتضاف H1 مخفي باسم المتجر،
+        ولو قسمين طلعوا H1 (نموذج التواصل بـ h1 مع البانر مثلاً) التاني بيبقى H2 بنفس شكله -#}
+    <script>
+      (function () {
+        var list = document.querySelectorAll('h1'), main = document.getElementById('main'), el;
+        if (!list.length && main) {
+          el = document.createElement('h1');
+          el.className = 'blk-sr-only';
+          el.textContent = {{ sdName | dump | replace('</', '<\\/') | safe }};
+          main.insertBefore(el, main.firstChild);
+        }
+        for (var i = 1; i < list.length; i++) {
+          el = document.createElement('h2');
+          for (var a = 0; a < list[i].attributes.length; a++) el.setAttribute(list[i].attributes[a].name, list[i].attributes[a].value);
+          while (list[i].firstChild) el.appendChild(list[i].firstChild);
+          list[i].parentNode.replaceChild(el, list[i]);
+        }
+      })();
+    </script>
+    {% template "footer" %}
+    {% ui "blk-cart-drawer.njk" %}
+
+    {%- set wishIds = [] -%}
+    {%- for wp in (wishlist.products if (wishlist and wishlist.products) else []) -%}{%- if wp and wp._id and wishIds.push(wp._id) -%}{%- endif -%}{%- endfor %}
+    {#- إعدادات الثيم اللي الـ JS محتاجها (main.js / pages.js بيقروها من window.__blk) -#}
+    <script>
+      window.__blk = {
+        lowStock: {{ settings.lowStockThreshold | default(3, true) | int }},
+        followStock: {{ 'false' if settings.followProductStock == false else 'true' }},
+        cartOpenOnAdd: {{ 'false' if settings.cartOpenOnAdd == false else 'true' }},
+        cardButtons: {{ 'false' if settings.showCardButtons == false else 'true' }},
+        wishlist: {{ 'false' if settings.showWishlist == false else 'true' }},
+        demoProducts: {{ 'true' if settings.demoProducts == true else 'false' }},
+        freeShipping: {{ (settings.freeShippingThreshold or 0) | float }},
+        wishlistIds: {{ wishIds | dump | safe }}
+      };
+    </script>
+    {% qumra_scripts %}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+    <script src="{{ 'pages.js' | assets }}?v={{ assetv }}"></script>
+    {%- if settings.customJS %}
+    <script id="blk-custom-js">{{ settings.customJS | safe }}</script>
+    {%- endif %}
+  </body>
+</html>

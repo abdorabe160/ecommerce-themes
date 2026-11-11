@@ -1,0 +1,181 @@
+{
+  "name": "حزمة منتجات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": "طقم متكامل"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان العرض",
+        "en": "Offer heading"
+      },
+      "default": "نسّقي الطقم كامل"
+    },
+    "media_image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الصورة الكبيرة — المشهد اللي عليه النقاط المرقّمة",
+        "en": "▸ The large photograph — the scene the numbered pins sit on"
+      }
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "منتجات الحزمة — بالترتيب، والرقم ١ لأول منتج · يُعرض حتى ٤ منتجات، وما بعدها لا يظهر",
+        "en": "Bundle products — in order; number 1 is the first · up to 4 are shown, the rest are not"
+      }
+    },
+    "pins": {
+      "type": "string",
+      "label": {
+        "ar": "مواضع النقاط على الصورة — «س,ص» لكل منتج بالترتيب مفصولة بـ · نسبة مئوية من عرض وارتفاع الصورة. مثال: 50,28 · 46,62 — ومنتج بلا إحداثيات لا تظهر له نقطة ولا رقم",
+        "en": "Pin positions — \"x,y\" per product in order, separated by · as a percentage of the image. e.g. 50,28 · 46,62 — a product with no coordinates gets no pin and no number"
+      },
+      "default": "50,28 · 46,62"
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص زر الإضافة — اتركيه فارغاً لإخفائه",
+        "en": "Add button label — leave empty to hide it"
+      },
+      "default": "أضيفي الكل للسلة"
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة الكبيرة",
+        "en": "Which side the photograph sits on"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربية)",
+            "en": "Start (right in Arabic)"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (يسار في العربية)",
+            "en": "End (left in Arabic)"
+          }
+        }
+      ]
+    },
+    "media_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض الصورة — نسبة من عرض القسم",
+        "en": "Photograph width — share of the section"
+      },
+      "default": 52,
+      "min": 40,
+      "max": 62,
+      "step": 1,
+      "unit": "%"
+    },
+    "media_height": {
+      "type": "range",
+      "label": {
+        "ar": "طول الصورة — نسبة من عرضها · ١٠٠ = مربّع",
+        "en": "Photograph height — share of its width · 100 = square"
+      },
+      "default": 105,
+      "min": 80,
+      "max": 140,
+      "step": 1,
+      "unit": "%"
+    },
+    "column_gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين العمودين — نسبة من عرض القسم",
+        "en": "Space between the columns — share of the section"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "%"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "حزمة منتجات"
+    }
+  ]
+}

@@ -1,0 +1,407 @@
+[
+  {
+    "label": {
+      "ar": "الألوان",
+      "en": "Colours"
+    },
+    "settings": {
+      "useCustomColors": {
+        "type": "boolean",
+        "label": {
+          "ar": "استخدام ألوان مخصّصة — أطفئه للرجوع لألوان الثيم الأصلية (اختياراتك تبقى محفوظة)",
+          "en": "Use custom colours — switch off to restore the theme's original palette (your picks stay saved)"
+        },
+        "default": true
+      },
+      "primaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون العلامة — الأزرار والروابط والعناصر النشطة",
+          "en": "Brand Colour — buttons, links and active elements"
+        },
+        "default": "#C9A45C"
+      },
+      "accentTextColor": {
+        "type": "select",
+        "label": {
+          "ar": "النص فوق لون العلامة",
+          "en": "Text on the brand colour"
+        },
+        "default": "#14110F",
+        "options": [
+          {
+            "value": "#FFFFFF",
+            "label": "فاتح — للألوان الغامقة"
+          },
+          {
+            "value": "#14110F",
+            "label": "غامق — للألوان الفاتحة"
+          }
+        ]
+      },
+      "dealColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون التخفيضات — شارة «تخفيض» والأسعار المخفّضة",
+          "en": "Sale Colour — the sale badge and discounted prices"
+        },
+        "default": "#E07A5F"
+      },
+      "dealTextColor": {
+        "type": "select",
+        "label": {
+          "ar": "النص فوق لون التخفيضات",
+          "en": "Text on the sale colour"
+        },
+        "default": "#14110F",
+        "options": [
+          {
+            "value": "#FFFFFF",
+            "label": "فاتح — للألوان الغامقة"
+          },
+          {
+            "value": "#14110F",
+            "label": "غامق — للألوان الفاتحة"
+          }
+        ]
+      },
+      "successColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «متوفر» — اتركه فارغًا للون الثيم",
+          "en": "In-stock colour — leave empty for the theme's"
+        },
+        "default": ""
+      },
+      "warningColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «أوشك على النفاد» — اتركه فارغًا للون الثيم",
+          "en": "Low-stock colour — leave empty for the theme's"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الأسطح والنص",
+      "en": "Surfaces & Text"
+    },
+    "settings": {
+      "backgroundColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الصفحة",
+          "en": "Page Background"
+        },
+        "default": "#0B0F0D"
+      },
+      "wellColor": {
+        "type": "color",
+        "label": {
+          "ar": "الخلفية الدافئة — الأقسام المتبادلة وحقول الإدخال",
+          "en": "Warm Background — alternating sections and input fields"
+        },
+        "default": "#131A17"
+      },
+      "textColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص — يُشتق منه النص الثانوي والخفيف",
+          "en": "Text Colour — secondary and muted text are derived from it"
+        },
+        "default": "#F2ECE2"
+      },
+      "borderColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود",
+          "en": "Border Colour"
+        },
+        "default": "#27312C"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الفوتر",
+      "en": "Footer"
+    },
+    "settings": {
+      "footerColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الفوتر — اتركه على خلفية الصفحة ليندمج، أو غامقًا ليفصل",
+          "en": "Footer Background — match the page to blend, or go dark to separate"
+        },
+        "default": "#070A09"
+      },
+      "footerTextColor": {
+        "type": "color",
+        "label": {
+          "ar": "نص الفوتر — تُشتق منه العناوين والنص المكتوم والحدود",
+          "en": "Footer Text — headings, muted text and borders are derived from it"
+        },
+        "default": "#E9E2D6"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخطوط",
+      "en": "Typography"
+    },
+    "settings": {
+      "fontDisplayArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط العناوين العربي",
+          "en": "Arabic Display Font"
+        },
+        "default": "Amiri",
+        "options": [
+          {
+            "value": "Amiri",
+            "label": "Amiri — كلاسيكي فاخر — الافتراضي"
+          },
+          {
+            "value": "Cairo",
+            "label": "Cairo"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Rubik",
+            "label": "Rubik"
+          },
+          {
+            "value": "Noto Sans Arabic",
+            "label": "Noto Sans Arabic"
+          },
+          {
+            "value": "Marhey",
+            "label": "Marhey — مرح"
+          },
+          {
+            "value": "El Messiri",
+            "label": "El Messiri"
+          }
+        ]
+      },
+      "fontDisplayLatin": {
+        "type": "select",
+        "label": {
+          "ar": "خط العناوين اللاتيني",
+          "en": "Latin Display Font"
+        },
+        "default": "Cormorant Garamond",
+        "options": [
+          {
+            "value": "Cormorant Garamond",
+            "label": "Cormorant Garamond — classic luxe — الافتراضي"
+          },
+          {
+            "value": "Figtree",
+            "label": "Figtree"
+          },
+          {
+            "value": "Plus Jakarta Sans",
+            "label": "Plus Jakarta Sans"
+          },
+          {
+            "value": "Manrope",
+            "label": "Manrope"
+          },
+          {
+            "value": "Poppins",
+            "label": "Poppins"
+          },
+          {
+            "value": "Nunito",
+            "label": "Nunito — مدوّر"
+          },
+          {
+            "value": "Baloo 2",
+            "label": "Baloo 2 — مرح"
+          },
+          {
+            "value": "Montserrat",
+            "label": "Montserrat"
+          }
+        ]
+      },
+      "fontBodyArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص العربي",
+          "en": "Arabic Body Font"
+        },
+        "default": "IBM Plex Sans Arabic",
+        "options": [
+          {
+            "value": "Cairo",
+            "label": "Cairo"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "IBM Plex Sans Arabic",
+            "label": "IBM Plex Sans Arabic — الافتراضي"
+          },
+          {
+            "value": "Noto Sans Arabic",
+            "label": "Noto Sans Arabic"
+          },
+          {
+            "value": "Rubik",
+            "label": "Rubik"
+          }
+        ]
+      },
+      "fontBodyLatin": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص اللاتيني (ومنه تُشتق الأرقام)",
+          "en": "Latin Body Font (also drives numerals)"
+        },
+        "default": "Manrope",
+        "options": [
+          {
+            "value": "Figtree",
+            "label": "Figtree"
+          },
+          {
+            "value": "Plus Jakarta Sans",
+            "label": "Plus Jakarta Sans"
+          },
+          {
+            "value": "Manrope",
+            "label": "Manrope — الافتراضي"
+          },
+          {
+            "value": "Nunito",
+            "label": "Nunito — مدوّر"
+          },
+          {
+            "value": "DM Sans",
+            "label": "DM Sans"
+          },
+          {
+            "value": "Inter",
+            "label": "Inter"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الهوية",
+      "en": "Identity"
+    },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": {
+          "ar": "أيقونة المتصفح — اتركها فارغة لأيقونة المتجر",
+          "en": "Favicon — leave empty for the store's"
+        }
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الحركة والمخزون",
+      "en": "Motion and stock"
+    },
+    "settings": {
+      "enableAnimations": {
+        "type": "boolean",
+        "label": {
+          "ar": "تشغيل الحركة — أطفئه لإيقاف كل الحركة في المتجر",
+          "en": "Animations — switch off to stop all motion on the store"
+        },
+        "default": true
+      },
+      "lowStockThreshold": {
+        "type": "number",
+        "label": {
+          "ar": "عدد «أوشك على النفاد» — 0 يخفي التنبيه",
+          "en": "Low-stock count — 0 hides the notice"
+        },
+        "default": 5,
+        "min": 0,
+        "max": 100
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "التواصل",
+      "en": "Contact"
+    },
+    "settings": {
+      "whatsappNumber": {
+        "type": "string",
+        "label": {
+          "ar": "رقم واتساب بالصيغة الدولية (مثال 201001234567) — يُظهر زر واتساب العائم",
+          "en": "WhatsApp number in international format (e.g. 201001234567) — shows the floating WhatsApp button"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "محركات البحث",
+      "en": "SEO"
+    },
+    "settings": {
+      "googleVerification": {
+        "type": "string",
+        "label": {
+          "ar": "كود التحقق من Google Search Console (الوسم كاملًا أو قيمة content)",
+          "en": "Google Search Console verification (full meta tag or content value)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "كود مخصص",
+      "en": "Custom code"
+    },
+    "settings": {
+      "customCSS": {
+        "type": "textarea",
+        "label": {
+          "ar": "CSS مخصص",
+          "en": "Custom CSS"
+        },
+        "default": ""
+      },
+      "customJS": {
+        "type": "textarea",
+        "label": {
+          "ar": "JavaScript مخصص",
+          "en": "Custom JavaScript"
+        },
+        "default": ""
+      }
+    }
+  }
+]

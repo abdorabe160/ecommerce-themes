@@ -1,0 +1,43 @@
+{
+  "name": "صفحة المتجر",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "العنوان الصغير", "en": "Kicker" },
+      "default": "المتجر"
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (يُستبدل باسم التصنيف داخل التصنيفات)", "en": "Title (replaced by the collection name inside a collection)" },
+      "default": "كل القطع"
+    },
+    "description": {
+      "type": "text",
+      "label": { "ar": "وصف قصير", "en": "Short description" },
+      "default": ""
+    },
+    "show_collections": {
+      "type": "boolean",
+      "label": { "ar": "أزرار التصنيفات", "en": "Collection pills" },
+      "default": true
+    },
+    "show_cover": {
+      "type": "boolean",
+      "label": { "ar": "صورة غلاف التصنيف", "en": "Collection cover image" },
+      "default": true
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": { "ar": "الفلاتر", "en": "Filters" },
+      "default": true
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": { "ar": "الترتيب", "en": "Sorting" },
+      "default": true
+    }
+  },
+  "presets": [
+    { "category": "صفحة المتجر", "name": "صفحة المتجر" }
+  ]
+}

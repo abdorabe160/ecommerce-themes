@@ -1,0 +1,148 @@
+{# صفحة منتج توضيحية — المعاينة فقط (qumra theme dev / المحرر). تُفتح من بطاقات المنتجات التوضيحية بـ /?demo_product=<id>،
+   أو تلقائياً في قالب صفحة المنتج عندما لا يوجد منتج. نفس تصميم widgets/product-detail ونفس منطق lgProduct،
+   والإضافة للسلة تمر عبر سلة المعاينة في main.js (DemoCart). البيانات من ui/demo-pages.njk. #}
+<div class="lg-demo-page" x-data="lgDemoProduct()">
+  <template x-if="demoProduct">
+    <div>
+      <section class="lg-section !pt-4" data-fly-scope x-data="lgProduct({ product: demoProduct })">
+        <div class="lg-container">
+
+          <nav aria-label="{{t('common.breadcrumb')}}" class="lg-breadcrumb mb-4 text-sm text-muted">
+            <ol class="flex flex-wrap items-center gap-1.5">
+              <li><a href="/" class="hover:text-primary">{{t('common.home')}}</a></li>
+              <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+              <template x-if="crumb">
+                <li class="flex items-center gap-1.5">
+                  <a :href="collectionUrl(crumb)" class="hover:text-primary" x-text="crumb.title"></a>
+                  <span aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</span>
+                </li>
+              </template>
+              <li aria-current="page" class="text-[color:var(--color-text)] truncate max-w-[60vw]" x-text="product.title"></li>
+            </ol>
+          </nav>
+
+          <div class="grid gap-6 lg:gap-10 md:grid-cols-2 items-start">
+
+            {# ===== الصورة ===== #}
+            <div class="lg-gallery-sticky md:sticky md:top-[calc(var(--header-h)+24px)] min-w-0">
+              <div class="glass lg-gallery-main relative">
+                <div class="absolute top-3 start-3 z-10 flex flex-col gap-1.5">
+                  <template x-if="cardBadge(product)">
+                    <span class="lg-badge" dir="auto" :class="cardBadge(product).cls" x-text="cardBadge(product).label"></span>
+                  </template>
+                </div>
+                <img :src="productImage(product)" :alt="product.title" width="700" height="700">
+              </div>
+            </div>
+
+            {# ===== التفاصيل ===== #}
+            <div class="space-y-5 min-w-0">
+              <div class="space-y-2">
+                <h1 class="text-2xl md:text-3xl font-bold leading-snug" x-text="product.title"></h1>
+                <p class="text-muted" x-show="product.subtitle"><bdi x-text="product.subtitle"></bdi></p>
+                <a href="#lg-demo-tabs" @click="tab = 'reviews'" class="lg-tap inline-flex items-center gap-2 text-sm text-muted hover:text-primary" x-show="product.reviewsCount > 0">
+                  <span class="lg-stars">
+                    <template x-for="i in 5" :key="i"><span class="inline-flex" :class="i > cardRating(product) && 'is-empty'">{% ui "icon.njk", name="star", cls="w-4 h-4 fill-current" %}</span></template>
+                  </span>
+                  <span x-text="(Number(product.averageRating) || 0).toFixed(1) + ' (' + product.reviewsCount + ' ' + {{ t('product.reviews_count') | dump | escape }} + ')'"></span>
+                </a>
+              </div>
+
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span class="text-3xl font-bold" x-text="price === 0 ? {{ t('product.free') | dump | escape }} : formatMoney(price)"></span>
+                <span class="lg-price--old !text-base" x-show="compareAt > price" x-text="formatMoney(compareAt)"></span>
+                <span class="text-sm font-semibold lg-save" x-show="discount > 0">
+                  {{t('product.you_save')}} <span x-text="formatMoney(compareAt - price)"></span>
+                </span>
+              </div>
+
+              <p class="lg-stock lg-stock--warn" :class="'lg-stock--' + stock" role="status">
+                <span x-show="stock === 'in'">{{t('product.in_stock')}}</span>
+                <span x-show="stock === 'low'">{{t('product.low_stock')}} — <span x-text="lowLeft(currentQty)"></span></span>
+                <span x-show="stock === 'out'">{{t('product.out_of_stock')}}</span>
+              </p>
+
+              <div class="space-y-3">
+                <div class="flex flex-wrap items-center gap-3">
+                  <div class="lg-qty">
+                    <button type="button" @click="dec()" :disabled="quantity <= 1" aria-label="{{t('common.decrease_quantity')}}">{% ui "icon.njk", name="minus", cls="w-4 h-4" %}</button>
+                    <label for="lg-demo-qty" class="sr-only">{{t('product.quantity')}}</label>
+                    <input id="lg-demo-qty" type="text" inputmode="numeric" pattern="[0-9]*" x-model="quantity" @change="clampQty()" @blur="clampQty()">
+                    <button type="button" @click="inc()" :disabled="quantity >= maxQty" aria-label="{{t('common.increase_quantity')}}">{% ui "icon.njk", name="plus", cls="w-4 h-4" %}</button>
+                  </div>
+                  <button type="button" class="btn btn-glass btn-icon" @click="share()" aria-label="{{t('product.share')}}">
+                    {% ui "icon.njk", name="arrow-up", cls="w-5 h-5" %}
+                  </button>
+                </div>
+                <p class="text-xs text-[color:var(--color-warning)] font-medium" x-show="qtyNotice" x-text="qtyNotice"></p>
+
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <button type="button" class="btn btn-primary !min-h-[52px]" @click="add()">
+                    {% ui "icon.njk", name="cart", cls="w-5 h-5" %}{{t('product.add_to_cart')}}
+                  </button>
+                  <button type="button" class="btn btn-glass !min-h-[52px]" @click="buy()">{{t('product.buy_now')}}</button>
+                </div>
+              </div>
+
+              {# ===== الوصف والتقييمات: تحت الأزرار في عمود التفاصيل (نفس widgets/product-detail) ===== #}
+              <div id="lg-demo-tabs" class="glass p-4 md:p-6 scroll-mt-[calc(var(--header-h)+24px)]">
+                <div class="flex flex-wrap gap-2 mb-5 border-b border-[color:var(--color-hairline)] pb-3" role="tablist">
+                  <button type="button" role="tab" class="lg-chip" :class="tab === 'desc' && 'is-active'" :aria-selected="tab === 'desc'" @click="tab = 'desc'">{{t('product.description')}}</button>
+                  <button type="button" role="tab" class="lg-chip" :class="tab === 'reviews' && 'is-active'" :aria-selected="tab === 'reviews'" @click="tab = 'reviews'">
+                    {{t('product.reviews')}} <span x-text="'(' + (product.reviewsCount || 0) + ')'"></span>
+                  </button>
+                </div>
+                <div x-show="tab === 'desc'" class="lg-prose" role="tabpanel">
+                  <p x-show="product.subtitle"><strong x-text="product.title"></strong> — <bdi x-text="product.subtitle"></bdi></p>
+                  <p>{{ t('preview.demo_description') }}</p>
+                </div>
+                <div x-show="tab === 'reviews'" role="tabpanel">
+                  <template x-if="product.reviewsCount > 0">
+                    <div class="flex items-center gap-3">
+                      <span class="text-3xl font-bold" x-text="(Number(product.averageRating) || 0).toFixed(1)"></span>
+                      <span class="lg-stars">
+                        <template x-for="i in 5" :key="i"><span class="inline-flex" :class="i > cardRating(product) && 'is-empty'">{% ui "icon.njk", name="star", cls="w-5 h-5 fill-current" %}</span></template>
+                      </span>
+                      <span class="text-sm text-muted" x-text="'(' + product.reviewsCount + ' ' + {{ t('product.reviews_count') | dump | escape }} + ')'"></span>
+                    </div>
+                  </template>
+                  <p class="text-muted" x-show="!(product.reviewsCount > 0)">{{t('product.no_reviews')}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# شريط شراء ثابت على الموبايل #}
+        <div class="lg-sticky-buy md:hidden fixed inset-x-0 bottom-0 z-30 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
+          <div class="glass glass-strong lg-float-bar !rounded-2xl p-2.5 space-y-2">
+            <div class="flex items-center gap-2">
+              <div class="min-w-0 flex-1 ps-1">
+                <p class="text-xs text-muted truncate" x-text="product.title"></p>
+                <p class="flex flex-wrap items-baseline gap-x-2">
+                  <span class="font-bold" x-text="price === 0 ? {{ t('product.free') | dump | escape }} : formatMoney(price)"></span>
+                  <span class="lg-price--old" x-show="compareAt > price" x-text="formatMoney(compareAt)"></span>
+                </p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" class="btn btn-primary !px-3" @click="add()"><span class="lg-btn-label">{{t('product.add_to_cart')}}</span></button>
+              <button type="button" class="btn btn-glass !px-3" @click="buy()"><span class="lg-btn-label">{{t('product.buy_now')}}</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="md:hidden h-36" aria-hidden="true"></div>
+      </section>
+
+      {# ===== منتجات توضيحية أخرى ===== #}
+      <section class="lg-section" x-show="related.length">
+        <div class="lg-container">
+          <div class="lg-section-head"><h2 class="lg-title">{{t('product.related_products')}}</h2></div>
+          <div class="lg-grid" data-cols="4">
+            <template x-for="p in related" :key="p._id">{% ui "card-js.njk" %}</template>
+          </div>
+        </div>
+      </section>
+    </div>
+  </template>
+</div>

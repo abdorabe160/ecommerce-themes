@@ -1,0 +1,31 @@
+{# MORVA pagination — plain links (?page=N) for server-paged lists:
+   collections, blog. The shop grid pages through collectionFilter instead. #}
+{#- /blogs/<handle> sends { total, page, limit, pages }, every other page { totalItems, currentPage, totalPages } -#}
+{% set pg = context.pagination or {} %}
+{% set current = pg.currentPage or pg.page or 1 %}
+{% set total = pg.totalPages or pg.pages or 1 %}
+{% if total > 1 %}
+  <nav class="mv-pager" aria-label="pagination">
+    {% if current > 1 %}
+      <a href="?page={{ current - 1 }}" class="mv-pager-btn" aria-label="{{ t('common.prev') }}"><span class="mv-arrow">←</span></a>
+    {% else %}
+      <span class="mv-pager-btn is-off"><span class="mv-arrow">←</span></span>
+    {% endif %}
+    {% for n in range(1, total + 1) %}
+      {% if n == 1 or n == total or (n >= current - 1 and n <= current + 1) %}
+        {% if n == current %}
+          <span class="mv-pager-btn is-active" aria-current="page">{{ n }}</span>
+        {% else %}
+          <a href="?page={{ n }}" class="mv-pager-btn">{{ n }}</a>
+        {% endif %}
+      {% elif n == current - 2 or n == current + 2 %}
+        <span class="mv-pager-gap">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if current < total %}
+      <a href="?page={{ current + 1 }}" class="mv-pager-btn" aria-label="{{ t('common.next') }}"><span class="mv-arrow">→</span></a>
+    {% else %}
+      <span class="mv-pager-btn is-off"><span class="mv-arrow">→</span></span>
+    {% endif %}
+  </nav>
+{% endif %}

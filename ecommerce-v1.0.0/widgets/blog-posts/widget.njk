@@ -1,0 +1,62 @@
+{#
+  ============================================================================
+  BLOG POSTS · مقالات المدونة
+  ----------------------------------------------------------------------------
+  A centred title over a row of article cards: picture, title, date, excerpt
+  and an underlined "read now".
+
+  ⚠️ A home-page widget gets no articles from Qumra (no schema type for a
+  blog, no articles variable outside the blog pages). So the latest articles
+  are read the way HayatAuto reads collections: HxPosts (assets/hx.js)
+  fetches /blogs (or one blog), then each blog page, and lifts the article
+  cards ui/article-card.njk renders there. Until that answers — and for good
+  if the store has no articles — four demo articles (CC0 pictures, texts in
+  the visitor's language) stand in, in the editor only: on the live store the
+  section hides itself when there is nothing real to show (sections.css).
+
+  Styles: assets/sections.css → "BLOG POSTS".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set limit = d.limit | default(4) %}
+{% set title = (d.title or t('posts.title')) if d.show_title != false else '' %}
+{% set readText = (d.read_more_text or t('posts.read')) if d.show_read_more != false else '' %}
+{% set demoImgs = ['pg-demo-2.jpg', 'pg-demo-5.jpg', 'hx-demo-6.jpg', 'pg-demo-4.jpg'] %}
+{% set demoDate = '2026-10-01' %}
+
+{% macro card(url, img, ttl, date, excerpt, readText, showDate, showEx) %}
+  <article class="hx-bp-card is-demo">
+    <a href="{{ url }}" class="hx-bp-media" tabindex="-1" aria-hidden="true">{% if img %}<img src="{{ img }}" alt="" loading="lazy"/>{% endif %}</a>
+    <h3 class="hx-bp-title"><a href="{{ url }}">{{ ttl }}</a></h3>
+    {% if showDate and date %}<time class="hx-bp-date" datetime="{{ date }}" data-hy-date>{{ date }}</time>{% endif %}
+    {% if showEx and excerpt %}<p class="hx-bp-excerpt">{{ excerpt }}</p>{% endif %}
+    {% if readText %}<a href="{{ url }}" class="hx-bp-more">{{ readText | safe }}</a>{% endif %}
+  </article>
+{% endmacro %}
+
+<section id="hx-bp-{{ id }}"
+         class="hx-bp {{ 'is-zoom' if d.hover_zoom != false }} is-r-{{ d.image_ratio | default('wide') }}"
+         style="--bp-per: {{ d.columns_desktop | default(4) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --bp-link: {{ d.color_accent }};{% endif %}">
+  <div class="hx-bp-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}<h2 class="hx-bp-head">{{ title | safe }}</h2>{% endif %}
+    <div class="hx-bp-grid" data-hx-posts
+         data-blog="{{ d.blog_handle | default('') | trim }}" data-limit="{{ limit }}"
+         data-read="{{ readText | replace('<', ' <') | striptags }}" data-date="{{ 'on' if d.show_date != false else 'off' }}" data-excerpt="{{ 'on' if d.show_excerpt != false else 'off' }}">
+      {% for n in [1, 2, 3, 4, 5, 6, 7, 8] %}{% if n <= limit %}
+        {% set k = ((n - 1) % 4) + 1 %}
+        {{ card('/blogs', demoImgs[k - 1] | assets, t('posts.a' ~ k ~ '.title'), demoDate, t('posts.a' ~ k ~ '.excerpt'), readText, d.show_date != false, d.show_excerpt != false) }}
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() { var el = document.querySelector('#hx-bp-{{ id }} [data-hx-posts]'); if (el && window.HxPosts) HxPosts.fill(el); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-bp-' ~ id, c=d %}

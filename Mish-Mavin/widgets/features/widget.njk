@@ -1,0 +1,24 @@
+{# مزايا المتجر — أعمدة قصيرة (عنوان + نص) يكتبها التاجر من المحرر. يختفي لو مفيش عناصر. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set items = [] %}
+{% for b in (widget.blocks or []) %}{% set bs = b.settings or b.data or {} %}{% if bs.title or bs.text %}{% set _ = items.push(bs) %}{% endif %}{% endfor %}
+{% if items | length %}
+<section class="mw-section mw-features">
+  <div class="container">
+    {% if wd.title %}
+    <div class="mw-section__head mw-align-{{ wd.heading_align | default('center') }}">
+      <h2 class="mw-section__title">{{ wd.title }}</h2>
+    </div>
+    {% endif %}
+    <ul class="mw-features__grid" role="list">
+      {% for it in items %}
+      <li class="mw-features__item">
+        <svg class="mw-features__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        {% if it.title %}<h3 class="mw-features__title" dir="auto">{{ it.title }}</h3>{% endif %}
+        {% if it.text %}<div class="mw-features__text" dir="auto">{{ it.text | safe }}</div>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}

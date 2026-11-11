@@ -1,0 +1,195 @@
+{# ============================================================================
+   NAKHA BLOGS PAGE — /blogs
+   The platform sends this page only the list of categories, so the articles are
+   gathered in the browser from each /blogs/<handle> page (same ui/article-card.njk
+   markup, no JS twin). The categories become a filter above them, hidden when
+   there is only one.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blogs = context.blogs or [] %}
+{% set handles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = handles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+{% set count = handles | length %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.blog_eyebrow'), true) %}
+{% set title = d.title | default(t('pages.blog.title'), true) %}
+{% set subtitle = d.subtitle | default('') %}
+{% set colsD = d.columns | default('3', true) %}
+{% set colsDInt = colsD | int %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+
+
+<style>
+  .nakha-blp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-blp-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .nakha-blp-{{ id }}-title { line-height: 1.34; }
+
+  .nakha-blp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  @media (min-width: 640px) { .nakha-blp-{{ id }}-grid { grid-template-columns: repeat(var(--blp-mid, {{ colsMid }}), minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .nakha-blp-{{ id }}-grid { grid-template-columns: repeat(var(--blp-desk, {{ colsDInt }}), minmax(0, 1fr)); gap: 26px; } }
+  {# one article alone on the last row takes the row #}
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-media { width: 40%; min-height: 220px; flex-shrink: 0; aspect-ratio: auto; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-media img { position: absolute; inset: 0; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-body { justify-content: center; padding: 24px; }
+  }
+  @media (min-width: 1024px) {
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child({{ colsDInt }}n+1):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child({{ colsDInt }}n+1):not(:first-child) .nakha-acard-media { width: 40%; min-height: 220px; flex-shrink: 0; aspect-ratio: auto; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child({{ colsDInt }}n+1):not(:first-child) .nakha-acard-media img { position: absolute; inset: 0; }
+    .nakha-blp-{{ id }}-grid > .nakha-acard:last-child:nth-child({{ colsDInt }}n+1):not(:first-child) .nakha-acard-body { justify-content: center; padding: 24px; }
+  }
+  .nakha-blp-{{ id }}-grid.is-single { max-width: 420px; margin-inline: auto; }
+  .nakha-blp-{{ id }}-skel { aspect-ratio: 4 / 5; border-radius: var(--radius-card); background: var(--color-bg-tertiary); }
+  .nakha-blp-{{ id }}-filters { justify-content: safe center; }
+</style>
+
+
+<section id="nakha-blp-{{ id }}" class="nakha-section" style="background: var(--color-bg-primary);">
+  <div class="nakha-container">
+
+    <nav class="flex items-center gap-2 flex-wrap mb-6 nakha-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-flame transition-colors">{{ t('common.home') }}</a>
+      <svg class="nakha-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <span style="color: var(--color-text-secondary);">{{ title }}</span>
+    </nav>
+
+    <div class="nakha-head nakha-head--center">
+      {% if eyebrow %}
+        <span class="nakha-eyebrow">{{ eyebrow }}</span>
+      {% endif %}
+      <h1 class="nakha-blp-{{ id }}-title nakha-h2">{{ title }}</h1>
+      {% if subtitle %}<p class="nakha-lead">{{ subtitle | safe }}</p>{% endif %}
+    </div>
+
+    <div class="nakha-empty" data-blogs-empty{% if count > 0 %} hidden{% endif %}>
+      <span class="nakha-empty-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/>
+          <path d="M12 4h6.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H12"/>
+        </svg>
+      </span>
+      <h3 class="m-0">{{ t('pages.blog.no_articles') }}</h3>
+      <p class="nakha-text-sm m-0">{{ t('pages.blog.no_articles_desc') }}</p>
+      <a href="/shop" class="nakha-btn nakha-btn--outline nakha-btn--sm mt-1">{{ t('pages.shop.all_products') }}</a>
+    </div>
+
+    {% if count > 0 %}
+      {% if count > 1 %}
+        <div class="nakha-rail mb-7 nakha-blp-{{ id }}-filters" data-blog-filters>
+          <a href="/blogs" class="nakha-chip is-active" data-blog-filter="" aria-current="true">{{ t('pages.blog.all') }}</a>
+          {% for blog in blogs %}
+            {% set _h = blog.handle or blog.slug %}
+            {% if _h and blog.title %}<a href="/blogs/{{ _h }}" class="nakha-chip" data-blog-filter="{{ _h }}">{{ blog.title }}</a>{% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="nakha-blp-{{ id }}-grid" data-blogs-grid aria-busy="true">
+        {% for i in range(0, 3) %}<div class="nakha-blp-{{ id }}-skel" aria-hidden="true"></div>{% endfor %}
+      </div>
+
+      <script>
+        (function () {
+          var root = document.getElementById('nakha-blp-{{ id }}');
+          var grid = root.querySelector('[data-blogs-grid]');
+          var empty = root.querySelector('[data-blogs-empty]');
+          var bar = root.querySelector('[data-blog-filters]');
+          var handles = {{ handles | dump | safe }};
+          var COLS = {{ colsDInt | default(3, true) }}, MAX_PAGES = 5;
+
+          function page(handle, n) {
+            return fetch('/blogs/' + encodeURIComponent(handle) + (n > 1 ? '?page=' + n : ''))
+              .then(function (r) { return r.ok ? r.text() : ''; })
+              .then(function (html) { return new DOMParser().parseFromString(html, 'text/html'); })
+              .catch(function () { return null; });
+          }
+          function cards(doc, handle) {
+            if (!doc) return [];
+            return Array.prototype.map.call(doc.querySelectorAll('main .nakha-acard'), function (el) {
+              el.setAttribute('data-blog', handle);
+              return document.importNode(el, true);
+            });
+          }
+          function load(handle) {
+            return page(handle, 1).then(function (doc) {
+              var first = cards(doc, handle);
+              var holder = doc && doc.querySelector('[data-pages]');
+              var pages = Math.min(Number(holder && holder.getAttribute('data-pages')) || 1, MAX_PAGES);
+              var rest = [];
+              for (var i = 2; i <= pages; i++) rest.push(page(handle, i));
+              return Promise.all(rest).then(function (docs) {
+                return docs.reduce(function (all, d) { return all.concat(cards(d, handle)); }, first);
+              });
+            });
+          }
+          function show(list, filter) {
+            var shown = list.filter(function (c) { return !filter || c.getAttribute('data-blog') === filter; });
+            grid.innerHTML = '';
+            shown.forEach(function (c) { grid.appendChild(c); });
+            grid.classList.toggle('is-single', shown.length === 1);
+            grid.style.setProperty('--blp-mid', Math.min(shown.length, 2) || 1);
+            grid.style.setProperty('--blp-desk', Math.min(shown.length, COLS) || 1);
+          }
+
+          Promise.all(handles.map(load)).then(function (lists) {
+            var seen = {};
+            var all = lists.reduce(function (a, b) { return a.concat(b); }, []).filter(function (c) {
+              var href = c.getAttribute('href');
+              if (seen[href]) return false;
+              seen[href] = true;
+              return true;
+            }).sort(function (a, b) {
+              return String(b.getAttribute('data-date')).localeCompare(String(a.getAttribute('data-date')));
+            });
+            grid.removeAttribute('aria-busy');
+            if (!all.length) {
+              grid.hidden = true;
+              if (bar) bar.hidden = true;
+              empty.hidden = false;
+              return;
+            }
+            show(all, '');
+            if (!bar) return;
+            bar.addEventListener('click', function (e) {
+              var chip = e.target.closest('[data-blog-filter]');
+              if (!chip) return;
+              e.preventDefault();
+              bar.querySelectorAll('[data-blog-filter]').forEach(function (c) {
+                c.classList.remove('is-active');
+                c.removeAttribute('aria-current');
+              });
+              chip.classList.add('is-active');
+              chip.setAttribute('aria-current', 'true');
+              show(all, chip.getAttribute('data-blog-filter'));
+            });
+          });
+        })();
+      </script>
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-blp-' ~ id, c=d %}

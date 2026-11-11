@@ -1,0 +1,334 @@
+{# ============================================================================
+   RIYADA NEWSLETTER — drop & restock alerts
+   ----------------------------------------------------------------------------
+   Three layouts: card (inset) · full (edge-to-edge strip) · split (image + form).
+
+   ⚠️  Submission uses a NATIVE form POST, not fetch(): Mailchimp / Klaviyo /
+   Google Forms don't send CORS headers, so a fetch() would always fail
+   silently. Posting to a new tab keeps the shopper on the store and lets us
+   flip an optimistic success state — the usual pattern for hosted lists.
+
+   If `action_url` is empty the form is NOT rendered; the section shows a setup
+   hint instead, so a half-configured block never looks live to a customer.
+
+   The field is the shared .riyada-searchbar primitive — input and submit fused
+   into one control. Two separate pills read as two decisions, and the header
+   search already taught the shopper what this shape does.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set action = d.action_url | default('') %}
+{% set emailField = d.email_field_name | default('EMAIL', true) %}
+{% set newTab = d.open_in_new_tab | default(true) %}
+
+{% set layout = d.layout | default('card', true) %}
+{% set isFull = layout == 'full' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('void', true) %}
+{% set showMotif = d.show_speed_motif | default(true) %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{# Out of the box: a bundled demo photo until the merchant picks one (docs/demo-images.md) #}
+{% if not img %}{% set img = 'demo-newsletter.jpg' | assets %}{% endif %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.stay_updated'), true) %}
+{% set title = d.title | default(t('newsletter.title'), true) %}
+{% set subtitle = d.subtitle | default('') %}
+
+{% set placeholder = d.placeholder | default(t('newsletter.placeholder'), true) %}
+{% set btnRaw = d.button_text | default(t('newsletter.button'), true) %}
+{% if btnRaw %}{% set btnText = btnRaw %}{% else %}{% set btnText = t('common.subscribe') %}{% endif %}
+{% set okRaw = d.success_message | default(t('newsletter.success'), true) %}
+{% if okRaw %}{% set successMsg = okRaw %}{% else %}{% set successMsg = t('newsletter.success') %}{% endif %}
+
+{% set showConsent = d.show_consent | default(false) %}
+{% set showNote = d.show_note | default(true) %}
+{% set noteText = d.note_text | default('', true) %}
+
+{% set align = d.text_alignment | default('center', true) %}
+{% set isCenter = align == 'center' and not isSplit %}
+
+{# ---- background ---- #}
+{% set isFlame = bg == 'flame' %}
+{% set isLight = bg == 'light' %}
+{% if isFlame %}{% set bgVal = 'var(--color-flame-solid)' %}
+{% elif bg == 'canvas' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif isLight %}{% set bgVal = 'var(--color-light)' %}
+{% else %}{% set bgVal = 'var(--color-media)' %}{% endif %}
+
+
+<style>
+  /* ================= panel ================= */
+  .riyada-nl-{{ id }}-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: {{ bgVal }};
+    {% if isSplit %}
+    padding: 0;
+    {% else %}
+    padding-block: 56px;
+    padding-inline: clamp(20px, 4vw, 52px);
+    {% endif %}
+    {% if not isFull %}border-radius: var(--radius-card);{% endif %}
+    {% if not isFlame %}border: 1px solid var(--color-border);{% endif %}
+  }
+  @media (max-width: 767px) {
+    .riyada-nl-{{ id }}-panel { {% if not isSplit %}padding-block: 38px; padding-inline: 20px;{% endif %} }
+  }
+
+  {% if isFlame %}
+  /* Token overrides for the panel, so the shared primitives invert themselves
+     instead of being repainted one by one. */
+  .riyada-nl-{{ id }}-panel {
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: rgba(255, 255, 255, 0.84);
+    --color-text-tertiary: rgba(255, 255, 255, 0.68);
+    --color-border: rgba(255, 255, 255, 0.28);
+    --color-flame: #FFFFFF;
+  }
+  {% endif %}
+
+  {% if showMotif and (isFlame or bg == 'void') %}
+  /* speed lines — the brand motif, on the dark and flame panels only */
+  .riyada-nl-{{ id }}-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      115deg, rgba(255, 255, 255, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  html[dir="rtl"] .riyada-nl-{{ id }}-panel::before {
+    background-image: repeating-linear-gradient(
+      65deg, rgba(255, 255, 255, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  {% endif %}
+
+  /* ================= split row ================= */
+  .riyada-nl-{{ id }}-row {
+    display: grid;
+    align-items: center;
+    {% if isSplit %}grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); gap: 0;{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+    {% if isFull %}
+    /* the panel runs edge to edge, so the CONTENT is what gets constrained —
+       nesting a second .riyada-container inside would double the side padding */
+    max-width: var(--container-max);
+    margin-inline: auto;
+    {% endif %}
+  }
+  @media (max-width: 1023px) {
+    .riyada-nl-{{ id }}-row { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .riyada-nl-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--color-media);
+  }
+  .riyada-nl-{{ id }}-media img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 1023px) {
+    .riyada-nl-{{ id }}-media { aspect-ratio: 16 / 9; }
+  }
+
+  {% if isSplit %}
+  .riyada-nl-{{ id }}-content { padding: 44px; }
+  @media (max-width: 767px) {
+    .riyada-nl-{{ id }}-content { padding: 30px 20px; }
+  }
+  {% endif %}
+
+  /* ================= content ================= */
+  .riyada-nl-{{ id }}-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    {% if isCenter %}align-items: center; text-align: center;{% else %}align-items: flex-start;{% endif %}
+  }
+
+  .riyada-nl-{{ id }}-sub {
+    margin: 0;
+    max-width: 52ch;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+  }
+
+  /* ================= form ================= */
+  .riyada-nl-{{ id }}-form {
+    position: relative;
+    width: 100%;
+    max-width: 470px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+  }
+
+  /* The shared searchbar sits on the page's well colour; inside a dark or flame
+     panel that disappears, so the field gets the raised surface instead. */
+  .riyada-nl-{{ id }}-form .riyada-searchbar {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border-strong);
+  }
+  {% if isFlame %}
+  /* flame-on-flame would erase the button — invert it to the void instead */
+  .riyada-nl-{{ id }}-form .riyada-searchbar { background: rgba(255, 255, 255, 0.94); }
+  .riyada-nl-{{ id }}-form .riyada-searchbar-input { color: var(--color-media); }
+  .riyada-nl-{{ id }}-form .riyada-searchbar-submit { background: var(--color-media); color: #FFFFFF; }
+  .riyada-nl-{{ id }}-form .riyada-searchbar-submit:hover { background: #262626; }
+  {% endif %}
+
+  .riyada-nl-{{ id }}-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+  }
+  .riyada-nl-{{ id }}-consent input { margin-top: 2px; accent-color: var(--color-flame); flex: none; }
+
+  .riyada-nl-{{ id }}-note {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .riyada-nl-{{ id }}-ok {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 18px;
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-input);
+    background: var(--color-success-light);
+    color: var(--color-success);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  {% if isFlame %}
+  .riyada-nl-{{ id }}-ok {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.16);
+    color: #FFFFFF;
+  }
+  {% endif %}
+
+  .riyada-nl-{{ id }}-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: var(--radius-input);
+    border: 1px dashed var(--color-border-strong);
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+  }
+</style>
+
+
+<section id="riyada-nl-{{ id }}" class="{{ 'riyada-section' if not isFull }} {{ 'riyada-invert' if isLight }}"{% if not action %} data-editor-only{% endif %}>
+  <div class="{{ 'riyada-container' if not isFull }}">
+    <div class="riyada-nl-{{ id }}-panel">
+      <div class="riyada-nl-{{ id }}-row">
+
+        {# ═══════════════ image (split only) ═══════════════ #}
+        {% if isSplit %}
+          <div class="riyada-nl-{{ id }}-media">
+            {% if img %}
+              <img src="{{ img }}" alt="{{ title | default('', true) | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# ═══════════════ content ═══════════════ #}
+        <div class="riyada-nl-{{ id }}-content" x-data="{ sent: false }">
+
+            {% if eyebrow %}
+              <span class="riyada-eyebrow {{ 'riyada-eyebrow--light' if isFlame }}">{{ eyebrow }}</span>
+            {% endif %}
+
+            {% if title %}<div class="riyada-h2">{{ title | safe }}</div>{% endif %}
+            {% if subtitle %}<p class="riyada-nl-{{ id }}-sub">{{ subtitle | safe }}</p>{% endif %}
+
+            {% if action %}
+              {# ---------- success ---------- #}
+              <div class="riyada-nl-{{ id }}-ok" x-show="sent" x-cloak
+                   x-transition:enter="transition ease-out duration-200"
+                   x-transition:enter-start="opacity-0 scale-95"
+                   x-transition:enter-end="opacity-100 scale-100">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12.5 9.5 18 20 6.5"/>
+                </svg>
+                <span>{{ successMsg }}</span>
+              </div>
+
+              {# ---------- form ---------- #}
+              <form class="riyada-nl-{{ id }}-form"
+                    action="{{ action }}"
+                    method="post"
+                    {% if newTab %}target="_blank" rel="noopener"{% endif %}
+                    x-show="!sent"
+                    @submit="{% if newTab %}sent = true{% endif %}">
+
+                <div class="riyada-searchbar">
+                  <input type="email"
+                         class="riyada-searchbar-input"
+                         name="{{ emailField }}"
+                         required
+                         autocomplete="email"
+                         placeholder="{{ placeholder }}"
+                         aria-label="{{ t('common.email') }}"/>
+                  <button type="submit" class="riyada-searchbar-submit">{{ btnText }}</button>
+                </div>
+
+                {# bots fill hidden fields; humans never see this one #}
+                <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                  <label>
+                    <span>Leave this field empty</span>
+                    <input type="text" name="riyada_hp" tabindex="-1" autocomplete="off"/>
+                  </label>
+                </div>
+
+                {% if showConsent %}
+                  <label class="riyada-nl-{{ id }}-consent">
+                    <input type="checkbox" name="consent" value="yes" required/>
+                    <span>{{ t('newsletter.consent') }}</span>
+                  </label>
+                {% endif %}
+              </form>
+            {% else %}
+              {# ---------- not configured yet — editor only ---------- #}
+              <span class="riyada-nl-{{ id }}-hint" data-editor-only>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 8.2v4.4M12 15.9h.01"/>
+                </svg>
+                {{ t('newsletter.setup_hint') }}
+              </span>
+            {% endif %}
+
+            {% if showNote and noteText %}
+              <span class="riyada-nl-{{ id }}-note">{{ noteText }}</span>
+            {% endif %}
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-nl-' ~ id, c=d %}

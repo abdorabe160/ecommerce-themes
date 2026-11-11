@@ -1,0 +1,421 @@
+{# ===== ATTAR CART PAGE — Fragrance house ===== #}
+
+{% set show_savings = widget.data.show_savings if widget.data.show_savings is defined else true %}
+{% set show_free_shipping = widget.data.show_free_shipping if widget.data.show_free_shipping is defined else true %}
+{# No default promise — shown only when the merchant writes their own offer #}
+{% set free_shipping_text = widget.data.free_shipping_text | default('') %}
+{% set continue_url = widget.data.continue_shopping_url | default('/') %}
+{% set checkout_url = widget.data.checkout_url | default('/checkout') %}
+
+{# ——— Builder-controlled labels ——— #}
+{% set pageTitle = widget.data.page_title | default(t('pages.cart.title'), true) %}
+{% set continueShoppingText = widget.data.continue_shopping_text | default(t('pages.cart.continue_shopping'), true) %}
+{% set orderSummaryTitle = widget.data.order_summary_title | default(t('pages.cart.order_summary'), true) %}
+{% set subtotalLabel = widget.data.subtotal_label | default(t('pages.cart.subtotal'), true) %}
+{% set savingsLabel = widget.data.savings_label | default(t('pages.cart.savings'), true) %}
+{% set totalLabel = widget.data.total_label | default(t('pages.cart.total'), true) %}
+{% set checkoutText = widget.data.checkout_text | default(t('pages.cart.checkout'), true) %}
+{% set emptyTitle = widget.data.empty_title | default(t('cart.empty'), true) %}
+{% set emptyMessage = widget.data.empty_message | default(t('cart.empty_message'), true) %}
+{% set emptyButtonText = widget.data.empty_button_text | default(t('cart.continue_shopping'), true) %}
+
+<style>
+  /* ===== ANAQA Cart — Editorial ===== */
+  .anaqa-cart-item { position: relative; }
+
+  .anaqa-cart-img {
+    width: 96px; aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+    flex-shrink: 0;
+  }
+  .anaqa-cart-img img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.03) contrast(1.02); }
+
+  /* Quantity stepper — matches PDP .anaqa-pd-qty */
+  .anaqa-cart-qty { display: flex; align-items: center; border: 1px solid var(--color-border); }
+  .anaqa-cart-qty button {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+  }
+  .anaqa-cart-qty button:hover { color: var(--color-text-primary); }
+  .anaqa-cart-qty .anaqa-cart-qty-val {
+    width: 46px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 500;
+    border-inline: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  .anaqa-cart-remove {
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--color-text-tertiary);
+    transition: color 0.25s ease;
+  }
+  .anaqa-cart-remove:hover { color: var(--color-error); }
+
+  .anaqa-cart-summary {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  /* Checkout — solid gold CTA */
+  .anaqa-cart-checkout {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; height: 54px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    text-decoration: none;
+    transition: background 0.3s ease, box-shadow 0.4s ease;
+  }
+  html[dir="rtl"] .anaqa-cart-checkout { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-cart-checkout:hover { background: var(--color-accent-hover); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--color-accent) 60%, transparent); }
+</style>
+
+<section class="py-12 md:py-20 min-h-[60vh]" style="background: var(--color-bg-primary);" x-data="cartInteraction({
+  items: [{% for item in cart.items %}{id:'{{ item._id }}',qty:{{ item.quantity }},productId:'{{ item.productId }}',variantId:'{{ item.variantId or '' }}',slug:{{ (item.productData.slug or item.productData.handle or '') | dump }}}{% if not loop.last %},{% endif %}{% endfor %}],
+  confirmRemove: true
+})">
+  <div class="container mx-auto px-4 md:px-6 lg:px-8 max-w-6xl">
+
+    <div x-show="activeItems.length > 0">
+
+      {# ===== Breadcrumb + Title ===== #}
+      <div class="mb-10 md:mb-14">
+        <nav class="flex items-center gap-1.5 text-[13px] mb-5 font-body-ar" style="color: var(--color-text-tertiary);">
+          <a href="/" class="hover:text-accent transition-colors">{{t('common.home')}}</a>
+          <svg class="w-3 h-3 {% if localization.language != 'en' %}rotate-180{% endif %}" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <span style="color: var(--color-text-primary);">{{ pageTitle | safe }}</span>
+        </nav>
+        <div class="flex items-end justify-between">
+          <div class="flex flex-col gap-2">
+            {# one H1 in the HTML: this title when the cart has items, the empty-state title when not #}
+            {% set _headTag = 'h1' if (cart.items | length) else 'h2' %}
+            <{{ _headTag }} class="text-3xl md:text-[38px] leading-tight font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">{{ pageTitle | safe }}</{{ _headTag }}>
+            <p class="text-[13px] font-body-ar" style="color: var(--color-text-tertiary);"><span data-cart-count-text>{% ui "count.njk", n=(cart.totalQuantity or 0), kind='product' %}</span></p>
+          </div>
+          <a href="{{ continue_url }}"
+             class="editorial-link hidden md:inline-flex items-center gap-2 text-[13px] font-body-ar"
+             style="color: var(--color-text-secondary);">
+            <svg class="w-4 h-4 {% if localization.language != 'en' %}rotate-180{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/></svg>
+            {{ continueShoppingText | safe }}
+          </a>
+        </div>
+      </div>
+
+      {# ===== Main Grid ===== #}
+      <div class="lg:grid lg:grid-cols-12 lg:gap-12 items-start">
+
+        {# ===== Items Column ===== #}
+        <div class="lg:col-span-8">
+
+          {# Desktop Table Header #}
+          <div class="hidden md:flex items-center editorial-label pb-4 mb-2 font-body-ar"
+               style="border-bottom: 1px solid var(--color-border);">
+            <span class="flex-1">{{t('common.products')}}</span>
+            <span class="w-32 text-center">{{t('pages.cart.quantity') | default('الكمية')}}</span>
+            <span class="w-28 text-end">{{t('pages.cart.total')}}</span>
+            <span class="w-10"></span>
+          </div>
+
+          <div>
+          {% for item in cart.items %}
+            <div class="anaqa-cart-item py-6"
+                 style="{% if not loop.last %}border-bottom: 1px solid var(--color-border);{% endif %}"
+                 x-show="activeItems.includes('{{ item._id }}')"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 :class="{ 'opacity-30 pointer-events-none': removingId === '{{ item._id }}' }">
+
+              {# Confirm Remove Overlay #}
+              <div x-show="confirmRemoveId === '{{ item._id }}'"
+                   x-transition.opacity
+                   x-cloak
+                   class="absolute inset-0 z-10 flex items-center justify-center"
+                   style="background: color-mix(in srgb, var(--color-bg-primary) 94%, transparent); backdrop-filter: blur(2px);">
+                <div class="text-center px-6">
+                  <p class="text-[14px] mb-5 font-body-ar" style="color: var(--color-text-secondary);">{{t('pages.cart.remove_item')}}؟</p>
+                  <div class="flex items-center justify-center gap-3">
+                    <button @click="confirmRemoveId = null"
+                            class="px-6 py-2.5 text-[13px] font-body-ar transition-colors"
+                            style="color: var(--color-text-secondary); border: 1px solid var(--color-border);"
+                            onmouseenter="this.style.borderColor='var(--color-text-primary)'; this.style.color='var(--color-text-primary)'"
+                            onmouseleave="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text-secondary)'">
+                      {{t('common.cancel')}}
+                    </button>
+                    <button @click="removeItem('{{ item._id }}')"
+                            class="px-6 py-2.5 text-[13px] font-body-ar transition-opacity hover:opacity-88"
+                            style="color: var(--color-bg-primary); background: var(--color-error);">
+                      {{t('common.delete')}}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {# ===== Desktop Layout ===== #}
+              <div class="hidden md:flex md:items-center md:gap-6">
+                {# Image #}
+                <a href="/products/{{ item.productData.slug }}" class="shrink-0">
+                  {% if item.productData.image and item.productData.image.fileUrl %}
+                    <div class="anaqa-cart-img">
+                      <img src="{{ item.productData.image.fileUrl }}"
+                           alt="{{ item.productData.title }}"
+                           loading="lazy">
+                    </div>
+                  {% else %}
+                    <div class="anaqa-cart-img flex items-center justify-center">
+                      <svg class="w-8 h-8" fill="none" stroke="var(--color-text-tertiary)" viewBox="0 0 24 24" style="opacity: 0.3;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                  {% endif %}
+                </a>
+
+                {# Title + Variant + Unit Price #}
+                <div class="flex-1 min-w-0 flex flex-col gap-2">
+                  <a href="/products/{{ item.productData.slug }}"
+                     class="font-heading-ar line-clamp-2 text-[17px] leading-snug transition-colors"
+                     style="color: var(--color-text-primary);"
+                     onmouseenter="this.style.color='var(--color-accent)'"
+                     onmouseleave="this.style.color='var(--color-text-primary)'">
+                    {{ item.productData.title }}
+                  </a>
+                  {% if item.variantData and item.variantData.options | length > 0 %}
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {% for opt in item.variantData.options %}
+                        <span class="text-[12px] flex items-center gap-1.5 font-body-ar" style="color: var(--color-text-tertiary);">
+                          {{ opt.option.name }}:
+                          {% if opt.option.type == 'color' %}
+                            <span class="inline-block w-3.5 h-3.5 rounded-full align-middle" style="background-color: {% ui "color-value.njk", value=(opt.value or ''), label=(opt.label or '') %}; border: 1px solid var(--color-border);"></span>
+                          {% endif %}
+                          <span style="color: var(--color-text-secondary);">{{ opt.label }}</span>
+                        </span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <p x-show="isOverStock('{{ item._id }}')" x-cloak x-text="stockNote('{{ item._id }}')" class="attar-citem-note"></p>
+                  <div class="flex items-baseline gap-2.5">
+                    <span class="text-[13px] font-light tracking-wide font-body-ar" style="color: var(--color-text-secondary);">{{ item.price | money }}</span>
+                    {% if item.compareAtPrice and item.compareAtPrice > item.price %}
+                      <span class="text-[12px] font-light line-through font-body-ar" style="color: var(--color-text-tertiary);">{{ item.compareAtPrice | money }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                {# Quantity #}
+                <div class="shrink-0 w-32 flex justify-center">
+                  <div class="anaqa-cart-qty">
+                    <button @click="decrement('{{ item._id }}')" aria-label="{{t('pages.cart.quantity') | default('الكمية')}}">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                    </button>
+                    <span class="anaqa-cart-qty-val">
+                      <span x-show="updating !== '{{ item._id }}'"
+                            x-text="quantities['{{ item._id }}']">{{ item.quantity }}</span>
+                      <svg x-show="updating === '{{ item._id }}'" x-cloak class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" style="color: var(--color-accent);"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    </span>
+                    <button @click="increment('{{ item._id }}')" :class="{ 'opacity-30 cursor-not-allowed': quantities['{{ item._id }}'] >= maxFor('{{ item._id }}') }" aria-label="{{t('pages.cart.quantity') | default('الكمية')}}">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                {# Line Total #}
+                <div class="shrink-0 w-28 text-end">
+                  <span class="text-[15px] font-body-ar"
+                        style="color: var(--color-text-primary);"
+                        data-item-total="{{ item._id }}"
+                        :class="{ 'opacity-40': updating === '{{ item._id }}' }">
+                    {{ item.totalPrice | money }}
+                  </span>
+                </div>
+
+                {# Remove #}
+                <button @click="confirmRemoveId = '{{ item._id }}'"
+                        class="anaqa-cart-remove shrink-0 w-11 h-11"
+                        title="{{t('pages.cart.remove')}}">
+                  <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+
+              {# ===== Mobile Layout ===== #}
+              <div class="md:hidden">
+                <div class="flex gap-4">
+                  <a href="/products/{{ item.productData.slug }}" class="shrink-0">
+                    {% if item.productData.image and item.productData.image.fileUrl %}
+                      <div class="anaqa-cart-img">
+                        <img src="{{ item.productData.image.fileUrl }}"
+                             alt="{{ item.productData.title }}"
+                             loading="lazy">
+                      </div>
+                    {% else %}
+                      <div class="anaqa-cart-img flex items-center justify-center">
+                        <svg class="w-7 h-7" fill="none" stroke="var(--color-text-tertiary)" viewBox="0 0 24 24" style="opacity: 0.3;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      </div>
+                    {% endif %}
+                  </a>
+                  <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                      <a href="/products/{{ item.productData.slug }}"
+                         class="font-heading-ar line-clamp-2 text-[15px] leading-snug"
+                         style="color: var(--color-text-primary);">
+                        {{ item.productData.title }}
+                      </a>
+                      <button @click="confirmRemoveId = '{{ item._id }}'"
+                              class="anaqa-cart-remove shrink-0 w-11 h-11 -m-2"
+                              title="{{t('pages.cart.remove')}}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    {% if item.variantData and item.variantData.options | length > 0 %}
+                      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+                        {% for opt in item.variantData.options %}
+                          <span class="text-[11px] flex items-center gap-1 font-body-ar" style="color: var(--color-text-tertiary);">
+                            {{ opt.option.name }}:
+                            {% if opt.option.type == 'color' %}
+                              <span class="inline-block w-2.5 h-2.5 rounded-full align-middle" style="background-color: {% ui "color-value.njk", value=(opt.value or ''), label=(opt.label or '') %}; border: 1px solid var(--color-border);"></span>
+                            {% endif %}
+                            <span style="color: var(--color-text-secondary);">{{ opt.label }}</span>
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    <p x-show="isOverStock('{{ item._id }}')" x-cloak x-text="stockNote('{{ item._id }}')" class="attar-citem-note"></p>
+                    <div class="flex items-baseline gap-1.5">
+                      <span class="text-[13px] font-light font-body-ar" style="color: var(--color-text-secondary);">{{ item.price | money }}</span>
+                      {% if item.compareAtPrice and item.compareAtPrice > item.price %}
+                        <span class="text-[11px] font-light line-through font-body-ar" style="color: var(--color-text-tertiary);">{{ item.compareAtPrice | money }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                {# Quantity + Line Total #}
+                <div class="flex items-center justify-between mt-4">
+                  <div class="anaqa-cart-qty">
+                    <button @click="decrement('{{ item._id }}')" aria-label="{{t('pages.cart.quantity') | default('الكمية')}}">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                    </button>
+                    <span class="anaqa-cart-qty-val">
+                      <span x-show="updating !== '{{ item._id }}'"
+                            x-text="quantities['{{ item._id }}']">{{ item.quantity }}</span>
+                      <svg x-show="updating === '{{ item._id }}'" x-cloak class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" style="color: var(--color-accent);"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    </span>
+                    <button @click="increment('{{ item._id }}')" :class="{ 'opacity-30 cursor-not-allowed': quantities['{{ item._id }}'] >= maxFor('{{ item._id }}') }" aria-label="{{t('pages.cart.quantity') | default('الكمية')}}">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                  </div>
+                  <span class="text-[15px] font-body-ar"
+                        style="color: var(--color-text-primary);"
+                        data-item-total="{{ item._id }}"
+                        :class="{ 'opacity-40': updating === '{{ item._id }}' }">
+                    {{ item.totalPrice | money }}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+          </div>
+
+          {# Mobile Continue Shopping #}
+          <div class="pt-8 md:hidden">
+            <a href="{{ continue_url }}"
+               class="editorial-link inline-flex items-center gap-2 text-[13px] font-body-ar"
+               style="color: var(--color-text-secondary);">
+              <svg class="w-4 h-4 {% if localization.language != 'en' %}rotate-180{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/></svg>
+              {{ continueShoppingText | safe }}
+            </a>
+          </div>
+        </div>
+
+        {# ===== Order Summary ===== #}
+        <div class="lg:col-span-4 mt-10 lg:mt-0 lg:sticky lg:top-28">
+          <div class="anaqa-cart-summary">
+
+            {# Header #}
+            <div class="px-6 py-5" style="border-bottom: 1px solid var(--color-border);">
+              <h2 class="text-[15px] font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">{{ orderSummaryTitle | safe }}</h2>
+            </div>
+
+            <div class="px-6 py-6 flex flex-col gap-6">
+
+              {# Summary Details #}
+              <div class="flex flex-col gap-3.5">
+                <div class="flex justify-between items-center">
+                  <span class="text-[13px] font-body-ar" style="color: var(--color-text-secondary);">{{ subtotalLabel | safe }}</span>
+                  <span class="text-[14px] font-body-ar" style="color: var(--color-text-primary);" data-cart-total>{{ cart.totalPrice | money }}</span>
+                </div>
+
+                {% if show_savings %}
+                  <div class="flex justify-between items-center" data-cart-savings-row
+                       style="{% if not cart.totalSavings or cart.totalSavings <= 0 %}display:none{% endif %}">
+                    <span class="text-[13px] font-body-ar" style="color: var(--color-sale-text, var(--color-accent));">{{ savingsLabel | safe }}</span>
+                    <span class="text-[14px] font-body-ar" style="color: var(--color-sale-text, var(--color-accent));" data-cart-savings>-{{ cart.totalSavings | money }}</span>
+                  </div>
+                {% endif %}
+              </div>
+
+              {% ui "free-shipping.njk" %}
+
+              {# Free Shipping Note #}
+              {% if show_free_shipping and free_shipping_text %}
+                <div class="flex items-center gap-2 text-[12px] font-body-ar pt-1" style="color: var(--color-text-tertiary);">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H3m0 0v11a1 1 0 001 1h1m8-11h4l3 5v5a1 1 0 01-1 1h-1"/></svg>
+                  {{ free_shipping_text | safe }}
+                </div>
+              {% endif %}
+
+              {# Total #}
+              <div class="pt-5" style="border-top: 1px solid var(--color-border);">
+                <div class="flex items-baseline justify-between">
+                  <span class="text-[14px] font-body-ar" style="color: var(--color-text-primary);">{{ totalLabel | safe }}</span>
+                  <span class="text-2xl font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;" data-cart-total>{{ cart.totalPrice | money }}</span>
+                </div>
+              </div>
+
+              {# Checkout Button #}
+              <p x-show="checkoutBlocked" x-cloak class="attar-citem-note text-center mt-4" role="alert">{{t('pages.cart.stock_blocked')}}</p>
+              <a href="{{ checkout_url }}" @click="goCheckout($event)"
+                 :aria-disabled="checkoutBlocked ? 'true' : 'false'"
+                 :class="{ 'opacity-50 cursor-not-allowed': checkoutBlocked }"
+                 class="anaqa-cart-checkout font-body-ar">
+                {{ checkoutText | safe }}
+                <svg class="w-4 h-4 {% if localization.language != 'en' %}rotate-180{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </a>
+
+              {# Trust line — the merchant's own words only (opt-in), never a ready-made promise #}
+              {% if widget.data.trust_note %}
+                <p class="text-center text-[12px] font-body-ar" style="color: var(--color-text-tertiary);">{{ widget.data.trust_note }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    {# ===== Empty Cart ===== #}
+    <div x-show="activeItems.length === 0"
+         x-transition:enter="transition ease-out duration-400"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         style="{% if cart.items | length %}display:none{% endif %}">
+      <div class="flex flex-col items-center justify-center py-24 md:py-36 max-w-sm mx-auto text-center">
+        <div class="w-20 h-20 mb-8 flex items-center justify-center" style="background: var(--color-bg-secondary);">
+          <svg class="w-9 h-9" fill="none" stroke="var(--color-text-tertiary)" viewBox="0 0 24 24" style="opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+        </div>
+        <span class="editorial-label mb-4">{{t('pages.cart.title') | default('سلة التسوق')}}</span>
+        {% set _emptyTag = 'h2' if (cart.items | length) else 'h1' %}
+        <{{ _emptyTag }} class="text-2xl mb-3 font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">{{ emptyTitle | safe }}</{{ _emptyTag }}>
+        <p class="text-[14px] leading-relaxed mb-10 font-body-ar" style="color: var(--color-text-secondary);">{{ emptyMessage | safe }}</p>
+        <a href="{{ continue_url }}" class="anaqa-btn font-body-ar">
+          {{ emptyButtonText | safe }}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>

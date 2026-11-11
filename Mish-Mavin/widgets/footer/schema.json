@@ -1,0 +1,89 @@
+{
+  "name": "footer",
+  "settings": {
+    "copyright": {
+      "type": "string",
+      "label": {
+        "ar": "نص حقوق النشر (اختياري)",
+        "en": "Copyright text (optional)"
+      }
+    },
+    "tagline": {
+      "type": "text",
+      "label": {
+        "ar": "وصف المتجر (اختياري)",
+        "en": "Store description (optional)"
+      },
+      "default": ""
+    },
+    "show_social": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار روابط التواصل (من هنا أو من إعدادات الثيم)",
+        "en": "Show social links (from here or theme settings)"
+      },
+      "default": true
+    },
+    "instagram_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط إنستجرام",
+        "en": "Instagram URL"
+      },
+      "default": ""
+    },
+    "facebook_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط فيسبوك",
+        "en": "Facebook URL"
+      },
+      "default": ""
+    },
+    "tiktok_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط تيك توك",
+        "en": "TikTok URL"
+      },
+      "default": ""
+    },
+    "show_payments": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وسائل الدفع",
+        "en": "Show payment methods"
+      },
+      "default": false
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود روابط",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان العمود",
+            "en": "Column title"
+          },
+          "default": "Shop by Category"
+        },
+        "menu": {
+          "type": "menu",
+          "label": {
+            "ar": "القائمة",
+            "en": "Menu"
+          },
+          "default": "footer-menu"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "footer",
+      "name": "footer"
+    }
+  ]
+}

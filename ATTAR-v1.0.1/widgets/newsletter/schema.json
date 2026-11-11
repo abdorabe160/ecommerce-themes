@@ -1,0 +1,122 @@
+{
+  "name": "النشرة البريدية",
+  "settings": {
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الاشتراك من خدمة النشرة (Mailchimp وما شابه) — بدونه لا يظهر القسم للعملاء",
+        "en": "Sign-up link from your newsletter service (Mailchimp etc.) — without it customers do not see this section"
+      },
+      "default": ""
+    },
+    "field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد عند الخدمة",
+        "en": "Email field name at the service"
+      },
+      "default": "email"
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "النص التوضيحي",
+        "en": "Subtitle"
+      },
+      "default": ""
+    },
+    "placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "نص حقل الإيميل",
+        "en": "Email Placeholder"
+      },
+      "default": ""
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button Text"
+      },
+      "default": ""
+    },
+    "success_message": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة النجاح (غير مستخدمة: خدمة النشرة هي التي تؤكد الاشتراك)",
+        "en": "Success message (not used: your newsletter service confirms the sign-up)"
+      },
+      "default": ""
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "charcoal",
+      "options": [
+        {
+          "value": "ivory",
+          "label": {
+            "ar": "عاجي",
+            "en": "Ivory"
+          }
+        },
+        {
+          "value": "sand",
+          "label": {
+            "ar": "رملي",
+            "en": "Sand"
+          }
+        },
+        {
+          "value": "charcoal",
+          "label": {
+            "ar": "فحمي",
+            "en": "Charcoal"
+          }
+        }
+      ]
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار ملاحظة الخصوصية",
+        "en": "Show Privacy Note"
+      },
+      "default": true
+    },
+    "note_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الملاحظة",
+        "en": "Note Text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "النشرة البريدية"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "شريط نص متحرك",
+  "settings": {
+    "text": {
+      "type": "string",
+      "label": { "ar": "النص", "en": "Text" },
+      "default": "تحرّك بسرعة"
+    },
+    "style": {
+      "type": "select",
+      "label": { "ar": "الشكل", "en": "Style" },
+      "default": "accent",
+      "options": [
+        { "value": "accent", "label": { "ar": "أحمر كبير", "en": "Large, accent colour" } },
+        { "value": "muted", "label": { "ar": "خافت", "en": "Muted" } }
+      ]
+    },
+    "rows": {
+      "type": "select",
+      "label": { "ar": "عدد الصفوف", "en": "Rows" },
+      "default": "two",
+      "options": [
+        { "value": "two", "label": { "ar": "صفّان باتجاهين متعاكسين", "en": "Two rows, opposite directions" } },
+        { "value": "one", "label": { "ar": "صف واحد", "en": "One row" } }
+      ]
+    },
+    "color": {
+      "type": "color",
+      "label": { "ar": "لون النص (اختياري)", "en": "Text colour (optional)" },
+      "default": ""
+    },
+    "speed": {
+      "type": "range",
+      "label": { "ar": "السرعة (ثوانٍ لكل دورة — أقل = أسرع)", "en": "Speed (seconds per loop — lower is faster)" },
+      "default": 28,
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "s"
+    }
+  },
+  "presets": [
+    { "category": "نصوص", "name": "شريط نص متحرك" }
+  ]
+}

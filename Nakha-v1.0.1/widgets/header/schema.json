@@ -1,0 +1,149 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "header_logo": {
+      "type": "media",
+      "label": { "ar": "شعار المتجر (اتركه فارغاً لاستخدام شعار المتجر الأساسي)", "en": "Store Logo (leave empty to use the store's own logo)" }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": { "ar": "ارتفاع الشعار", "en": "Logo Height" },
+      "default": 36, "min": 20, "max": 60, "step": 2, "unit": "px"
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": { "ar": "تثبيت الهيدر عند التمرير", "en": "Sticky on Scroll" },
+      "default": true
+    },
+    "search_style": {
+      "type": "select",
+      "label": { "ar": "شكل البحث", "en": "Search Style" },
+      "default": "icon",
+      "options": [
+        { "value": "icon", "label": { "ar": "أيقونة تفتح نافذة بحث (موصى به)", "en": "Icon that opens a search sheet (recommended)" } },
+        { "value": "inline", "label": { "ar": "حقل بحث ظاهر في الشريط", "en": "Inline field in the bar" } },
+        { "value": "hidden", "label": { "ar": "بدون بحث", "en": "No search" } }
+      ]
+    },
+    "search_placeholder": {
+      "type": "string",
+      "label": { "ar": "نص حقل البحث", "en": "Search Placeholder" },
+      "default": ""
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": { "ar": "إظهار السلة", "en": "Show Cart" },
+      "default": true
+    },
+    "show_language_switcher": {
+      "type": "boolean",
+      "label": { "ar": "إظهار تبديل اللغة", "en": "Show Language Switcher" },
+      "default": true
+    },
+    "show_announcement": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الشريط المتحرك العلوي", "en": "Show Scrolling Announcement Bar" },
+      "default": true
+    },
+    "claim_1": {
+      "type": "string",
+      "label": { "ar": "الشريط المتحرك — العبارة ١", "en": "Marquee — Claim 1" },
+      "default": ""
+    },
+    "claim_2": {
+      "type": "string",
+      "label": { "ar": "الشريط المتحرك — العبارة ٢", "en": "Marquee — Claim 2" },
+      "default": ""
+    },
+    "claim_3": {
+      "type": "string",
+      "label": { "ar": "الشريط المتحرك — العبارة ٣", "en": "Marquee — Claim 3" },
+      "default": ""
+    },
+    "claim_4": {
+      "type": "string",
+      "label": { "ar": "الشريط المتحرك — العبارة ٤", "en": "Marquee — Claim 4" },
+      "default": ""
+    },
+    "claim_5": {
+      "type": "string",
+      "label": { "ar": "الشريط المتحرك — العبارة ٥", "en": "Marquee — Claim 5" },
+      "default": ""
+    },
+    "announcement_tone": {
+      "type": "select",
+      "label": { "ar": "لون الشريط المتحرك", "en": "Marquee Colour" },
+      "default": "appetite",
+      "options": [
+        { "value": "appetite", "label": { "ar": "أحمر شهي (موصى به)", "en": "Appetite red (recommended)" } },
+        { "value": "dark", "label": { "ar": "فحمي", "en": "Charcoal" } },
+        { "value": "light", "label": { "ar": "كريمي", "en": "Cream" } }
+      ]
+    },
+    "marquee_speed": {
+      "type": "range",
+      "label": { "ar": "مدّة دورة الشريط (كل ما زادت، بطؤ الشريط)", "en": "Marquee Loop Duration (higher = slower)" },
+      "default": 34, "min": 15, "max": 80, "step": 1, "unit": "s"
+    },
+    "header_menu": {
+      "type": "menu",
+      "label": { "ar": "روابط إضافية في القائمة الجانبية (تظهر بعد أقسام المنيو)", "en": "Extra links in the drawer (rendered after the menu sections)" },
+      "default": "header-menu"
+    },
+    "deal_link_text": {
+      "type": "string",
+      "label": { "ar": "رابط العروض المميّز (اتركه فارغاً لإخفائه)", "en": "Highlighted Offers Link (leave empty to hide)" },
+      "default": ""
+    },
+    "deal_link_url": {
+      "type": "string",
+      "label": { "ar": "رابط العروض", "en": "Offers URL" },
+      "default": "/shop"
+    },
+    "show_goals_row": {
+      "type": "boolean",
+      "label": { "ar": "إظهار صف الروابط السريعة", "en": "Show the Quick-Links Rail" },
+      "default": true
+    },
+    "goals_label": {
+      "type": "string",
+      "label": { "ar": "عنوان صف الروابط", "en": "Rail Label" },
+      "default": ""
+    },
+    "goals_menu": {
+      "type": "menu",
+      "label": { "ar": "قائمة الروابط السريعة (فطار · غدا · حلويات · مشروبات …)", "en": "Quick-links menu (breakfast · lunch · desserts · drinks …)" },
+      "default": "header-menu"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم", "en": "Custom colours for this section — switch off to restore the theme palette" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "لون الخلفية", "en": "Background colour" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون العنوان", "en": "Title colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون النص والوصف", "en": "Body & description colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز — الروابط النشطة والأيقونات", "en": "Accent — active links & icons" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الحدود والفواصل", "en": "Borders & dividers" }, "default": "" }
+  },
+  "blocks": {
+    "mega": {
+      "name": "قسم في قائمة المنيو",
+      "settings": {
+        "nav_label": { "type": "string", "label": { "ar": "اسم القسم", "en": "Section Name" }, "default": "" },
+        "nav_url": { "type": "string", "label": { "ar": "رابط القسم", "en": "Nav URL" }, "default": "/shop" },
+        "col1_title": { "type": "string", "label": { "ar": "العمود ١ — العنوان (اتركه فارغاً لإخفاء العمود)", "en": "Column 1 — Title (leave empty to hide)" }, "default": "" },
+        "col1_menu": { "type": "menu", "label": { "ar": "العمود ١ — القائمة", "en": "Column 1 — Menu" }, "default": "header-menu" },
+        "col2_title": { "type": "string", "label": { "ar": "العمود ٢ — العنوان", "en": "Column 2 — Title" }, "default": "" },
+        "col2_menu": { "type": "menu", "label": { "ar": "العمود ٢ — القائمة", "en": "Column 2 — Menu" }, "default": "header-menu" },
+        "col3_title": { "type": "string", "label": { "ar": "العمود ٣ — العنوان", "en": "Column 3 — Title" }, "default": "" },
+        "col3_menu": { "type": "menu", "label": { "ar": "العمود ٣ — القائمة", "en": "Column 3 — Menu" }, "default": "header-menu" },
+        "col4_title": { "type": "string", "label": { "ar": "العمود ٤ — العنوان", "en": "Column 4 — Title" }, "default": "" },
+        "col4_menu": { "type": "menu", "label": { "ar": "العمود ٤ — القائمة", "en": "Column 4 — Menu" }, "default": "header-menu" }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الهيدر", "name": "الهيدر الرئيسي" }
+  ]
+}

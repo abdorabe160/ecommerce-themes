@@ -1,0 +1,178 @@
+{#
+  ============================================================================
+  MORVA · SHOP — /shop, /shop/<collection>, /shop?q=…
+  ----------------------------------------------------------------------------
+  Section head (kicker + title · collection pills) → toolbar (count · FILTER
+  · SORT) → active chips → #products-grid-wrapper.
+
+  NOTE: Contracts with the platform and main.js — keep every one:
+    · x-data="collectionFilter(cfg)" — all filtering, sorting, paging
+    · cfg.section = 'shop-products' — Qumra mounts that widget into
+      #products-grid-wrapper[data-qumra-section="shop-products"] and
+      re-renders it on every filter change (qumra.filters runtime)
+    · #products-count-toolbar — the count is copied in after each render
+    · The filters drawer is a $store.modal ('filters') so it stays open while
+      the shopper picks several filters; only Apply / X / backdrop / Esc close it
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set collections = context.collections | default([]) %}
+{% set filters = (context.shop.filters.available if (context.shop and context.shop.filters) else context.filters) or [] %}
+{% set lang = localization.language | default('ar') %}
+{#- Live /shop/<handle> sends the collection as context.shop.collection only: read
+    from context.collection alone, every collection page was titled «كل القطع». -#}
+{% set col = context.collection or (context.shop.collection if context.shop else null) or null %}
+{% set query = context.shop.query | default('') if context.shop else '' %}
+{% set title = col.title if col and col.title else (d.title | default(t('morva.all_pieces'), true)) %}
+{% set desc = col.description if col and col.description else (d.description | default('')) %}
+{% set showPills = (d.show_collections | default(true)) and (collections | length) > 0 %}
+{% set showFilters = (d.show_filters | default(true)) and (filters | length) > 0 %}
+{% set showSort = d.show_sort | default(true) %}
+{% set cover = col.image.fileUrl if col and col.image and col.image.fileUrl and (not col.image.notFound) and (d.show_cover | default(true)) else '' %}
+
+{% set sortOptions = [
+  { value: 'newest',     label: t('pages.search.newest') },
+  { value: 'price_asc',  label: t('pages.search.price_low_high') },
+  { value: 'price_desc', label: t('pages.search.price_high_low') }
+] %}
+
+<script>
+  window.__hyShopCfg_{{ id }} = {
+    collectionId: {{ (col._id if col and col._id else '') | dump | safe }},
+    section: 'shop-products',
+    rangeHandles: [
+      {%- for f in filters -%}
+        {%- set fh = f.handle | default(f.id, true) | default('', true) -%}
+        {%- if (f.inputType == 'range' or f.type == 'range') and fh -%}{{ fh | dump | safe }},{%- endif -%}
+      {%- endfor -%}
+    ],
+    collections: [
+      {%- for c in collections -%}
+        {%- if c._id -%}{ id: {{ c._id | dump | safe }}, slug: {{ (c.slug | default(c.handle, true) | default('', true)) | dump | safe }}, title: {{ (c.title | default('', true)) | dump | safe }} },{%- endif -%}
+      {%- endfor -%}
+    ],
+    cardSettings: {},
+    sortLabels: {
+      '': {{ t('pages.search.sort_by') | dump | safe }},
+      {%- for o in sortOptions -%}{{ o.value | dump | safe }}: {{ o.label | dump | safe }},{%- endfor -%}
+    },
+    filterLabels: {
+      {%- for f in filters -%}
+        {%- set fh = f.handle | default(f.id, true) | default('', true) -%}
+        {%- if f.inputType != 'range' and f.type != 'range' and fh -%}
+          {%- set items = f.items | default(f.values, true) | default(f.options, true) | default(f.choices, true) | default(f.list, true) | default([], true) -%}
+          {%- if (items | length) > 0 -%}
+            {{ fh | dump | safe }}: {
+            {%- for it in items -%}
+              {%- set iv = it.value | default(it.handle, true) | default(it.id, true) | default('', true) -%}
+              {%- if iv -%}
+                {%- set raw = it.label | default(it.name) | default(it.title) | default(it.displayName) | default(it.text) | default(iv) -%}
+                {%- if raw is string -%}{%- set lab = raw -%}{%- else -%}{%- set lab = raw[lang] | default(raw.ar) | default(raw.en) | default(iv) -%}{%- endif -%}
+                {{ iv | dump | safe }}: {{ lab | dump | safe }},
+              {%- endif -%}
+            {%- endfor -%}
+            },
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    }
+  };
+</script>
+
+<section id="mv-shop-{{ id }}" class="mv-section" x-data="collectionFilter(window.__hyShopCfg_{{ id }})">
+
+  {% if cover %}
+    <div class="mv-shop-cover"><img class="mv-fill" src="{{ cover }}" alt="{{ title }}" fetchpriority="high"/></div>
+  {% endif %}
+
+  <div class="mv-head">
+    <div class="reveal" style="--i: 0;">
+      <div class="mv-kicker">— {% if col %}<a href="/shop">{{ d.kicker | default(t('morva.shop'), true) }}</a>{% else %}{{ d.kicker | default(t('morva.shop'), true) }}{% endif %}</div>
+      <h1 class="mv-h">{{ title }}</h1>
+      {% if desc %}<div class="mv-shop-desc">{{ desc | safe }}</div>{% endif %}
+    </div>
+    {% if showPills %}
+      <div class="mv-pills reveal" style="--i: 1;" role="group" aria-label="{{ t('common.categories') }}">
+        <button type="button" class="mv-pill" :class="!collectionId && 'is-active'" @click="setCollection('', '')">{{ t('morva.all') }}</button>
+        {% for c in collections %}
+          {#- Skip incomplete collections, hidden ones and the platform's own «Home Page». -#}
+          {% if c._id and c.title and c.handle != 'home-page' and c.slug != 'home-page' and not c.deleted and (not c.salesChannels or c.salesChannels.onlineStore != false) %}
+          <button type="button" class="mv-pill"
+                  data-id="{{ c._id }}" data-slug="{{ c.slug | default(c.handle, true) | default('', true) }}"
+                  :class="collectionId === $el.dataset.id && 'is-active'"
+                  @click="setCollection($el.dataset.id, $el.dataset.slug)">{{ c.title }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mv-toolbar">
+    <span class="mv-count" id="products-count-toolbar" x-show="!loading"></span>
+    <div class="mv-tools">
+      {% if showFilters %}
+        <button type="button" class="mv-toolbtn" @click="$store.modal.open('filters')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+          {{ t('pages.search.filter') }}
+          <span class="mv-toolcount" x-show="activeCount > 0" x-text="activeCount" x-cloak></span>
+        </button>
+      {% endif %}
+      {% if showSort %}
+        <div class="mv-sort" @click.outside="sortOpen = false">
+          <button type="button" class="mv-toolbtn" @click="sortOpen = !sortOpen" :aria-expanded="sortOpen ? 'true' : 'false'">
+            <span x-text="window.__hyShopCfg_{{ id }}.sortLabels[currentSort] || window.__hyShopCfg_{{ id }}.sortLabels['']">{{ t('pages.search.sort_by') }}</span>
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4"/></svg>
+          </button>
+          <div class="mv-sort-menu" x-show="sortOpen" x-cloak x-transition.opacity.duration.150ms>
+            {% for o in sortOptions %}
+              <button type="button" :class="currentSort === '{{ o.value }}' && 'is-active'" @click="sortBy('{{ o.value }}')">
+                <span>{{ o.label }}</span>
+                <span x-show="currentSort === '{{ o.value }}'" aria-hidden="true">●</span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if showFilters %}
+    <div class="mv-chiprow" x-show="activeChips.length > 0" x-cloak>
+      <button type="button" class="mv-pill mv-pill--x" @click="clearFilters()">{{ t('pages.search.clear_all') }} ✕</button>
+      <template x-for="chip in activeChips" :key="chip.handle + chip.value">
+        <button type="button" class="mv-pill mv-pill--x is-active" @click="toggleFilter(chip.handle, chip.value)"
+                :aria-label="{{ t('common.remove') | dump }} + ' ' + chip.label">
+          <span x-text="chip.label"></span> ✕
+        </button>
+      </template>
+    </div>
+  {% endif %}
+
+  <div class="mv-stage" :class="loading && 'is-loading'">
+    <span class="mv-spinner mv-stage-spin" x-show="loading" x-cloak></span>
+    <div id="products-grid-wrapper" data-qumra-section="shop-products"></div>
+  </div>
+
+  {% if showFilters %}
+    <div class="mv-backdrop" :class="$store.modal.current === 'filters' && 'is-open'" @click="$store.modal.close()" aria-hidden="true"></div>
+    <aside class="mv-drawer mv-drawer--start" :class="$store.modal.current === 'filters' && 'is-open'"
+           role="dialog" aria-modal="true" aria-label="{{ t('pages.search.filter') }}" style="width: min(380px, 100%);">
+      <header class="mv-drawer-head">
+        <h2 class="mv-drawer-title">{{ t('pages.search.filter') }}
+          <span class="mv-drawer-count" x-show="activeCount > 0" x-text="activeCount" x-cloak></span>
+        </h2>
+        <button type="button" class="mv-close" @click="$store.modal.close()" aria-label="{{ t('common.close') }}">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </header>
+      <div class="mv-drawer-body" data-lenis-prevent>
+        {% ui "filter-panel.njk", filters=filters, lang=lang %}
+      </div>
+      <footer class="mv-drawer-foot" style="flex-direction: row;">
+        <button type="button" class="mv-btn mv-btn--ghost" style="flex: 1;" @click="clearFilters()">{{ t('pages.search.clear_all') }}</button>
+        <button type="button" class="mv-btn" style="flex: 1;" @click="$store.modal.close()">{{ t('pages.search.apply') }}</button>
+      </footer>
+    </aside>
+  {% endif %}
+</section>

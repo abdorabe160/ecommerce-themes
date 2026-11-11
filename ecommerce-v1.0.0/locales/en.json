@@ -1,0 +1,824 @@
+{
+  "common": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "search": "Search",
+    "view_all": "View All",
+    "close": "Close",
+    "error": "An error occurred",
+    "back": "Back",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "on_sale": "Sale",
+    "free": "Free",
+    "share": "Share",
+    "menu": "Menu",
+    "remove": "Remove",
+    "language": "Language",
+    "email": "Email",
+    "prev": "Previous",
+    "next": "Next",
+    "placeholder_product": "Product title",
+    "placeholder_price": "—",
+    "placeholder_collection": "Collection title",
+    "placeholder_article": "Article title",
+    "placeholder_excerpt": "A short excerpt from the article appears here once it is added.",
+    "placeholder_date": "Publish date",
+    "placeholder_note": "Sample content — pick your products in the Theme Editor to replace it.",
+    "image": "Image",
+    "in_stock": "In stock",
+    "play": "Play",
+    "pause": "Pause",
+    "placeholder_add": "Add items in the section settings",
+    "reviews_count": "{count} reviews",
+    "back_to_top": "Back to top",
+    "chat_whatsapp": "Chat on WhatsApp"
+  },
+  "header": {
+    "cart": "Cart",
+    "search": "Search",
+    "search_placeholder": "What are you looking for?",
+    "quick_link": "Quick link",
+    "menu_close": "Close menu",
+    "more": "More",
+    "menu": "Menu",
+    "announcements": "Announcements",
+    "all_categories": "All categories",
+    "voice_search": "Voice search",
+    "most_searched": "Most searched products",
+    "explore_collections": "Explore our collections",
+    "dark_mode": "Dark mode",
+    "dr_shop_all": "Shop all",
+    "dr_view_all": "View all",
+    "dr_quick": "Quick links",
+    "dr_shop": "Shop",
+    "dr_all_word": "all "
+  },
+  "products": {
+    "no_products": "No products yet",
+    "new": "New",
+    "popular": "Popular",
+    "hot": "Hot",
+    "selling_fast": "Selling Fast",
+    "shop": "Shop",
+    "add": "Add"
+  },
+  "categories": {
+    "no_categories_desc": "Collections will appear here once added."
+  },
+  "newsletter": {
+    "placeholder": "Enter your email",
+    "button": "Subscribe Now",
+    "success": "Subscribed successfully!",
+    "error_empty": "Please enter your email address",
+    "error_format": "That address looks incomplete — check for the @ and the domain",
+    "setup_hint": "To switch the newsletter on, paste your provider’s form action URL (Mailchimp, Klaviyo, …) into this widget’s settings. The form stays hidden until then, so no address is ever collected and lost."
+  },
+  "pages": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+      "back_home": "Back to Home",
+      "browse_shop": "Browse Shop",
+      "try_these": "Try these"
+    },
+    "collections": {
+      "title": "Collections",
+      "count": "collections"
+    },
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "added_to_cart": "Added to Cart",
+      "buy_now": "Buy Now",
+      "out_of_stock": "Out of Stock",
+      "in_stock": "In Stock",
+      "in_stock_count": "In stock · {count} available",
+      "all_in_cart": "All available units are already in your cart",
+      "low_stock": "Only {{count}} left!",
+      "sku": "SKU",
+      "reviews_count": "{count} reviews",
+      "share": "Share Product",
+      "select_option": "Select {{option}}",
+      "choose_options": "Choose Options",
+      "added": "Added!",
+      "view_full_details": "View full details",
+      "quick_view": "Quick View",
+      "related": "Recommended products",
+      "select_options_first": "Please choose {options} before adding this product to your cart.",
+      "combo_unavailable": "That combination isn't available right now — try another.",
+      "max_qty": "Only {count} left of this option.",
+      "variant_sold_out": "Sold out"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+      "empty_title": "Your cart is empty",
+      "empty_subtitle": "Discover something you love",
+      "continue_shopping": "Continue Shopping",
+      "checkout": "Check Out",
+      "blocked_sold_out": "Remove the sold-out items to continue",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "discount": "Discount",
+      "savings": "You saved",
+      "remove_item": "Remove Item",
+      "remove_confirm": "Remove this item?",
+      "clear": "Clear Cart",
+      "unit_price": "Unit price",
+      "order_summary": "Order Summary",
+      "view_cart": "View Cart",
+      "shipping": "Shipping",
+      "calculated_at_checkout": "Calculated at checkout",
+      "free_shipping_left": "Spend {amount} more to reach free shipping!",
+      "free_shipping_earned": "You’ve earned free shipping",
+      "max_stock": "Only {count} of this item are available.",
+      "needs_variant": "This item has options — open its page and choose a size or colour.",
+      "line_sold_out": "This option is sold out.",
+      "free_shipping_done": "You’ve unlocked free shipping",
+      "empty_hint": "Not sure where to start? Try these categories:",
+      "continue": "Continue shopping",
+      "estimated_total": "Estimated total",
+      "tax_note": "Taxes and shipping calculated at checkout.",
+      "discount_applied": "Discount applied"
+    },
+    "collection": {
+      "sort": "Sort"
+    },
+    "shop": {
+      "search_placeholder": "Search products...",
+      "all_products": "All Products"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search for products...",
+      "suggestions": "Search Suggestions",
+      "products": "Products",
+      "view_all": "View All",
+      "no_results": "No results found",
+      "try_different": "Try different search terms",
+      "results_for": "Search results for",
+      "sort_by": "Sort by",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "newest": "Newest",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "price_negative": "Prices cannot be negative — set to zero",
+      "price_swapped": "Swapped the two so the lower comes first",
+      "apply": "Apply",
+      "filter": "Filter",
+      "clear_all": "Clear all",
+      "clear": "Clear",
+      "related": "Related Products"
+    },
+    "about": {
+      "last_updated": "Last updated"
+    },
+    "blog": {
+      "title": "Blog",
+      "articles_count": "articles",
+      "no_blogs_desc": "Blogs will appear here soon",
+      "no_articles_desc": "Articles will appear here soon",
+      "back_to_articles": "Back to articles",
+      "views": "views",
+      "share_article": "Share this article",
+      "related_articles": "Related Articles",
+      "copied": "Copied"
+    },
+    "page": {
+      "empty_title": "This page has no content yet",
+      "empty_desc": "Add the page content from the store dashboard, or write fallback text in this section’s settings."
+    }
+  },
+  "cart": {
+    "out_of_stock": "Can't add to cart — this product is out of stock",
+    "upsell_title": "You'll love this too"
+  },
+  "footer": {
+    "payments": "Payment methods",
+    "cod": "Cash on delivery",
+    "menu": "Footer links"
+  },
+  "collections": {
+    "items_count": "{count} Items"
+  },
+  "featured": {
+    "eyebrow": "Selected products",
+    "title": "Browse our products",
+    "countdown": "Ends in:",
+    "sale_badge": "Special offer",
+    "low_badge": "Limited stock",
+    "note": "Offer available",
+    "demo": {
+      "p1": "Portable Bluetooth Speaker",
+      "p2": "Wireless Over-Ear Headphones",
+      "p3": "4K Camera Drone",
+      "p4": "Pro Camera with Zoom Lens",
+      "p5": "Floral Eau de Parfum 100ml",
+      "p6": "Wired Earbuds"
+    }
+  },
+  "columns": {
+    "delivery": "Delivery",
+    "returns": "Returns",
+    "truck": "Shipping",
+    "shield": "Quality",
+    "card": "Payment",
+    "hand": "Customer care",
+    "support": "Support",
+    "gift": "Gifts",
+    "tag": "Prices",
+    "box": "Products",
+    "clock": "Delivery times",
+    "star": "Reviews",
+    "g": {
+      "shield": {
+        "title": "Quality",
+        "text": "Describe this in your store's own words."
+      },
+      "truck": {
+        "title": "Shipping",
+        "text": "Describe this in your store's own words."
+      },
+      "card": {
+        "title": "Payment",
+        "text": "Describe this in your store's own words."
+      },
+      "support": {
+        "title": "Support",
+        "text": "Describe this in your store's own words."
+      },
+      "delivery": {
+        "title": "Delivery",
+        "text": "Describe this in your store's own words."
+      },
+      "returns": {
+        "title": "Returns",
+        "text": "Describe this in your store's own words."
+      },
+      "hand": {
+        "title": "Customer care",
+        "text": "Describe this in your store's own words."
+      },
+      "gift": {
+        "title": "Gifts",
+        "text": "Describe this in your store's own words."
+      },
+      "tag": {
+        "title": "Prices",
+        "text": "Describe this in your store's own words."
+      },
+      "box": {
+        "title": "Products",
+        "text": "Describe this in your store's own words."
+      },
+      "clock": {
+        "title": "Delivery times",
+        "text": "Describe this in your store's own words."
+      },
+      "star": {
+        "title": "Reviews",
+        "text": "Describe this in your store's own words."
+      }
+    }
+  },
+  "banner": {
+    "eyebrow": "A selected range",
+    "title": "Refresh your devices",
+    "link": "Shop now"
+  },
+  "cgroup": {
+    "save_up_to": "Save up to",
+    "off": "Off",
+    "shop_now": "Shop now",
+    "c1": {
+      "title": "Laptops",
+      "text": "Powerful processors, all-day battery and sleek designs."
+    },
+    "c2": {
+      "title": "Tablets",
+      "text": "For study, work and play — light and easy to carry."
+    },
+    "c3": {
+      "title": "Monitors",
+      "text": "Accurate colour and sharp detail for work and games."
+    },
+    "c4": {
+      "title": "Phones",
+      "text": "The latest phones with stunning cameras and fast charging."
+    },
+    "c5": {
+      "title": "Headphones",
+      "text": "Clear sound and noise cancelling for hours of listening."
+    },
+    "c6": {
+      "title": "Earbuds",
+      "text": "Light, comfortable, powerful sound and a built-in mic."
+    },
+    "col1": {
+      "heading": "Audio",
+      "feature": "Headphones and audio",
+      "i1": "Earbuds",
+      "i2": "Speakers",
+      "i3": "Wired"
+    },
+    "col2": {
+      "heading": "High-end Picks",
+      "feature": "Computers & Laptops",
+      "i1": "Tablets",
+      "i2": "Monitors",
+      "i3": "Laptops"
+    },
+    "col3": {
+      "heading": "Smartphones",
+      "feature": "Phones and accessories",
+      "i1": "Phones",
+      "i2": "Headphones",
+      "i3": "Accessories"
+    },
+    "col4": {
+      "heading": "Photography",
+      "feature": "Pro photography",
+      "i1": "Cameras",
+      "i2": "Perfumes",
+      "i3": "Drones"
+    }
+  },
+  "promo": {
+    "title": "Browse our ranges",
+    "tab1": "New arrivals",
+    "tab2": "Lowest price",
+    "tab3": "Top rated",
+    "tab4": "Highest price",
+    "demo": {
+      "p1": "Slim 15-inch Laptop",
+      "p2": "Tablet with Keyboard Dock",
+      "p3": "27-inch Desktop Monitor",
+      "p4": "Smartphone 128GB",
+      "p5": "Noise-Cancelling Headphones",
+      "p6": "Metal In-Ear Earbuds"
+    },
+    "view_all": "View Collection",
+    "s2": {
+      "title": "More from our store",
+      "tab1": "Top rated",
+      "tab2": "Highest price",
+      "tab3": "New arrivals",
+      "tab4": "Lowest price"
+    }
+  },
+  "stock": {
+    "in": "In stock · {count} available",
+    "low": "Almost gone — only {count} left",
+    "all_in_cart": "All available stock is in your cart",
+    "view": "View product"
+  },
+  "pgrid": {
+    "d1": {
+      "eyebrow": "Smart devices",
+      "title": "Stay Connected. Share Every Moment."
+    },
+    "d2": {
+      "eyebrow": "4K / 8K TVs",
+      "title": "Screens with clearer detail"
+    },
+    "b1": {
+      "eyebrow": "Latest devices",
+      "title": "Flagship devices",
+      "text": "Browse the store's range of devices.",
+      "badge_top": "New"
+    },
+    "b2": {
+      "eyebrow": "Smartphones",
+      "title": "You'll love it"
+    },
+    "b3": {
+      "title": "Capture every detail"
+    },
+    "b4": {
+      "eyebrow": "Immerse in sound",
+      "title": "Headphones for every use"
+    },
+    "b5": {
+      "title": "Laptops & tablets"
+    },
+    "q": {
+      "title": "Essentials you'll love"
+    },
+    "q1": {
+      "title": "Laptops",
+      "text": "Technology that gets it done."
+    },
+    "q2": {
+      "title": "Headphones",
+      "text": "Purer sound."
+    },
+    "q3": {
+      "title": "Monitors & Display"
+    },
+    "q4": {
+      "title": "Tablets"
+    },
+    "q5": {
+      "title": "Smartphones",
+      "text": "The latest phones with stunning cameras and fast charging."
+    }
+  },
+  "brands": {
+    "title": "Tech Brands You Know & Love",
+    "brand": "Brand"
+  },
+  "clist": {
+    "eyebrow": "Our range",
+    "title": "Browse the store's departments",
+    "button": "All categories",
+    "f": {
+      "shield": "Quality",
+      "truck": "Shipping and delivery",
+      "support": "Customer care",
+      "tag": "Prices",
+      "card": "Payment",
+      "returns": "Returns",
+      "gift": "Gifts",
+      "star": "Reviews"
+    },
+    "c": {
+      "c1": "Wireless Earbuds",
+      "c2": "Speakers",
+      "c3": "Laptops",
+      "c4": "Cameras",
+      "c5": "Smartphones",
+      "c6": "Earphones",
+      "c7": "Drones",
+      "c8": "Perfumes"
+    },
+    "strip_title": "Top Categories For You",
+    "s": {
+      "s1": "Earbuds",
+      "s2": "Headphones",
+      "s3": "Smartphones",
+      "s4": "Tablets",
+      "s5": "Laptops",
+      "s6": "Monitors",
+      "s7": "Camera Lenses",
+      "s8": "Gaming Laptops"
+    }
+  },
+  "reviews": {
+    "title": "What Our Customers Say About Us",
+    "r1": {
+      "title": "Immersive Sound",
+      "text": "The sound quality is amazing — crisp highs and deep bass! I use them every day for work calls and music, and the noise cancellation is a game changer.",
+      "name": "Sarah L."
+    },
+    "r2": {
+      "title": "Smooth Typing, Stunning Design",
+      "text": "Typing feels smooth and quiet. The RGB lighting looks awesome, especially at night. Ideal for both work and gaming!",
+      "name": "Jason B."
+    },
+    "r3": {
+      "title": "Barista-Level Coffee at Home",
+      "text": "Makes perfect coffee every morning. Super easy to use and clean. It feels like having a little café at home!",
+      "name": "Mona D."
+    },
+    "r4": {
+      "title": "Great Value and Fantastic Flavor",
+      "text": "Great value for the price. Brews fast and the aroma is fantastic. I just wish the water tank was a bit bigger.",
+      "name": "Karim T."
+    },
+    "r5": {
+      "title": "Crispy Perfection with Less Oil",
+      "text": "I've been using this air fryer almost daily. Crispy fries, juicy chicken, and way less oil. Healthy eating has never been easier!",
+      "name": "Rose M."
+    },
+    "r6": {
+      "title": "Powerful Performance",
+      "text": "Excellent phone for the price — fast performance, great camera, and the battery lasts all day. Totally worth it!",
+      "name": "Yasmin F."
+    }
+  },
+  "deals": {
+    "p1": "Top rated",
+    "p2": "Featured products",
+    "f": {
+      "delivery": "Delivery",
+      "shield": "Quality",
+      "truck": "Shipping",
+      "returns": "Returns",
+      "card": "Payment",
+      "support": "Support",
+      "tag": "Prices",
+      "gift": "Gifts"
+    },
+    "f2shield": "Quality"
+  },
+  "posts": {
+    "title": "Explore the Latest from Us",
+    "read": "Read now",
+    "a1": {
+      "title": "The history of smartphones",
+      "excerpt": "The smartphone story began with the first device to combine a phone with a personal assistant — and it changed how we connect."
+    },
+    "a2": {
+      "title": "What are hi-tech gadgets?",
+      "excerpt": "Gadgets built with advanced technology, often in industries where innovation is the main driver."
+    },
+    "a3": {
+      "title": "The role of smartphones in modern life",
+      "excerpt": "Phones are now hubs for communication, information, productivity and entertainment, all in your pocket."
+    },
+    "a4": {
+      "title": "How are headphones created?",
+      "excerpt": "They are assembled from housings, ear pads and headbands, then fitted with the driver that turns signal into sound."
+    }
+  },
+  "sfoot": {
+    "contact_title": "Need help",
+    "c1": {
+      "line": "Call us",
+      "value": "Add your phone number"
+    },
+    "c2": {
+      "line": "Need help with your order?",
+      "value": "Contact"
+    },
+    "c3": {
+      "line": "Message us on chat",
+      "value": "Chat With Us"
+    },
+    "m1": {
+      "title": "Shop",
+      "links": {
+        "l1": "Home",
+        "l2": "All Products",
+        "l3": "Collections",
+        "l4": "New Arrivals"
+      }
+    },
+    "m2": {
+      "title": "Trending Collections",
+      "links": {
+        "l1": "Selected products",
+        "l2": "Flagship Phones",
+        "l3": "New arrivals",
+        "l4": "Top Rated Gadgets",
+        "l5": "New Arrivals",
+        "l6": "View All"
+      }
+    },
+    "m3": {
+      "title": "Your Order",
+      "links": {
+        "l1": "Shopping Cart",
+        "l2": "Blog",
+        "l3": "Call Us",
+        "l4": "Chat on WhatsApp"
+      }
+    },
+    "nl_title": "Subscribe to our newsletter",
+    "nl_text": "Subscribe for store news and new products.",
+    "nl_ph": "Your email",
+    "nl_btn": "Subscribe",
+    "nl_ok": "Thanks for subscribing!",
+    "rights": "All rights reserved",
+    "r1": {
+      "title": "Wearables & Smart Devices",
+      "links": {
+        "l1": "Wearables",
+        "l2": "Smart Home",
+        "l3": "Health Tech",
+        "l4": "View All"
+      }
+    },
+    "r2": {
+      "title": "Laptops & Tablets",
+      "links": {
+        "l1": "Laptops",
+        "l2": "Tablets",
+        "l3": "Accessories",
+        "l4": "View All"
+      }
+    },
+    "r3": {
+      "title": "Home Appliances",
+      "links": {
+        "l1": "TV & Display",
+        "l2": "Essential Tools & Devices",
+        "l3": "Kitchen Electronics",
+        "l4": "Cleaning & Comfort",
+        "l5": "View All"
+      }
+    }
+  },
+  "pdp": {
+    "banner_title": "Discover more of our products",
+    "banner_text": "Browse the full range in the store.",
+    "short": "Key Features",
+    "note": "Add it to your cart and complete your order.",
+    "sale": "Special offer",
+    "low": "Limited stock",
+    "pay_note": "You choose how to pay at checkout.",
+    "pay": "Pay with",
+    "share": "Share",
+    "home": "Home",
+    "eta": "Estimated delivery between {from} and {to}",
+    "copied": "Link copied",
+    "svc": {
+      "globe": "Shipping",
+      "truck": "Delivery",
+      "card": "Payment",
+      "check": "Quality",
+      "shield": "Warranty",
+      "returns": "Returns",
+      "gift": "Gifts",
+      "support": "Support"
+    },
+    "panels": {
+      "p1": {
+        "title": "About this product",
+        "text": "Write the details of this panel here."
+      },
+      "p2": {
+        "title": "Product care",
+        "text": "Write the details of this panel here."
+      },
+      "p3": {
+        "title": "Payment",
+        "text": "Write the details of this panel here."
+      },
+      "p4": {
+        "title": "Delivery",
+        "text": "Write the details of this panel here."
+      }
+    },
+    "wide": {
+      "w1": {
+        "title": "Technical Details",
+        "text": "All the product's technical specs, such as sizes, materials and weight."
+      },
+      "w2": {
+        "title": "Warranty & Returns",
+        "text": "Write your store's policy here."
+      },
+      "w3": {
+        "title": "What's in the box",
+        "text": "The product itself and every accessory included with it."
+      }
+    },
+    "specs": {
+      "s1": {
+        "icon": "check",
+        "title": "Category",
+        "value": "Enter a value"
+      },
+      "s2": {
+        "icon": "truck",
+        "title": "Delivery",
+        "value": "Enter a value"
+      },
+      "s3": {
+        "icon": "shield",
+        "title": "Warranty",
+        "value": "Per store policy"
+      }
+    },
+    "more": "Show more",
+    "less": "Show less"
+  },
+  "extra": {
+    "media": "Media & Gallery",
+    "feat": "Stand out Features",
+    "faq": "Questions & Answers",
+    "cards": {
+      "c1": {
+        "title": "Performance that keeps up",
+        "text": "Modern technology and strong performance help you get more done, faster."
+      },
+      "c2": {
+        "title": "Elegant design",
+        "text": "Quality materials and thoughtful details that match your style."
+      },
+      "c3": {
+        "title": "Stay connected",
+        "text": "Fast, stable connectivity keeps you close to everyone you love."
+      },
+      "c4": {
+        "title": "Built to last",
+        "text": "Details that matter in daily use."
+      }
+    },
+    "qa": {
+      "q1": {
+        "q": "Is the product genuine?",
+        "a": "Write your store's answer here."
+      },
+      "q2": {
+        "q": "How long does delivery take?",
+        "a": "Write your store's answer here."
+      },
+      "q3": {
+        "q": "Can I pay on delivery?",
+        "a": "Write your store's answer here."
+      },
+      "q4": {
+        "q": "What is the return policy?",
+        "a": "Write your store's answer here."
+      },
+      "q5": {
+        "q": "Is there a warranty?",
+        "a": "Write your store's answer here."
+      },
+      "q6": {
+        "q": "How do I track my order?",
+        "a": "Write your store's answer here."
+      }
+    }
+  },
+  "shopx": {
+    "banner_title": "Shop our range",
+    "banner_text": "Browse the products and pick what suits you.",
+    "view": "View",
+    "list": "List view",
+    "grid": "Grid view"
+  },
+  "compare": {
+    "add": "Compare",
+    "title": "Compare products",
+    "go": "Compare",
+    "clear": "Clear all",
+    "full": "Compare list is full (5 products max)",
+    "table": "Product Comparison",
+    "sub": "How they are different",
+    "desc": "Description",
+    "rating": "Rating",
+    "brand": "Collection",
+    "options": "Options",
+    "stock": "Stock",
+    "details": "View full details",
+    "empty": "No products to compare"
+  },
+  "bx": {
+    "blog": "Blog",
+    "blogs_sub": "Tips, news and reviews from our team",
+    "side_title": "About our blog",
+    "side_text": "Articles and tips that help you choose what fits you and get more from what you buy.",
+    "promo_title": "Stay Connected, Stay Ahead",
+    "promo_text": "Discover the latest products in the store.",
+    "promo_btn": "Shop now",
+    "related": "Related articles",
+    "tags": "Tags",
+    "share": "Share",
+    "read": "Read article",
+    "demo_cat": "All About Electronics",
+    "demo_author": "Store team",
+    "by": "By",
+    "demo_body": "<p>Hi-tech gears are products made with the most advanced technology, often coming from industries driven by innovation and constant research.</p><h3>Examples</h3><ul><li>Smartphones, wireless headphones and smart watches.</li><li>Smart-home devices controlled by apps and voice.</li></ul><h3>Key features</h3><p>Precise manufacturing, carefully chosen materials and continuous updates that keep improving your experience.</p>",
+    "empty": "Articles will appear here soon — these are examples.",
+    "all": "All"
+  },
+  "clx": {
+    "title": "All collections",
+    "sub": "Browse the store's departments and pick what suits you.",
+    "banner_title": "Discover all our departments",
+    "banner_text": "Carefully picked products in every collection.",
+    "count": "collections",
+    "products": "products",
+    "shop": "Shop",
+    "sort": "Sort by",
+    "s_def": "Default",
+    "s_az": "A–Z",
+    "s_many": "Most products",
+    "demo": {
+      "c1": "Smartphones",
+      "c2": "Headphones",
+      "c3": "Laptops",
+      "c4": "Tablets",
+      "c5": "Monitors",
+      "c6": "Accessories"
+    }
+  },
+  "pgx": {
+    "links": "Key pages",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service",
+    "shipping": "Shipping policy",
+    "help_title": "Ready to keep shopping?",
+    "help_text": "Browse the latest products in the store.",
+    "help_btn": "Shop now"
+  },
+  "counts": {
+    "product_one": "1 product",
+    "product_two": "2 products",
+    "product_few": "{n} products",
+    "product_many": "{n} products",
+    "article_one": "1 article",
+    "article_two": "2 articles",
+    "article_few": "{n} articles",
+    "article_many": "{n} articles",
+    "collection_one": "1 collection",
+    "collection_two": "2 collections",
+    "collection_few": "{n} collections",
+    "collection_many": "{n} collections"
+  }
+}

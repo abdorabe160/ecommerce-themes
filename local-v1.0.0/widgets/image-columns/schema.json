@@ -1,0 +1,285 @@
+{
+  "name": "أعمدة نصية مع صور",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ العنوان — فارغ = بدون عنوان",
+        "en": "▸ Heading — empty hides it"
+      },
+      "default": "تسوّق حسب التصنيف"
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "عدد الأعمدة الظاهرة — كمبيوتر",
+        "en": "Visible columns — desktop"
+      },
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "default": 6
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "الأعمدة الظاهرة — جوال (الكسر يلمّح بوجود المزيد)",
+        "en": "Visible columns — mobile (a fraction hints there is more)"
+      },
+      "default": "2.3",
+      "options": [
+        {
+          "value": "1.3",
+          "label": {
+            "ar": "واحد وجزء",
+            "en": "One and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "اثنان",
+            "en": "Two"
+          }
+        },
+        {
+          "value": "2.3",
+          "label": {
+            "ar": "اثنان وجزء",
+            "en": "Two and a peek"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "ثلاثة",
+            "en": "Three"
+          }
+        }
+      ]
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة العرض",
+        "en": "Layout"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "شريط قابل للتمرير",
+            "en": "Scrollable slider"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة ثابتة",
+            "en": "Static grid"
+          }
+        }
+      ]
+    },
+    "card_style": {
+      "type": "select",
+      "label": {
+        "ar": "شكل البطاقة",
+        "en": "Card style"
+      },
+      "default": "bordered",
+      "options": [
+        {
+          "value": "bordered",
+          "label": {
+            "ar": "بإطار رفيع",
+            "en": "Hairline border"
+          }
+        },
+        {
+          "value": "filled",
+          "label": {
+            "ar": "خلفية ملوّنة",
+            "en": "Tinted fill"
+          }
+        },
+        {
+          "value": "plain",
+          "label": {
+            "ar": "بدون إطار",
+            "en": "Plain"
+          }
+        }
+      ]
+    },
+    "image_size": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الصورة داخل البطاقة",
+        "en": "Image height inside the card"
+      },
+      "min": 60,
+      "max": 260,
+      "step": 10,
+      "unit": "px",
+      "default": 120
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "ملاءمة الصورة",
+        "en": "Image fit"
+      },
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة — لصور المنتجات المفرّغة",
+            "en": "Whole — for cut-out product shots"
+          }
+        },
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ البطاقة — لصور المشاهد",
+            "en": "Fill the card — for scene photos"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الأسهم",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "show_dots": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مؤشر الصفحات",
+        "en": "Show the page indicator"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية البطاقة",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان وأسماء البطاقات",
+        "en": "Heading and card titles"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الصغير",
+        "en": "Small text"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الإطار",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة — يفضّل PNG مفرّغة على خلفية شفافة",
+            "en": "Image — a transparent cut-out PNG works best"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "تصنيف"
+        },
+        "subtitle": {
+          "type": "string",
+          "label": {
+            "ar": "سطر صغير تحت العنوان (اختياري)",
+            "en": "Small line under the title (optional)"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط · /collections · /shop · أو رابط تصنيف من صفحة التصنيفات",
+            "en": "Link · /collections · /shop · or a collection link from the collections page"
+          },
+          "default": "/collections"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "أعمدة نصية مع صور"
+    }
+  ]
+}

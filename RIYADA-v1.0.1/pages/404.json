@@ -1,0 +1,47 @@
+{
+  "name": "صفحة غير موجودة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "404",
+        "title": "الصفحة مش موجودة",
+        "message": "الرابط اللي فتحته مش موجود أو اتغيّر. جرّب البحث أو ابدأ من الأقسام.",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/"
+      },
+      "blocks": [
+        {
+          "block": "link",
+          "name": "l1",
+          "settings": {
+            "label": "كل المنتجات",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "l2",
+          "settings": {
+            "label": "التخفيضات",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "link",
+          "name": "l3",
+          "settings": {
+            "label": "الأكثر مبيعاً",
+            "url": "/shop"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{# Selected products render on the server. Otherwise dcProducts queries Qumra and falls back to demo items (demoProducts setting / preview). #}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = wd['title' + L] or wd.title or t('products.best_sellers') -%}
+{%- set eyebrow = wd['eyebrow' + L] or wd.eyebrow -%}
+{%- set subtitle = wd['subtitle' + L] or wd.subtitle -%}
+{%- set viewText = wd['view_all_text' + L] or wd.view_all_text or t('common.view_all') -%}
+{%- set viewUrl = wd.view_all_url if wd.view_all_url is defined else '/shop' -%}
+{#- listing pages (/latest) arrive as context.products + context.pagination on live Qumra — render those server-side -#}
+{%- set ctx = context or {} -%}
+{%- set pagePg = ctx.pagination if (ctx.products and ctx.products.length and ctx.pagination) else null -%}
+{%- set picked = wd.products if (wd.products and wd.products.length) else (ctx.products if pagePg else []) -%}
+{%- set source = wd.source or 'top-rated' -%}
+{%- set limit = (wd.limit or 4) | int -%}
+{%- set cols = wd.columns or '4' -%}
+{%- set layout = wd.layout or 'grid' -%}
+{%- set surface = wd.surface or 'white' -%}
+{%- set kind = wd.demo_kind or 'best' -%}
+{%- set selectedCollection = wd.collection[0] if (wd.collection and wd.collection.length) else (wd.collection or {}) -%}
+{%- set collectionId = selectedCollection._id or selectedCollection.id or '' -%}
+{#- live Qumra ignores per-page widget settings on some routes, so /latest (context.products + pagination) is recognised by its data too -#}
+{%- set ht = 'h1' if (wd.heading_tag == 'h1' or pagePg or ((ctx.page or {}).handle == 'latest')) else 'h2' -%}
+{#- unique per instance: the home page carries two showcases -#}
+{%- set tid = 'dc-showcase-title-' ~ (widget.id or widget._id or (title | urlencode | replace('%', ''))) -%}
+{%- set surfaceClass = {'white': 'surface-white', 'cream': 'surface-cream', 'sand': 'surface-sand', 'dark': 'surface-dark'}[surface] or 'surface-white' -%}
+{#- nothing picked: the section queries the store itself and hides when the store has nothing (the /latest page keeps its H1) -#}
+{%- set queryCfg = {'source': source, 'limit': limit, 'collectionId': collectionId, 'kind': kind} -%}
+<section class="dc-showcase section {{ surfaceClass }}" aria-labelledby="{{ tid }}"{% if not picked.length %} x-data="dcProducts({{ queryCfg | dump | escape }})"{% if ht != 'h1' %} x-show="loading || items.length"{% endif %}{% endif %}>
+  <div class="shell">
+    <header class="dc-section-heading">
+      <div>
+        {%- if eyebrow %}<p class="eyebrow">{{ eyebrow }}</p>{%- endif %}
+        <{{ ht }} id="{{ tid }}" class="h-section dc-section-heading__title">{{ title }}</{{ ht }}>
+        {%- if subtitle %}<p class="dc-section-heading__text">{{ subtitle }}</p>{%- endif %}
+      </div>
+      {%- if viewUrl %}<a href="{{ viewUrl }}" class="link-arrow dc-section-heading__link">{{ viewText }} {% ui "icon.njk", name="arrow", size=17 %}</a>{%- endif %}
+    </header>
+
+    {%- if picked.length %}
+    <div class="dc-product-grid dc-cols-{{ cols }} {{ 'dc-product-grid--rail' if layout == 'rail' }}">
+      {%- for p in picked %}{% ui "product-card.njk", product=p, eager=('on' if (loop.index <= 4) else 'off') %}{%- endfor %}
+    </div>
+    {%- if pagePg and not (wd.products and wd.products.length) %}{% ui "pagination.njk", pagination=pagePg %}{%- endif %}
+    {%- else %}
+    <div>
+      <div class="dc-product-grid dc-cols-{{ cols }} {{ 'dc-product-grid--rail' if layout == 'rail' }}" x-show="loading" aria-busy="true">{% ui "card-skeleton.njk", count=limit %}</div>
+      <div class="dc-product-grid dc-cols-{{ cols }} {{ 'dc-product-grid--rail' if layout == 'rail' }}" x-show="items.length">
+        <template x-for="p in items" :key="p._id">{% ui "card-js.njk" %}</template>
+      </div>
+      <p class="dc-empty-note" x-show="!loading && !items.length">{{ t('products.empty') }}</p>
+      <p class="dc-preview-note" x-show="demo" x-cloak>{{ t('common.preview_hint') }}</p>
+    </div>
+    {%- endif %}
+  </div>
+</section>

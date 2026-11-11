@@ -1,0 +1,130 @@
+{# ============================================================================
+   HADIYA · Luxe · مرشّح الهدايا  (lx-finder)
+   ----------------------------------------------------------------------------
+       أدوّر على هدية  [ لعيد ميلاد ▾ ]  في حدود  [ أي ميزانية ▾ ]   [ اعرض الهدايا ]
+                       ───────────────           ───────────────
+
+   A sentence, not a form. The two choices are CUSTOM listboxes, not
+   <select>: the native menu is drawn by the operating system (a grey sheet
+   with a ✓) and cannot be styled — on a dark luxury page it was the one
+   thing that looked unfinished.
+
+   Accessibility is the listbox pattern: a button with aria-haspopup /
+   aria-expanded opens a role="listbox" of role="option" items; arrow keys
+   move, Enter/Space picks, Esc closes and returns focus. Alpine drives it;
+   the options themselves are server-rendered, so their labels never pass
+   through `| dump` into an attribute.
+
+   URL: the picked option's link (or /shop) + the shop page's own price
+   filter `filters[price][min|max]` — measured working on the store.
+
+   Styling: assets/theme.css → "LUXE · lx-finder".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set opts = widget.blocks | default([], true) %}
+{% set cur = localization.currency.currencySymbol | default('', true) %}
+
+{% set rawSteps = ((d.budget_steps | default('', true)) | replace('،', ',')).split(',') %}
+{% set steps = [] %}
+{% for s in rawSteps %}{% if (s | trim | int) > 0 %}{% set _ = steps.push(s | trim | int) %}{% endif %}{% endfor %}
+
+{# list A: "anything" + the merchant's options #}
+{% set A = [{ 'label': d.any_label | default(t('gifts.finder_any'), true), 'v': '/shop' }] %}
+{% for block in opts %}{% set b = block.data %}{% if b.label and b.url %}{% set _ = A.push({ 'label': b.label, 'v': b.url }) %}{% endif %}{% endfor %}
+
+{# list B: "any budget" + ranges (worded, so no digit range can flip in RTL) #}
+{% set B = [{ 'label': t('gifts.budget_any'), 'v': '' }] %}
+{% if steps | length %}
+  {% set _ = B.push({ 'label': t('gifts.budget_under') | replace('{amount}', steps[0] ~ ' ' ~ cur), 'v': '-' ~ steps[0] }) %}
+  {% for s in steps %}{% if not loop.last %}
+    {% set _ = B.push({ 'label': t('gifts.budget_between') | replace('{min}', s) | replace('{max}', steps[loop.index] ~ ' ' ~ cur), 'v': s ~ '-' ~ steps[loop.index] }) %}
+  {% endif %}{% endfor %}
+  {% set _ = B.push({ 'label': t('gifts.budget_over') | replace('{amount}', steps[steps | length - 1] ~ ' ' ~ cur), 'v': steps[steps | length - 1] ~ '-' }) %}
+{% endif %}
+
+{% macro listbox(key, items, labelId) %}
+  <span class="lx-pick" x-data="lxPick()" @click.outside="close()" @keydown.escape.prevent="close(true)">
+    <button type="button" class="lx-pick-btn" x-ref="btn"
+            aria-haspopup="listbox" :aria-expanded="open ? 'true' : 'false'"
+            aria-labelledby="{{ labelId }}"
+            @click="toggle()" @keydown.arrow-down.prevent="openAt(0)">
+      <span class="lx-pick-val" x-text="label || $el.dataset.first" data-first="{{ items[0].label }}" data-hd-pick-{{ key }}>{{ items[0].label }}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <ul class="lx-pick-list" role="listbox" x-ref="list" x-show="open" x-cloak
+        @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+        @keydown.enter.prevent="choose(active)" @keydown.space.prevent="choose(active)" @keydown.tab="close()">
+      {% for it in items %}
+        <li role="option" tabindex="-1" data-v="{{ it.v }}" data-label="{{ it.label }}"
+            :aria-selected="sel === {{ loop.index0 }} ? 'true' : 'false'"
+            :class="{ 'is-active': active === {{ loop.index0 }} }"
+            @click="choose({{ loop.index0 }})" @mouseenter="active = {{ loop.index0 }}">{{ it.label }}</li>
+      {% endfor %}
+    </ul>
+  </span>
+{% endmacro %}
+
+<section id="lx-finder-{{ id }}" class="lx-finder">
+  <form class="lx-finder-in" action="/shop" method="get" data-lx-finder>
+    {# A <div>, never a <p>: each listbox carries a <ul>, and a <ul> inside a
+       <p> makes the parser close the paragraph early — measured live: the
+       second half of the sentence fell out of it and the menus stopped
+       opening. #}
+    <div class="lx-finder-sentence">
+      <span id="lx-fa-{{ id }}">{{ d.lead | default(t('gifts.finder_label'), true) }}</span>
+      {{ listbox('a', A, 'lx-fa-' ~ id) }}
+      {% if B | length > 1 %}
+        <span id="lx-fb-{{ id }}">{{ d.join | default(t('gifts.budget'), true) }}</span>
+        {{ listbox('b', B, 'lx-fb-' ~ id) }}
+      {% endif %}
+    </div>
+    <button type="submit" class="lx-btn">{{ d.button_text | default(t('gifts.finder_button'), true) }}</button>
+  </form>
+</section>
+
+<script>
+  /* One listbox factory for every lx-finder on the page — registered once. */
+  (function () {
+    function define() {
+      if (window.__lxPickReady) return; window.__lxPickReady = true;
+      Alpine.data('lxPick', function () {
+        return {
+          open: false, sel: 0, active: 0, label: '',
+          init: function () { var self = this; this.$nextTick(function () { var f = self.items()[0]; self.label = f ? f.getAttribute('data-label') : ''; }); },
+          items: function () { return [].slice.call(this.$refs.list.querySelectorAll('[role=option]')); },
+          value: function () { var it = this.items()[this.sel]; return it ? it.getAttribute('data-v') : ''; },
+          toggle: function () { this.open ? this.close() : this.openAt(this.sel); },
+          openAt: function (i) { this.open = true; this.active = i; var self = this; this.$nextTick(function () { var it = self.items()[i]; it && it.focus(); }); },
+          move: function (dir) { var n = this.items().length; this.active = (this.active + dir + n) % n; this.items()[this.active].focus(); },
+          choose: function (i) { this.sel = i; this.label = this.items()[i].getAttribute('data-label'); this.close(true); },
+          close: function (refocus) { this.open = false; if (refocus) this.$refs.btn.focus(); }
+        };
+      });
+    }
+    if (window.Alpine) define(); else document.addEventListener('alpine:init', define);
+
+    var root = document.getElementById('lx-finder-{{ id }}');
+    var form = root && root.querySelector('[data-lx-finder]');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var picks = form.querySelectorAll('.lx-pick');
+      function val(i) {
+        var p = picks[i]; if (!p || !p._x_dataStack) return '';
+        return p._x_dataStack[0].value();
+      }
+      var url = new URL(val(0) || '/shop', location.origin);
+      var b = val(1);
+      if (b) {
+        var parts = b.split('-');
+        if (parts[0]) url.searchParams.set('filters[price][min]', parts[0]);
+        if (parts[1]) url.searchParams.set('filters[price][max]', parts[1]);
+      }
+      location.href = url.pathname + url.search;
+    });
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#lx-finder-' ~ id, c=d %}

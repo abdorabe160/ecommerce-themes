@@ -1,0 +1,65 @@
+{#
+  FEATURE CARDS · مميزات بارزة — MUHARRIK: a band of two-up hairline panels,
+  picture on one side, a mono index + display title + text on the other,
+  HUD corner ticks on hover. Blocks; with none, four demo cards (CC0).
+  `dark` keeps its id: on = panel ground, off = transparent on the page.
+  Styles: assets/sections.css → "FEATURE CARDS", re-voiced in assets/mh-content.css.
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set cards = [] %}
+{% for block in widget.blocks | default([], true) %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% if b.title or b.text %}{% set _ = cards.push({ img: mediaUrl(b.image) | trim, title: b.title | default('', true), text: b.text | default('', true) }) %}{% endif %}
+{% endfor %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+{% set demoCardsOn = (cards | length) == 0 %}
+{% if demoCardsOn %}
+  {# demo cards: why buy a part here — genuine, fits, ships fast, fitted.
+     Bilingual in the template; the merchant's blocks replace them. #}
+  {% set demoImgs = ['mh-kit-1.jpg', 'mh-build-2.jpg', 'mh-build-5.jpg', 'mh-garage.jpg'] %}
+  {% set demoCards = [
+    { title: 'قطع أصلية 100%', text: 'كل قطعة بضمان المصنع ورقم تعريف أصلي، من وكلاء ومورّدين معتمدين.' },
+    { title: 'توافق مضمون', text: 'اختار عربيتك من أعلى الصفحة ونتأكد إن القطعة تركب قبل ما تدفع.' },
+    { title: 'شحن سريع لكل المحافظات', text: 'تجهيز في نفس اليوم وتوصيل خلال 2–5 أيام عمل مع رقم تتبع لكل طلب.' },
+    { title: 'تركيب ودعم فني', text: 'فريقنا يرشّحك لورشة معتمدة قريبة منك ويرد على أسئلتك قبل وبعد التركيب.' }
+  ] if isAr else [
+    { title: '100% genuine parts', text: 'Every part carries the maker’s warranty and an original part number, from authorised suppliers.' },
+    { title: 'Guaranteed fitment', text: 'Pick your car at the top of the page and we confirm the part fits before you pay.' },
+    { title: 'Fast shipping nationwide', text: 'Same-day dispatch and delivery in 2–5 working days, with tracking on every order.' },
+    { title: 'Fitting & tech support', text: 'Our team points you to a certified workshop near you and answers questions before and after fitting.' }
+  ] %}
+  {% for n in [1, 2, 3, 4] %}{% set _ = cards.push({ img: demoImgs[n - 1] | assets, title: demoCards[n - 1].title, text: demoCards[n - 1].text }) %}{% endfor %}
+{% endif %}
+{% set n = cards | length %}
+{% set nPad = ('0' ~ n) if n < 10 else (n ~ '') %}
+{% set title = (d.title or t('extra.feat')) if d.show_title != false else '' %}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = t('extra.feat') if (d.title | default('', true) | trim | length) > 0 else nPad %}{% endif %}
+<section id="hx-fe-{{ id }}"{% if demoCardsOn %} data-hy-empty{% endif %} class="hx-fe {{ 'is-dark' if d.dark != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.bg %} --fe-bg: {{ d.bg }};{% endif %}">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}
+      <div class="mh-head">
+        <div class="mh-head-main">
+          <span class="mh-kicker">{{ kicker | safe }}</span>
+          <h2 class="mh-h">{{ title | safe }}</h2>
+        </div>
+        {% if kicker != nPad %}<span class="mh-sub"><bdi>{{ nPad }}</bdi></span>{% endif %}
+      </div>
+    {% endif %}
+    <ul class="hx-fe-grid" role="list">
+      {% for c in cards %}
+        <li class="hx-fe-card mh-hud mh-reveal">
+          {% if (c.img | length) > 0 %}<span class="hx-fe-media"><img src="{{ c.img }}" alt="" loading="lazy"/></span>{% endif %}
+          <span class="hx-fe-body">
+            <span class="hx-fe-idx mh-mono" aria-hidden="true">{{ ('0' ~ loop.index) if loop.index < 10 else loop.index }}</span>
+            {% if c.title %}<h3 class="hx-fe-title">{{ c.title | safe }}</h3>{% endif %}
+            {% if c.text %}<span class="hx-fe-text hx-rte">{{ c.text | safe }}</span>{% endif %}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>

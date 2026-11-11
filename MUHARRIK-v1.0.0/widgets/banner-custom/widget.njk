@@ -1,0 +1,66 @@
+{#
+  ============================================================================
+  CUSTOM BANNER · لافتة مخصصة
+  ----------------------------------------------------------------------------
+  A wide, short promo band: picture behind, a shade in the middle, then a
+  small line, a title and a link. Empty fields fall back to the theme's demo
+  picture (assets/hx-banner-demo*.jpg, CC0) and to texts in the visitor's
+  language (locales → banner.*), so it never arrives blank.
+
+  Styles: assets/sections.css → "CUSTOM BANNER", re-skinned for MUHARRIK in
+  assets/mh-home-a.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set img = mediaUrl(d.image) | trim %}
+{% set imgM = mediaUrl(d.image_mobile) | trim %}
+{% set isDemo = (img | length) == 0 and (imgM | length) == 0 %}
+{% set img = ('mh-hero-2.jpg' | assets) if isDemo else (img if (img | length) else imgM) %}
+{% set imgM = ('mh-hero-1-m.jpg' | assets) if isDemo else (imgM if (imgM | length) else img) %}
+
+{% set eyebrow = d.eyebrow or t('banner.eyebrow') %}
+{% set title = d.title or t('banner.title') %}
+{% set linkText = d.link_text or t('banner.link') %}
+{% set url = d.link_url | default('/shop', true) %}
+{% set showLink = d.show_link != false %}
+{% set whole = d.whole_link != false %}
+{% set overlay = d.overlay | default('center', true) %}
+{% set op = d.overlay_opacity if d.overlay_opacity is defined else 70 %}
+
+<section id="hx-bn-{{ id }}"{% if isDemo and not d.title %} data-hy-empty{% endif %}
+         class="hx-bn {{ 'is-zoom' if d.hover_zoom != false }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-bn-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {# MUHARRIK: the band is a dark panel with HUD corners on hover, a mono
+       "index / eyebrow" kicker, an uppercase display title, a boxed yellow
+       link and (optionally) a thin hazard stripe along the bottom edge.
+       Styles: assets/mh-home-a.css. #}
+    {% set idx = d.index | default('', true) %}
+    <div class="hx-bn-box mh-hud is-align-{{ d.align | default('center', true) }} is-shade-{{ overlay }} is-focus-{{ d.image_focus | default('center', true) }} {{ 'has-hazard' if d.hazard != false }}"
+         style="--bn-h: {{ d.height | default(150, true) }}px; --bn-h-m: {{ d.height_mobile | default(200, true) }}px; --bn-r: {{ d.radius if d.radius is defined else 0 }}px; --bn-bg: {{ d.bg_color | default('var(--color-bg-tertiary)', true) }}; --bn-fg: {{ d.text_color | default('var(--color-text-primary)', true) }}; --bn-link: {{ d.link_color | default('var(--color-accent)', true) }}; --bn-shade: {{ op / 100 }};">
+      <picture class="hx-bn-media">
+        <source media="(max-width: 639.98px)" srcset="{{ imgM }}"/>
+        <img src="{{ img }}" alt="" loading="lazy"/>
+      </picture>
+      <span class="hx-bn-shade" aria-hidden="true"></span>
+      <div class="hx-bn-body">
+        {% if eyebrow or idx %}
+          <p class="hx-bn-eyebrow mh-kicker">{% if idx %}<span class="mh-kicker-num">{{ idx }}{% if eyebrow %} /{% endif %}</span>{% endif %}{% if eyebrow %}<span>{{ eyebrow | safe }}</span>{% endif %}</p>
+        {% endif %}
+        {% if title %}<h2 class="hx-bn-title mh-h">{{ title | safe }}</h2>{% endif %}
+        {% if showLink and linkText %}
+          <a href="{{ url }}" class="hx-bn-link">{{ linkText | safe }}
+            <svg class="hx-bn-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 7 5 5-5 5M13 7l5 5-5 5"/></svg>
+          </a>
+        {% endif %}
+      </div>
+      {% if d.hazard != false %}<span class="hx-bn-hazard mh-hazard" aria-hidden="true"></span>{% endif %}
+      {% if whole and url %}<a href="{{ url }}" class="hx-bn-hit" aria-label="{{ (title or linkText) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" tabindex="-1"></a>{% endif %}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,54 @@
+{
+  "name": "collections-page",
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "eyebrow": {
+      "type": "text",
+      "label": {
+        "ar": "النص التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العنوان",
+        "en": "Show Title"
+      },
+      "default": false
+    },
+    "per_page": {
+      "type": "number",
+      "label": {
+        "ar": "عدد التصنيفات في كل صفحة",
+        "en": "Categories Per Page"
+      },
+      "default": 9,
+      "min": 3,
+      "max": 10,
+      "step": 1
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عدد المنتجات",
+        "en": "Show product count"
+      },
+      "default": false
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة التصنيفات",
+      "name": "collections-page"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{#-
+  Blog listing. /blogs/<category> arrives as context.blog + context.articles; /blogs arrives with the categories
+  only (context.blogs), so categories become a filter above the articles (hidden when one) and dcBlogMerge fetches
+  each category's cards. Merchant-authored blocks follow, otherwise a clear empty state. Page mode is baked in, so
+  the page renders correctly even where the platform ignores per-page widget settings.
+-#}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set ctx = context or {} -%}
+{%- set bd = blog or ctx.blog or {} -%}
+{%- set adl = articles or ctx.articles or ctx.posts or [] -%}
+{%- set arts = bd.articles if (bd and bd.articles and bd.articles.length) else (adl if (adl and adl.length) else []) -%}
+{%- set cats = [] -%}
+{%- for b in (ctx.blogs or blogs or []) -%}{%- if b and b.title and cats.push(b) -%}{%- endif -%}{%- endfor -%}
+{%- if not arts.length -%}
+  {%- set catArts = [] -%}
+  {%- for b in cats -%}{%- for a in (b.articles or []) -%}{%- if a and a.title and catArts.push(a) -%}{%- endif -%}{%- endfor -%}{%- endfor -%}
+  {%- if catArts.length -%}{%- set arts = catArts -%}{%- endif -%}
+{%- endif -%}
+{%- set catUrls = [] -%}
+{%- for b in cats -%}{%- set bh = b.handle or b.slug -%}{%- if bh and catUrls.push('/blogs/' ~ bh) -%}{%- endif -%}{%- endfor -%}
+{%- set title = bd.title or (wd['title' + L] or wd.title) or t('journal.title') -%}
+{%- set text = (wd['text' + L] or wd.text) or t('journal.text') -%}
+{%- set blocks = widget.blocks | default([]) -%}
+
+{%- set items = [] -%}
+{%- for a in arts -%}
+  {%- set aimg = '' -%}
+  {%- if a.image %}{%- set aimg = a.image.fileUrl or a.image.url or a.image or '' -%}{%- elif a.imageUrl %}{%- set aimg = a.imageUrl -%}{%- endif -%}
+  {#- the article's own page is /articles/<handle>; a platform `url` can point at the category -#}
+  {%- set ahandle = a.handle or a.slug -%}
+  {%- set aurl = ('/articles/' ~ ahandle) if ahandle else (a.url or '') -%}
+  {%- set adate = a.publishedAt or a.createdAt or a.created_at or a.date or '' -%}
+  {%- set ameta = ('<time data-date datetime="' ~ adate ~ '">' ~ ((adate | string).slice(0, 10)) ~ '</time>') if adate else '' -%}
+  {%- set abody = a.excerpt or a.summary or a.description or a.content or '' -%}
+  {%- if items.push({'url': aurl, 'img': aimg, 'title': a.title, 'text': (abody | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | striptags | truncate(150)), 'meta': ameta}) -%}{%- endif -%}
+{%- endfor -%}
+{%- set merge = catUrls.length and not items.length and not blocks.length -%}
+{%- for b in blocks -%}
+  {%- set s = b.data or b.settings or {} -%}
+  {%- set bimg = s.image.fileUrl or s.image.url or s.image or '' -%}
+  {%- if items.push({'url': s.url or '', 'img': bimg, 'title': s['title' + L] or s.title, 'text': s['text' + L] or s.text, 'meta': s['meta' + L] or s.meta or ''}) -%}{%- endif -%}
+{%- endfor -%}
+
+<section class="dc-journal section surface-cream" aria-labelledby="dc-journal-title">
+  <div class="shell">
+    <nav class="dc-breadcrumb" aria-label="{{ t('a11y.breadcrumb') }}">
+      <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span>
+      {%- if bd.title %}<a href="/blogs">{{ t('nav.journal') }}</a><span aria-hidden="true">/</span><span aria-current="page">{{ bd.title }}</span>
+      {%- else %}<span aria-current="page">{{ t('nav.journal') }}</span>{%- endif %}
+    </nav>
+    <header class="dc-section-heading">
+      <div>
+        <p class="eyebrow">{{ t('journal.eyebrow') }}</p>
+        <h1 id="dc-journal-title" class="h-display">{{ title }}</h1>
+        {%- if text %}<p class="dc-section-heading__text">{{ text }}</p>{%- endif %}
+      </div>
+    </header>
+
+    {%- if cats.length > 1 %}
+    <nav class="dc-blog-cats" aria-label="{{ t('nav.journal') }}">
+      <a href="/blogs"{% if not bd.title %} class="is-active" aria-current="page"{% endif %}>{{ t('common.all') }}</a>
+      {%- for b in cats %}{%- set bh = b.handle or b.slug -%}
+      {%- if bh %}<a href="/blogs/{{ bh }}"{% if bd.title == b.title %} class="is-active" aria-current="page"{% endif %}>{{ b.title }}</a>{%- endif %}
+      {%- endfor %}
+    </nav>
+    {%- endif %}
+
+    {%- if merge %}
+    <div x-data="dcBlogMerge({{ catUrls | dump | escape }})">
+      <div class="dc-journal-grid" x-ref="grid" x-show="!none"></div>
+      <p class="dc-loading-note" x-show="loading">{{ t('common.loading') }}</p>
+      <div class="dc-empty-state" x-show="none" x-cloak>
+        <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+        <h2>{{ t('journal.empty') }}</h2>
+        <a href="/shop" class="btn btn-dark">{{ t('cart.start_shopping') }}</a>
+      </div>
+    </div>
+    {%- elif items.length %}
+    <div class="dc-journal-grid">
+      {%- for it in items %}
+      <article class="dc-journal-card" data-reveal>
+        {%- if it.img %}<div class="dc-journal-card__media"><img src="{{ it.img }}" alt="" width="600" height="400" loading="lazy" decoding="async"></div>{%- else %}<div class="dc-journal-card__media dc-journal-card__media--art">{% ui "icon.njk", name="bean", size=56 %}</div>{%- endif %}
+        <div class="dc-journal-card__body">
+          {%- if it.meta %}<p class="dc-journal-card__meta">{{ it.meta | safe }}</p>{%- endif %}
+          <h2 class="dc-journal-card__title">{{ it.title }}</h2>
+          {%- if it.text %}<p class="dc-journal-card__text">{{ it.text }}</p>{%- endif %}
+          {%- if it.url %}<a class="dc-journal-card__link" href="{{ it.url }}">{{ t('journal.read_more') }}</a>{%- endif %}
+        </div>
+      </article>
+      {%- endfor %}
+    </div>
+    {%- else %}
+    <div class="dc-empty-state">
+      <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+      <h2>{{ t('journal.empty') }}</h2>
+      <p>{{ t('journal.text') }}</p>
+      <a href="/shop" class="btn btn-dark">{{ t('cart.start_shopping') }}</a>
+    </div>
+    {%- endif %}
+  </div>
+</section>

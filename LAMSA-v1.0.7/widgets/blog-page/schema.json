@@ -1,0 +1,82 @@
+{
+  "name": "صفحة المدونة",
+  "settings": {
+    "show_categories": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط تصنيفات المدونة",
+        "en": "Show blog categories bar"
+      },
+      "default": true
+    },
+    "show_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار صورة المدونة أعلى الصفحة",
+        "en": "Show the blog's cover image"
+      },
+      "default": true
+    },
+    "feature_first": {
+      "type": "boolean",
+      "label": {
+        "ar": "إبراز أحدث مقال بعرض كامل",
+        "en": "Feature the newest article full-width"
+      },
+      "default": true
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        }
+      ]
+    },
+    "show_date": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التاريخ",
+        "en": "Show the date"
+      },
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار المقتطف",
+        "en": "Show the excerpt"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "صفحة المدونة"
+    }
+  ]
+}

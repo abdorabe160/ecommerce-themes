@@ -1,0 +1,129 @@
+{#
+  ============================================================================
+  MUHARRIK · MAKE MARQUEE · تسوّق حسب الماركة
+  ----------------------------------------------------------------------------
+     — SHOP BY MAKE ─────────────────────────────────────────────────────────
+     TOYOTA // ⌐HYUNDAI⌐ // KIA // ⌐NISSAN⌐ // CHEVROLET // ⌐BMW⌐ //  →
+     ←  ⌐MERCEDES⌐ // HONDA // ⌐MG⌐ // GEELY // ⌐FORD⌐ // JEEP //
+     ─────────────────────────────────────────────────────────────────────────
+
+  Two opposing rows of car-make WORDMARKS — typographic only (logos are
+  trademarks), display face, uppercase in Latin, alternating solid / hollow.
+  Every word is a link to the make's collection (/shop/<handle>, or a manual
+  URL, else /shop). Built on the .mh-marquee primitive (muharrik.css): two
+  identical tracks per row; the second row runs in reverse. `data-mh-velocity`
+  lets the motion script speed and skew them with scroll velocity. Hover
+  pauses the row (primitive) and lights the hovered word yellow.
+
+  Accessibility: the moving rows are aria-hidden with unfocusable links; a
+  visually-hidden <nav> carries the same links for keyboards and readers.
+
+  The inline script only tops the tracks up (clones the words until each
+  track is at least as wide as the strip) — the same trick kinetic-strip uses
+  to keep the loop gap-free.
+
+  No blocks → twelve common makes in the region, split across the two rows.
+
+  Styles: assets/mh-w-c.css → "MAKE MARQUEE".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% set label = d.label or ('تسوّق حسب الماركة' if isAr else 'Shop by make') %}
+{% set speed = d.speed | default(36, true) %}
+{% set size = d.size | default('large', true) %}
+
+{% set DEMO = ['Toyota', 'Hyundai', 'Kia', 'Nissan', 'Chevrolet', 'BMW', 'Mercedes', 'Honda', 'MG', 'Geely', 'Ford', 'Jeep'] %}
+
+{% set makes = [] %}
+{% if (blocks | length) > 0 %}
+  {% for b in blocks %}
+    {% set s = b.settings | default({}, true) %}
+    {% set cols = s.collection | default([], true) %}
+    {% set col = cols[0] if (cols | length) > 0 else null %}
+    {% set colHandle = (col.handle | default(col.slug, true) | default('', true)) if (col and not (col is string)) else '' %}
+    {% set link = s.url | default('', true) %}
+    {% set link = link if link else (('/shop/' ~ colHandle) if colHandle else '/shop') %}
+    {% set nm = s.name | default('', true) | trim %}
+    {% if nm %}{% set _ = makes.push({ name: nm, url: link }) %}{% endif %}
+  {% endfor %}
+{% endif %}
+{% if (makes | length) == 0 %}
+  {% for nm in DEMO %}{% set _ = makes.push({ name: nm, url: '/shop' }) %}{% endfor %}
+{% endif %}
+
+{# split: odd positions → row A, even → row B; a short list rides both rows #}
+{% set rowA = [] %}{% set rowB = [] %}
+{% if (makes | length) >= 6 %}
+  {% for m in makes %}{% if loop.index0 % 2 == 0 %}{% set _ = rowA.push(m) %}{% else %}{% set _ = rowB.push(m) %}{% endif %}{% endfor %}
+{% else %}
+  {% for m in makes %}{% set _ = rowA.push(m) %}{% set _ = rowB.push(m) %}{% endfor %}
+{% endif %}
+{% set reps = 4 if (rowA | length) < 4 else 2 %}
+
+{% macro row(list, cls, offset) %}
+  <div class="mh-marquee mh-mm-row {{ cls }}" data-mh-velocity aria-hidden="true">
+    {% for t in range(0, 2) %}
+      <div class="mh-marquee-track mh-mm-track">
+        {% for r in range(0, reps) %}
+          {% for m in list %}
+            {% set k = (r * (list | length)) + loop.index0 + offset %}
+            <a href="{{ m.url }}" class="mh-mm-w {{ 'is-outline' if (k % 2 == 1) else 'is-solid' }}" tabindex="-1" dir="auto">{{ m.name | safe }}</a><span class="mh-mm-sep" aria-hidden="true">//</span>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+<section id="mh-mm-{{ id }}"
+         class="mh-mm mh-mm--{{ size }}{{ ' has-rules' if d.show_rules != false }}"
+         style="--pt: {{ d.padding_top | default(24) }}px; --pb: {{ d.padding_bottom | default(24) }}px; --mh-marquee-speed: {{ speed }}s;">
+  {% if d.show_label != false %}
+    <div class="mh-mm-label-row">
+      <p class="mh-kicker mh-mm-label" data-mh-reveal="fade">{{ label | safe }}</p>
+    </div>
+  {% endif %}
+
+  {# the real links, for keyboards and screen readers #}
+  <nav class="mh-sr" aria-label="{{ label }}">
+    <ul>{% for m in makes %}<li><a href="{{ m.url }}">{{ m.name | safe }}</a></li>{% endfor %}</ul>
+  </nav>
+
+  <div class="mh-mm-rows" data-mh-mm>
+    {{ row(rowA, 'is-a', 0) }}
+    {{ row(rowB, 'is-b is-reverse', 1) }}
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var root = document.getElementById('mh-mm-{{ id }}');
+      var box = root && root.querySelector('[data-mh-mm]');
+      if (!box || box.__mhMm) return;
+      box.__mhMm = true;
+      function fill() {
+        var need = box.clientWidth;
+        if (!need) return;
+        box.querySelectorAll('.mh-mm-track').forEach(function (track) {
+          var guard = 0;
+          var seed = Array.prototype.slice.call(track.children);
+          while (track.scrollWidth < need && guard < 12) {
+            seed.forEach(function (c) { track.appendChild(c.cloneNode(true)); });
+            guard++;
+          }
+        });
+      }
+      fill();
+      var t;
+      window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fill, 200); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-mm-' ~ id, c=d %}

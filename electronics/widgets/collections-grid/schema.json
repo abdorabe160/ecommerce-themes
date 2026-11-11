@@ -1,0 +1,58 @@
+{
+  "name": "تسوّق حسب الفئة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "تسوّق حسب الفئة"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Shop by category"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": "اعثر على ما تحتاجه بالضبط"
+    },
+    "subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي (إنجليزي)",
+        "en": "Subtitle (English)"
+      },
+      "default": "Find exactly what you need"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيفات",
+        "en": "Collections"
+      }
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر عرض الكل",
+        "en": "Show view all"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "تسوّق حسب الفئة"
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+{
+  "name": "متعدد الأعمدة",
+  "settings": {
+    "style": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل القسم",
+        "en": "▸ Section style"
+      },
+      "default": "icon",
+      "options": [
+        {
+          "value": "icon",
+          "label": {
+            "ar": "شريط خدمات — أيقونة وسطر",
+            "en": "Service bar — a glyph and a line"
+          }
+        },
+        {
+          "value": "image",
+          "label": {
+            "ar": "صفوف بصور — صورة وعنوان وفقرة",
+            "en": "Feature rows — a photo, a heading, a paragraph"
+          }
+        }
+      ]
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم (اتركه فارغاً لإخفائه)",
+        "en": "Section title (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (موبايل)",
+        "en": "Columns (Mobile)"
+      },
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "١",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين الأعمدة",
+        "en": "Gap between columns"
+      },
+      "default": 28,
+      "min": 8,
+      "max": 64,
+      "step": 4,
+      "unit": "px"
+    },
+    "align": {
+      "type": "select",
+      "label": {
+        "ar": "المحاذاة",
+        "en": "Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "في المنتصف (موصى به)",
+            "en": "Centred (recommended)"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "في بداية السطر",
+            "en": "Aligned to the start"
+          }
+        }
+      ]
+    },
+    "icon_size": {
+      "type": "range",
+      "label": {
+        "ar": "حجم الأيقونة",
+        "en": "Icon Size"
+      },
+      "default": 30,
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px"
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة الصورة (لشكل الصور فقط)",
+        "en": "Image ratio (image style only)"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x3",
+          "label": {
+            "ar": "٤:٣ (عرضي)",
+            "en": "4:3 (landscape)"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤ (طولي)",
+            "en": "3:4 (portrait)"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "بيج فاتح",
+            "en": "Warm off-white"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Headings colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون الأيقونات",
+        "en": "Icon colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة — تظهر في الشكلين (في شكل الصور تحل محل الصورة الناقصة)",
+            "en": "Icon — shown in both styles (in the image style it stands in for a missing photo)"
+          },
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون أيقونة",
+                "en": "No icon"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "شاحنة — الشحن",
+                "en": "Truck — shipping"
+              }
+            },
+            {
+              "value": "returns",
+              "label": {
+                "ar": "سهمان — الإرجاع",
+                "en": "Arrows — returns"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "درع — الأمان",
+                "en": "Shield — secure"
+              }
+            },
+            {
+              "value": "rosette",
+              "label": {
+                "ar": "ختم — الجودة",
+                "en": "Rosette — quality"
+              }
+            },
+            {
+              "value": "support",
+              "label": {
+                "ar": "سماعة — الدعم",
+                "en": "Headset — support"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "card",
+              "label": {
+                "ar": "بطاقة — الدفع",
+                "en": "Card — payment"
+              }
+            },
+            {
+              "value": "tag",
+              "label": {
+                "ar": "وسم — العروض",
+                "en": "Tag — offers"
+              }
+            },
+            {
+              "value": "sparkle",
+              "label": {
+                "ar": "نجمة — جديد",
+                "en": "Sparkle — new"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة — مستدام",
+                "en": "Leaf — sustainable"
+              }
+            },
+            {
+              "value": "ruler",
+              "label": {
+                "ar": "مسطرة — المقاسات",
+                "en": "Ruler — sizing"
+              }
+            },
+            {
+              "value": "box",
+              "label": {
+                "ar": "صندوق — التغليف",
+                "en": "Box — packaging"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة — التوصيل السريع",
+                "en": "Clock — fast delivery"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب",
+                "en": "Heart"
+              }
+            },
+            {
+              "value": "globe",
+              "label": {
+                "ar": "كرة أرضية — الشحن الدولي",
+                "en": "Globe — worldwide"
+              }
+            },
+            {
+              "value": "lock",
+              "label": {
+                "ar": "قفل — الخصوصية",
+                "en": "Lock — privacy"
+              }
+            }
+          ]
+        },
+        "custom_icon": {
+          "type": "media",
+          "label": {
+            "ar": "أيقونة مخصّصة — تحل محل الاختيار أعلاه، وتحل محل الصورة في شكل الصور",
+            "en": "Custom icon — replaces the choice above, and stands in for the image in the image style"
+          }
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة (تُستخدم في شكل الصور)",
+            "en": "Image (used by the image style)"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري) · الصفحات المتاحة: / · /shop · /shop/اسم-التصنيف · /collections · /blogs · /cart",
+            "en": "Link (optional) · available: / · /shop · /shop/collection-slug · /collections · /blogs · /cart"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "متعدد الأعمدة"
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{#
+  ============================================================================
+  MUHARRIK · KIT BUNDLES · جهّز عربيتك
+  ----------------------------------------------------------------------------
+     — BUILD YOUR KIT
+     SAVE MORE AS A SET
+     ┌──────────────┐   ┏━━━━━━━━━━━━━━━┓   ┌──────────────┐
+     │ 01 WASH KIT  │   ┃ 02 PROTECTION ┃   │ 03 TECH KIT  │
+     │ ┌──────────┐ │   ┃ ┌───────────┐ ┃   │ ┌──────────┐ │
+     │ │  image   │ │   ┃ │   image   │ ┃   │ │  image   │ │
+     │ └──────────┘ │   ┃ └───────────┘ ┃   │ └──────────┘ │
+     │ WHAT'S INSIDE│   ┃ [BEST VALUE]  ┃   │ WHAT'S INSIDE│
+     │ ✓ shampoo    │   ┃ ✓ ceramic kit ┃   │ ✓ dash cam   │
+     │ ✓ towels ×6  │   ┃ ✓ towels ×6   ┃   │ ✓ charger    │
+     │ ~~1,480~~    │   ┃ ~~4,070~~     ┃   │ ~~5,550~~    │
+     │ 1,190  −19%  │   ┃ 3,290  −19%   ┃   │ 4,690  −15%  │
+     │ [ GET KIT → ]│   ┃ [ GET KIT → ] ┃   │ [ GET KIT → ]│
+     └──────────────┘   ┗━━━━━━━━━━━━━━━┛   └──────────────┘
+
+  Three kit cards, one per block: name, picture (defaults mh-kit-1..3.jpg), a
+  mono "what's inside" checklist (one item per line), the sum of the parts vs
+  the kit price (text settings — a saving % is derived only when both are
+  plain numbers), a badge, and a CTA linking to the kit sold as a product
+  (/products/<slug>), a collection (/shop/<handle>) or a manual URL.
+
+  The featured kit (block flag, or the middle one by default) has the yellow
+  frame, HUD corner ticks and sits slightly raised. Cards reveal in sequence
+  (`data-mh-stagger` / `data-mh-item`) and tilt in 3D under a fine pointer —
+  off on touch and under reduced motion (the one widget-specific listener).
+
+  No blocks → three default kits built from the demo catalogue
+  (ui/mh-demo-products.njk) in the visitor's language.
+
+  Styles: assets/mh-w-c.css → "KIT BUNDLES".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{% set kicker = d.kicker or ('الأطقم · وفّر أكثر كمجموعة' if isAr else 'Kits · Save more as a set') %}
+{% set title = d.title or ('جهّز عربيتك' if isAr else 'Build your kit') %}
+{% set text = d.text or ('اختر طقمًا جاهزًا بدل تجميع القطع واحدة واحدة — سعر أقل وكل شيء يصل معًا.' if isAr else 'Pick a ready kit instead of hunting part by part: a lower price, and everything lands together.') %}
+{% set badgeFeat = d.featured_badge or ('الأوفر' if isAr else 'Best value') %}
+{% set insideLabel = d.inside_label or ('ماذا في الطقم' if isAr else 'What’s inside') %}
+{% set ctaAll = d.cta_text or ('اطلب الطقم' if isAr else 'Get the kit') %}
+
+{# ---- default kits (demo catalogue, by language) ---- #}
+{% if isAr %}
+  {% set DEMO = [
+    { name: 'طقم الغسيل', tagline: 'لغسيل أسبوعي بلا خدوش', items: 'شامبو رغوة كثيفة 1 لتر\nفوط مايكروفايبر ×6\nمنظف جنوط\nجل تلميع الإطارات', was: '1480', price: '1190' },
+    { name: 'طقم الحماية', tagline: 'سيراميك 9H يدوم 12 شهرًا', items: 'طقم طلاء سيراميك\nشامبو رغوة كثيفة 1 لتر\nفوط مايكروفايبر ×6\nغطاء سيارة لكل الأجواء', was: '4070', price: '3290' },
+    { name: 'طقم التقنية', tagline: 'كاميرا، شحن، وفحص الأعطال', items: 'كاميرا داش 4K\nحامل شاحن لاسلكي\nجهاز فحص OBD2', was: '5550', price: '4690' }
+  ] %}
+{% else %}
+  {% set DEMO = [
+    { name: 'Wash kit', tagline: 'For a scratch-free weekly wash', items: 'Snow Foam Shampoo 1L\nMicrofibre Towel Pack ×6\nAlloy Wheel Cleaner\nTyre Shine Gel', was: '1480', price: '1190' },
+    { name: 'Protection kit', tagline: '9H ceramic that lasts 12 months', items: 'Ceramic Coating Kit\nSnow Foam Shampoo 1L\nMicrofibre Towel Pack ×6\nAll-Weather Car Cover', was: '4070', price: '3290' },
+    { name: 'Tech kit', tagline: 'Record, charge, diagnose', items: '4K Dash Cam\nWireless Charger Mount\nOBD2 Scanner', was: '5550', price: '4690' }
+  ] %}
+{% endif %}
+
+{# ---- normalise blocks → kits; no blocks → the three defaults ---- #}
+{% set kits = [] %}
+{% if (blocks | length) > 0 %}
+  {% for b in blocks %}
+    {% set s = b.settings | default({}, true) %}
+    {% set fb = DEMO[loop.index0 % 3] %}
+    {% set prods = s.product | default([], true) %}
+    {% set pr = prods[0] if (prods | length) > 0 else null %}
+    {% set cols = s.collection | default([], true) %}
+    {% set col = cols[0] if (cols | length) > 0 else null %}
+    {% set colHandle = (col.handle | default(col.slug, true) | default('', true)) if (col and not (col is string)) else '' %}
+    {% set link = s.url | default('', true) %}
+    {% if pr and not (pr is string) %}{% set link = '/products/' ~ (pr.slug | default(pr.handle, true) | default(pr._id, true)) %}
+    {% elif colHandle %}{% set link = '/shop/' ~ colHandle %}{% endif %}
+    {% set link = link if link else '/shop' %}
+    {# macro output is a SafeString — empty is still truthy, so test length #}
+    {% set img = mediaUrl(s.image) | trim %}
+    {% set _ = kits.push({
+      name: s.name or fb.name, tagline: s.tagline | default('', true),
+      img: img if (img | length) > 0 else (('mh-kit-' ~ ((loop.index0 % 3) + 1) ~ '.jpg') | assets),
+      items: s.items or fb.items, was: s.price_was | default('', true), price: s.price | default('', true),
+      badge: s.badge | default('', true), featured: s.featured == true, link: link, cta: s.cta_text or ctaAll
+    }) %}
+  {% endfor %}
+{% else %}
+  {% for fb in DEMO %}
+    {% set _ = kits.push({
+      name: fb.name, tagline: fb.tagline, img: ('mh-kit-' ~ loop.index ~ '.jpg') | assets,
+      items: fb.items, was: fb.was, price: fb.price, badge: '', featured: false, link: '/shop', cta: ctaAll
+    }) %}
+  {% endfor %}
+{% endif %}
+
+{# featured: any block flagged; else the middle card when there are three #}
+{% set anyFlag = false %}
+{% for k in kits %}{% if k.featured %}{% set anyFlag = true %}{% endif %}{% endfor %}
+{% set n = kits | length %}
+{% set midIx = ((n - 1) / 2) | int %}
+
+<section id="mh-kb-{{ id }}"{% if (blocks | length) == 0 %} data-hy-empty{% endif %}
+         class="mh-kb is-n-{{ n }}{{ ' has-tilt' if d.tilt != false }}"
+         style="--pt: {{ d.padding_top | default(64) }}px; --pb: {{ d.padding_bottom | default(64) }}px;">
+  <div class="mh-kb-wrap">
+    <header class="mh-head mh-kb-head">
+      <div class="mh-head-main">
+        <p class="mh-kicker" data-mh-reveal="fade">{{ kicker | safe }}</p>
+        <h2 class="mh-h" data-mh-split>{{ title | safe }}</h2>
+      </div>
+      {% if text %}<p class="mh-sub" data-mh-reveal="fade" data-mh-delay="0.2">{{ text | safe }}</p>{% endif %}
+    </header>
+
+    <div class="mh-kb-grid" data-mh-stagger>
+      {% for k in kits %}
+        {% set feat = k.featured if anyFlag else (loop.index0 == midIx and n >= 3) %}
+        {% set wasN = k.was | float(0) %}
+        {% set priceN = k.price | float(0) %}
+        {% set savePct = (((wasN - priceN) / wasN * 100) | int) if (wasN > 0 and priceN > 0 and wasN > priceN) else 0 %}
+        {% set badge = k.badge if k.badge else (badgeFeat if feat else '') %}
+        <article class="mh-kb-card mh-panel{{ ' is-featured mh-hud' if feat }}" data-mh-item data-mh-tilt>
+          <div class="mh-kb-top">
+            <span class="mh-kb-n mh-mono">{{ pad(loop.index) | trim }}</span>
+            {% if badge %}<span class="mh-tag{{ '' if feat else ' mh-tag--ghost' }}">{{ badge | safe }}</span>{% endif %}
+          </div>
+          <a href="{{ k.link }}" class="mh-kb-media" aria-label="{{ k.name }}">
+            <img src="{{ k.img }}" alt="{{ k.name }}" loading="lazy"/>
+          </a>
+          <div class="mh-kb-body">
+            <h3 class="mh-kb-name">{{ k.name | safe }}</h3>
+            {% if k.tagline %}<p class="mh-kb-tag">{{ k.tagline | safe }}</p>{% endif %}
+
+            {% set lines = [] %}
+            {% for ln in (k.items | string).split('\n') %}{% set lt = ln | trim %}{% if lt %}{% set _ = lines.push(lt) %}{% endif %}{% endfor %}
+            {% if (lines | length) > 0 %}
+              <p class="mh-kb-inside mh-kicker is-bare">{{ insideLabel | safe }} <span class="mh-kicker-num">{{ pad(lines | length) | trim }}</span></p>
+              <ul class="mh-kb-list mh-mono">
+                {% for ln in lines %}<li>{{ ln | safe }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+
+            <div class="mh-kb-prices">
+              {% if k.was %}<span class="mh-kb-was-row mh-mono"><span class="mh-kb-was-l">{{ 'منفردة' if isAr else 'Separately' }}</span> <s class="mh-was">{% if wasN > 0 and (k.was | string) == (wasN | string) %}{{ wasN | money }}{% else %}{{ k.was | safe }}{% endif %}</s></span>{% endif %}
+              <span class="mh-kb-price-row">
+                <span class="mh-kb-price-l mh-mono">{{ 'سعر الطقم' if isAr else 'Kit price' }}</span>
+                <span class="mh-kb-price mh-price">{% if k.price %}{% if priceN > 0 and (k.price | string) == (priceN | string) %}{{ priceN | money }}{% else %}{{ k.price | safe }}{% endif %}{% else %}—{% endif %}</span>
+                {% if savePct > 0 %}<span class="mh-kb-save mh-mono" dir="ltr">-{{ savePct }}%</span>{% endif %}
+              </span>
+            </div>
+
+            <a href="{{ k.link }}" class="mh-btn{{ '' if feat else ' mh-btn--ghost' }} mh-btn--block mh-kb-cta">{{ k.cta | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('mh-kb-{{ id }}');
+    if (!root || !root.classList.contains('has-tilt')) return;
+    /* 3D tilt — fine pointers only, never under reduced motion. The one
+       listener this widget owns; everything else is the motion contract. */
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!fine.matches || still.matches) return;
+    root.querySelectorAll('[data-mh-tilt]').forEach(function (card) {
+      var raf = 0;
+      card.addEventListener('pointermove', function (e) {
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          raf = 0;
+          var r = card.getBoundingClientRect();
+          var x = (e.clientX - r.left) / r.width - 0.5;
+          var y = (e.clientY - r.top) / r.height - 0.5;
+          card.style.setProperty('--ry', (x * 8).toFixed(2) + 'deg');
+          card.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
+          card.style.setProperty('--gx', ((x + 0.5) * 100).toFixed(1) + '%');
+          card.style.setProperty('--gy', ((y + 0.5) * 100).toFixed(1) + '%');
+          card.classList.add('is-tilting');
+        });
+      });
+      card.addEventListener('pointerleave', function () {
+        card.classList.remove('is-tilting');
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-kb-' ~ id, c=d %}

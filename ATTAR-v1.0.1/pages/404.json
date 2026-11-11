@@ -1,0 +1,19 @@
+{
+  "name": "صفحة 404",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "title": "الصفحة غير موجودة",
+        "message": "عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+        "show_search_button": true,
+        "home_url": "/"
+      }
+    }
+  ]
+}

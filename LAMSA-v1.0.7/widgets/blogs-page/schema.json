@@ -1,0 +1,74 @@
+{
+  "name": "صفحة المدونات",
+  "settings": {
+    "show_categories": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط تصنيفات المدونة",
+        "en": "Show blog categories bar"
+      },
+      "default": true
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "المدونة"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "نصائح عناية بمصادر واضحة"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير",
+        "en": "Short description"
+      },
+      "default": "نصائح ومقالات عن العناية بالبشرة والمكياج."
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "صفحة المدونات"
+    }
+  ]
+}

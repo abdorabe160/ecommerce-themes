@@ -1,0 +1,62 @@
+{
+  "name": "اشتراك بريد - Newsletter",
+  "description": "فورم اشتراك في النشرة البريدية بتصميم نيون وأنيميشن نجاح. محتاج لينك خدمة استقبال الإيميلات (Formspree / Mailchimp / Google Apps Script)",
+  "settings": {
+    "badge_text": {
+      "type": "string",
+      "label": "الشارة",
+      "default": "انضم للفريق"
+    },
+    "title": {
+      "type": "string",
+      "label": "العنوان",
+      "default": "خليك أول واحد يعرف"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": "الوصف",
+      "default": "اشترك ووصلّك العروض والتشكيلات الجديدة قبل أي حد."
+    },
+    "perks": {
+      "type": "string",
+      "label": "المميزات (افصل بينها بفاصلة)",
+      "default": "عروض المشتركين, التشكيلات الجديدة أول بأول, بدون سبام"
+    },
+    "placeholder": {
+      "type": "string",
+      "label": "النص جوه خانة الإيميل",
+      "default": "اكتب إيميلك هنا"
+    },
+    "button_text": {
+      "type": "string",
+      "label": "نص الزرار",
+      "default": "اشترك دلوقتي"
+    },
+    "form_action": {
+      "type": "string",
+      "label": "لينك استقبال الاشتراكات (POST بحقل email) - مثال: https://formspree.io/f/xxxx",
+      "default": ""
+    },
+    "success_title": {
+      "type": "string",
+      "label": "رسالة النجاح",
+      "default": "أهلاً بيك في الفريق!"
+    },
+    "success_text": {
+      "type": "string",
+      "label": "نص تحت رسالة النجاح",
+      "default": "هيوصلك جديد العروض والتشكيلات أول بأول."
+    },
+    "privacy_text": {
+      "type": "string",
+      "label": "ملاحظة الخصوصية",
+      "default": "بياناتك في أمان، وتقدر تلغي الاشتراك في أي وقت."
+    }
+  },
+  "presets": [
+    {
+      "name": "اشتراك بريد (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

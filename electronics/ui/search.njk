@@ -1,0 +1,52 @@
+{# نافذة البحث مع اقتراحات فورية #}
+<div x-cloak x-show="isOpen('search')" class="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="{{t('header.search')}}">
+  <div class="lg-overlay" @click="closeModal()"
+       x-show="isOpen('search')"
+       x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"></div>
+
+  <div class="relative lg-container pt-4 md:pt-16"
+       x-show="isOpen('search')"
+       x-transition:enter="lg-win-enter" x-transition:enter-start="lg-win-from lg-win-from--top" x-transition:enter-end="lg-win-to">
+    <div class="glass glass-strong lg-search-panel max-w-2xl mx-auto overflow-hidden">
+      {# حقل كبسولة زجاجية: التركيز يظهر كتوهج ناعم على الكبسولة كلها بدل إطار المتصفح الأزرق #}
+      <form action="/search" method="GET" class="flex items-center gap-2 p-3" role="search" @submit.prevent="setSearch(search)">
+        <div class="lg-search-field" @click="$el.querySelector('input').focus()">
+          <span class="lg-search-field__icon">{% ui "icon.njk", name="search", cls="w-[18px] h-[18px]" %}</span>
+          <input id="lg-search-input"
+                 type="search"
+                 name="q"
+                 x-model="search"
+                 @input.debounce.300ms="loadSuggestions()"
+                 @keydown="suggestKey($event)"
+                 role="combobox" aria-autocomplete="list" :aria-expanded="suggestions.products.length > 0"
+                 aria-label="{{t('header.search')}}"
+                 autocomplete="off"
+                 placeholder="{{t('header.search_placeholder')}}"
+                 class="lg-search-field__input">
+          <span x-show="suggestions.loading" x-cloak class="lg-spinner text-primary shrink-0 me-2"></span>
+          <button type="button" class="lg-search-field__clear" x-show="search && !suggestions.loading" x-cloak
+                  @click.stop="search = ''; loadSuggestions(); $el.closest('.lg-search-field').querySelector('input').focus()"
+                  aria-label="{{t('search.clear')}}">
+            <span>{% ui "icon.njk", name="close", cls="w-3.5 h-3.5" %}</span>
+          </button>
+        </div>
+        <button type="button" class="btn btn-glass btn-icon shrink-0" @click="closeModal()" aria-label="{{t('common.close')}}">
+          {% ui "icon.njk", name="close" %}
+        </button>
+      </form>
+
+      <div class="lg-divider"></div>
+
+      <div class="max-h-[60vh] lg-scroll p-3">
+        {% ui "search-suggestions.njk", input="lg-search-input" %}
+      </div>
+
+      {# اختصارات لوحة المفاتيح (ديسكتوب) #}
+      <div class="lg-search-keys" aria-hidden="true">
+        <span><kbd class="lg-kbd">↑</kbd><kbd class="lg-kbd">↓</kbd> {{t('search.kbd_navigate')}}</span>
+        <span><kbd class="lg-kbd">Enter</kbd> {{t('search.kbd_open')}}</span>
+        <span><kbd class="lg-kbd">Esc</kbd> {{t('search.kbd_close')}}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<div class="dc-video-shell" x-show="isOpen('video')" x-cloak x-transition.opacity @click.self="closeModal()">
+  <section class="dc-video-panel" data-modal="video" @keydown="trapFocus($event)" role="dialog" aria-modal="true" :aria-label="video.title || {{ t('a11y.play_video') | dump | escape }}">
+    <button type="button" class="dc-video-close icon-btn" @click="closeModal()" aria-label="{{ t('a11y.close_dialog') }}">{% ui "icon.njk", name="close", size=23 %}</button>
+    <h2 class="sr-only" x-text="video.title"></h2>
+    <div class="dc-video-frame">
+      <iframe x-show="video.src && !video.file" :src="video.src" :title="video.title" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+      <video x-show="video.src && video.file" :src="video.src" controls playsinline></video>
+    </div>
+  </section>
+</div>

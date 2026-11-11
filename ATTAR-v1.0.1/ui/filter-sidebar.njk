@@ -1,0 +1,187 @@
+{# ===== ANAQA Filter Sidebar (Desktop) — Editorial ===== #}
+{# Used inside collectionFilter() Alpine scope #}
+
+<style>
+  .anaqa-filter-block { border-top: 1px solid var(--color-border); }
+  .anaqa-filter-header {
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: start;
+    cursor: pointer;
+    color: var(--color-text-primary);
+  }
+  .anaqa-filter-opt {
+    width: 100%;
+    text-align: start;
+    padding: 7px 0;
+    font-size: 14px;
+    transition: color 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+  .anaqa-filter-opt:hover { color: var(--color-text-primary); }
+  .anaqa-filter-opt-active { color: var(--color-text-primary); font-weight: 500; }
+  .anaqa-filter-check {
+    width: 15px;
+    height: 15px;
+    border-radius: 0;
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .anaqa-filter-check-active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .anaqa-filter-color {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .anaqa-filter-color-active {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-bg-primary), 0 0 0 3px var(--color-accent);
+  }
+  .anaqa-filter-price-val {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+</style>
+
+{# Sort #}
+{% if show_sort %}
+  <div class="anaqa-filter-block">
+    <button @click="sortOpen = !sortOpen" class="anaqa-filter-header">
+      <span class="editorial-label font-body-ar">{{ t('pages.collection.sort') | default('الترتيب') }}</span>
+      <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="sortOpen !== false && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-text-tertiary);">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+    <div x-show="sortOpen !== true">
+      <div class="pb-4 space-y-0.5">
+        {% set sortItems = [
+          { value: '', label: t('pages.collection.all_products') | default('All Products') },
+          { value: 'newest', label: t('pages.search.newest') | default('Newest') },
+          { value: 'price_asc', label: t('pages.search.price_low_high') | default('Price: Low to High') },
+          { value: 'price_desc', label: t('pages.search.price_high_low') | default('Price: High to Low') },
+          { value: 'highest_rated', label: t('search.highest_rated') | default('Highest Rated') }
+        ] %}
+        {% for opt in sortItems %}
+          <button @click="sortBy('{{ opt.value }}')"
+                  class="anaqa-filter-opt font-body-ar"
+                  :class="currentSort === '{{ opt.value }}' ? 'anaqa-filter-opt-active' : ''">
+            <span class="flex-1">{{ opt.label }}</span>
+            <svg x-show="currentSort === '{{ opt.value }}'" x-cloak class="w-3.5 h-3.5" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{# Filters #}
+{% if hasFilters %}
+  {% for filter in filters %}
+    <div class="anaqa-filter-block">
+
+      {# Price Range #}
+      {% if filter.inputType == 'range' %}
+        <div x-data="{ open: true }">
+          <button @click="open = !open" class="anaqa-filter-header">
+            <span class="editorial-label font-body-ar">{{ filter.name[localization.language] | default(filter.name.ar) | default('السعر') }}</span>
+            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-text-tertiary);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div x-show="open">
+            <div class="pb-5 pt-1" dir="ltr">
+              {# Display values #}
+              <div class="flex items-center justify-between mb-5">
+                <span class="anaqa-filter-price-val"
+                      x-text="(+(priceMin) || {{ filter.range.min }}).toLocaleString()"></span>
+                <div class="flex-1 mx-3" style="border-top: 1px solid var(--color-border);"></div>
+                <span class="anaqa-filter-price-val"
+                      x-text="(+(priceMax) || {{ filter.range.max }}).toLocaleString()"></span>
+              </div>
+              {# Slider — global .price-slider styles #}
+              <div class="price-slider" dir="ltr">
+                <div class="slider-track"></div>
+                <div class="slider-range"
+                     :style="`left: ${((+(priceMin) || {{ filter.range.min }}) - {{ filter.range.min }}) / ({{ filter.range.max }} - {{ filter.range.min }}) * 100}%; right: ${100 - ((+(priceMax) || {{ filter.range.max }}) - {{ filter.range.min }}) / ({{ filter.range.max }} - {{ filter.range.min }}) * 100}%`"></div>
+                <input type="range"
+                       min="{{ filter.range.min }}" max="{{ filter.range.max }}" step="{{ filter.range.step | default(1) }}"
+                       :value="+(priceMin) || {{ filter.range.min }}"
+                       @input="priceMin = Math.min(+$event.target.value, +(priceMax) || {{ filter.range.max }}); $event.target.value = priceMin; _debouncedApplyPrice()">
+                <input type="range"
+                       min="{{ filter.range.min }}" max="{{ filter.range.max }}" step="{{ filter.range.step | default(1) }}"
+                       :value="+(priceMax) || {{ filter.range.max }}"
+                       @input="priceMax = Math.max(+$event.target.value, +(priceMin) || {{ filter.range.min }}); $event.target.value = priceMax; _debouncedApplyPrice()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {# Select / Checkbox / Color / Text Filter #}
+      {% elif filter.inputType == 'select' or filter.inputType == 'checkbox' or filter.inputType == 'color' or filter.inputType == 'text' %}
+        {% set filterItems = filter.items | default(filter.values) | default([]) %}
+        <div x-data="{ open: true }">
+          <button @click="open = !open" class="anaqa-filter-header">
+            <span class="editorial-label font-body-ar">{{ filter.name[localization.language] | default(filter.name.ar) | default(filter.name) }}</span>
+            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-text-tertiary);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div x-show="open">
+            {% if filter.inputType == 'color' %}
+              <div class="pb-5 pt-1 flex flex-wrap gap-2.5">
+                {% for item in filterItems %}
+                  <button @click="toggleFilter('{{ filter.handle }}', '{{ item.value }}')"
+                          class="anaqa-filter-color"
+                          :class="isActive('{{ filter.handle }}', '{{ item.value }}') && 'anaqa-filter-color-active'"
+                          style="background-color: {{ item.value | default('#ccc') }};"
+                          title="{{ item.label[localization.language] | default(item.label.ar) | default(item.label) | default(item.value) }}">
+                  </button>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="pb-4 max-h-56 overflow-y-auto custom-scrollbar space-y-0.5">
+                {% for item in filterItems %}
+                  <button @click="toggleFilter('{{ filter.handle }}', '{{ item.value }}')"
+                          class="anaqa-filter-opt font-body-ar"
+                          :class="isActive('{{ filter.handle }}', '{{ item.value }}') ? 'anaqa-filter-opt-active' : ''">
+                    <span class="anaqa-filter-check"
+                          :class="isActive('{{ filter.handle }}', '{{ item.value }}') && 'anaqa-filter-check-active'">
+                      <svg x-show="isActive('{{ filter.handle }}', '{{ item.value }}')" class="w-2.5 h-2.5" fill="none" stroke="var(--color-bg-primary)" viewBox="0 0 24 24" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </span>
+                    <span class="flex-1">{{ item.label[localization.language] | default(item.label.ar) | default(item.label) | default(item.value) }}</span>
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% endif %}

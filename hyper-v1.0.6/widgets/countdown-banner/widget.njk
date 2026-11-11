@@ -1,0 +1,215 @@
+{# ============================================================================
+   HYPER · مؤقت العد التنازلي: لافتة  (countdown banner)
+   ----------------------------------------------------------------------------
+     ┌────────────────────────────────────────────────────────────────┐
+     │  Flash Sale now on!   28:02:23:59   Save on …   (Use Code: X)  │
+     └────────────────────────────────────────────────────────────────┘
+
+   ── Two ways to set the deadline, and the second one matters ──
+     · mode `fixed`   — one moment for everybody, assembled from the date/time
+       pickers below. Correct for a real sale.
+     · mode `visitor` — a per-visitor window of `fallback_hours`, stamped in
+       localStorage on first visit. This is the honest version of the
+       "evergreen timer": it does NOT reset on every page load, so a visitor
+       who comes back an hour later sees an hour less, not a fresh 24 hours.
+
+   ⚠️  The fixed deadline is ASSEMBLED here from end_year/end_month/end_day/
+   end_hour/end_minute. The previous version of this widget read a setting
+   called `end_at` that no field ever wrote, so choosing "fixed date" silently
+   did nothing and every visitor got the evergreen window instead. If a picker
+   is added or renamed in schema.json, this string has to change with it.
+
+   When it runs out the section HIDES by default. A countdown frozen at zero is
+   worse than no countdown — it advertises a dead sale on every page view.
+
+   ── RTL ──
+   The band's zones flip with the document like any flex row. The CLOCK does
+   not: it is forced `direction: ltr` in the CSS, because a bare 28:02:23:59 is
+   a digital clock and a digital clock reads largest-first LTR in Arabic too.
+   See the note in assets/style.css → "15.15 COUNTDOWN BANNER".
+
+   Styling lives in assets/style.css → "15.15 COUNTDOWN BANNER".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set stageWidth = d.stage_width | default('inset') %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 8 %}
+
+{% set headline = d.headline | default('', true) %}
+{% set desc = d.description | default('', true) %}
+{% set ctaText = d.cta_text | default('', true) %}
+{% set ctaUrl = d.cta_url | default('/shop') %}
+
+{% set mode = d.mode | default('visitor') %}
+{% set fallbackH = d.fallback_hours | default(24) %}
+{% set onExpire = d.on_expire | default('hide') %}
+{% set showDays = d.show_days | default(true) %}
+{% set showSecs = d.show_seconds | default(true) %}
+{% set showLabels = d.show_labels | default(false) %}
+{% set sepChar = d.separator | default(':') %}
+
+{# The fixed deadline, assembled — see the ⚠️ in the header. Local time on
+   purpose: a merchant picks the hour their sale ends in their own timezone,
+   and appending a Z would shift it by their UTC offset. #}
+{% set endAt = '' %}
+{% if mode == 'fixed' %}
+  {% set endAt = (d.end_year | default('2026')) ~ '-' ~ (d.end_month | default('12')) ~ '-' ~ (d.end_day | default('31'))
+                 ~ 'T' ~ (d.end_hour | default('23')) ~ ':' ~ (d.end_minute | default('55')) ~ ':00' %}
+{% endif %}
+
+
+<section id="hy-cd-{{ id }}" class="hy-cd hy-cd--{{ stageWidth }}">
+  <style>
+    #hy-cd-{{ id }} {
+      --hy-cd-radius: {{ radius if stageWidth == 'inset' else 0 }}px;
+    }
+  </style>
+
+  <div class="hy-cd-band">
+
+    {% if headline %}
+      <p class="hy-cd-headline">{{ headline }}</p>
+    {% endif %}
+
+    {# `data-cd` on each numeral is the contract with the script below. #}
+    <div class="hy-cd-clock {{ 'hy-cd-clock--labelled' if showLabels }}"
+         id="hy-cdTimer-{{ id }}"
+         role="timer"
+         aria-live="off">
+
+      {% if showDays %}
+        <span class="hy-cd-cell">
+          <span class="hy-cd-num" data-cd="d">00</span>
+          {% if showLabels %}<span class="hy-cd-unit">{{ t('countdown.days') }}</span>{% endif %}
+        </span>
+        <span class="hy-cd-sep" aria-hidden="true">{{ sepChar }}</span>
+      {% endif %}
+
+      <span class="hy-cd-cell">
+        <span class="hy-cd-num" data-cd="h">00</span>
+        {% if showLabels %}<span class="hy-cd-unit">{{ t('countdown.hours') }}</span>{% endif %}
+      </span>
+      <span class="hy-cd-sep" aria-hidden="true">{{ sepChar }}</span>
+
+      <span class="hy-cd-cell">
+        <span class="hy-cd-num" data-cd="m">00</span>
+        {% if showLabels %}<span class="hy-cd-unit">{{ t('countdown.minutes') }}</span>{% endif %}
+      </span>
+
+      {% if showSecs %}
+        <span class="hy-cd-sep" aria-hidden="true">{{ sepChar }}</span>
+        <span class="hy-cd-cell">
+          <span class="hy-cd-num" data-cd="s">00</span>
+          {% if showLabels %}<span class="hy-cd-unit">{{ t('countdown.seconds') }}</span>{% endif %}
+        </span>
+      {% endif %}
+    </div>
+
+    {% if desc %}
+      {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+           (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes the
+           outer one and the content becomes a SIBLING, so every style on this
+           class stops reaching the text. The inner margins are reset in the CSS. #}
+      <div class="hy-cd-desc">{{ desc | safe }}</div>
+    {% endif %}
+
+    {% if ctaText %}
+      <a href="{{ ctaUrl }}" class="hy-cd-cta">{{ ctaText }}</a>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var section = document.getElementById('hy-cd-{{ id }}');
+    var timer = document.getElementById('hy-cdTimer-{{ id }}');
+    if (!section || !timer) return;
+
+    var ON_EXPIRE = '{{ onExpire }}';
+    var els = {};
+    timer.querySelectorAll('[data-cd]').forEach(function (el) { els[el.dataset.cd] = el; });
+
+    /* ---- resolve the deadline ---- */
+    var deadline = null;
+    {% if endAt %}
+      /* Parsed as LOCAL time — the merchant picked the hour their sale ends in
+         their own timezone, and a Z would shift it by their UTC offset. Safari
+         rejects the space-separated form outright, hence the T. */
+      deadline = new Date('{{ endAt }}'.trim().replace(' ', 'T')).getTime();
+      if (isNaN(deadline)) deadline = null;
+    {% endif %}
+
+    if (deadline === null) {
+      /* Per-visitor window. Stamped once and read back afterwards — the point
+         is that it does NOT restart on every page load. */
+      var KEY = 'hy-cd-{{ id }}';
+      var started = null;
+      try { started = parseInt(localStorage.getItem(KEY), 10); } catch (e) {}
+      if (!started || isNaN(started)) {
+        started = Date.now();
+        try { localStorage.setItem(KEY, String(started)); } catch (e) {}
+      }
+      deadline = started + {{ fallbackH }} * 3600000;
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function expire() {
+      if (ON_EXPIRE === 'hide') { section.style.display = 'none'; }
+      else if (ON_EXPIRE === 'timer_only') { timer.style.display = 'none'; }
+      else { Object.keys(els).forEach(function (k) { els[k].textContent = '00'; }); }
+    }
+
+    function tick() {
+      var left = deadline - Date.now();
+      if (left <= 0) { expire(); return false; }
+
+      var totalS = Math.floor(left / 1000);
+      var dd = Math.floor(totalS / 86400);
+      var hh = Math.floor((totalS % 86400) / 3600);
+      var mm = Math.floor((totalS % 3600) / 60);
+      var ss = totalS % 60;
+
+      /* With no days box the days have to go somewhere, or a three-day sale
+         reads as if it ends in two hours. */
+      if (!els.d) hh += dd * 24;
+      /* Same argument one unit down: with the seconds hidden, a minute that has
+         not fully elapsed would otherwise be dropped and the clock would show
+         00:00 for a full minute before expiring. */
+      if (!els.s && ss > 0) mm += 1;
+
+      if (els.d) els.d.textContent = pad(dd);
+      els.h.textContent = pad(hh);
+      els.m.textContent = pad(mm);
+      if (els.s) els.s.textContent = pad(ss);
+      return true;
+    }
+
+    if (!tick()) return;
+
+    /* 1s while the seconds are on screen; once a minute otherwise — repainting
+       a minutes box every second is sixty repaints for one change. */
+    var iv = setInterval(function () { if (!tick()) clearInterval(iv); },
+                         {{ '1000' if showSecs else '15000' }});
+
+    /* Background tabs throttle timers, so the clock drifts while hidden. This
+       resyncs the moment it comes back rather than catching up one tick at a
+       time. */
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) tick();
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay LAST — it and the widget's own <style>
+   target the same id at the same specificity, so source order decides. #}
+{% ui "section-colors.njk", scope='#hy-cd-' ~ id, c=d %}

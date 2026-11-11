@@ -1,0 +1,186 @@
+{
+  "name": "الفوتر",
+  "settings": {
+    "slogan_1": {
+      "type": "string",
+      "label": {
+        "ar": "شعار ١",
+        "en": "Slogan 1"
+      },
+      "default": "طاقة خام"
+    },
+    "slogan_2": {
+      "type": "string",
+      "label": {
+        "ar": "شعار ٢ (بالأحمر)",
+        "en": "Slogan 2 (red)"
+      },
+      "default": "مساحة للشغب"
+    },
+    "slogan_3": {
+      "type": "string",
+      "label": {
+        "ar": "شعار ٣",
+        "en": "Slogan 3"
+      },
+      "default": "ارتدِ الضجيج"
+    },
+    "slogan_4": {
+      "type": "string",
+      "label": {
+        "ar": "شعار ٤ (بالأحمر)",
+        "en": "Slogan 4 (red)"
+      },
+      "default": "أنت ابن الحي"
+    },
+    "logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار الفوتر — اتركه فارغاً لشعار المتجر",
+        "en": "Footer logo — leave empty for the store logo"
+      }
+    },
+    "logo_mono": {
+      "type": "boolean",
+      "label": {
+        "ar": "اجعل الشعار أبيض بالكامل",
+        "en": "Render the logo in solid white"
+      },
+      "default": true
+    },
+    "brand_text": {
+      "type": "text",
+      "label": {
+        "ar": "نبذة عن العلامة",
+        "en": "Brand description"
+      },
+      "default": "قطع خام بطاقة الشارع."
+    },
+    "help_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان العمود الأول",
+        "en": "First column title"
+      },
+      "default": "مساعدة"
+    },
+    "help_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط العمود الأول (الشحن، الإرجاع، المقاسات…)",
+        "en": "First column links (shipping, returns, sizes…)"
+      },
+      "default": "footer-menu"
+    },
+    "brand_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان العمود الثاني",
+        "en": "Second column title"
+      },
+      "default": "تسوّق"
+    },
+    "brand_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط العمود الثاني",
+        "en": "Second column links"
+      },
+      "default": "header-menu"
+    },
+    "follow_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان عمود التواصل",
+        "en": "Follow column title"
+      },
+      "default": "تابعنا"
+    },
+    "social_instagram": {
+      "type": "string",
+      "label": {
+        "ar": "رابط إنستجرام",
+        "en": "Instagram URL"
+      },
+      "default": ""
+    },
+    "social_tiktok": {
+      "type": "string",
+      "label": {
+        "ar": "رابط تيك توك",
+        "en": "TikTok URL"
+      },
+      "default": ""
+    },
+    "social_youtube": {
+      "type": "string",
+      "label": {
+        "ar": "رابط يوتيوب",
+        "en": "YouTube URL"
+      },
+      "default": ""
+    },
+    "social_snapchat": {
+      "type": "string",
+      "label": {
+        "ar": "رابط سناب شات",
+        "en": "Snapchat URL"
+      },
+      "default": ""
+    },
+    "social_facebook": {
+      "type": "string",
+      "label": {
+        "ar": "رابط فيسبوك",
+        "en": "Facebook URL"
+      },
+      "default": ""
+    },
+    "social_x": {
+      "type": "string",
+      "label": {
+        "ar": "رابط X (تويتر)",
+        "en": "X URL"
+      },
+      "default": ""
+    },
+    "social_whatsapp": {
+      "type": "string",
+      "label": {
+        "ar": "رابط واتساب (https://wa.me/…)",
+        "en": "WhatsApp link (https://wa.me/…)"
+      },
+      "default": ""
+    },
+    "domain_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الدومين في الشريط السفلي",
+        "en": "Domain text in the bottom strip"
+      },
+      "default": ""
+    },
+    "domain_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الدومين",
+        "en": "Domain link"
+      },
+      "default": "/"
+    },
+    "copyright": {
+      "type": "string",
+      "label": {
+        "ar": "سطر الحقوق — اتركه فارغاً للنص التلقائي",
+        "en": "Legal line — leave empty for the automatic one"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر"
+    }
+  ]
+}

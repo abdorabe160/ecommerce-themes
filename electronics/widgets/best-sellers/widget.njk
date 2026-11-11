@@ -1,0 +1,48 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set products = wd.products | default([]) %}
+{# تصنيف القسم (اختياري): القسم يعرض أول "عدد المنتجات" منه، و"عرض الكل" يفتح صفحة نفس التصنيف — نفس product-grid #}
+{% set fc = wd.collection %}
+{% if fc and fc[0] %}{% set fc = fc[0] %}{% endif %}
+{% set fcOk = fc and fc._id and (fc.handle or fc.slug) and fc.status != 'inactive' and fc.status != 'draft' and fc.active != false and fc.isActive != false and fc.deleted != true and not (fc.salesChannels and fc.salesChannels.onlineStore == false) and fc.published != false %}
+{% set viewAll = ('/collections/' + (fc.handle or fc.slug)) if fcOk else wd.view_all_url %}
+{# بدون تصنيف: المنتجات المختارة من الإعدادات؛ وبدون اختيار (المعاينة فقط): منتجات توضيحية إن كان المتجر بلا منتجات، وإلا تلميح للتاجر (lgAutoProducts) #}
+{% set auto = (products | length) == 0 %}
+{% set count = wd.limit | default(4) | int %}
+<section class="lg-section"
+  {%- if fcOk %} x-data="lgAutoProducts({{ count }}, '{{ fc._id }}')" x-show="loading || items.length || empty" x-cloak
+  {%- elif auto %} x-data="lgAutoProducts({{ count }})" x-show="items.length || hint" x-cloak{% endif %}>
+  <div class="lg-container">
+    <div class="lg-section-head">
+      <div>
+        {% if (wd['title' + L] or wd.title) %}<h2 class="lg-title">{{ (wd['title' + L] or wd.title) }}</h2>{% endif %}
+        {% if (wd['subtitle' + L] or wd.subtitle) %}<p class="lg-subtitle">{{ (wd['subtitle' + L] or wd.subtitle) }}</p>{% endif %}
+      </div>
+      {% if viewAll %}
+        <a href="{{ viewAll }}" class="btn-link shrink-0">{{t('common.view_all')}} {% ui "icon.njk", name="arrow", cls="w-3.5 h-3.5 lg-flip-rtl" %}</a>
+      {% endif %}
+    </div>
+    {% if fcOk %}
+    {# المعاينة فقط: التصنيف المختار بلا منتجات #}
+    <p x-show="empty" x-cloak class="lg-editor-hint">{{ t('preview.empty_collection') }}</p>
+    {% elif auto %}
+    {# المعاينة فقط: المتجر فيه بيانات حقيقية ولم يُختر شيء لهذا القسم #}
+    <p x-show="hint" x-cloak class="lg-editor-hint">{{ t('preview.pick_products') }}</p>
+    {% endif %}
+    <div class="lg-mini-grid grid gap-3 md:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {% if fcOk %}
+        <template x-for="i in (loading ? {{ count if count < 4 else 4 }} : 0)" :key="'s' + i"><div class="lg-skeleton h-[150px]" aria-hidden="true"></div></template>
+        <template x-for="p in items" :key="p._id">{% ui "mini-js.njk" %}</template>
+      {% elif auto %}
+        <template x-for="p in items" :key="p._id">{% ui "mini-js.njk" %}</template>
+      {% else %}
+        {% for item in products %}
+          {% ui "product-mini.njk", product=item %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  {% if auto and not fcOk %}{% ui "demo-data.njk", kind="best" %}{% endif %}
+</section>

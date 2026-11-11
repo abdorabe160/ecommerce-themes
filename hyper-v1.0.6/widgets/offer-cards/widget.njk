@@ -1,0 +1,169 @@
+{# ============================================================================
+   HYPER · بطاقات العروض  (offer cards)
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────┐ ┌──────────────────────────┐
+     │ كراسي تيرن         ╭───╮ │ │ كراسي كروس         ╭───╮ │
+     │ سطر أو سطرين وصف   │٤٠٪│ │ │ سطر أو سطرين وصف   │٣٠٪│ │
+     │ ( تسوّق الآن )   [كرسي]  │ │ ( تسوّق الآن )   [كرسي]  │
+     └──────────────────────────┘ └──────────────────────────┘
+
+   Each card carries its OWN background and badge colours, because the pair is
+   the point — a pink card beside a green one. One section-wide colour would
+   make the row a repeat instead of a set.
+
+   The product is a cut-out sitting on the card's bottom edge: `object-fit:
+   contain` with `object-position: bottom`, never `cover`. See the note in
+   assets/style.css → "15.13.2 OFFER CARDS".
+
+   ── RTL ──
+   The card is a two-column grid, so the copy takes the start side and the
+   product the end side in both directions. The badge is placed with
+   `inset-inline-end`, which puts it over the product's top corner either way.
+
+   Styling lives in assets/style.css → "15.13.2 OFFER CARDS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set cards = widget.blocks | default([]) %}
+{% set count = cards | length %}
+
+{% set cols = d.columns | default('2') %}
+{% set height = d.card_height | default(380) %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 10 %}
+{% set badgeSize = d.badge_size | default(96) %}
+{% set bg = d.background | default('white') %}
+
+{# The empty state. A preset cannot seed blocks, so a freshly added section
+   arrives with none — see the note in style.css → "15.29.1". #}
+{% macro phHint() %}
+  <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    {{ t('common.placeholder_add') }}
+  </span>
+{% endmacro %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+{# The root background is INLINE so it beats every stylesheet rule — which is
+   why it reads `var(--hy-sec-bg, …)`. The section-colours picker overrides the
+   custom property, not the declaration. Do not collapse it back. #}
+<section id="hy-offer-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-offers"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <style>
+    #hy-offer-{{ id }} {
+      --offer-cols: {{ cols }};
+      --hy-offer-h: {{ height }}px;
+      --hy-offer-h-sm: {{ (height * 0.8) | round | int }}px;
+      --hy-offer-radius: {{ radius }}px;
+      --hy-offer-badge: {{ badgeSize }}px;
+    }
+  </style>
+
+  <div class="hy-container">
+    {% if d.title %}
+      <div class="hy-prow-head">
+        <div class="hy-prow-headings">
+          <h2 class="hy-prow-title">{{ d.title }}</h2>
+          {% if d.subtitle %}<p class="hy-prow-sub">{{ d.subtitle }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="hy-offer-grid">
+      {% if count == 0 %}
+        {# Two cards at the real height — the pair IS the shape of this section. #}
+        {% for i in range(0, cols | int) %}
+          <div class="hy-offer hy-ph-box" data-hy-placeholder aria-hidden="true">
+            <div class="hy-offer-body">
+              <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 62%;"></span>
+              <span class="hy-ph-line" style="--ph-line-w: 88%;"></span>
+              <span class="hy-ph-line" style="--ph-line-w: 54%;"></span>
+            </div>
+            {# The circle and the product half, so the card's anatomy is legible
+               and not just a rectangle. #}
+            <div class="hy-offer-media">
+              <span class="hy-offer-badge" style="--badge-bg: var(--color-border-strong); --badge-fg: transparent;"></span>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% for block in cards %}
+        {% set b = block.data %}
+        {% set img = mediaUrl(b.image) | trim %}
+        {# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+        {% if not (img | length) %}{% set img = ['demo-offer-1.jpg', 'demo-offer-2.jpg'][loop.index0 % 2] | assets %}{% endif %}
+        {# `| length`, not truthiness — a macro returns a SafeString OBJECT, and
+           an object is truthy even when it holds an empty string. #}
+        {% set hasImg = (img | length) > 0 %}
+
+        <div class="hy-offer"
+             style="--offer-bg: {{ b.card_color | default('var(--color-blush)', true) }};
+                    --offer-fg: {{ b.text_color | default('var(--color-blush-text)', true) }};
+                    --badge-bg: {{ b.badge_color | default('var(--color-pop)', true) }};
+                    --badge-fg: {{ b.badge_text_color | default('var(--color-pop-text)', true) }};">
+
+          <div class="hy-offer-body">
+            {% if b.title %}<h3 class="hy-offer-title">{{ b.title }}</h3>{% endif %}
+            {# ⚠️  `| safe` — a `text` field comes back from Qumra as HTML, and
+               without it the shopper reads the raw tags. #}
+            {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+                 (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes the
+                 outer one and the content becomes a SIBLING, so every style on this
+                 class stops reaching the text. The inner margins are reset in the CSS. #}
+            {% if b.text %}<div class="hy-offer-text">{{ b.text | safe }}</div>{% endif %}
+            {% if b.cta_text %}
+              <a href="{{ b.cta_url | default('/shop') }}"
+                 class="hy-btn hy-btn--pill hy-btn--solid">{{ b.cta_text }}</a>
+            {% endif %}
+          </div>
+
+          <div class="hy-offer-media">
+            {% if hasImg %}
+              <img src="{{ img }}" alt="{{ b.title | default('', true) }}"
+                   {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+            {% else %}
+              <span class="hy-offer-noimg">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.75" cy="9" r="1.5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                </svg>
+              </span>
+            {% endif %}
+          </div>
+
+          {# The circle needs a value; the small line above it is optional. #}
+          {% if b.badge_value %}
+            <span class="hy-offer-badge">
+              {% if b.badge_label %}
+                <span class="hy-offer-badge-label">{{ b.badge_label }}</span>
+              {% endif %}
+              <span class="hy-offer-badge-value">{{ b.badge_value }}</span>
+            </span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if count == 0 %}
+      <div class="hy-ph-center" style="margin-block-start: var(--space-5);">{{ phHint() }}</div>
+    {% endif %}
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-offer-' ~ id, c=d %}

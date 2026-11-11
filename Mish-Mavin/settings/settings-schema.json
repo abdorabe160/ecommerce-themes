@@ -1,0 +1,409 @@
+[
+  {
+    "label": {
+      "ar": "الهوية",
+      "en": "Brand"
+    },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": {
+          "ar": "أيقونة المتجر (Favicon) — مربعة 512×512",
+          "en": "Favicon — square 512×512"
+        }
+      },
+      "logoHeight": {
+        "type": "range",
+        "label": {
+          "ar": "ارتفاع الشعار في الهيدر",
+          "en": "Header logo height"
+        },
+        "default": 20,
+        "min": 14,
+        "max": 80,
+        "step": 2,
+        "unit": "px"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الألوان",
+      "en": "Colors"
+    },
+    "settings": {
+      "brandColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون العام (الأزرار والروابط والشارات) — فارغ = الأسود الافتراضي",
+          "en": "Brand colour (buttons, links, badges) — empty = default black"
+        },
+        "default": ""
+      },
+      "accent_color": {
+        "type": "color",
+        "label": {
+          "ar": "اللون المميز (تمييز نص البحث)",
+          "en": "Accent colour (search highlight)"
+        },
+        "default": "#e8ff7a"
+      },
+      "sale_color": {
+        "type": "color",
+        "label": {
+          "ar": "لون سعر الخصم",
+          "en": "Sale price color"
+        },
+        "default": "#c25151"
+      },
+      "discount_badge_color": {
+        "type": "color",
+        "label": {
+          "ar": "لون شارة الخصم",
+          "en": "Discount badge color"
+        },
+        "default": "#d61f1f"
+      },
+      "successColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «متوفر»",
+          "en": "«In stock» colour"
+        },
+        "default": "#15803d"
+      },
+      "warningColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «أوشك على النفاد»",
+          "en": "«Almost sold out» colour"
+        },
+        "default": "#c2410c"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخطوط والشكل",
+      "en": "Typography & shape"
+    },
+    "settings": {
+      "fontArabic": {
+        "type": "select",
+        "label": {
+          "ar": "الخط العربي",
+          "en": "Arabic font"
+        },
+        "default": "ibm-plex",
+        "options": [
+          {
+            "value": "ibm-plex",
+            "label": {
+              "ar": "IBM Plex Sans Arabic",
+              "en": "IBM Plex Sans Arabic"
+            }
+          },
+          {
+            "value": "cairo",
+            "label": {
+              "ar": "Cairo",
+              "en": "Cairo"
+            }
+          },
+          {
+            "value": "tajawal",
+            "label": {
+              "ar": "Tajawal",
+              "en": "Tajawal"
+            }
+          },
+          {
+            "value": "noto-kufi",
+            "label": {
+              "ar": "Noto Kufi Arabic",
+              "en": "Noto Kufi Arabic"
+            }
+          },
+          {
+            "value": "readex",
+            "label": {
+              "ar": "Readex Pro",
+              "en": "Readex Pro"
+            }
+          },
+          {
+            "value": "system",
+            "label": {
+              "ar": "خط الجهاز (Arial)",
+              "en": "System font (Arial)"
+            }
+          }
+        ]
+      },
+      "cornerRadius": {
+        "type": "range",
+        "label": {
+          "ar": "استدارة زوايا الصور والكروت",
+          "en": "Image & card corner radius"
+        },
+        "default": 0,
+        "min": 0,
+        "max": 16,
+        "step": 1,
+        "unit": "px"
+      },
+      "enableAnimations": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل الحركات (الشريط المتحرك والتكبير عند المرور)",
+          "en": "Enable animations (marquee, hover zoom)"
+        },
+        "default": true
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "بطاقات المنتجات",
+      "en": "Product cards"
+    },
+    "settings": {
+      "promo_badge": {
+        "type": "string",
+        "label": {
+          "ar": "شارة العرض على كل المنتجات (اتركها فارغة للإخفاء) — اكتبها فقط لو العرض مفعّل فعلاً",
+          "en": "Promo badge on all products (empty to hide) — only while the offer is really active"
+        },
+        "default": ""
+      },
+      "show_card_buttons": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار زري \"أضف إلى السلة\" و\"اشترِ الآن\" على كل المنتجات",
+          "en": "Show \"Add to cart\" + \"Buy now\" on product cards"
+        },
+        "default": true
+      },
+      "showWishlist": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل المفضلة (قلب على المنتجات + أيقونة في الهيدر)",
+          "en": "Enable wishlist (heart on products + header icon)"
+        },
+        "default": false
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "السلة والمخزون",
+      "en": "Cart & stock"
+    },
+    "settings": {
+      "followProductStock": {
+        "type": "boolean",
+        "label": {
+          "ar": "اتباع مخزون المنتج (منع البيع عند النفاد)",
+          "en": "Follow product stock (block sold-out items)"
+        },
+        "default": true
+      },
+      "low_stock_threshold": {
+        "type": "range",
+        "label": {
+          "ar": "إظهار «أوشك على النفاد» عندما تكون الكمية أقل من أو تساوي",
+          "en": "Show «Almost sold out» at or below"
+        },
+        "default": 3,
+        "min": 1,
+        "max": 10,
+        "step": 1
+      },
+      "cartOpenOnAdd": {
+        "type": "boolean",
+        "label": {
+          "ar": "فتح السلة الجانبية بعد الإضافة",
+          "en": "Open the cart drawer after adding"
+        },
+        "default": true
+      },
+      "freeShippingThreshold": {
+        "type": "number",
+        "label": {
+          "ar": "حد الشحن المجاني (نفس قيمة عرض الشحن المجاني المفعّل في لوحة التحكم — 0 = إخفاء الرسالة)",
+          "en": "Free shipping threshold (same as the active free-shipping offer — 0 hides the message)"
+        },
+        "default": 0,
+        "min": 0
+      },
+      "deliveryNote": {
+        "type": "string",
+        "label": {
+          "ar": "ملاحظة التوصيل تحت زر الشراء (اختياري)",
+          "en": "Delivery note under the buy button (optional)"
+        },
+        "default": ""
+      },
+      "deliveryNote_en": {
+        "type": "string",
+        "label": {
+          "ar": "ملاحظة التوصيل (إنجليزي)",
+          "en": "Delivery note (English)"
+        },
+        "default": ""
+      },
+      "checkout_url": {
+        "type": "string",
+        "label": {
+          "ar": "رابط صفحة الدفع (اشترِ الآن)",
+          "en": "Checkout URL (buy now)"
+        },
+        "default": "/checkout"
+      },
+      "demoProducts": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار منتجات توضيحية للعملاء لو المتجر فاضي (تظهر دائماً في المعاينة فقط)",
+          "en": "Show demo products to customers on an empty store (always shown in preview)"
+        },
+        "default": false
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "التواصل والشبكات الاجتماعية",
+      "en": "Contact & social"
+    },
+    "settings": {
+      "contactPhone": {
+        "type": "string",
+        "label": {
+          "ar": "رقم الهاتف",
+          "en": "Phone"
+        },
+        "default": ""
+      },
+      "contactEmail": {
+        "type": "string",
+        "label": {
+          "ar": "البريد الإلكتروني",
+          "en": "Email"
+        },
+        "default": ""
+      },
+      "contactAddress": {
+        "type": "string",
+        "label": {
+          "ar": "العنوان",
+          "en": "Address"
+        },
+        "default": ""
+      },
+      "contactAddress_en": {
+        "type": "string",
+        "label": {
+          "ar": "العنوان (إنجليزي)",
+          "en": "Address (English)"
+        },
+        "default": ""
+      },
+      "socialInstagram": {
+        "type": "string",
+        "label": {
+          "ar": "رابط إنستجرام",
+          "en": "Instagram URL"
+        },
+        "default": ""
+      },
+      "socialFacebook": {
+        "type": "string",
+        "label": {
+          "ar": "رابط فيسبوك",
+          "en": "Facebook URL"
+        },
+        "default": ""
+      },
+      "socialTiktok": {
+        "type": "string",
+        "label": {
+          "ar": "رابط تيك توك",
+          "en": "TikTok URL"
+        },
+        "default": ""
+      },
+      "socialX": {
+        "type": "string",
+        "label": {
+          "ar": "رابط X (تويتر)",
+          "en": "X (Twitter) URL"
+        },
+        "default": ""
+      },
+      "socialYoutube": {
+        "type": "string",
+        "label": {
+          "ar": "رابط يوتيوب",
+          "en": "YouTube URL"
+        },
+        "default": ""
+      },
+      "socialSnapchat": {
+        "type": "string",
+        "label": {
+          "ar": "رابط سناب شات",
+          "en": "Snapchat URL"
+        },
+        "default": ""
+      },
+      "socialWhatsapp": {
+        "type": "string",
+        "label": {
+          "ar": "واتساب (رابط wa.me أو الرقم بالكود الدولي)",
+          "en": "WhatsApp (wa.me link or number with country code)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "محركات البحث",
+      "en": "Search engines"
+    },
+    "settings": {
+      "googleVerification": {
+        "type": "string",
+        "label": {
+          "ar": "كود تحقق Google Search Console (الصق وسم <meta> كامل أو قيمة content فقط)",
+          "en": "Google Search Console verification (paste the full <meta> tag or just its content value)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "كود مخصص",
+      "en": "Custom code"
+    },
+    "settings": {
+      "custom_css": {
+        "type": "css",
+        "label": {
+          "ar": "CSS مخصص (يُضاف في آخر الـ head)",
+          "en": "Custom CSS (added at the end of head)"
+        },
+        "default": ""
+      },
+      "customJS": {
+        "type": "javascript",
+        "label": {
+          "ar": "JavaScript مخصص (يُضاف في آخر الصفحة)",
+          "en": "Custom JavaScript (added at the end of the page)"
+        },
+        "default": ""
+      }
+    }
+  }
+]

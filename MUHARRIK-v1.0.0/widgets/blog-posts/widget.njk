@@ -1,0 +1,80 @@
+{#
+  ============================================================================
+  BLOG POSTS · مقالات المدونة — MUHARRIK: "DIY guides" on the home page
+  ----------------------------------------------------------------------------
+  A morva section head (mono kicker + display title + "view all") over a row
+  of hairline article panels: picture, mono date, display title, excerpt and
+  a mono "read now →".
+
+  ⚠️ A home-page widget gets no articles from Qumra (no schema type for a
+  blog, no articles variable outside the blog pages). So the latest articles
+  are read the way HayatAuto reads collections: HxPosts (assets/hx.js)
+  fetches /blogs (or one blog), then each blog page, and lifts the article
+  cards rendered there. Until that answers — and for good if the store has no
+  articles — demo articles (CC0 pictures, texts in the visitor's language)
+  stand in, linking to /blogs.
+
+  ⚠️ HxPosts RE-RENDERS the cards (.hx-bp-card / -media / -title / -date /
+  -excerpt / -more) from its own markup, so the card look lives entirely in
+  CSS (assets/mh-content.css) — no extra elements inside the card here.
+
+  Styles: assets/sections.css → "BLOG POSTS", re-voiced in assets/mh-content.css.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set limit = d.limit | default(4, true) %}
+{% set title = (d.title or t('posts.title')) if d.show_title != false else '' %}
+{% set readText = (d.read_more_text or t('posts.read')) if d.show_read_more != false else '' %}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = t('bx.blog') %}{% endif %}
+{% set blogHandle = d.blog_handle | default('', true) | trim %}
+{% set allUrl = ('/blogs/' ~ blogHandle) if blogHandle else '/blogs' %}
+{% set demoImgs = ['mh-build-2.jpg', 'mh-build-3.jpg', 'mh-hero-3.jpg', 'mh-build-4.jpg'] %}
+{% set demoDate = '2026-10-01' %}
+
+{% macro card(url, img, ttl, date, excerpt, readText, showDate, showEx, demo) %}
+  <article class="hx-bp-card{{ ' is-demo' if demo }}">
+    <a href="{{ url }}" class="hx-bp-media" tabindex="-1" aria-hidden="true">{% if img %}<img src="{{ img }}" alt="" loading="lazy"/>{% endif %}</a>
+    <h3 class="hx-bp-title"><a href="{{ url }}">{{ ttl }}</a></h3>
+    {% if showDate and date %}<time class="hx-bp-date" datetime="{{ date }}" data-hy-date>{{ date }}</time>{% endif %}
+    {% if showEx and excerpt %}<p class="hx-bp-excerpt">{{ excerpt }}</p>{% endif %}
+    {% if readText %}<a href="{{ url }}" class="hx-bp-more">{{ readText | safe }}</a>{% endif %}
+  </article>
+{% endmacro %}
+
+<section id="hx-bp-{{ id }}"
+         class="hx-bp {{ 'is-zoom' if d.hover_zoom != false }} is-r-{{ d.image_ratio | default('wide', true) }}"
+         style="--bp-per: {{ d.columns_desktop | default(4, true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --bp-link: {{ d.color_accent }};{% endif %}">
+  <div class="hx-bp-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title or d.show_view_all != false %}
+      <div class="mh-head">
+        <div class="mh-head-main">
+          <span class="mh-kicker">{{ kicker | safe }}</span>
+          {% if title %}<h2 class="mh-h hx-bp-head">{{ title | safe }}</h2>{% endif %}
+        </div>
+        {% if d.show_view_all != false %}
+          <a href="{{ allUrl }}" class="mh-viewall">{{ t('common.view_all') }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+        {% endif %}
+      </div>
+    {% endif %}
+    <div class="hx-bp-grid" data-hx-posts
+         data-blog="{{ blogHandle }}" data-limit="{{ limit }}"
+         data-read="{{ readText | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" data-date="{{ 'on' if d.show_date != false else 'off' }}" data-excerpt="{{ 'on' if d.show_excerpt != false else 'off' }}">
+      {% for n in [1, 2, 3, 4, 5, 6, 7, 8] %}{% if n <= limit %}
+        {% set k = ((n - 1) % 4) + 1 %}
+        {{ card('/blogs', demoImgs[k - 1] | assets, t('posts.a' ~ k ~ '.title'), demoDate, t('posts.a' ~ k ~ '.excerpt'), readText, d.show_date != false, d.show_excerpt != false, true) }}
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() { var el = document.querySelector('#hx-bp-{{ id }} [data-hx-posts]'); if (el && window.HxPosts) HxPosts.fill(el); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-bp-' ~ id, c=d %}

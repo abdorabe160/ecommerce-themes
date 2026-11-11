@@ -1,0 +1,20 @@
+{#- Dark Blood — زر واتساب العائم (معيار ثيمات قمرة).
+    الرقم من الويدجت، وإلا رقم/رابط الواتساب من إعدادات الثيم (التواصل والشبكات الاجتماعية).
+    من غير رقم مابيظهرش خالص. ≥ 44px، وبيطلع فوق شريط الشراء الثابت في صفحة المنتج على الموبايل -#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if (localization and localization.language and localization.language != 'ar') else '' -%}
+{%- set raw = (wd.phone_number or '') | string | trim -%}
+{%- if not raw and settings.socialWhatsapp -%}{%- set raw = (settings.socialWhatsapp | string).split('wa.me/') | last -%}{%- endif -%}
+{%- set num = raw | replace('https://', '') | replace('http://', '') | replace('api.whatsapp.com/send?phone=', '') | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') -%}
+{%- set num = (num.split('?')[0]).split('&')[0] -%}
+{%- set msg = (wd['message' + L] or wd.message or '') | trim -%}
+{%- set label = (wd['label' + L] or wd.label or '') | trim -%}
+{%- if num | length >= 6 and wd.enabled != false %}
+<a href="https://wa.me/{{ num }}{% if msg %}?text={{ msg | urlencode }}{% endif %}" target="_blank" rel="noopener noreferrer"
+   class="blk-fab blk-fab--wa{{ ' blk-fab--end' if wd.position == 'end' else '' }}{{ ' blk-fab--desktop-only' if wd.mobile == false else '' }}{{ ' has-label' if label else '' }}"
+   style="--fab-bg: {{ wd.color or '#25D366' }}; --fab-fg: {{ wd.icon_color or '#FFFFFF' }};"
+   aria-label="{{ t('common.chat_whatsapp') }}" data-blk-fab-wa>
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.6-.1 1.2z"/></svg>
+  {%- if label %}<span class="blk-fab-label">{{ label }}</span>{%- endif %}
+</a>
+{%- endif %}

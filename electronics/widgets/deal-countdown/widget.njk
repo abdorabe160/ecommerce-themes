@@ -1,0 +1,71 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set list = wd.product | default([]) %}
+{% set p = list[0] if (list | length) else null %}
+{% if p %}
+{% set price = p.pricing.price | default(0, true) %}
+{% set compare = p.pricing.compareAtPrice | default(0, true) %}
+{% set img = wd.image.fileUrl if (wd.image and wd.image.fileUrl) else (p.images[0].fileUrl if (p.images and p.images | length) else '') %}
+{% set hasOptions = (p.options and p.options | length) or p.variantsCount > 0 %}
+{# حد الكمية في السلة — نفس منطق product-card.njk #}
+{% set optParts = [] %}
+{% if settings.followProductStock == true and (p.trackQuantity == false or p.allowBackorder) %}{% if optParts.push('stock: null') %}{% endif %}{% elif p.quantity or p.quantity == 0 %}{% if optParts.push('stock: ' + p.quantity) %}{% endif %}{% endif %}
+{% if not (hasOptions or p.variantsCount == 0 or p.variants) %}{% if optParts.push('handle: ' + ((p.slug or p.handle or '') | dump)) %}{% endif %}{% endif %}
+{% set cartOpts = (', { ' + (optParts | join(', ')) + ' }') if (optParts | length) else '' %}
+<section class="lg-section">
+  <div class="lg-container">
+    <div class="glass overflow-hidden grid md:grid-cols-2 items-center">
+      <div class="relative order-1 md:order-2 grid place-items-center p-8 min-h-[280px] md:min-h-[440px] bg-[radial-gradient(circle_at_50%_50%,color-mix(in_srgb,var(--color-primary)_25%,transparent),transparent_65%)]">
+        <span class="lg-orb w-56 h-56 md:w-80 md:h-80 opacity-40" aria-hidden="true"></span>
+        {% if img %}
+          <img src="{{ img }}" alt="{{ p.title }}" loading="lazy" class="relative max-h-[360px] w-auto object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,.45)]">
+        {% endif %}
+        {% if compare > price %}
+          <span class="absolute top-6 start-6 lg-badge lg-badge--sale text-sm !px-3 !py-2" dir="ltr">-{{ ((compare - price) / compare * 100) | round(0, 'floor') }}%</span>
+        {% endif %}
+      </div>
+
+      <div class="order-2 md:order-1 p-6 md:p-12 space-y-5" x-data="lgCountdown('{{ wd.ends_at }}')">
+        {% if (wd['eyebrow' + L] or wd.eyebrow) %}<span class="lg-eyebrow">{% ui "icon.njk", name="bolt", cls="w-3.5 h-3.5" %}{{ (wd['eyebrow' + L] or wd.eyebrow) }}</span>{% endif %}
+        <h2 class="lg-title">{{ (wd['title' + L] or wd.title) }}</h2>
+        <a href="/products/{{ p.slug or p.handle }}" class="lg-tap block text-lg font-semibold hover:text-primary transition-colors">{{ p.title }}</a>
+        {% if (wd['text' + L] or wd.text) %}<p class="text-muted">{{ (wd['text' + L] or wd.text) | safe }}</p>{% endif %}
+
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-bold text-primary">{{ price | money }}</span>
+          {% if compare > price %}<span class="lg-price--old text-lg">{{ compare | money }}</span>{% endif %}
+        </div>
+
+        {# العداد بتاريخ حقيقي بس: من غير تاريخ مفيش عداد ولا «انتهى العرض» #}
+        {% if wd.ends_at %}
+        <div class="lg-countdown" x-show="!done">
+          <div class="glass !rounded-2xl"><strong x-text="d">00</strong><span>{{t('common.days')}}</span></div>
+          <div class="glass !rounded-2xl"><strong x-text="h">00</strong><span>{{t('common.hours')}}</span></div>
+          <div class="glass !rounded-2xl"><strong x-text="m">00</strong><span>{{t('common.minutes')}}</span></div>
+          <div class="glass !rounded-2xl"><strong x-text="s">00</strong><span>{{t('common.seconds')}}</span></div>
+        </div>
+        <p x-show="done" x-cloak class="text-muted font-semibold">{{t('common.offer_ended')}}</p>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-3 pt-2">
+          {# "أضف إلى السلة" + "اشترِ الآن" — منتج بخيارات: «اختر الخيارات» تفتح صفحة المنتج (REG-10) #}
+          {% if hasOptions %}
+            <a href="/products/{{ p.slug or p.handle }}" class="btn btn-primary">{{t('product.choose_options')}}</a>
+          {% else %}
+            <button type="button" class="btn btn-primary" @click="addToCart('{{ p._id }}', 1{{ cartOpts }})" :disabled="isBusy('add:{{ p._id }}')">
+              {% ui "icon.njk", name="cart", cls="w-4 h-4" %}{{t('product.add_to_cart')}}
+            </button>
+            <button type="button" class="btn btn-soft" @click="buyNow('{{ p._id }}', 1{{ cartOpts }})" :disabled="isBusy('add:{{ p._id }}') || isBusy('buy:{{ p._id }}')">
+              <span x-show="!isBusy('buy:{{ p._id }}')">{{t('product.buy_now')}}</span>
+              <span x-show="isBusy('buy:{{ p._id }}')" x-cloak class="lg-spinner" role="status"></span>
+            </button>
+          {% endif %}
+          <a href="/products/{{ p.slug or p.handle }}" class="btn btn-glass">{{t('product.view_details')}}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}

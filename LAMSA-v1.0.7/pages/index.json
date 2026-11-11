@@ -1,0 +1,338 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "layout": "split",
+        "height": "large",
+        "height_mobile": "medium",
+        "background": "blush",
+        "show_glow": true,
+        "image_shape": "arch",
+        "title_size": "large",
+        "show_rating_card": false,
+        "rating_value": "",
+        "rating_label": "",
+        "show_note_card": false,
+        "note_title": "",
+        "note_label": "",
+        "show_scroll_hint": true,
+        "scroll_hint_text": "اكتشفي الروتين",
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_dots": true,
+        "show_arrows": false
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "slide1",
+          "settings": {
+            "slide_eyebrow": "عناية بالبشرة",
+            "slide_title": "روتينك على مقاس <em>بشرتك</em>",
+            "slide_description": "منتجات عناية ومكياج بمكوّنات واضحة ونِسَب مكتوبة — بدون وعود مبالغ فيها.",
+            "slide_button_text": "تسوّقي الآن",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "الأكثر مبيعاً",
+            "slide_button2_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide2",
+          "settings": {
+            "slide_eyebrow": "الأكثر مبيعاً",
+            "slide_title": "نضارة <em>كل يوم</em>",
+            "slide_description": "سيرومات فيتامين C ومرطّبات خفيفة تناسب البشرة الدهنية والمختلطة في جوّنا الحار.",
+            "slide_button_text": "اكتشفي المجموعة",
+            "slide_button_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide3",
+          "settings": {
+            "slide_eyebrow": "مكياج",
+            "slide_title": "درجة تشبه <em>لون بشرتك</em>",
+            "slide_description": "درجات تناسب ألوان بشرة مختلفة، وتغطية قابلة للبناء حسب احتياجك.",
+            "slide_button_text": "اختاري درجتك",
+            "slide_button_url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأكثر مبيعاً",
+      "widget": "collection-products",
+      "settings": {
+        "eyebrow": "الأكثر مبيعاً",
+        "title": "منتجات تُحبّها <em>بشرتك</em>",
+        "description": "",
+        "featuredCollection": [],
+        "layout": "slider",
+        "header_align": "split",
+        "background": "white",
+        "limit": 8,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "1/1",
+        "view_all_url": "/shop",
+        "view_all_text": "عرض الكل",
+        "show_arrows": true,
+        "show_progress": true
+      }
+    },
+    {
+      "name": "منتجات من قسم",
+      "widget": "products-by-collection",
+      "settings": {
+        "collection": [],
+        "eyebrow": "تسوّقي القسم",
+        "title": "",
+        "description": "",
+        "sort": "created-desc",
+        "layout": "grid",
+        "header_align": "split",
+        "background": "blush",
+        "limit": 8,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "1/1",
+        "show_view_all": true,
+        "view_all_text": "",
+        "show_arrows": true,
+        "show_progress": true
+      }
+    },
+    {
+      "name": "الروتين الكامل",
+      "widget": "routine-bundle",
+      "settings": {
+        "eyebrow": "الروتين",
+        "title": "روتين النضارة في <em>٤ خطوات</em>",
+        "description": "خطوات مرتّبة بمكوّنات لا تتعارض — استخدميها بالترتيب صباحاً ومساءً.",
+        "layout": "row",
+        "background": "blush",
+        "show_prices": true,
+        "show_bundle_bar": true,
+        "bundle_price": 0,
+        "bundle_note": "",
+        "cta_text": "أضيفي الروتين كامل"
+      },
+      "blocks": [
+        {
+          "block": "step",
+          "name": "step1",
+          "settings": {
+            "product": [],
+            "step_label": "التنظيف",
+            "note": "غسول لطيف يزيل المكياج بدون جفاف.",
+            "time": "both"
+          }
+        },
+        {
+          "block": "step",
+          "name": "step2",
+          "settings": {
+            "product": [],
+            "step_label": "التونر",
+            "note": "يوازن حموضة البشرة ويجهّزها للسيروم.",
+            "time": "both"
+          }
+        },
+        {
+          "block": "step",
+          "name": "step3",
+          "settings": {
+            "product": [],
+            "step_label": "السيروم",
+            "note": "قطرتان على وجه نظيف قبل المرطّب.",
+            "time": "evening"
+          }
+        },
+        {
+          "block": "step",
+          "name": "step4",
+          "settings": {
+            "product": [],
+            "step_label": "الترطيب والحماية",
+            "note": "مرطّب خفيف، وواقي شمس ٥٠+ صباحاً.",
+            "time": "morning"
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّقي حسب بشرتك",
+      "widget": "skin-finder",
+      "settings": {
+        "eyebrow": "ابدئي من هنا",
+        "title": "اعرفي <em>بشرتك</em> الأول",
+        "description": "اختاري نوع بشرتك أو المشكلة اللي تهمّك، ونعرض لك المنتجات المناسبة فقط.",
+        "layout": "cards",
+        "card_shape": "arch",
+        "background": "white",
+        "columns": "4",
+        "header_align": "center",
+        "show_descriptions": true,
+        "view_all_url": "/shop",
+        "view_all_text": "تصفّحي كل المنتجات"
+      },
+      "blocks": [
+        {
+          "block": "concern",
+          "name": "concern1",
+          "settings": {
+            "label": "بشرة دهنية",
+            "description": "لمعة زائدة ومسام واضحة",
+            "url": "/shop",
+            "icon": "droplet",
+            "tint": "sage"
+          }
+        },
+        {
+          "block": "concern",
+          "name": "concern2",
+          "settings": {
+            "label": "بشرة جافة",
+            "description": "شدّ وتقشّر وحاجة لترطيب",
+            "url": "/shop",
+            "icon": "leaf",
+            "tint": "rose"
+          }
+        },
+        {
+          "block": "concern",
+          "name": "concern3",
+          "settings": {
+            "label": "بشرة مختلطة",
+            "description": "دهنية بمنطقة T وجافة بالأطراف",
+            "url": "/shop",
+            "icon": "half",
+            "tint": "blush"
+          }
+        },
+        {
+          "block": "concern",
+          "name": "concern4",
+          "settings": {
+            "label": "بشرة حساسة",
+            "description": "احمرار وتحسّس سريع",
+            "url": "/shop",
+            "icon": "shield",
+            "tint": "sage"
+          }
+        }
+      ]
+    },
+    {
+      "name": "التصنيفات",
+      "widget": "collections-section",
+      "settings": {
+        "eyebrow": "الأقسام",
+        "title": "تسوّقي حسب <em>القسم</em>",
+        "description": "",
+        "layout": "grid",
+        "label_style": "chip",
+        "card_shape": "soft",
+        "card_ratio": "3/4",
+        "background": "blush",
+        "columns_desktop": "3",
+        "columns_mobile": "2",
+        "header_align": "center",
+        "show_count": true,
+        "view_all_url": "/collections",
+        "view_all_text": "كل الأقسام",
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5
+      }
+    },
+    {
+      "name": "صورة مع نص",
+      "widget": "image-with-text",
+      "settings": {
+        "layout": "overlap",
+        "image_position": "start",
+        "image_ratio": "4/5",
+        "image_shape": "soft",
+        "eyebrow": "قصّتنا",
+        "title": "عناية <em>واضحة</em> بلا وعود مبالغ فيها",
+        "text": "بدأت لمسة من سؤال بسيط: ليه المكوّنات مكتوبة بخط صغير؟ عشان كده بنعرض مكوّنات كل منتج بوضوح، وبنقول بصراحة إيه اللي يناسب بشرتك وإيه اللي مايناسبهاش.",
+        "signature": "— فريق لمسة",
+        "button_text": "تعرّفي علينا",
+        "button_url": "/pages/about",
+        "button2_text": "",
+        "button2_url": "",
+        "blocks_style": "stats",
+        "background": "white"
+      },
+      "blocks": []
+    },
+    {
+      "name": "بانر ترويجي",
+      "widget": "cta-banner",
+      "settings": {
+        "layout": "card",
+        "background": "rose",
+        "scrim": "medium",
+        "eyebrow": "مختارات الموسم",
+        "title": "روتين <em>الموسم</em> جاهز",
+        "subtitle": "سيرومات ومرطّبات مختارة تناسب الجو والموسم.",
+        "text_alignment": "center",
+        "height": "medium",
+        "show_countdown": false,
+        "countdown_date": "",
+        "hide_on_expire": false,
+        "coupon_code": "",
+        "button_text": "تسوّقي المختارات",
+        "button_link": "/shop",
+        "button2_text": "",
+        "button2_link": ""
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials-reviews",
+      "settings": {
+        "eyebrow": "آراء العميلات",
+        "title": "نتائج <em>حقيقية</em> بكلماتهن",
+        "description": "",
+        "layout": "slider",
+        "background": "blush",
+        "columns": "3",
+        "ba_ratio": "1/1",
+        "show_summary": true,
+        "summary_rating": "",
+        "summary_count": "",
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 6
+      },
+      "blocks": []
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "action_url": "",
+        "email_field_name": "EMAIL",
+        "open_in_new_tab": true,
+        "layout": "card",
+        "background": "sage",
+        "eyebrow": "النشرة",
+        "title": "انضمّي <em>لنشرتنا</em>",
+        "subtitle": "نصائح عناية وجديد المتجر على بريدك، بدون مبالغة.",
+        "placeholder": "بريدك الإلكتروني",
+        "button_text": "اشتراك",
+        "success_message": "أهلاً بك في لمسة — تحقّقي من بريدك.",
+        "show_consent": false,
+        "show_note": true,
+        "note_text": "نحترم خصوصيتك، ويمكنك إلغاء الاشتراك في أي وقت.",
+        "text_alignment": "center"
+      }
+    }
+  ]
+}

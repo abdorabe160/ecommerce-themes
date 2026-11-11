@@ -1,0 +1,209 @@
+{# ===== ATTAR COLLECTION PRODUCTS — Fragrance boutique Grid / Slider ===== #}
+{# `products` type returns an array of selected products directly. #}
+{# Fallback: if nothing selected → client-side fetch default (latest) products. #}
+{% set allProducts = widget.data.featuredCollection | default([]) %}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set title = widget.data.title | default('') %}
+{% set limit = widget.data.limit | default(6, true) | int %}
+{% set viewAll = widget.data.view_all_url | default('') %}
+{% set id = widget.id %}
+{% set hasServerProducts = (allProducts | length) > 0 %}
+{% set cardRatio = widget.data.card_image_ratio | default('square') %}
+{% set isSlider = (widget.data.display_type | default('grid')) == 'slider' %}
+
+{# Columns → grid classes + slider slidesPerView #}
+{% set cols = widget.data.columns_desktop | default('3') %}
+{% if cols == '2' %}{% set gridCols = 'grid-cols-1 sm:grid-cols-2 attar-fit-span attar-lone-lg2' %}{% set spvDesktop = 2 %}
+{% elif cols == '4' %}{% set gridCols = 'grid-cols-2 lg:grid-cols-4 attar-fit-4 attar-fit-span attar-fit-span-sm' %}{% set spvDesktop = 4 %}
+{% else %}{% set gridCols = 'grid-cols-2 md:grid-cols-3 attar-fit-3 attar-fit-span-sm attar-lone-sm2 attar-lone-md3' %}{% set spvDesktop = 3 %}{% endif %}
+
+<style>
+  .anaqa-cp-{{ id }} .anaqa-cp-title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  html[dir="rtl"] .anaqa-cp-{{ id }} .anaqa-cp-title { line-height: 1.25; font-weight: 600; }
+  .anaqa-cp-{{ id }} .anaqa-cp-title p { margin: 0; }
+  .anaqa-cp-{{ id }} .anaqa-cp-title a { color: var(--color-accent); text-decoration: underline; }
+
+  /* Slider arrows — editorial square */
+  .anaqa-cp-arrow {
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-cp-arrow:hover { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg-primary); }
+  .anaqa-cp-arrow.swiper-button-disabled { opacity: 0.3; cursor: default; background: transparent; border-color: var(--color-border); color: var(--color-text-tertiary); }
+
+  /* Slider scrollbar */
+  .anaqa-cp-scrollbar { display: none !important; }
+  .anaqa-cp-scrollbar .swiper-scrollbar-drag { background: var(--color-text-primary); border-radius: 0; cursor: grab; height: 100%; }
+  .anaqa-cp-{{ id }} .swiper > .swiper-scrollbar:not(.anaqa-cp-scrollbar) { display: none !important; }
+  .anaqa-cp-{{ id }} .swiper, .anaqa-cp-{{ id }} .swiper-wrapper { align-items: stretch; }
+  .anaqa-cp-{{ id }} .swiper-slide { height: auto !important; display: flex; }
+  .anaqa-cp-{{ id }} .swiper-slide > * { width: 100%; }
+
+  @media (max-width: 639px) { .anaqa-cp-arrow { width: 40px; height: 40px; } }
+</style>
+
+<section id="{{ id }}" class="anaqa-cp-{{ id }} py-24 max-sm:py-14" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ===== Header ===== #}
+    {% if isSlider %}
+    <div class="flex items-end justify-between gap-6 mb-12 max-sm:mb-8">
+      <div class="min-w-0">
+        {% if eyebrow %}<span class="editorial-label editorial-label--rule block mb-3">{{ eyebrow }}</span>{% endif %}
+        {% if title %}<div class="anaqa-cp-title font-heading-ar" role="heading" aria-level="2">{{ title | safe }}</div>{% endif %}
+      </div>
+      <div class="flex items-center gap-2.5 shrink-0" id="cpArrows-{{ id }}" {% if not hasServerProducts %}style="display: none;"{% endif %}>
+        <button id="cpPrev-{{ id }}" class="anaqa-cp-arrow" aria-label="{{ t('common.back') | default('السابق') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M15 19l-7-7 7-7{% else %}M9 5l7 7-7 7{% endif %}"/></svg>
+        </button>
+        <button id="cpNext-{{ id }}" class="anaqa-cp-arrow" aria-label="{{ t('common.continue') | default('التالي') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M9 5l7 7-7 7{% else %}M15 19l-7-7 7-7{% endif %}"/></svg>
+        </button>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center mb-16 max-sm:mb-10">
+      {% if eyebrow %}
+      <div class="flex items-center justify-center gap-3 mb-5">
+        <span class="attar-kicker-line"></span>
+        <span class="editorial-label">{{ eyebrow }}</span>
+        <span class="attar-kicker-line"></span>
+      </div>
+      {% endif %}
+      {% if title %}<div class="anaqa-cp-title font-heading-ar" role="heading" aria-level="2">{{ title | safe }}</div>{% endif %}
+    </div>
+    {% endif %}
+
+    {# ===== Products ===== #}
+    {% if isSlider %}
+      <div class="swiper" id="cpSwiper-{{ id }}">
+        <div class="swiper-wrapper" id="cpWrapper-{{ id }}">
+          {% if hasServerProducts %}
+            {% for product in allProducts %}
+              {% if loop.index <= limit %}
+                <div class="swiper-slide" style="height: auto;">
+                  {% ui "product-card.njk", product=product, image_ratio=cardRatio, index=loop.index %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="anaqa-cp-scrollbar swiper-scrollbar" id="cpScroll-{{ id }}" {% if not hasServerProducts %}style="display: none;"{% endif %}></div>
+    {% else %}
+      <div class="grid {{ gridCols }} gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-20" id="cpGrid-{{ id }}">
+        {% if hasServerProducts %}
+          {% for product in allProducts %}
+            {% if loop.index <= limit %}
+              {% ui "product-card.njk", product=product, image_ratio=cardRatio, index=loop.index %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ===== Empty State ===== #}
+    <div id="cpEmpty-{{ id }}" class="text-center py-16" style="display: none;">
+      <p style="color: var(--color-text-tertiary);" class="text-[15px] font-body-ar">{{ t('products.no_products') | default('لا توجد منتجات للعرض حالياً') }}</p>
+    </div>
+
+    {# ===== View All ===== #}
+    {% if viewAll %}
+    <div class="text-center mt-16 max-sm:mt-10" id="cpViewAll-{{ id }}" {% if not hasServerProducts %}style="display: none;"{% endif %}>
+      <a href="{{ viewAll }}" class="anaqa-btn font-body-ar">
+        {{ t('common.view_all') | default('عرض الكل') }}
+      </a>
+    </div>
+    {% endif %}
+
+    <script>
+      (() => {
+        const hasServerProducts = {{ 'true' if hasServerProducts else 'false' }};
+        const isSlider = {{ 'true' if isSlider else 'false' }};
+        const limit = {{ limit | int }};
+
+        function initSlider() {
+          if (!isSlider) return;
+          return new Swiper('#cpSwiper-{{ id }}', {
+            slidesPerView: 1.3,
+            spaceBetween: 20,
+            speed: 500,
+            breakpoints: {
+              640: { slidesPerView: 2.2, spaceBetween: 24 },
+              768: { slidesPerView: {{ (spvDesktop if spvDesktop < 3 else 3) | int }}, spaceBetween: 28 },
+              1024: { slidesPerView: {{ spvDesktop | int }}, spaceBetween: 32 }
+            },
+            navigation: { prevEl: '#cpPrev-{{ id }}', nextEl: '#cpNext-{{ id }}' },
+            scrollbar: { el: '#cpScroll-{{ id }}', draggable: true, hide: false }
+          });
+        }
+
+        if (hasServerProducts) { initSlider(); return; }
+
+        // ===== Fallback: fetch latest products (home default) =====
+        const cardRatio = '{{ cardRatio }}';
+
+        function buildCard(p, i) {
+          // Same card as ui/product-card.njk — one JS twin for the whole theme (main.js Cards.product)
+          return Qumra.cards.product(p, { index: i, ratio: cardRatio });
+        }
+
+        async function loadFallback() {
+          try {
+            const res = await fetch('/ajax/search/products?q=&sort=created-desc');
+            const data = await res.json();
+            let products = (data.products || data.items || data.data || []).slice(0, limit);
+            // Empty store: bundled demo products (real CC0 photos, inert cards) — never a blank row
+            if (!products.length && window.Qumra && Qumra.demo && document.documentElement.classList.contains('is-builder')) products = Qumra.demo.products(limit);
+
+            const container = document.getElementById(isSlider ? 'cpWrapper-{{ id }}' : 'cpGrid-{{ id }}');
+            const emptyEl = document.getElementById('cpEmpty-{{ id }}');
+            const viewAllEl = document.getElementById('cpViewAll-{{ id }}');
+            const arrowsEl = document.getElementById('cpArrows-{{ id }}');
+            const scrollEl = document.getElementById('cpScroll-{{ id }}');
+
+            // storefront with no products yet: drop the section rather than show an empty shelf
+            if (!products.length) { document.getElementById('{{ id }}').hidden = true; return; }
+
+            if (isSlider) {
+              container.innerHTML = products.map((p, i) => '<div class="swiper-slide" style="height:auto;">' + buildCard(p, i + 1) + '</div>').join('');
+            } else {
+              container.innerHTML = products.map((p, i) => buildCard(p, i + 1)).join('');
+            }
+
+            if (viewAllEl) viewAllEl.style.display = '';
+            if (arrowsEl) arrowsEl.style.display = '';
+            if (scrollEl) scrollEl.style.display = '';
+
+            if (window.Alpine) {
+              container.querySelectorAll('[x-data]').forEach((el) => Alpine.initTree(el));
+            }
+            initSlider();
+          } catch (e) {
+            console.error('[collection-products] fallback load failed', e);
+            const emptyEl = document.getElementById('cpEmpty-{{ id }}');
+            if (emptyEl) emptyEl.style.display = 'block';
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', loadFallback);
+        } else {
+          loadFallback();
+        }
+      })();
+    </script>
+
+  </div>
+</section>

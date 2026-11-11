@@ -1,0 +1,19 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونات",
+      "widget": "blogs-page",
+      "settings": {
+        "show_categories": true,
+        "eyebrow": "المدونة",
+        "title": "نصائح عناية بمصادر واضحة",
+        "subtitle": "مقالات عن العناية بالبشرة والمكياج — بدون وعود مبالغ فيها.",
+        "columns": "3"
+      }
+    }
+  ]
+}

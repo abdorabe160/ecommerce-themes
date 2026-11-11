@@ -1,0 +1,447 @@
+{# ============================================================================
+   LAMSA COLLECTIONS SECTION — shop by collection
+   Pulls the store's REAL collections (title · image · productsCount), unlike
+   skin-finder which is hand-authored blocks.
+   Layouts: grid · slider · mosaic (first collection large).
+   Labels:  below · chip (floating pill) · overlay.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set cols = d.collections | default([]) %}
+{% set count = cols | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('grid') %}
+{% set isSlider = layout == 'slider' %}
+{% set isMosaic = layout == 'mosaic' %}
+
+{% set labelStyle = d.label_style | default('chip') %}
+{% set isBelow = labelStyle == 'below' %}
+{% set isChip = labelStyle == 'chip' %}
+{% set isOverlay = labelStyle == 'overlay' %}
+
+{% set shape = d.card_shape | default('soft') %}
+{% set ratio = d.card_ratio | default('3/4') %}
+{% set bg = d.background | default('blush') %}
+{% set colsD = d.columns_desktop | default('3', true) %}
+{% set colsM = d.columns_mobile | default('2') %}
+{% set headerAlign = d.header_align | default('center') %}
+{% set isCenter = headerAlign == 'center' %}
+{% set showCount = d.show_count | default(true) %}
+
+{% set viewAllUrl = d.view_all_url | default('') %}
+{% set viewAllText = d.view_all_text | default(t('common.view_all'), true) %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set autoplay = d.autoplay | default(false) %}
+{% set apSpeed = d.autoplay_speed | default(5, true) %}
+
+{% if bg == 'white' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+{% set colsDInt = colsD | int %}
+{% set colsMid = 3 if colsDInt > 3 else colsDInt %}
+
+{# a circle only makes sense at 1:1 #}
+{% if shape == 'circle' %}{% set ratio = '1/1' %}{% endif %}
+
+
+{# ============================ CARD ============================
+   Macros only see their arguments, so everything the card needs is passed in.
+   ========================================================================= #}
+{% macro card(c, wid, showCount, isBelow, isChip, isOverlay, countLabel, ph) %}
+  {# same grammar as ui/count.njk; countLabel = [one, two, few, many] #}
+  {% set cN = (c.productsCount or c.productCount or 0) | int %}
+  {% if cN == 1 %}{% set cTxt = countLabel[0] %}{% elif cN == 2 %}{% set cTxt = countLabel[1] %}{% elif cN >= 3 and cN <= 10 %}{% set cTxt = cN ~ ' ' ~ countLabel[2] %}{% else %}{% set cTxt = cN ~ ' ' ~ countLabel[3] %}{% endif %}
+  {% set url = '/shop/' ~ (c.slug | default(c.handle) | default(c._id)) %}
+  {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+
+  <a href="{{ url }}" class="lamsa-cs-{{ wid }}-card">
+    <div class="lamsa-cs-{{ wid }}-media">
+      {% if img %}
+        <img src="{{ img }}" alt="{{ c.title }}" loading="lazy"/>
+      {% else %}
+        <img src="{{ ['lamsa-ph-bottle.jpg', 'lamsa-ph-makeup.jpg', 'lamsa-ph-amber.jpg', 'lamsa-ph-hero-3.jpg', 'lamsa-ph-routine.jpg', 'lamsa-ph-spa.jpg'][(ph | default(0)) % 6] | assets }}" alt="{{ c.title }}" loading="lazy"/>
+      {% endif %}
+
+      {% if isOverlay %}
+        <span class="lamsa-cs-{{ wid }}-overlay">
+          <span class="lamsa-cs-{{ wid }}-name">{{ c.title }}</span>
+          {% if showCount and cN %}
+            <span class="lamsa-cs-{{ wid }}-count">{{ cTxt }}</span>
+          {% endif %}
+        </span>
+      {% elif isChip %}
+        <span class="lamsa-cs-{{ wid }}-chip">
+          <span class="lamsa-cs-{{ wid }}-name">{{ c.title }}</span>
+          <svg class="rtl-flip shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </span>
+      {% endif %}
+    </div>
+
+    {% if isBelow %}
+      <span class="lamsa-cs-{{ wid }}-below">
+        <span class="lamsa-cs-{{ wid }}-name">{{ c.title }}</span>
+        {% if showCount and cN %}
+          <span class="lamsa-cs-{{ wid }}-count">{{ cTxt }}</span>
+        {% endif %}
+      </span>
+    {% endif %}
+  </a>
+{% endmacro %}
+
+
+<style>
+  #lamsa-cs-{{ id }} { background: {{ bgVal }}; }
+
+  .lamsa-cs-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-cs-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-cs-{{ id }}-title { line-height: 1.34; }
+  .lamsa-cs-{{ id }}-title em { font-style: normal; color: var(--color-accent); }
+  .lamsa-cs-{{ id }}-title p { margin: 0; }
+
+  /* ================= grid ================= */
+  {% if not isSlider %}
+  .lamsa-cs-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat({{ colsM }}, minmax(0, 1fr));
+    gap: 20px 14px;
+  }
+  @media (min-width: 768px) {
+    .lamsa-cs-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 26px 20px; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-cs-{{ id }}-grid { grid-template-columns: repeat({{ colsD }}, minmax(0, 1fr)); gap: 30px 24px; }
+  }
+
+  {% if not isMosaic %}
+  /* no tile alone on a last row: it spans the row, photo height capped */
+  {% if shape != 'circle' %}
+  {% if (colsM | int) == 2 %}@media (max-width: 767px) {
+    .lamsa-cs-{{ id }}-grid > :nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-cs-{{ id }}-grid > :nth-of-type(2n+1):last-of-type .lamsa-cs-{{ id }}-media { aspect-ratio: 16 / 9; border-radius: var(--radius-lg); }
+  }{% endif %}
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .lamsa-cs-{{ id }}-grid > :nth-of-type({{ colsMid }}n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-cs-{{ id }}-grid > :nth-of-type({{ colsMid }}n+1):last-of-type .lamsa-cs-{{ id }}-media { aspect-ratio: 21 / 9; max-height: 320px; border-radius: var(--radius-lg); }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-cs-{{ id }}-grid > :nth-of-type({{ colsD }}n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-cs-{{ id }}-grid > :nth-of-type({{ colsD }}n+1):last-of-type .lamsa-cs-{{ id }}-media { aspect-ratio: 21 / 9; max-height: 360px; border-radius: var(--radius-lg); }
+  }
+  {% endif %}
+  {% endif %}
+
+  {% if isMosaic %}
+  /* first collection takes a 2×2 cell */
+  @media (min-width: 641px) {
+    .lamsa-cs-{{ id }}-grid > *:first-child { grid-column: span 2; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-cs-{{ id }}-grid > *:first-child { grid-column: span 2; grid-row: span 2; }
+    /* the big cell must fill its area, not keep the small ratio */
+    .lamsa-cs-{{ id }}-grid > *:first-child .lamsa-cs-{{ id }}-media { aspect-ratio: auto; height: 100%; }
+  }
+  {% endif %}
+  {% endif %}
+
+  /* ================= slider ================= */
+  {% if isSlider %}
+  /* clip sideways, let shadows bleed vertically */
+  .lamsa-cs-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .lamsa-cs-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .lamsa-cs-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .lamsa-cs-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .lamsa-cs-{{ id }}-sw .swiper-slide > * { width: 100%; }
+  {% endif %}
+
+  /* ================= card ================= */
+  .lamsa-cs-{{ id }}-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .lamsa-cs-{{ id }}-media {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-bg-tertiary) 100%);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+    {% if shape == 'arch' %}
+    border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
+    {% elif shape == 'circle' %}
+    border-radius: 50%;
+    {% else %}
+    border-radius: var(--radius-lg);
+    {% endif %}
+  }
+  .lamsa-cs-{{ id }}-card:hover .lamsa-cs-{{ id }}-media {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .lamsa-cs-{{ id }}-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .lamsa-cs-{{ id }}-card:hover .lamsa-cs-{{ id }}-media img { transform: scale(1.05); }
+
+  .lamsa-cs-{{ id }}-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-soft);
+  }
+
+  /* ================= name & count ================= */
+  .lamsa-cs-{{ id }}-name {
+    display: block;
+    font-family: var(--font-display-ar);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  html[dir="ltr"] .lamsa-cs-{{ id }}-name { font-family: var(--font-display-en); }
+
+  .lamsa-cs-{{ id }}-count {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  /* ---- below ---- */
+  .lamsa-cs-{{ id }}-below {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: {{ 'center' if shape == 'circle' else 'start' }};
+  }
+  .lamsa-cs-{{ id }}-below .lamsa-cs-{{ id }}-name {
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-cs-{{ id }}-card:hover .lamsa-cs-{{ id }}-below .lamsa-cs-{{ id }}-name { color: var(--color-accent); }
+  .lamsa-cs-{{ id }}-below .lamsa-cs-{{ id }}-count { color: var(--color-text-tertiary); }
+
+  /* ---- overlay ---- */
+  .lamsa-cs-{{ id }}-overlay {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 24px 20px 18px;
+    text-align: center;
+    background: linear-gradient(to top, rgba(59, 44, 49, 0.74) 0%, rgba(59, 44, 49, 0.1) 78%, transparent 100%);
+  }
+  .lamsa-cs-{{ id }}-overlay .lamsa-cs-{{ id }}-name { color: #FFF; }
+  .lamsa-cs-{{ id }}-overlay .lamsa-cs-{{ id }}-count { color: rgba(255, 255, 255, 0.82); }
+
+  /* ---- chip (floating pill) ---- */
+  .lamsa-cs-{{ id }}-chip {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 12px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text-primary);
+    transition: background var(--t-base) var(--ease-soft), color var(--t-base) var(--ease-soft);
+  }
+  .lamsa-cs-{{ id }}-chip .lamsa-cs-{{ id }}-name {
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lamsa-cs-{{ id }}-card:hover .lamsa-cs-{{ id }}-chip { background: var(--color-accent); color: #FFF; }
+
+  @media (max-width: 640px) {
+    .lamsa-cs-{{ id }}-card { gap: 10px; }
+    .lamsa-cs-{{ id }}-name { font-size: 0.9375rem; }
+    .lamsa-cs-{{ id }}-chip { inset-inline: 8px; bottom: 8px; padding: 9px 13px; gap: 6px; }
+    .lamsa-cs-{{ id }}-chip .lamsa-cs-{{ id }}-name { font-size: 0.8125rem; white-space: normal; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .lamsa-cs-{{ id }}-chip svg { display: none; }
+    .lamsa-cs-{{ id }}-overlay { padding: 18px 14px 14px; }
+  }
+</style>
+
+
+{% if count > 0 %}
+<section id="lamsa-cs-{{ id }}" class="lamsa-section">
+  <div class="lamsa-container">
+
+    {# ═════════════ header ═════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="lamsa-head lamsa-head--center">
+          {% if eyebrow %}
+            <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+          {% endif %}
+          {% if title %}<div class="lamsa-cs-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+          {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+        </div>
+      {% else %}
+        <div class="lamsa-head lamsa-head--split">
+          <div class="min-w-0">
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+            {% endif %}
+            {% if title %}<div class="lamsa-cs-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            {% if isSlider and showArrows %}
+              <div class="flex items-center gap-2">
+                <button type="button" id="csPrev-{{ id }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.prev') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+                  </svg>
+                </button>
+                <button type="button" id="csNext-{{ id }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.next') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                  </svg>
+                </button>
+              </div>
+            {% endif %}
+            {% if viewAllUrl %}
+              <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm max-sm:hidden">
+                {{ viewAllText }}
+                <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═════════════ collections ═════════════ #}
+    {% if isSlider %}
+      <div class="swiper lamsa-cs-{{ id }}-sw" id="csSwiper-{{ id }}">
+        <div class="swiper-wrapper">
+          {% for c in cols %}
+            <div class="swiper-slide">
+              {{ card(c, id, showCount, isBelow, isChip, isOverlay, [t('count.product_one'), t('count.product_two'), t('count.product_few'), t('count.product_many')], loop.index0) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="lamsa-cs-{{ id }}-grid reveal reveal-stagger">
+        {% for c in cols %}
+          {{ card(c, id, showCount, isBelow, isChip, isOverlay, [t('count.product_one'), t('count.product_two'), t('count.product_few'), t('count.product_many')], loop.index0) }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ view all ═════════════ #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-12 max-sm:mt-8 {{ '' if isCenter else 'sm:hidden' }}">
+        <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--outline">
+          {{ viewAllText }}
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if isSlider %}
+<script>
+  (function () {
+    if ({{ count }} < 2 || typeof Swiper === 'undefined') return;
+    var el = document.getElementById('csSwiper-{{ id }}');
+    if (!el) return;
+
+    var sw = new Swiper(el, {
+      slidesPerView: 1.3,
+      spaceBetween: 16,
+      speed: 480,
+      watchOverflow: true,
+      breakpoints: {
+        641:  { slidesPerView: 2.2, spaceBetween: 20 },
+        768:  { slidesPerView: {{ colsMid | int }}, spaceBetween: 22 },
+        1024: { slidesPerView: {{ colsD | int }}, spaceBetween: 24 }
+      },
+      {% if autoplay %}
+      autoplay: { delay: {{ (apSpeed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#csPrev-{{ id }}', nextEl: '#csNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+    {% if autoplay %}window.lamsaAutoplayWhenVisible && lamsaAutoplayWhenVisible(sw, el);{% endif %}
+  })();
+</script>
+{% endif %}
+
+{% else %}
+  {# ---- editor empty state: nothing picked yet ---- #}
+  <section id="lamsa-cs-{{ id }}" class="lamsa-section" data-lamsa-empty>
+    <div class="lamsa-container">
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/>
+            <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('categories.no_categories') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('categories.no_categories_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}

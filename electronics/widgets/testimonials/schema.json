@@ -1,0 +1,108 @@
+{
+  "name": "آراء العملاء",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "ماذا يقول عملاؤنا"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "What our customers say"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": ""
+    },
+    "subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان الفرعي (إنجليزي)",
+        "en": "Subtitle (English)"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "review": {
+      "name": "رأي",
+      "settings": {
+        "name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Customer name"
+          },
+          "default": "عميل"
+        },
+        "name_en": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل (إنجليزي)",
+            "en": "Customer name (English)"
+          },
+          "default": "Customer"
+        },
+        "avatar": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Avatar"
+          }
+        },
+        "rating": {
+          "type": "number",
+          "label": {
+            "ar": "التقييم",
+            "en": "Rating"
+          },
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "نص الرأي",
+            "en": "Review text"
+          },
+          "default": ""
+        },
+        "text_en": {
+          "type": "text",
+          "label": {
+            "ar": "نص الرأي (إنجليزي)",
+            "en": "Review text (English)"
+          },
+          "default": ""
+        },
+        "verified": {
+          "type": "boolean",
+          "label": {
+            "ar": "عميل موثّق",
+            "en": "Verified customer"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "آراء العملاء"
+    }
+  ]
+}

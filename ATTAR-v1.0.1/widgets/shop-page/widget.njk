@@ -1,0 +1,320 @@
+{# ===== ATTAR Shop Page — Fragrance house ===== #}
+{# Unified shop page: /shop | /shop/:handle | /shop?q=... #}
+
+{# a collection with no title would print an empty chip; hidden ones never show #}
+{% set collections = [] %}
+{% for c in (context.collections or widget.data.collections or []) %}{% if c.title and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = collections.push(c) %}{% endif %}{% endfor %}
+{% set show_search = widget.data.show_search if widget.data.show_search is defined else true %}
+{% set show_sort = widget.data.show_sort if widget.data.show_sort is defined else true %}
+{% set show_filters = widget.data.show_filters if widget.data.show_filters is defined else true %}
+{% set filters = context.shop.filters.available if context.shop and context.shop.filters else context.filters | default([]) %}
+{% set hasFilters = show_filters and filters | length > 0 %}
+{% set hasSidebar = true %}
+
+{# Title size #}
+{% set titleSizeVal = widget.data.title_size | default('large') %}
+{% if titleSizeVal == 'small' %}
+  {% set titleClamp = 'clamp(1.5rem, 3vw, 1.9rem)' %}
+{% elif titleSizeVal == 'medium' %}
+  {% set titleClamp = 'clamp(1.8rem, 3.5vw, 2.4rem)' %}
+{% else %}
+  {% set titleClamp = 'clamp(2rem, 4.5vw, 3rem)' %}
+{% endif %}
+
+{# Discover range filter handle dynamically #}
+{% set _rangeHandle = 'price' %}
+{% for filter in filters %}
+  {% if filter.inputType == 'range' %}
+    {% set _rangeHandle = filter.handle %}
+  {% endif %}
+{% endfor %}
+
+<style>
+  /* ATTAR Shop */
+  .anaqa-shop-title {
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--color-text-primary);
+  }
+  html[dir="rtl"] .anaqa-shop-title { font-weight: 600; line-height: 1.2; }
+
+  .anaqa-shop-search {
+    width: 100%;
+    padding: 11px 0;
+    padding-inline-start: 26px !important;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    background: transparent;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  .anaqa-shop-search::placeholder { color: var(--color-text-tertiary); }
+  .anaqa-shop-search:focus { border-color: var(--color-text-primary); }
+
+  /* Collection nav link — editorial minimal */
+  .anaqa-shop-col-btn {
+    width: 100%;
+    text-align: start;
+    padding: 7px 0;
+    font-size: 14px;
+    border-radius: 0;
+    transition: color 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    background: transparent;
+  }
+  .anaqa-shop-col-btn:hover { color: var(--color-text-primary); }
+  .anaqa-shop-col-btn.active { color: var(--color-text-primary); font-weight: 500; }
+
+  /* Mobile collection chip — editorial */
+  .anaqa-shop-chip {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 0;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+  .anaqa-shop-chip.active {
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+    border-color: var(--color-accent);
+  }
+  .anaqa-shop-chip:not(.active):hover {
+    border-color: var(--color-accent);
+    color: var(--color-text-primary);
+  }
+</style>
+
+<section class="py-10 md:py-16" style="background: var(--color-bg-primary);" x-data="collectionFilter({
+  {%- set _cur = context.shop.collection if (context.shop and context.shop.collection) else null %}
+  collectionId: {{ (_cur._id if _cur else '') | dump }},
+  current: {% if _cur %}{ id: {{ (_cur._id or '') | dump }}, slug: {{ (_cur.slug or _cur.handle or '') | dump }}, title: {{ (_cur.title or '') | dump }}, description: {{ (_cur.description or '') | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | dump }}, image: {{ (_cur.image.fileUrl if (_cur.image and _cur.image.fileUrl) else '') | dump }} }{% else %}null{% endif %},
+  rangeHandle: '{{ _rangeHandle }}',
+  section: 'shop-products',
+  collections: [{% for col in collections %}{ id: {{ (col._id or '') | dump }}, slug: {{ (col.slug or col.handle or '') | dump }}, title: {{ (col.title or '') | dump }}, description: {{ (col.description | default('', true)) | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | replace('<br />', ' ') | striptags | dump }}, image: {{ (col.image.fileUrl if (col.image and col.image.fileUrl) else '') | dump }} }{% if not loop.last %},{% endif %}{% endfor %}],
+  cardSettings: {
+    gridClass: 'md:grid-cols-2 lg:grid-cols-3',
+    imageRatio: '{{ widget.data.card_image_ratio | default("square") }}'
+  },
+  translations: {
+    addToCart: {{ t("pages.product.add_to_cart") | default("Add to cart") | dump }},
+    buyNow: {{ t("pages.product.buy_now") | default("Buy Now") | dump }},
+    chooseOptions: {{ t("pages.product.choose_options") | default("Choose options") | dump }},
+    outOfStock: {{ t("pages.product.out_of_stock") | default("Out of stock") | dump }},
+    added: {{ t("pages.product.added") | default("Added") | dump }},
+    noProducts: {{ t("collection.no_products") | default("No products") | dump }},
+    noResults: {{ t("common.no_results") | default("No results") | dump }},
+    resultsFor: {{ t("pages.search.results_for") | default("Results for") | dump }},
+    tryDifferent: {{ t("pages.search.try_different") | default("Try different keywords") | dump }},
+    home: {{ t("common.home") | default("Home") | dump }},
+    products: {{ t("common.products") | default("Products") | dump }}
+  }
+})">
+  <div class="container mx-auto px-4 md:px-6">
+
+    {# ===== Breadcrumb ===== #}
+    <nav class="mb-6" aria-label="breadcrumb">
+      <ol class="flex items-center gap-2 text-[12px] flex-wrap font-body-ar" style="color: var(--color-text-tertiary);">
+        <li><a href="/" class="hover:text-accent transition-colors">{{t('common.home')}}</a></li>
+        <li>
+          <svg class="w-3 h-3 rtl:rotate-180 inline" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </li>
+
+        <li>
+          <span x-show="!collectionId && !searchQuery" style="color: var(--color-text-secondary);">{{t('pages.shop.title')}}</span>
+          <a x-show="collectionId || searchQuery" x-cloak href="/shop" class="hover:text-accent transition-colors">{{t('pages.shop.title')}}</a>
+        </li>
+
+        <template x-if="collectionId">
+          <li class="flex items-center gap-2">
+            <svg class="w-3 h-3 rtl:rotate-180 inline" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span x-show="!searchQuery" style="color: var(--color-text-secondary);" x-text="currentCollection?.title || ''"></span>
+            <a x-show="searchQuery" x-cloak
+               :href="'/shop/' + (currentCollection?.slug || '')"
+               class="hover:text-accent transition-colors"
+               x-text="currentCollection?.title || ''"></a>
+          </li>
+        </template>
+
+        <template x-if="searchQuery">
+          <li class="flex items-center gap-2">
+            <svg class="w-3 h-3 rtl:rotate-180 inline" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span style="color: var(--color-text-secondary);">{{t('pages.search.title')}}</span>
+          </li>
+        </template>
+      </ol>
+    </nav>
+
+    {# ===== Page Header ===== #}
+    <div class="mb-8 md:mb-12">
+      <span class="editorial-label block mb-3">{{t('pages.shop.title')}}</span>
+
+      {# One H1, right on the server (collection / search / all) and kept in sync by Alpine #}
+      {% set _shop = context.shop or {} %}
+      {% set _q = (_shop.query or (context.query.q if context.query else '') or '') %}
+      {% if _q %}{% set ssrTitle = t('pages.search.results_for') ~ ' "' ~ _q ~ '"' %}
+      {% elif _shop.collection and _shop.collection.title %}{% set ssrTitle = _shop.collection.title %}
+      {% else %}{% set ssrTitle = t('pages.shop.title') %}{% endif %}
+      <h1 class="anaqa-shop-title font-heading-ar" style="font-size: {{ titleClamp }};"
+          x-text="searchQuery ? (translations.resultsFor + ' &quot;' + searchQuery + '&quot;' + (currentCollection && currentCollection.title ? ' — ' + currentCollection.title : '')) : ((currentCollection && currentCollection.title) || {{ t('pages.shop.title') | dump }})">{{ ssrTitle }}</h1>
+
+      {# Result count — small (live hook, updated by qumra.filters JS) #}
+      <div id="products-count" class="mt-3 font-body-ar">
+        <p class="text-[13px]" style="color: var(--color-text-tertiary);">
+          <span class="font-medium" style="color: var(--color-text-primary);">{% ui "count.njk", n=(((_shop.pagination.totalItems if (_shop.pagination and _shop.pagination.totalItems is defined) else (_shop.products | length if _shop.products else 0))) or 0), kind='product' %}</span>
+        </p>
+      </div>
+
+      <p x-show="collectionId && !searchQuery && currentCollection?.description" x-cloak
+         class="text-sm mt-4 max-w-2xl font-body-ar leading-relaxed"
+         style="color: var(--color-text-secondary);"
+         x-text="currentCollection?.description || ''">
+      </p>
+
+      {# Search input #}
+      {% if show_search %}
+        <div class="max-w-sm mt-6">
+          <div class="relative">
+            <input type="text"
+                   x-model="searchQuery"
+                   @input.debounce.500ms="setSearchQuery(searchQuery)"
+                   placeholder="{{t('pages.shop.search_placeholder')}}"
+                   class="anaqa-shop-search font-body-ar">
+            <svg class="absolute start-0 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" fill="none" stroke="var(--color-text-tertiary)" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {# Mobile Toolbar + Bottom Sheets #}
+    {% ui "filter-mobile.njk", show_sort=show_sort, filters=filters, hasFilters=hasFilters, hasSidebar=hasSidebar %}
+
+    {# ===== Main Layout: Sidebar + Grid ===== #}
+    <div class="flex gap-8 lg:gap-12">
+
+      {# ===== Desktop Sidebar ===== #}
+      <aside class="hidden md:block w-60 flex-shrink-0">
+        <div class="sticky top-6 space-y-8">
+
+          {# Clear Filters #}
+          <div x-show="activeCount > 0" x-cloak>
+            <button @click="clearFilters()"
+                    class="text-[12px] transition-colors font-body-ar editorial-link"
+                    style="color: var(--color-text-secondary);">
+              {{t('collection.clear_filters')}}
+            </button>
+          </div>
+
+          {# Collections List #}
+          {% if collections | length > 0 %}
+            <div>
+              <span class="editorial-label block mb-4">{{t('pages.shop.collections')}}</span>
+              <div class="space-y-0 max-h-96 overflow-y-auto custom-scrollbar" style="border-top: 1px solid var(--color-border);">
+                {# All Products #}
+                <button @click="setCollection('', '')"
+                        class="anaqa-shop-col-btn font-body-ar"
+                        style="border-bottom: 1px solid var(--color-border);"
+                        :class="!collectionId ? 'active' : ''">
+                  <span>{{t('pages.shop.all_products')}}</span>
+                  <svg x-show="!collectionId" x-cloak class="w-3.5 h-3.5" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+                {% for col in collections %}
+                  <button @click="setCollection({{ (col._id or '') | dump }}, {{ (col.slug or col.handle or '') | dump }})"
+                          class="anaqa-shop-col-btn font-body-ar"
+                          style="border-bottom: 1px solid var(--color-border);"
+                          :class="collectionId === '{{ col._id }}' ? 'active' : ''">
+                    <span>{{ col.title }}</span>
+                    <svg x-show="collectionId === '{{ col._id }}'" x-cloak class="w-3.5 h-3.5" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+          {# Sort & Filters #}
+          {% ui "filter-sidebar.njk", show_sort=show_sort, filters=filters, hasFilters=hasFilters %}
+
+          {# Collection Image #}
+          <div x-show="currentCollection?.image" x-cloak class="overflow-hidden">
+            <img :src="currentCollection?.image || ''"
+                 :alt="currentCollection?.title || ''"
+                 class="w-full h-auto object-cover"
+                 style="filter: saturate(1.03) contrast(1.02);"
+                 loading="lazy">
+          </div>
+
+        </div>
+      </aside>
+
+      {# ===== Products Area ===== #}
+      <div class="flex-1 min-w-0">
+
+        {# Mobile: Collection Chips #}
+        {% if collections | length > 0 %}
+          <div class="flex gap-2 mb-6 md:hidden overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+            <button @click="setCollection('', '')"
+                    class="anaqa-shop-chip font-body-ar"
+                    :class="!collectionId ? 'active' : ''">
+              {{t('pages.shop.all_products')}}
+            </button>
+            {% for col in collections %}
+              <button @click="setCollection({{ (col._id or '') | dump }}, {{ (col.slug or col.handle or '') | dump }})"
+                      class="anaqa-shop-chip font-body-ar"
+                      :class="collectionId === '{{ col._id }}' ? 'active' : ''">
+                {{ col.title }}
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# Products Grid + Loading Overlay #}
+        <div class="relative min-h-[200px]">
+
+          {# Loading Overlay #}
+          <div x-show="loading" x-cloak
+               class="absolute inset-0 z-10 flex items-center justify-center"
+               style="background: color-mix(in srgb, var(--color-bg-primary) 70%, transparent); backdrop-filter: blur(2px);"
+               x-transition:enter="transition ease-out duration-300"
+               x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+               x-transition:leave="transition ease-in duration-200"
+               x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <svg class="w-7 h-7 animate-spin" style="color: var(--color-accent);" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+          </div>
+
+          {# Products content (managed by qumra.filters + data-qumra-section) #}
+          <div id="products-grid-wrapper" data-qumra-section="shop-products">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

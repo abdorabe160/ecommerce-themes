@@ -1,0 +1,13 @@
+{# صفحة تصنيف توضيحية — المعاينة فقط (/?demo_collection=<id>). نفس تصميم widgets/collection-products. البيانات من assets/demo-data.js #}
+<div class="mw-demo-page" x-data="mwDemoCollection()">
+  <template x-if="active">
+    <section class="mw-page">
+      <div class="container">
+        <div class="mw-collection-hero">
+          <div class="mw-collection-hero__title" role="heading" aria-level="1" x-text="title"></div>
+        </div>
+        <div class="mw-products" x-html="html"></div>
+      </div>
+    </section>
+  </template>
+</div>

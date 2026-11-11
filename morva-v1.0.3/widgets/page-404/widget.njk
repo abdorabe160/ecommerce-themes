@@ -1,0 +1,17 @@
+{# MORVA · 404 — a giant crimson code, a line of copy, a way back. #}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+<section class="mv-section mv-404">
+  <div class="mv-kicker">— {{ d.kicker | default(t('morva.lost'), true) }}</div>
+  <div class="mv-404-code" aria-hidden="true">404</div>
+  <h1 class="mv-h">{{ d.title | default(t('pages.404.title'), true) }}</h1>
+  <div class="mv-404-text">{{ d.text | default(t('morva.not_found_text'), true) | safe }}</div>
+  <div class="mv-404-links">
+    <a href="/" class="mv-btn">{{ t('common.home') }}</a>
+    <a href="/shop" class="mv-btn mv-btn--ghost">{{ t('morva.all_pieces') }}</a>
+    {% for b in blocks %}
+      {% set bd = b.data | default(b.settings) | default({}) %}
+      {% if bd.label %}<a href="{{ bd.url | default('/') }}" class="mv-btn mv-btn--ghost">{{ bd.label }}</a>{% endif %}
+    {% endfor %}
+  </div>
+</section>

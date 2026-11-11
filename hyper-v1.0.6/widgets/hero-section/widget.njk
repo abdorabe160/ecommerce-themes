@@ -1,0 +1,318 @@
+{# ============================================================================
+   HYPER HERO — one photograph per slide, copy centred over it
+   ----------------------------------------------------------------------------
+       ┌──────────────────────────────────────────────┐
+       │                  Eyebrow                     │
+       │              BIG BOLD TITLE                  │
+       │                 ( Shop CTA )                 │
+       │              ‹   ·  ▬  ·   ›                 │
+       └──────────────────────────────────────────────┘
+
+   The stage is INSET by default — page gutter on both sides, rounded corners —
+   so the photograph reads as an object on the page rather than a background
+   behind it. `stage_width: full` opts out.
+
+   Three things are per-SLIDE rather than per-widget, and all for the same
+   reason: a carousel's slides do not share a photograph.
+     · text_tone — white copy is invisible on a bright shot, black copy is
+       invisible on a dark studio shot. One switch per widget would break
+       whichever slide disagreed.
+     · scrim — how much darkening the copy needs depends on that image.
+     · cta styles — a white button is right on a dark slide and invisible on a
+       pale one.
+
+   CTA links are plain strings the merchant fills in, defaulted to /shop. No
+   slug is hardcoded anywhere: collection slugs are created in the dashboard, so
+   writing /shop/dining here would ship a 404 to every store whose collection is
+   named something else. The routes that DO exist are listed in the field
+   labels in schema.json.
+
+   ── Not carried over from the previous theme's hero ──
+   The two-image split (`image_2`) is gone. This design is one photograph per
+   slide with large centred type; a split pane has nowhere to put that title
+   without landing it on the seam between the two images.
+
+   All styling lives in assets/style.css → "15.5 HERO".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set stageWidth = d.stage_width | default('inset') %}
+{% set align = d.text_align | default('center') %}
+{% set btnShape = d.button_shape | default('pill') %}
+
+{% set animationsOn = settings.enableAnimations != false %}
+{% set autoplay = animationsOn and d.autoplay | default(true) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showDots = d.show_dots | default(true) %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+{# ---- Shape and height ----
+   These were three Theme Editor controls — `corner_radius`, `height` and
+   `height_mobile` — and they are now fixed here at the values the design was
+   drawn for. Same call, and for the same reason, as the five shape/rhythm
+   knobs that layouts/layout.njk stopped exposing: a hero whose height the
+   merchant can change is a hero whose copy, controls and image crop all have
+   to stay right at four different heights, and there is no artwork that
+   survives that. One height, one ratio to crop the photograph to.
+
+   Heights land on min-height, never height — see the note in the CSS. #}
+{% set radius = 14 %}
+{% set hDesk = '720px' %}
+{% set hMob = '480px' %}
+
+{% if btnShape == 'pill' %}{% set shapeCls = 'hy-btn--pill' %}
+{% elif btnShape == 'square' %}{% set shapeCls = 'hy-btn--square' %}
+{% else %}{% set shapeCls = '' %}{% endif %}
+
+
+{# A `media` setting arrives as an object once the merchant uploads through the
+   Theme Editor, but a plain URL string is what a hand-written page JSON (and
+   every preview/seed value) can express. Accept both, plus `url` as well as
+   `fileUrl`, so neither source silently renders nothing. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro slideBody(s, isFirst, align, shapeCls, n) %}
+  {% set pos = s.image_position | default('center') %}
+  {% set img = mediaUrl(s.image) | trim %}
+  {% set imgM = mediaUrl(s.image_mobile) | trim %}
+  {# No photo uploaded yet → bundled demo photos (CC0, docs/demo-images.md), cycling
+     1–3, each with a portrait crop for phones. Page files can't carry media (the
+     server strips it), so this is the only way a fresh install has one. #}
+  {% set isDemoImg = not (img | length) %}
+  {% if isDemoImg %}
+    {% set dn = [1, 2, 3][((n or 1) - 1) % 3] %}
+    {% set img = ('demo-hero-' ~ dn ~ '.jpg') | assets %}
+    {% if not (imgM | length) %}{% set imgM = ('demo-hero-' ~ dn ~ '-m.jpg') | assets %}{% endif %}
+  {% endif %}
+
+  {# ⚠️  Test a macro's result with `| length`, never for truthiness. A macro
+     returns a SafeString OBJECT, and an object is truthy even when it holds an
+     empty string — `trim` and `string` both preserve safeness, so neither
+     converts it back to a primitive. Guarding on the raw value instead makes
+     every slide read as having an image, and an empty src renders as a broken
+     box on the ones that do not. #}
+  {% set hasImg = (img | length) > 0 %}
+  {% set hasM = (imgM | length) > 0 %}
+
+  {# With no photograph the stage is a plain light surface, so light copy would
+     be white on near-white — invisible, and invisible in exactly the state a
+     merchant hits first: a slide added before its image is uploaded. The tone
+     setting only applies once there is something to sit on. #}
+  {% set tone = (s.text_tone | default('light')) if hasImg else 'dark' %}
+  {% set scrim = (s.scrim | default('light')) if hasImg else 'none' %}
+  {# the bundled demo photos are bright rooms — white copy needs more than the light scrim on them #}
+  {% if isDemoImg and tone == 'light' and (scrim == 'light' or scrim == 'none') %}{% set scrim = 'medium' %}{% endif %}
+
+  <div class="hy-hero-slide {{ 'is-light' if tone == 'light' else 'is-dark' }} {{ 'hy-hero-slide--empty' if not hasImg }}"
+       data-tone="{{ tone }}">
+
+    {% if hasImg %}
+      {# The photograph fills the stage — `object-fit: cover` in the CSS. There
+         is no second, blurred copy of it behind this element any more: that
+         existed to fill the bands `contain` left, and cover leaves no bands.
+         What the crop keeps is the slide's own `image_position`, written to
+         `object-position` on the <img> below. #}
+      <div class="hy-hero-media">
+        {% if hasM %}
+          <picture>
+            <source media="(max-width: 767px)" srcset="{{ imgM }}"/>
+            <img src="{{ img }}" alt="{{ s.title | default('', true) }}"
+                 style="object-position: {{ pos }};"
+                 {% if isFirst %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+          </picture>
+        {% else %}
+          <img src="{{ img }}" alt="{{ s.title | default('', true) }}"
+               style="object-position: {{ pos }};"
+               {% if isFirst %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if scrim != 'none' %}
+      <div class="hy-hero-scrim hy-hero-scrim--{{ scrim }}"></div>
+    {% endif %}
+
+    <div class="hy-hero-content {{ 'hy-hero-content--start' if align == 'start' }}">
+      <div class="hy-hero-copy">
+        {% if s.eyebrow %}
+          <p class="hy-hero-eyebrow">{{ s.eyebrow }}</p>
+        {% endif %}
+
+        {% if s.title %}
+          {# Exactly one <h1> per page — the first slide takes it, the rest are
+             <h2>. Three <h1>s in a carousel is a real SEO fault, not a nitpick. #}
+          {% if isFirst %}
+            <h1 class="hy-hero-title">{{ s.title }}</h1>
+          {% else %}
+            <h2 class="hy-hero-title">{{ s.title }}</h2>
+          {% endif %}
+        {% endif %}
+
+        {% if s.description %}
+          {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+               (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes the
+               outer one and the content becomes a SIBLING, so every style on this
+               class stops reaching the text. The inner margins are reset in the CSS. #}
+          <div class="hy-hero-desc">{{ s.description | safe }}</div>
+        {% endif %}
+
+        {% if s.cta1_text or s.cta2_text %}
+          <div class="hy-hero-ctas">
+            {% if s.cta1_text %}
+              <a href="{{ s.cta1_url | default('/shop') }}"
+                 class="hy-btn hy-btn--lg {{ shapeCls }} hy-btn--{{ s.cta1_style | default('light') }}">
+                {{ s.cta1_text }}
+              </a>
+            {% endif %}
+            {% if s.cta2_text %}
+              <a href="{{ s.cta2_url | default('/shop') }}"
+                 class="hy-btn hy-btn--lg {{ shapeCls }} hy-btn--{{ s.cta2_style | default('light-outline') }}">
+                {{ s.cta2_text }}
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+
+{# No title on the first slide (or no slide): the page still needs its one H1. #}
+{% if not (count > 0 and slides[0].data.title) %}<h1 class="hy-sr-h1">{{ store.name or t('common.home') }}</h1>{% endif %}
+<section id="hy-hero-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %} class="hy-hero hy-hero--{{ stageWidth }}">
+  <style>
+    #hy-hero-{{ id }} {
+      --hy-hero-radius: {{ radius if stageWidth == 'inset' else 0 }}px;
+    }
+    #hy-hero-{{ id }} .hy-hero-slide { min-height: {{ hMob }}; }
+    @media (min-width: 768px) {
+      #hy-hero-{{ id }} .hy-hero-slide { min-height: {{ hDesk }}; }
+    }
+  </style>
+
+  <div id="hy-heroStage-{{ id }}" class="hy-hero-stage">
+
+    {% if count > 1 %}
+      {# Swiper resolves direction off the element (`el.dir`, then the computed
+         style) — there is no `rtl` init option. The fade effect does not
+         translate, so this changes nothing visually here; it keeps every slider
+         in the theme declaring direction the same way. #}
+      <div id="hy-heroSw-{{ id }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+        <div class="swiper-wrapper">
+          {% for block in slides %}
+            <div class="swiper-slide">
+              {{ slideBody(block.data, loop.first, align, shapeCls, loop.index) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% elif count == 1 %}
+      {{ slideBody(slides[0].data, true, align, shapeCls, 1) }}
+    {% else %}
+      {# No slides yet. The stage is drawn at its real height with the copy
+         block sketched in, so the merchant sees the shape they are filling
+         rather than a collapsed strip. A preset cannot seed blocks — see the
+         note in style.css → "15.29.1". #}
+      <div class="hy-hero-slide is-dark" data-hy-placeholder aria-hidden="true">
+        <div class="hy-hero-content">
+          <div class="hy-hero-copy" style="align-items: center; width: 100%; max-width: 30ch;">
+            <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 34%;"></span>
+            <span class="hy-ph-line hy-ph-line--lg"></span>
+            <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 68%;"></span>
+            <span class="hy-ph-hint" style="margin-block-start: 12px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+              </svg>
+              {{ t('common.placeholder_add') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if count > 1 and (showArrows or showDots) %}
+      <div class="hy-hero-controls">
+        {% if showArrows %}
+          <button type="button" id="hy-heroPrev-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.prev') }}">
+            <svg class="rtl-flip" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+            </svg>
+          </button>
+        {% endif %}
+
+        {# Swiper fills this element and owns the `-active` class on the bullets;
+           their whole shape is in style.css → 15.5. Rendered even when the dots
+           are switched off is NOT an option — Swiper would write bullets into a
+           `display: none` box and the arrows would lose their centring — so the
+           element only exists when it is wanted. #}
+        {% if showDots %}
+          <div id="hy-heroDots-{{ id }}" class="hy-hero-dots"></div>
+        {% endif %}
+
+        {% if showArrows %}
+          <button type="button" id="hy-heroNext-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.next') }}">
+            <svg class="rtl-flip" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var stage = document.getElementById('hy-heroStage-{{ id }}');
+    if (!stage) return;
+
+    /* The arrows and the dots sit ON the photograph, so their colour has to
+       follow the slide underneath — white controls vanish on a pale one. Read
+       the tone off the active slide's data-tone and flag the stage. */
+    function sync(sw) {
+      var active = sw ? sw.slides[sw.activeIndex] : stage.querySelector('[data-tone]');
+      var pane = active && (active.matches('[data-tone]') ? active : active.querySelector('[data-tone]'));
+      stage.classList.toggle('on-light', !!pane && pane.dataset.tone === 'dark');
+    }
+
+    if ({{ count }} < 2) { sync(null); return; }
+
+    var el = document.getElementById('hy-heroSw-{{ id }}');
+    if (!el || typeof Swiper === 'undefined') { sync(null); return; }
+
+    new Swiper(el, {
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      speed: 700,
+      loop: true,
+      grabCursor: false,
+      {% if autoplay %}
+      autoplay: { delay: {{ (speed | float) * 1000 }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#hy-heroPrev-{{ id }}', nextEl: '#hy-heroNext-{{ id }}' },
+      {% endif %}
+      {% if showDots %}
+      pagination: { el: '#hy-heroDots-{{ id }}', clickable: true },
+      {% endif %}
+      a11y: { enabled: true },
+      on: {
+        init: function () { sync(this); },
+        slideChange: function () { sync(this); }
+      }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-hero-' ~ id, c=d %}

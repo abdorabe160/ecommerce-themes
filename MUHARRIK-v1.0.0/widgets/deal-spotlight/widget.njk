@@ -1,0 +1,334 @@
+{#
+  ============================================================================
+  MUHARRIK · DEAL SPOTLIGHT · صفقة اليوم
+  ----------------------------------------------------------------------------
+     ┌──────────────────────────────┬───────────────────────────────────────┐
+     │ ⌐                      -25%  │ — DEAL OF THE DAY                     │
+     │        ╭───────────╮         │ CERAMIC COATING KIT                   │
+     │        │  product  │  float  │ 1,850  ~~2,400~~                      │
+     │        │   image   │         │ OFFER ENDS IN  02 : 14 : 37 : 09      │
+     │        ╰───────────╯         │ ● 7 LEFT  ▬▬▬▬▬▬▭▭▭▭▭▭▭▭▭▭▭▭          │
+     │   ░░░░░ yellow glow floor    │ Size: [ 250ml ] [ 500ml ]             │
+     │                            ⌐ │ [ − 1 + ] [ ADD TO CART ] [ BUY NOW ] │
+     └──────────────────────────────┴───────────────────────────────────────┘
+
+  ONE product in a dramatic spotlight: the picture floats and slowly rotates
+  (CSS) on a radial yellow glow floor and parallaxes with the page
+  (`data-mh-parallax`); beside it the title, a mono price with the was-price
+  and a big "-25%", a live countdown (HxCountdown, assets/hx.js — flip-style
+  mono digits), a stock-left meter, the variant selector when the product has
+  options, and add to cart / buy now.
+
+  ⚠️  BUY LOGIC — the exact engine the card quick-add and the quick view use:
+      · the picked product arrives WITHOUT options/variants (list payload), so
+        on init the full record is read with Qumra.product.get(slug), mapped
+        like hx.js mapProduct(), and merged in as window.HayatVariants(cfg)
+        (main.js) — selectOption / valueDisabled / addToCart / buyNow (→
+        /checkout) / maxQty / availableNow are all its. Nothing is invented.
+      · the stock meter reads availableNow() (real inventory minus what this
+        shopper already holds) when `stock_mode` = auto.
+      · if the lookup fails the buttons give way to a link to the product page.
+
+  No product picked → demo product (4K Dash Cam, assets/mh-deal.jpg)
+  with a disabled "pick a product in the editor" button, and a ghost link to
+  /shop so a visitor still has somewhere to go.
+
+  Styles: assets/mh-w-c.css → "DEAL SPOTLIGHT".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set picked = d.product | default([], true) %}
+{% set p = picked[0] if (picked | length) > 0 else null %}
+{% set useDemo = d.use_demo != false %}
+{% set isDemo = not p %}
+
+{# a macro's output is a SafeString — an empty one is still truthy, so test
+   its length, never the value itself #}
+{% set override = mediaUrl(d.image) | trim %}
+{% set hasOverride = (override | length) > 0 %}
+
+{% if p %}
+  {% set slug = p.slug | default(p.handle, true) | default(p._id, true) %}
+  {% set pid = p._id %}
+  {% set title = d.headline or p.title %}
+  {% set price = p.pricing.price | default(0, true) %}
+  {% set was = p.pricing.compareAtPrice | default(0, true) %}
+  {% set imgs = p.images | default([], true) %}
+  {% set img = override if hasOverride else ((imgs[0].fileUrl | default('', true)) if (imgs | length) > 0 else ('mh-deal.jpg' | assets)) %}
+  {% set qty = p.quantity | default(0, true) %}
+  {% set url = '/products/' ~ slug %}
+{% else %}
+  {# mirrors item 11 of ui/mh-demo-products.njk — the demo photo (mh-deal.jpg) is a camera #}
+  {% set slug = '' %}
+  {% set pid = 'mhdemo11' %}
+  {% set title = d.headline or ('كاميرا داش 4K بزاوية 170°' if isAr else '4K Dash Cam · 170° wide angle') %}
+  {% set price = 2690 %}
+  {% set was = 3450 %}
+  {% set img = override if hasOverride else ('mh-deal.jpg' | assets) %}
+  {% set qty = 0 %}
+  {% set url = '/shop' %}
+{% endif %}
+{% set renders = not (isDemo and not useDemo) %}
+
+{% set onSale = was and was > price %}
+{% set pct = (((was - price) / was * 100) | int) if onSale else 0 %}
+
+{% set kicker = d.kicker or ('صفقة اليوم' if isAr else 'Deal of the day') %}
+{# Off unless the section says true. Sections saved from pages/index.json hold the key, so they keep what they have. #}
+{% set cdOn = d.countdown_enabled == true %}
+{% set text = d.text or (('سعر اليوم فقط. الكمية محدودة والعدّاد شغّال.' if isAr else 'Today’s price only. Limited units, and the clock is running.') if cdOn else ('عرض خاص على هذا المنتج.' if isAr else 'A special offer on this product.')) %}
+{% set cdMode = d.countdown_mode | default('daily', true) %}
+{% set cdLabel = d.countdown_label or ('ينتهي العرض خلال' if isAr else 'Offer ends in') %}
+{% set stockMode = d.stock_mode | default('auto', true) %}
+{% set stockLeftCfg = d.stock_left if (d.stock_left or d.stock_left == 0) else 7 %}
+{% set stockTotalCfg = d.stock_total | default(20, true) %}
+{% set stockLeft0 = qty if (stockMode == 'auto' and p and qty > 0) else stockLeftCfg %}
+{% set stockTotal0 = stockTotalCfg if stockTotalCfg >= stockLeft0 else stockLeft0 %}
+{% set stockTpl = d.stock_text or ('باقي {count} قطع' if isAr else '{count} left') %}
+{% set stockPct0 = ((stockLeft0 / stockTotal0 * 100) | int) if stockTotal0 > 0 else 100 %}
+{% set stockPct0 = stockPct0 if stockPct0 >= 4 else 4 %}
+
+{% set pickLabel = 'اختر منتجًا من المحرر' if isAr else 'Pick a product in the editor' %}
+
+<section id="mh-ds-{{ id }}"{% if isDemo %} data-hy-empty{% endif %}
+         class="mh-ds is-img-{{ d.image_side | default('start', true) }}{{ ' is-demo' if isDemo }}{{ ' has-float' if d.float != false }}"
+         style="--pt: {{ d.padding_top | default(64) }}px; --pb: {{ d.padding_bottom | default(64) }}px;">
+  <div class="mh-ds-wrap">
+  {% if not renders %}
+    {# nothing picked, demo off → a quiet editor prompt in the theme's voice #}
+    <div class="mh-ds-empty mh-panel mh-hud">
+      <p class="mh-kicker">{{ kicker | safe }}</p>
+      <p class="mh-ds-empty-t">{{ pickLabel }}</p>
+    </div>
+  {% else %}
+    <div class="mh-ds-grid" x-data="mhDeal_{{ id }}()" x-init="init()">
+
+      {# ═══ the stage ═══ #}
+      <div class="mh-ds-stage mh-hud" data-mh-reveal="scale">
+        <span class="mh-ds-floor" aria-hidden="true"></span>
+        <span class="mh-ds-ring" aria-hidden="true"></span>
+        <div class="mh-ds-visual" data-mh-parallax="-0.12">
+          <a href="{{ url }}" class="mh-ds-img-link" aria-label="{{ title }}">
+            <img class="mh-ds-img" src="{{ img }}" alt="{{ title }}" fetchpriority="high"/>
+          </a>
+        </div>
+        <span class="mh-ds-off mh-mono" dir="ltr" x-show="discountPercent > 0" x-text="'-' + discountPercent + '%'" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}-{{ pct }}%{% endif %}</span>
+        <span class="mh-ds-tag mh-tag mh-tag--deal">{{ 'عرض' if isAr else 'Deal' }}</span>
+      </div>
+
+      {# ═══ the readout ═══ #}
+      <div class="mh-ds-info">
+        <p class="mh-kicker" data-mh-reveal="fade">{{ kicker | safe }}</p>
+        <h2 class="mh-ds-title mh-h" data-mh-split>{{ title | safe }}</h2>
+        {% if text %}<p class="mh-ds-text" data-mh-reveal="up" data-mh-delay="0.15">{{ text | safe }}</p>{% endif %}
+
+        <div class="mh-ds-price mh-price" data-mh-reveal="up" data-mh-delay="0.2">
+          <span class="mh-ds-now" :class="hasDiscount() && 'is-sale'" x-text="displayUnitPrice()">{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+          <s class="mh-ds-was mh-was" x-show="hasDiscount()" x-text="unitComparePrice ? formatMoney(unitComparePrice) : ''" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ was | money }}{% endif %}</s>
+          <span class="mh-ds-save mh-mono" x-show="hasDiscount()" x-text="savingsLabel()" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ ('وفّر ' if isAr else 'Save ') }}{{ (was - price) | money }}{% endif %}</span>
+        </div>
+
+        {% if cdOn %}
+          <div class="mh-ds-cd" data-hx-countdown data-mode="{{ cdMode }}" data-end="{{ d.countdown_end | default('', true) }}" data-mh-reveal="up" data-mh-delay="0.25">
+            <span class="mh-ds-cd-label mh-led is-warn">{{ cdLabel | safe }}</span>
+            <span class="mh-ds-cd-boxes" dir="ltr" role="timer">
+              <span class="mh-ds-flip is-days"><b data-hx-cd="d">00</b><small>{{ 'يوم' if isAr else 'days' }}</small></span><i class="is-days">:</i>
+              <span class="mh-ds-flip"><b data-hx-cd="h">00</b><small>{{ 'ساعة' if isAr else 'hrs' }}</small></span><i>:</i>
+              <span class="mh-ds-flip"><b data-hx-cd="m">00</b><small>{{ 'دقيقة' if isAr else 'min' }}</small></span><i>:</i>
+              <span class="mh-ds-flip"><b data-hx-cd="s">00</b><small>{{ 'ثانية' if isAr else 'sec' }}</small></span>
+            </span>
+          </div>
+        {% endif %}
+
+        {% if stockMode != 'off' %}
+          <div class="mh-ds-stock" x-show="!stockUncapped" data-mh-reveal="up" data-mh-delay="0.3">
+            <span class="mh-led" :class="{ 'is-warn': isLow(), 'is-off': stockLeft <= 0 }" x-text="stockLabel()">{{ stockTpl | replace('{count}', stockLeft0) }}</span>
+            <span class="mh-ds-meter" aria-hidden="true"><i :style="'inline-size:' + stockPct() + '%'" style="inline-size: {{ stockPct0 }}%"></i></span>
+          </div>
+        {% endif %}
+
+        {% if not isDemo %}
+          {# ---- options (client-rendered from the full product) ---- #}
+          <template x-for="g in groups" :key="g.name">
+            <div class="mh-ds-opt">
+              <p class="hx-opt-name mh-mono"><span x-text="g.name"></span>: <b x-text="selectedLabels[g.name] || ''"></b></p>
+              <div class="hx-opt-vals mh-ds-vals" role="group" :aria-label="g.name">
+                <template x-for="v in g.values" :key="v.id">
+                  <button type="button" class="hx-opt" :class="{ 'is-swatch': v.image || v.color, 'is-active': selectedOptions[g.name] === v.id, 'is-off': valueDisabled(g.name, v.id) }"
+                          :disabled="valueDisabled(g.name, v.id)" @click="pick(g.name, v.id, v.label)" :title="v.label" :aria-label="v.label">
+                    <img x-show="v.image" :src="v.image || ''" alt=""/><i x-show="!v.image && v.color" :style="v.color ? 'background:' + v.color : ''"></i><span x-show="!v.image && !v.color" x-text="v.label"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+
+          {# ---- buy row ---- #}
+          <div class="mh-ds-buy" x-show="!failed" data-mh-reveal="up" data-mh-delay="0.35">
+            {% if d.show_qty != false %}
+              <div class="mh-ds-qty mh-mono" dir="ltr">
+                <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">−</button>
+                <span x-text="qty">1</span>
+                <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">+</button>
+              </div>
+            {% endif %}
+            <button type="button" class="mh-btn mh-ds-atc" @click="addToCart()" :disabled="addDisabled()">
+              <span x-show="addingToCart" class="hx-spin" x-cloak></span>
+              <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+              <span x-show="!addingToCart && !addedSuccess" x-text="isOutOfStock ? '{{ t('pages.product.out_of_stock') }}' : '{{ t('pages.product.add_to_cart') }}'">{{ t('pages.product.add_to_cart') }}</span>
+            </button>
+            {% if d.show_buy_now != false %}
+              <button type="button" class="mh-btn mh-btn--ghost mh-ds-buynow" @click="buyNow()" :disabled="addDisabled()" x-show="!isOutOfStock">{{ t('pages.product.buy_now') }}</button>
+            {% endif %}
+          </div>
+          <p class="mh-ds-err" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+          {# lookup failed → the product page still sells it #}
+          <a href="{{ url }}" class="mh-btn mh-ds-fallback" x-show="failed" x-cloak>{{ t('pages.product.view_full_details') }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+        {% else %}
+          <div class="mh-ds-buy" data-mh-reveal="up" data-mh-delay="0.35">
+            <button type="button" class="mh-btn mh-ds-atc" disabled aria-disabled="true" title="{{ pickLabel }}">{{ pickLabel }}</button>
+            <a href="/shop" class="mh-btn mh-btn--ghost">{{ 'تسوّق الكل' if isAr else 'Shop all' }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+          </div>
+        {% endif %}
+
+        {% if d.note %}<p class="mh-ds-note mh-mono">{{ d.note | safe }}</p>{% endif %}
+        {% if not isDemo %}<a href="{{ url }}" class="mh-ds-more">{{ t('pages.product.view_full_details') }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+  </div>
+</section>
+
+{% if renders %}
+<script>
+  /* The Alpine factory. Called by x-data after main.js has defined
+     HayatVariants and Qumra (both load before Alpine boots). */
+  window['mhDeal_{{ id }}'] = function () {
+    var isDemo = {{ 'true' if isDemo else 'false' }};
+    var slug = {{ slug | dump | safe }};
+    var strings = window.__hxVariantStrings || {};
+    var stockMode = {{ stockMode | dump | safe }};
+    var stockTpl = {{ stockTpl | dump | safe }};
+    var saveWord = {{ ('وفّر ' if isAr else 'Save ') | dump | safe }};
+
+    /* Same shape hx.js mapProduct() builds for the card quick-add. */
+    function mapProduct(p) {
+      var price = (p.pricing && p.pricing.price) || 0;
+      var cmp = (p.pricing && p.pricing.compareAtPrice) || 0;
+      var groups = (p.options || []).filter(function (o) { return o && (o.values || []).length; }).map(function (o) {
+        return { name: o.name, values: o.values.map(function (v) {
+          return { id: String(v._id), label: v.label, image: (v.image && v.image.fileUrl) || '',
+            color: (v.type === 'color' && v.value) ? String(v.value) : '' };
+        }) };
+      });
+      var variants = (p.variants || []).map(function (v) {
+        var vp = v.pricing || {};
+        var avail = v.inventoryLevel && v.inventoryLevel.available;
+        return {
+          id: v._id, price: (vp.price === undefined || vp.price === null) ? price : Number(vp.price), compareAtPrice: vp.compareAtPrice || cmp,
+          quantity: v.quantity || 0, available: (avail === undefined || avail === null) ? (v.quantity || 0) : avail,
+          trackQuantity: v.trackQuantity !== false, allowBackorder: !!v.allowBackorder, options: v.options || []
+        };
+      });
+      return { productId: p._id, sku: p.sku || '', price: price, compareAtPrice: cmp, quantity: p.quantity || 0,
+        trackQuantity: !!p.trackQuantity, allowBackorder: !!p.allowBackorder, groups: groups, variants: variants, strings: strings };
+    }
+
+    /* First paint: the list payload (no options yet). */
+    var base = window.HayatVariants ? window.HayatVariants({
+      productId: {{ pid | dump | safe }},
+      price: {{ price | default(0, true) }}, compareAtPrice: {{ was | default(0, true) }},
+      quantity: {{ qty | default(0, true) }},
+      trackQuantity: {{ 'true' if (p and p.trackQuantity) else 'false' }},
+      allowBackorder: {{ 'true' if (p and p.allowBackorder) else 'false' }},
+      groups: [], variants: [], strings: strings
+    }) : {};
+
+    return Object.assign(base, {
+      ready: false,
+      failed: false,
+      groups: [],
+      stockLeft: {{ stockLeft0 | default(0, true) }},
+      stockTotal: {{ stockTotal0 | default(0, true) }},
+      stockUncapped: false,
+
+      formatMoney: function (v) { return window.formatMoney ? window.formatMoney(v) : String(v); },
+      savingsLabel: function () {
+        if (!this.hasDiscount()) return '';
+        return saveWord + this.formatMoney(this.unitComparePrice - this.unitPrice);
+      },
+      stockLabel: function () { return String(stockTpl).replace('{count}', this.stockLeft); },
+      isLow: function () { return this.stockLeft > 0 && this.stockLeft <= {{ (settings.lowStockThreshold or 3) | int }}; },
+      stockPct: function () {
+        var tot = Math.max(this.stockTotal, this.stockLeft, 1);
+        return Math.max(4, Math.min(100, Math.round(this.stockLeft / tot * 100)));
+      },
+      /* availableNow(): real inventory minus what this shopper already holds
+         (HayatVariants). null = untracked / backorder → no meter to draw. */
+      refreshStock: function () {
+        if (stockMode !== 'auto' || !this.ready || typeof this.availableNow !== 'function') return;
+        var a = this.availableNow();
+        if (a === null) { this.stockUncapped = true; return; }
+        this.stockUncapped = false;
+        this.stockLeft = a;
+        if (a > this.stockTotal) this.stockTotal = a;
+      },
+      pick: function (name, id, label) {
+        this.selectOption(name, id, label);
+        this.refreshStock();
+      },
+
+      async init() {
+        if (isDemo || !slug || !window.Qumra || !Qumra.product || !window.HayatVariants) return;
+        var self = this;
+        try {
+          var res = await Qumra.product.get(slug);
+          var p = (res && (res.data || res.product)) || res || {};
+          if (!p || !p._id) throw new Error('no product');
+          var cfg = mapProduct(p);
+          Object.assign(this, window.HayatVariants(cfg));
+          this.groups = cfg.groups;
+          this.initVariants();
+          /* Like the quick view: open with the first available value of each
+             option already chosen. */
+          cfg.groups.forEach(function (g) {
+            var v = g.values.filter(function (x) { return !self.valueDisabled(g.name, x.id); })[0];
+            if (v) self.selectOption(g.name, v.id, v.label);
+          });
+          this.ready = true;
+          this.refreshStock();
+
+          /* keep "what is left for this shopper" live */
+          function lines(c) { self.cartLines = (c && c.items) || []; self.refreshStock(); }
+          window.addEventListener('cart:updated', function (e) {
+            var d = e.detail || {};
+            if (d.items) { lines(d); return; }
+            if (Qumra.cart && Qumra.cart.get) Qumra.cart.get().then(lines).catch(function () {});
+          });
+          if (Qumra.cart && Qumra.cart.get) Qumra.cart.get().then(lines).catch(function () {});
+        } catch (e) {
+          this.failed = true;
+        }
+      }
+    });
+  };
+
+  (function () {
+    var root = document.getElementById('mh-ds-{{ id }}');
+    if (!root) return;
+    function boot() {
+      if (!window.HxCountdown) return;
+      root.querySelectorAll('[data-hx-countdown]').forEach(function (el) { HxCountdown.init(el); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#mh-ds-' ~ id, c=d %}

@@ -1,0 +1,95 @@
+{# الفوتر — مطابق لـ mavin-wear.com: خلفية سوداء، أعمدة روابط، وشريط حقوق النشر.
+   REG-22/23: كل عنوان وكل رابط يظهر مرة واحدة — العمود اللي قائمته مكررة أو فاضية بيتشال، والرابط المكرر في عمود تاني بيتشال. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set S = settings or {} %}
+{% set cols = widget.blocks | default([]) %}
+{% set storeName = store.name if (store and store.name) else '' %}
+{% set isAr = (localization.language | default('ar')) == 'ar' %}
+{% set seenUrls = [] %}
+{% set seenTitles = [] %}
+{% set out = [] %}
+{% for col in cols %}{% set s = col.settings or {} %}
+  {% set items = s.menu if (s.menu and s.menu.length and not (s.menu is string)) else [] %}
+  {% set keep = [] %}
+  {% for item in items %}{% if item and item.title %}
+    {% set key = (item.url or item.title) | string | lower %}
+    {% if key not in seenUrls %}{% set _ = seenUrls.push(key) %}{% set _ = keep.push(item) %}{% endif %}
+  {% endif %}{% endfor %}
+  {% set tkey = (s.title or '') | string | trim | lower %}
+  {% if (keep | length) and not (tkey and tkey in seenTitles) %}
+    {% if tkey %}{% set _ = seenTitles.push(tkey) %}{% endif %}
+    {% set _ = out.push({ title: s.title, items: keep }) %}
+  {% endif %}
+{% endfor %}
+{# روابط التواصل: من الويدجت، وإلا من إعدادات الثيم (التواصل والشبكات) #}
+{% set socials = [
+  { k: 'instagram', u: wd.instagram_url or S.socialInstagram, n: 'Instagram' },
+  { k: 'facebook', u: wd.facebook_url or S.socialFacebook, n: 'Facebook' },
+  { k: 'tiktok', u: wd.tiktok_url or S.socialTiktok, n: 'TikTok' },
+  { k: 'x', u: S.socialX, n: 'X' },
+  { k: 'youtube', u: S.socialYoutube, n: 'YouTube' },
+  { k: 'snapchat', u: S.socialSnapchat, n: 'Snapchat' }
+] %}
+{% set hasSocial = false %}
+{% for so in socials %}{% if so.u %}{% set hasSocial = true %}{% endif %}{% endfor %}
+{% set showSocial = wd.show_social != false and hasSocial %}
+{% set addr = (S.contactAddress_en if (not isAr and S.contactAddress_en) else S.contactAddress) %}
+{% set hasContact = S.contactPhone or S.contactEmail or addr %}
+<footer class="mw-footer">
+  <div class="container">
+    {% if (out | length) or wd.tagline or showSocial or hasContact %}
+    <div class="mw-footer__cols">
+      {% for c in out %}
+        <div class="mw-footer__col">
+          {% if c.title %}<h2 class="mw-footer__heading">{{ c.title }}</h2>{% endif %}
+          <ul class="mw-footer__list">
+            {% for item in c.items %}
+              {% set ext = (item.url or '') | string | lower %}
+              <li><a href="{{ item.url | default('#') }}"{% if ext.indexOf('http') == 0 %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ item.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+      {% if hasContact %}
+      <div class="mw-footer__col">
+        <h2 class="mw-footer__heading">{{ t('footer.contact') }}</h2>
+        <ul class="mw-footer__list">
+          {% if S.contactPhone %}<li><a href="tel:{{ S.contactPhone | replace(' ', '') }}" dir="ltr">{{ S.contactPhone }}</a></li>{% endif %}
+          {% if S.contactEmail %}<li><a href="mailto:{{ S.contactEmail }}" dir="ltr">{{ S.contactEmail }}</a></li>{% endif %}
+          {% if addr %}<li><span class="mw-footer__addr">{{ addr }}</span></li>{% endif %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if wd.tagline or showSocial %}
+      <div class="mw-footer__about">
+        {% if wd.tagline %}<p>{{ wd.tagline }}</p>{% endif %}
+        {% if showSocial %}
+        <div class="mw-footer__social">
+          {% for so in socials %}{% if so.u %}
+          <a href="{{ so.u }}" aria-label="{{ so.n }}" target="_blank" rel="noopener noreferrer">
+            {% if so.k == 'instagram' %}<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/></svg>
+            {% elif so.k == 'facebook' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3Z"/></svg>
+            {% elif so.k == 'tiktok' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3c.4 2 1.6 3.4 3.6 3.7v3c-1.4 0-2.6-.4-3.6-1.1v6.1c0 3.3-2.6 5.8-5.8 5.8S5 17.9 5 14.7c0-3.2 2.7-5.8 6-5.6v3.1c-1.6-.3-2.9.9-2.9 2.5 0 1.4 1.2 2.6 2.7 2.6 1.6 0 2.7-1.1 2.7-2.8V3h3.1Z"/></svg>
+            {% elif so.k == 'x' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7 8 10.3h-6.3l-4.9-6.4L5.3 21H2.2l7.3-8.3L1.8 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg>
+            {% elif so.k == 'youtube' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15V9l5.2 3L10 15Z"/></svg>
+            {% else %}<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3c3 0 5 2.2 5 5.2v2.3l1.6.2c.5.1.6.7.2 1l-1.7 1c.6 1.6 2 2.7 3.4 3.1-.4.9-1.6 1.2-2.6 1.3-.3.9-.5 1.4-1.7 1.2-1-.2-1.9.2-2.6.8-.6.5-1.2.8-1.6.8s-1-.3-1.6-.8c-.7-.6-1.6-1-2.6-.8-1.2.2-1.4-.3-1.7-1.2-1-.1-2.2-.4-2.6-1.3 1.4-.4 2.8-1.5 3.4-3.1l-1.7-1c-.4-.3-.3-.9.2-1l1.6-.2V8.2C7 5.2 9 3 12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>{% endif %}
+          </a>
+          {% endif %}{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="mw-footer__bottom">
+    <div class="container mw-footer__bottom-inner">
+      <p class="mw-footer__copy">{% if wd.copyright %}{{ wd.copyright }}{% else %}{{ t('footer.copyright') }} <span data-mw-year></span>{% if storeName %} <bdi>{{ storeName }}</bdi>{% endif %}. {{ t('footer.all_rights') }}{% endif %}</p>
+      {% if wd.show_payments %}
+      <div class="mw-footer__payments" aria-label="{{ t('footer.payments') }}">
+        <span>VISA</span><span>Mastercard</span><span>Meeza</span><span>{{ t('footer.cod') }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</footer>

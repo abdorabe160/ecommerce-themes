@@ -1,0 +1,128 @@
+{# ============================================================================
+   LOCAL · PLACEHOLDER CARD
+   ----------------------------------------------------------------------------
+   What a section shows on a fresh install, before the merchant has picked any
+   products / collections / articles. Without it a new store opens on rows of
+   empty white space and the merchant cannot tell whether the section is broken
+   or simply unfilled.
+
+   ⚠️  It borrows the REAL card's classes — `.lc-pcard-*`, `.lc-coll-tile`,
+   `.lc-post` — so the placeholder occupies exactly the space the real thing
+   will, and the merchant is looking at the true layout while they work. Only
+   `--ph` modifiers differ.
+
+   ⚠️  Inert on purpose:
+     · no `x-data`, so no cart component is created for a product that has no id
+     · every link is `href="#"` with `@click.prevent`, so a click cannot land on
+       a 404 or leave the page
+     · `aria-hidden="true"` and `data-lc-placeholder`, so screen readers skip it
+       and no script can ever mistake it for stock
+
+   Locals:
+     kind        'product' (default) · 'collection' · 'article'
+     count       how many to draw (default 4)
+     image_ratio '2x3' | '3x4' | '4x5' | '1x1' — product/collection only
+     variant     'compact' | 'catalog' — passes through to the product card
+                 layout, so the placeholder matches whatever the real row uses
+     price       the dummy price line, already formatted (default '—')
+     wrap        class for a wrapper around each card — 'swiper-slide' when the
+                 host is a Swiper, which needs every child to be a slide
+
+   Styling: assets/style.css → "15.29 PLACEHOLDERS".
+   ========================================================================= #}
+
+{% set kind = data.kind | default('product') %}
+{% set count = data.count | default(4) | int %}
+{% set variant = data.variant | default('', true) %}
+{% set phPrice = data.price | default('', true) %}
+{% set wrap = data.wrap | default('', true) %}
+
+{% set ratio = data.image_ratio | default('2x3') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% else %}{% set ratioVal = '2 / 3' %}{% endif %}
+
+
+{# ---------------------------------------------------------------------------
+   The piece. Flat, two tones off the theme's own neutrals, no photograph — it
+   has to read as "nothing here yet" at a glance. Four grocery shapes so a row
+   of four is not four copies of one; `n` picks by index. The viewBox is WIDE
+   (200×170) and `.lc-ph-art` sizes by height, so each subject fills the width
+   rather than standing thin in the middle.
+   -------------------------------------------------------------------------- #}
+{% macro piece(n) %}
+  <svg class="lc-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false">
+    {% set i = n % 4 %}
+    {% if i == 0 %}
+      {# رغيف خبز — a loaf with scored tops #}
+      <path class="lc-ph-fill" d="M20 110c0-38 36-66 80-66s80 28 80 66v14a14 14 0 0 1-14 14H34a14 14 0 0 1-14-14Z"/>
+      <rect class="lc-ph-tint" x="52" y="66" width="18" height="44" rx="9" transform="rotate(28 61 88)"/>
+      <rect class="lc-ph-tint" x="91" y="60" width="18" height="48" rx="9" transform="rotate(28 100 84)"/>
+      <rect class="lc-ph-tint" x="130" y="66" width="18" height="44" rx="9" transform="rotate(28 139 88)"/>
+    {% elif i == 1 %}
+      {# تفاحة — an apple with a leaf #}
+      <path class="lc-ph-fill" d="M100 48c-14-10-44-12-58 8-16 22-8 64 12 86 12 13 28 20 46 12 18 8 34 1 46-12 20-22 28-64 12-86-14-20-44-18-58-8Z"/>
+      <rect class="lc-ph-tint" x="94" y="20" width="12" height="34" rx="6"/>
+      <ellipse class="lc-ph-tint" cx="128" cy="30" rx="22" ry="11" transform="rotate(-24 128 30)"/>
+    {% elif i == 2 %}
+      {# برطمانات — two jars with lids #}
+      <rect class="lc-ph-tint" x="28" y="30" width="60" height="18" rx="7"/>
+      <rect class="lc-ph-fill" x="22" y="46" width="72" height="104" rx="18"/>
+      <rect class="lc-ph-tint" x="36" y="84" width="44" height="30" rx="6"/>
+      <rect class="lc-ph-tint" x="118" y="52" width="54" height="16" rx="7"/>
+      <rect class="lc-ph-fill" x="112" y="66" width="66" height="84" rx="16"/>
+      <rect class="lc-ph-tint" x="124" y="96" width="42" height="26" rx="6"/>
+    {% else %}
+      {# سلة فاكهة — a bowl of fruit #}
+      <circle class="lc-ph-fill" cx="64" cy="74" r="30"/>
+      <circle class="lc-ph-fill" cx="106" cy="58" r="32"/>
+      <circle class="lc-ph-fill" cx="146" cy="78" r="26"/>
+      <path class="lc-ph-fill" d="M16 92h168a4 4 0 0 1 4 4c0 30-38 54-88 54S12 126 12 96a4 4 0 0 1 4-4Z"/>
+      <rect class="lc-ph-tint" x="40" y="104" width="120" height="12" rx="6"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+{% for n in range(0, count) %}
+{% if wrap %}<div class="{{ wrap }}">{% endif %}
+
+  {# ═══════════════ product — the Local card's own shape ═══════════════ #}
+  {% if kind == 'product' %}
+    <article class="lc-pcard lc-pcard--ph" style="--lc-pcard-ratio: var(--lc-card-ratio, {{ ratioVal }});"
+             data-lc-placeholder aria-hidden="true">
+      <span class="lc-pcard-media lc-ph-media">{{ piece(n) }}</span>
+      <div class="lc-pcard-body">
+        <div class="lc-pcard-prices"><span class="lc-pcard-price">{{ phPrice if phPrice else t('common.placeholder_price') }}</span></div>
+        <span class="lc-pcard-name">{{ t('common.placeholder_product') }}</span>
+        <span class="lc-pcard-btn" style="visibility: hidden;">·</span>
+      </div>
+    </article>
+
+  {# ═══════════════ collection ═══════════════ #}
+  {% elif kind == 'collection' %}
+    <a href="#" @click.prevent class="lc-coll-tile lc-coll-tile--ph"
+       style="--coll-ratio: {{ ratioVal }};"
+       data-lc-placeholder aria-hidden="true" tabindex="-1">
+      <span class="lc-ph-media">{{ piece(n) }}</span>
+      <div class="lc-coll-foot">
+        <span class="lc-coll-name">{{ t('common.placeholder_collection') }}</span>
+      </div>
+    </a>
+
+  {# ═══════════════ article ═══════════════ #}
+  {% else %}
+    <a href="#" @click.prevent class="lc-post lc-post--stacked lc-post--ph"
+       data-lc-placeholder aria-hidden="true" tabindex="-1">
+      <div class="lc-post-media lc-ph-media">{{ piece(n) }}</div>
+      <div class="lc-post-body">
+        <div class="lc-post-meta"><span>{{ t('common.placeholder_date') }}</span></div>
+        <h3 class="lc-post-title lc-clamp-2">{{ t('common.placeholder_article') }}</h3>
+        <p class="lc-post-excerpt lc-clamp-2">{{ t('common.placeholder_excerpt') }}</p>
+      </div>
+    </a>
+  {% endif %}
+
+{% if wrap %}</div>{% endif %}
+{% endfor %}

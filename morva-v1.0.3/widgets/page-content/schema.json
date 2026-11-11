@@ -1,0 +1,11 @@
+{
+  "name": "محتوى الصفحة",
+  "settings": {
+    "kicker": { "type": "string", "label": { "ar": "عنوان صغير فوق العنوان (اختياري)", "en": "Kicker above the title (optional)" }, "default": "" },
+    "show_title": { "type": "boolean", "label": { "ar": "عرض عنوان الصفحة", "en": "Show the page title" }, "default": true },
+    "title_override": { "type": "string", "label": { "ar": "استبدال العنوان (اختياري)", "en": "Title override (optional)" }, "default": "" }
+  },
+  "presets": [
+    { "category": "الصفحات", "name": "محتوى الصفحة" }
+  ]
+}

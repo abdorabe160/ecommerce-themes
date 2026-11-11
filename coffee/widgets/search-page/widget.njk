@@ -1,0 +1,55 @@
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{#- Live Qumra renders /search?q= with context.products + context.query.q + context.pagination (verified 2026-10-26):
+    seed the first page from it so results show without waiting on AJAX; the client takes over for sort / more. -#}
+{%- set ctx = context or {} -%}
+{%- set cq = ctx.query or {} -%}
+{%- set seedItems = [] -%}
+{%- for sp in (ctx.products if (ctx.products and ctx.products.length) else []) -%}
+  {%- set sImg = sp.images[0] if (sp.images and sp.images.length) else sp.image -%}
+  {%- if seedItems.push({ '_id': sp._id or sp.id, 'title': sp.title, 'slug': sp.slug, 'handle': sp.handle, 'images': [sImg] if sImg else [], 'pricing': sp.pricing, 'price': sp.price, 'compareAtPrice': sp.compareAtPrice, 'quantity': sp.quantity, 'trackQuantity': sp.trackQuantity, 'allowBackorder': sp.allowBackorder, 'options': sp.options, 'variantsCount': sp.variantsCount, 'tags': sp.tags, 'averageRating': sp.averageRating, 'reviewsCount': sp.reviewsCount, 'subtitle': sp.subtitle, 'status': sp.status }) -%}{%- endif -%}
+{%- endfor -%}
+{%- set cpg = ctx.pagination or {} -%}
+{%- set searchCfg = { 'limit': wd.limit or 24, 'seed': { 'q': (cq.q or '') | string, 'items': seedItems, 'total': cpg.totalItems or seedItems.length, 'page': cpg.currentPage or 1, 'hasNext': cpg.hasNextPage or false } } -%}
+<section class="dc-search-page section surface-cream" x-data="dcSearchPage({{ searchCfg | dump | escape }})" aria-labelledby="dc-search-title">
+  <div class="shell">
+    <header class="dc-search-heading">
+      <p class="eyebrow">{{ t('search.eyebrow') }}</p>
+      <h1 id="dc-search-title" class="h-display">{{ t('search.title') }}</h1>
+      <form class="dc-search-form" @submit.prevent="submit()">
+        <label class="sr-only" for="dc-search-query">{{ t('search.placeholder') }}</label>
+        <input id="dc-search-query" class="field" type="search" x-model="q" placeholder="{{ t('search.placeholder') }}">
+        <button type="submit" class="btn btn-dark">{% ui "icon.njk", name="search", size=18 %} {{ t('search.submit') }}</button>
+      </form>
+    </header>
+    <div class="dc-search-toolbar">
+      <p x-show="q" x-text="{{ t('search.results_for') | dump | escape }}.replace('{query}', q)"></p>
+      <p x-show="loaded && !loading" x-text="countProducts(total)"></p>
+      <label><span>{{ t('collection.sort') }}</span>
+        <select class="field field-select" x-model="sort" @change="submit()">
+          <option value="">{{ t('collection.sort_default') }}</option>
+          <option value="created-desc">{{ t('collection.sort_newest') }}</option>
+          <option value="price-asc">{{ t('collection.sort_price_asc') }}</option>
+          <option value="price-desc">{{ t('collection.sort_price_desc') }}</option>
+          <option value="rating-desc">{{ t('collection.sort_rating') }}</option>
+        </select>
+      </label>
+    </div>
+    <div class="dc-product-grid dc-cols-4" x-show="loading && !items.length" aria-busy="true">{% ui "card-skeleton.njk", count=4 %}</div>
+    <div class="dc-product-grid dc-cols-4" x-show="items.length">
+      <template x-for="p in items" :key="p._id">{% ui "card-js.njk" %}</template>
+    </div>
+    {#- SRCH-03: a clear empty state plus the store's popular products to keep shopping -#}
+    <div class="dc-search-empty" x-show="loaded && !loading && !items.length && !error" x-cloak>
+      <p class="dc-empty-note">{{ t('search.no_results') }}</p>
+      <div x-data="dcProducts({source: 'top-rated', limit: 4, collectionId: '', kind: 'best'})" x-show="items.length">
+        <h2 class="h-section dc-search-empty__title">{{ t('search.popular') }}</h2>
+        <div class="dc-product-grid dc-cols-4"><template x-for="p in items" :key="p._id">{% ui "card-js.njk" %}</template></div>
+      </div>
+    </div>
+    <p class="dc-empty-note" x-show="error" role="alert">{{ t('search.error') }}</p>
+    <div class="dc-search-more" x-show="hasNext && !loading">
+      <button type="button" class="btn btn-outline" @click="fetch(true)">{{ t('common.load_more') }}</button>
+    </div>
+    <p class="dc-loading-note" x-show="loading && items.length">{{ t('common.loading') }}</p>
+  </div>
+</section>

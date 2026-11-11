@@ -1,0 +1,146 @@
+{# ============================================================================
+   LOCAL · TESTIMONIALS — شهادات العملاء
+   ----------------------------------------------------------------------------
+     ╭──────────────────────────────────────────────────────────────╮
+     │                      (◉)  Michael Smith                       │
+     │                           Customer                            │
+     │                                                               │
+     │     "Great products. Always fresh, eco stuff that i can't     │
+     │        find anywhere else in the city…"                       │
+     │                       ‹  ▬▬  •  ›                             │
+     ╰──────────────────────────────────────────────────────────────╯
+
+   One quote at a time, cross-fading. With `autoplay` on, the active pill of
+   the shared .lc-pager fills as a timer (Swiper's autoplayTimeLeft), exactly
+   as in the hero; hovering the card pauses it.
+
+   The quote face: `serif` loads Crimson Pro for Latin and Amiri for
+   Arabic. Both stay upright: no slanted text with Arabic, so a Naskh serif
+   stands in. `sans` uses the theme's own body
+   face and loads nothing.
+
+   Blocks keep the previous widget's field names (quote · author · note ·
+   rating · avatar), so quotes a merchant already entered carry over.
+
+   Styling: assets/style.css → "15.5.11 TESTIMONIALS · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set quotes = widget.blocks | default([], true) %}
+{% set count = quotes | length %}
+{% set serif = (d.quote_style | default('serif')) == 'serif' %}
+{% set autoplay = d.autoplay | default(7, true) %}
+{% set showRating = d.show_rating | default(false) %}
+
+{% if serif %}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400&family=Amiri:wght@400&display=swap"/>
+{% endif %}
+
+<section id="lc-tst-{{ id }}"
+         class="lc-tst lc-tst--{{ d.card_style | default('bordered') }} {{ 'lc-tst--serif' if serif }}"
+         style="--lc-tst-star: {{ d.star_color | default('var(--color-warning)', true) }};
+                padding-block: {{ d.padding_top | default(48) }}px {{ d.padding_bottom | default(48) }}px;">
+  <div class="lc-hwrap">
+    {% if d.eyebrow or d.title %}
+      <div class="lc-tst-head">
+        {% if d.eyebrow %}<p class="lc-tst-eyebrow">{{ d.eyebrow }}</p>{% endif %}
+        {% if d.title %}<h2 class="lc-sec-title">{{ d.title }}</h2>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="lc-tst-card">
+      {% if count == 0 %}
+        <p class="lc-icols-empty">{{ t('common.placeholder_add') }}</p>
+      {% else %}
+        <div class="swiper" id="lc-tstSw-{{ id }}">
+          <div class="swiper-wrapper">
+            {% for block in quotes %}
+              {% set b = block.data %}
+              {% set av = b.avatar.fileUrl if b.avatar and b.avatar.fileUrl else (b.avatar if b.avatar is string else '') %}
+              {% set name = b.author | default('', true) %}
+              <figure class="swiper-slide lc-tst-slide">
+                {% if name or av %}
+                  <figcaption class="lc-tst-who">
+                    <span class="lc-tst-avatar">
+                      {% if av %}<img src="{{ av }}" alt="" loading="lazy"/>{% else %}{{ name | first | upper }}{% endif %}
+                    </span>
+                    <span class="lc-tst-meta">
+                      {% if name %}<span class="lc-tst-name">{{ name }}</span>{% endif %}
+                      {% if b.note %}<span class="lc-tst-role">{{ b.note }}</span>{% endif %}
+                    </span>
+                  </figcaption>
+                {% endif %}
+
+                {% if showRating and b.rating %}
+                  {% set pct = (b.rating / 5 * 100) %}
+                  <span class="lc-stars lc-tst-stars" aria-label="{{ b.rating }} / 5">
+                    <span class="lc-stars-base">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+                    <span class="lc-stars-fill" style="width: {{ pct }}%;">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+                  </span>
+                {% endif %}
+
+                {% if b.quote %}<blockquote class="lc-tst-quote">{{ b.quote | safe }}</blockquote>{% endif %}
+              </figure>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if count > 1 %}
+          <div class="lc-pager lc-tst-pager">
+            <button type="button" class="lc-pager-arrow" id="lc-tstPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+              <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+            </button>
+            <div class="lc-pager-dots" id="lc-tstDots-{{ id }}"></div>
+            <button type="button" class="lc-pager-arrow" id="lc-tstNext-{{ id }}" aria-label="{{ t('common.next') }}">
+              <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if count > 1 %}
+<script>
+  LocalReady(function () {
+    var el = document.getElementById('lc-tstSw-{{ id }}');
+    if (!el || el.swiper || typeof Swiper === 'undefined') return;
+    var reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('lc-no-motion');
+    var dots;
+    new Swiper(el, {
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      speed: reduce ? 0 : 700,
+      rewind: true,
+      autoHeight: true,
+      {% if autoplay > 0 %}
+      autoplay: reduce ? false : { delay: {{ (autoplay * 1000) | default(7000, true) }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      navigation: { prevEl: '#lc-tstPrev-{{ id }}', nextEl: '#lc-tstNext-{{ id }}' },
+      pagination: {
+        el: '#lc-tstDots-{{ id }}', clickable: true,
+        bulletClass: 'lc-pager-dot', bulletActiveClass: 'is-active',
+        renderBullet: function (i, cls) { return '<button type="button" class="' + cls + '" aria-label="' + (i + 1) + '"><span></span></button>'; }
+      },
+      keyboard: { enabled: true, onlyInViewport: true },
+      a11y: { enabled: true },
+      on: {
+        {# the active pill fills as the slide runs out — same as the hero #}
+        autoplayTimeLeft: function (s, time, progress) {
+          dots = dots || document.getElementById('lc-tstDots-{{ id }}');
+          var b = dots && dots.querySelector('.is-active');
+          if (b) b.style.setProperty('--p', (1 - progress).toFixed(3));
+        },
+        slideChange: function () {
+          dots = dots || document.getElementById('lc-tstDots-{{ id }}');
+          if (dots) dots.querySelectorAll('.lc-pager-dot').forEach(function (b) { b.style.setProperty('--p', 0); });
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#lc-tst-' ~ id, c=d %}

@@ -1,0 +1,73 @@
+{# صفحة البحث — النتائج من السيرفر (context.products + context.query.q) بنفس قائمة صفحة التصنيف: فلاتر + ترتيب من غير ما كلمة البحث تضيع (SRCH-07).
+   بحث بلا نتائج → رسالة + منتجات رائجة (SRCH-03). كلمة البحث بتتعرض escaped دايماً (SRCH-04).
+   لو المنصة مبعتتش نتائج في الصفحة، بنرجع للبحث الفوري عبر /ajax/search/products (mwSearchPage). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set ctx = context or {} %}
+{% set q = ((ctx.query.q if (ctx.query and ctx.query.q) else '') | string | trim) %}
+{% set ssr = ctx.products is defined %}
+{% set products = ctx.products or [] %}
+{% set pg = ctx.pagination or {} %}
+{% set total = pg.totalItems if (pg.totalItems is number and pg.totalItems >= (products | length)) else (products | length) %}
+{% if ssr %}
+<section class="mw-page mw-collection mw-searchpage" x-data="mwCollection({{ { 'serverKeys': [], 'labels': {} } | dump | escape }})">
+  <div class="container">
+    <div class="mw-collection-hero">
+      <h1 class="mw-collection-hero__title">{{ wd.title or t('search.title') }}</h1>
+      {% if q %}<p class="mw-collection-hero__desc">{{ t('search.results_for') }} <bdi><b>{{ q }}</b></bdi></p>{% endif %}
+    </div>
+    <form class="mw-searchpage__form" action="/search" method="get" role="search">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7" stroke="currentColor" stroke-width="1.65"/><path d="m15.8 15.8 5.2 5.2" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/></svg>
+      <input type="search" name="q" value="{{ q }}" maxlength="120" required placeholder="{{ t('header.search_placeholder') }}" aria-label="{{ t('header.search') }}" autocomplete="off"/>
+      <button type="submit" class="mw-btn mw-btn--filled">{{ t('header.search') }}</button>
+    </form>
+    {% if q %}
+      {% ui "listing.njk", products=products, total=total, dash=[], showSort=true, empty='search' %}
+    {% else %}
+      <p class="mw-empty">{{ t('search.start') }}</p>
+    {% endif %}
+  </div>
+</section>
+{% else %}
+<section class="mw-page" x-data="mwSearchPage()">
+  <div class="container">
+    <div class="mw-collection-hero">
+      <h1 class="mw-collection-hero__title">{{ wd.title or t('search.title') }}</h1>
+    </div>
+    <form class="mw-searchpage__form" action="/search" method="get" role="search" @submit.prevent="run(true)">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7" stroke="currentColor" stroke-width="1.65"/><path d="m15.8 15.8 5.2 5.2" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/></svg>
+      <input type="search" name="q" x-model="query" maxlength="120" @input.debounce.300ms="run(false)" placeholder="{{ t('header.search_placeholder') }}" aria-label="{{ t('header.search') }}" autocomplete="off"/>
+      <span class="mw-spinner" x-show="loading" x-cloak></span>
+      <button type="submit" class="mw-btn mw-btn--filled">{{ t('header.search') }}</button>
+    </form>
+
+    <div class="mw-searchpage__sugg" x-show="q && (terms.length || cols.length)" x-cloak>
+      <span class="mw-search__label"><span>{{ t('search.suggestions') }}</span></span>
+      <div class="mw-search__chips">
+        <template x-for="t in terms" :key="'t' + t"><button type="button" class="mw-chip-s" @click="use(t)" x-html="hl(t)"></button></template>
+        <template x-for="c in cols" :key="'c' + c.url"><a class="mw-chip-s mw-chip-s--col" :href="c.url" x-html="hl(c.title)"></a></template>
+      </div>
+    </div>
+
+    <div class="mw-toolbar" x-show="searched && total > 0" x-cloak>
+      <span class="mw-toolbar__count" x-html="summary"></span>
+      <div class="mw-toolbar__controls">
+        <label class="mw-sort">
+          <span class="visually-hidden">{{ t('collection.sort_by') }}</span>
+          <select class="mw-select" x-model="sort" @change="syncUrl()" aria-label="{{ t('collection.sort_by') }}">
+            <option value="">{{ t('search.relevance') }}</option>
+            <option value="price-asc">{{ t('collection.sort_price_asc') }}</option>
+            <option value="price-desc">{{ t('collection.sort_price_desc') }}</option>
+            <option value="rating-desc">{{ t('search.highest_rated') }}</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="mw-products mw-products--grid" x-show="searched && !error" x-html="html"></div>
+    <p class="mw-empty" x-show="searched && !loading && !error && total > 0 && !shown.length" x-cloak>{{ t('search.none_available') }}</p>
+    <div class="mw-empty-state" x-show="searched && !loading && !error && total === 0" x-cloak><p>{{ t('search.no_results') }}</p><a href="/shop" class="mw-btn mw-btn--filled">{{ t('collection.browse_all') }}</a></div>
+    <p class="mw-empty" x-show="error" x-cloak role="alert">{{ t('header.search_error') }}</p>
+    <p class="mw-empty" x-show="!q" x-cloak>{{ t('search.start') }}</p>
+  </div>
+</section>
+{% endif %}

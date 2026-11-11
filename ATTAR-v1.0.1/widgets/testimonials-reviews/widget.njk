@@ -1,0 +1,166 @@
+{# ===== ATTAR TESTIMONIALS — Pull-Quote · gold accents ===== #}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set title = widget.data.title | safe %}
+{% set reviews = widget.blocks | default([]) %}
+{% set id = widget.id %}
+
+<style>
+  .anaqa-test-{{ id }} .anaqa-test-quote {
+    font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+  }
+  html[dir="rtl"] .anaqa-test-{{ id }} .anaqa-test-quote { line-height: 1.7; font-weight: 600; }
+  .anaqa-test-{{ id }} .anaqa-test-quote p { margin: 0; }
+
+  .anaqa-test-arrow {
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--color-border);
+    color: var(--color-text-primary); cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .anaqa-test-arrow:hover { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg-primary); }
+
+  .anaqa-test-dot {
+    width: 26px; height: 2px;
+    background: var(--color-border);
+    border: none; cursor: pointer;
+    box-sizing: content-box; padding: 21px 6px; background-clip: content-box; /* 44px hit area */
+    transition: background 0.4s ease, width 0.4s ease;
+  }
+  .anaqa-test-dot--active { background-color: var(--color-accent); width: 42px; }
+
+  /* Decorative gold quotation mark */
+  .anaqa-test-{{ id }} .attar-test-mark {
+    font-family: var(--font-heading-en);
+    font-size: 4.5rem; line-height: 0.6; color: var(--color-accent);
+    opacity: 0.55; margin-bottom: 0.35rem;
+  }
+
+  .anaqa-test-{{ id }} .swiper-slide { height: auto; opacity: 0; transition: opacity 0.6s ease; }
+  .anaqa-test-{{ id }} .swiper-slide-active { opacity: 1; }
+
+  @media (max-width: 639px) { .anaqa-test-arrow { width: 40px; height: 40px; } }
+</style>
+
+<section id="{{ id }}" class="{{ 'attar-demo-only ' if not (reviews and reviews | length) }}anaqa-test-{{ id }} py-28 max-sm:py-16" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ===== Header ===== #}
+    {% if eyebrow or title %}
+    <div class="text-center mb-14 max-sm:mb-10">
+      {% if eyebrow %}
+      <div class="flex items-center justify-center gap-3 mb-4">
+        <span class="attar-kicker-line"></span>
+        <span class="editorial-label">{{ eyebrow }}</span>
+        <span class="attar-kicker-line"></span>
+      </div>
+      {% endif %}
+      {% if title %}
+        <h2 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.2; color: var(--color-text-primary);">{{ title }}</h2>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if reviews and reviews | length > 0 %}
+    <div class="max-w-3xl mx-auto text-center">
+
+      <div class="swiper" id="testSwiper-{{ id }}">
+        <div class="swiper-wrapper">
+          {% for block in reviews %}
+          <div class="swiper-slide">
+            <figure class="flex flex-col items-center">
+              {# Stars #}
+              {% set rating = block.data.rating | default(5) %}
+              <div class="flex items-center justify-center gap-1 mb-7">
+                {% for i in range(5) %}
+                  <svg class="w-4 h-4" style="color: {{ 'var(--color-accent)' if i < rating else 'var(--color-border)' }};" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                {% endfor %}
+              </div>
+
+              {# Quote #}
+              {% set quote = block.data.review_text if block.data.review_text else block.data.review_title %}
+              {% if quote %}
+                <span class="attar-test-mark" aria-hidden="true">&rdquo;</span>
+                <blockquote class="anaqa-test-quote font-heading-ar mb-9 max-sm:mb-7">{{ quote | safe }}</blockquote>
+              {% endif %}
+
+              {# Author #}
+              <figcaption class="flex flex-col items-center gap-3">
+                {% if block.data.avatar and block.data.avatar.fileUrl %}
+                  <div class="w-12 h-12 rounded-full overflow-hidden" style="border: 1px solid var(--color-border);">
+                    <img src="{{ block.data.avatar.fileUrl }}" alt="{{ block.data.reviewer_name }}" class="w-full h-full object-cover" loading="lazy"/>
+                  </div>
+                {% endif %}
+                <div>
+                  {% if block.data.reviewer_name %}
+                    <div class="editorial-label" style="color: var(--color-text-primary);">{{ block.data.reviewer_name }}</div>
+                  {% endif %}
+                  {% if block.data.reviewer_role %}
+                    <div class="font-body-ar text-[13px] mt-1.5" style="color: var(--color-text-tertiary);">{{ block.data.reviewer_role }}</div>
+                  {% endif %}
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Navigation #}
+      {% if reviews | length > 1 %}
+      <div class="flex items-center justify-center gap-6 mt-12 max-sm:mt-9">
+        <button id="testPrev-{{ id }}" class="anaqa-test-arrow" aria-label="{{ t('common.back') | default('السابق') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M15 19l-7-7 7-7{% else %}M9 5l7 7-7 7{% endif %}"/></svg>
+        </button>
+        <div class="flex items-center gap-2.5" id="testDots-{{ id }}">
+          {% for block in reviews %}
+            <button class="anaqa-test-dot {% if loop.first %}anaqa-test-dot--active{% endif %}" data-index="{{ loop.index0 }}" aria-label="{{ loop.index }}"></button>
+          {% endfor %}
+        </div>
+        <button id="testNext-{{ id }}" class="anaqa-test-arrow" aria-label="{{ t('common.continue') | default('التالي') }}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="{% if localization.language == 'en' %}M9 5l7 7-7 7{% else %}M15 19l-7-7 7-7{% endif %}"/></svg>
+        </button>
+      </div>
+      {% endif %}
+
+      <script>
+        (() => {
+          var dotsWrap = document.getElementById('testDots-{{ id }}');
+          var dots = dotsWrap ? dotsWrap.querySelectorAll('.anaqa-test-dot') : [];
+          var testSwiper = new Swiper('#testSwiper-{{ id }}', {
+            slidesPerView: 1,
+            spaceBetween: 40,
+            loop: {{ reviews | length }} > 1,
+            speed: 700,
+            effect: 'fade',
+            fadeEffect: { crossFade: true },
+            autoHeight: true,
+            navigation: { prevEl: '#testPrev-{{ id }}', nextEl: '#testNext-{{ id }}' },
+            on: {
+              slideChange: function () {
+                var idx = this.realIndex;
+                dots.forEach(function (d, i) { d.classList.toggle('anaqa-test-dot--active', i === idx); });
+              }
+            }
+          });
+          dots.forEach(function (dot) {
+            dot.addEventListener('click', function () { testSwiper.slideToLoop(parseInt(dot.dataset.index)); });
+          });
+        })();
+      </script>
+
+    </div>
+    {% else %}
+      <div class="text-center py-16">
+        <p style="color: var(--color-text-tertiary);" class="text-[15px] font-body-ar">{{t('testimonials.no_reviews') | default('لا توجد تقييمات بعد')}}</p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

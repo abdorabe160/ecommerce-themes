@@ -1,0 +1,349 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "بانر فاخر",
+      "widget": "lx-hero",
+      "settings": {
+        "eyebrow": "دار هدايا",
+        "title": "هدايا تُحكى",
+        "title_2": "قبل ما تتفتح",
+        "text": "<p>اختيارات منتقاة لكل مناسبة ولكل حد بتحبه.</p>",
+        "media_position": "start",
+        "cta_text": "تسوّق الهدايا",
+        "cta_url": "/shop",
+        "link_text": "كل المناسبات",
+        "link_url": "/collections",
+        "height": 88,
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "مرشّح الهدايا",
+      "widget": "lx-finder",
+      "settings": {
+        "lead": "أدوّر على هدية",
+        "join": "في حدود",
+        "any_label": "لأي مناسبة",
+        "budget_steps": "300، 700، 1500",
+        "button_text": "اعرض الهدايا",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "option",
+          "name": "لعيد ميلاد",
+          "settings": {
+            "label": "لعيد ميلاد",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "option",
+          "name": "لفرح أو خطوبة",
+          "settings": {
+            "label": "لفرح أو خطوبة",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "option",
+          "name": "لمولود جديد",
+          "settings": {
+            "label": "لمولود جديد",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "option",
+          "name": "لرمضان والعيد",
+          "settings": {
+            "label": "لرمضان والعيد",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "option",
+          "name": "ليها",
+          "settings": {
+            "label": "ليها",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "option",
+          "name": "ليه",
+          "settings": {
+            "label": "ليه",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "شبكة المناسبات",
+      "widget": "lx-mosaic",
+      "settings": {
+        "eyebrow": "المناسبات",
+        "title": "لكل لحظة، هديتها",
+        "more_text": "كل المناسبات",
+        "more_url": "/collections",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "tile",
+          "name": "ورد وهدايا",
+          "settings": {
+            "label": "ورد وهدايا",
+            "sub": "باقات وبوكسات",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "tile",
+          "name": "زفاف وخطوبة",
+          "settings": {
+            "label": "زفاف وخطوبة",
+            "sub": "لأجمل بداية",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "tile",
+          "name": "عيد ميلاد",
+          "settings": {
+            "label": "عيد ميلاد",
+            "sub": "فرحة بتتفتح",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "tile",
+          "name": "شوكولاتة وحلويات",
+          "settings": {
+            "label": "شوكولاتة وحلويات",
+            "sub": "لكل حد بيحب الحلو",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "tile",
+          "name": "ليها",
+          "settings": {
+            "label": "ليها",
+            "sub": "اختيارات راقية",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "مختارات",
+      "widget": "collection-products",
+      "settings": {
+        "title": "مختارات الموسم",
+        "subtitle": "",
+        "view_all_text": "كل الهدايا",
+        "view_all_url": "/shop",
+        "tab1_label": "الأكثر طلبًا",
+        "tab1_products": [],
+        "tab2_label": "وصل حديثًا",
+        "tab2_products": [],
+        "tab3_label": "",
+        "tab3_products": [],
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "4x5",
+        "background": "white",
+        "show_arrows": true,
+        "show_progress": true,
+        "promo_enabled": false,
+        "promo_image": "",
+        "promo_eyebrow": "",
+        "promo_title": "",
+        "promo_cta_text": "",
+        "promo_url": "/shop",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "جملة البراند",
+      "widget": "lx-story",
+      "settings": {
+        "eyebrow": "فن الإهداء",
+        "title": "الهدية مش في اللي جوّه العلبة، الهدية في إنك افتكرت.",
+        "text": "",
+        "link_text": "اكتشف المجموعة",
+        "link_url": "/shop",
+        "height": 620,
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "بوكس هدية",
+      "widget": "products-bundle",
+      "settings": {
+        "eyebrow": "مجموعات جاهزة",
+        "title": "بوكس متجمّع بعناية",
+        "pins": "",
+        "cta_text": "أضف البوكس للسلة",
+        "media_position": "start",
+        "media_width": 52,
+        "media_height": 105,
+        "column_gap": 6,
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "هدايا حسب الميزانية",
+      "widget": "gift-budgets",
+      "settings": {
+        "title": "هدايا حسب ميزانيتك",
+        "subtitle": "",
+        "steps": "300، 700، 1500",
+        "base_url": "/shop",
+        "background": "white",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "قسم الموسم",
+      "widget": "season-band",
+      "settings": {
+        "eyebrow": "الموسم",
+        "title": "هدايا رمضان والعيد",
+        "text": "<p>بوكسات جاهزة للزيارات والعيدية، متجمّعة للموسم.</p>",
+        "end_date": "2027-03-09",
+        "hide_after_end": false,
+        "count": "3",
+        "card_ratio": "4x5",
+        "cta_text": "كل هدايا الموسم",
+        "cta_url": "/shop",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "آراء العملاء",
+        "title": "هدايا وصلت وفرّحت",
+        "subtitle": "",
+        "autoplay": 6,
+        "star_color": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "هدايا الشركات",
+      "widget": "gift-cta",
+      "settings": {
+        "eyebrow": "للشركات",
+        "title": "هدايا لفريقك وعملائك",
+        "text": "<p>بوكسات بالكمية للمناسبات والمواسم. قولّنا العدد والميزانية ونجهّزلك اقتراح.</p>",
+        "point_1": "",
+        "point_2": "",
+        "point_3": "",
+        "media_position": "start",
+        "btn1_text": "تواصل معنا",
+        "btn1_url": "#contact",
+        "btn2_text": "بوكسات جاهزة",
+        "btn2_url": "/shop",
+        "background": "white",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "إزاي بتوصل هديتك",
+      "widget": "features-bar",
+      "settings": {
+        "style": "icon",
+        "title": "",
+        "columns_desktop": "3",
+        "columns_mobile": "1",
+        "gap": 28,
+        "align": "center",
+        "icon_size": 30,
+        "image_ratio": "1x1",
+        "background": "white",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "اختار",
+          "settings": {
+            "icon": "gift",
+            "title": "اختار",
+            "text": "من المناسبة أو من اللي هتهاديه، أو خلّينا نرشّحلك.",
+            "custom_icon": "",
+            "image": "",
+            "url": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "نجهّزها",
+          "settings": {
+            "icon": "box",
+            "title": "نجهّزها",
+            "text": "بنجهّز طلبك بعد ما تأكده.",
+            "custom_icon": "",
+            "image": "",
+            "url": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "توصل في معادها",
+          "settings": {
+            "icon": "truck",
+            "title": "توصل لحد الباب",
+            "text": "للعنوان اللي تكتبه وقت الطلب.",
+            "custom_icon": "",
+            "image": "",
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "أسئلة عن الهدايا",
+      "widget": "gift-faq",
+      "settings": {
+        "title": "أسئلة عن الهدايا",
+        "subtitle": "",
+        "open_first": true,
+        "background": "white",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "qa",
+          "name": "إزاي ألاقي هدية في حدود ميزانيتي؟",
+          "settings": {
+            "question": "إزاي ألاقي هدية في حدود ميزانيتي؟",
+            "answer": "<p>من الجملة اللي في أول الصفحة: اختار «في حدود» الميزانية واضغط «اعرض الهدايا»، أو من «هدايا حسب ميزانيتك». بتفتحلك كل الهدايا في الحدود اللي اخترتها.</p>"
+          }
+        },
+        {
+          "block": "qa",
+          "name": "ينفع أدوّر حسب المناسبة أو حسب اللي هتهاديه؟",
+          "settings": {
+            "question": "ينفع أدوّر حسب المناسبة أو حسب اللي هتهاديه؟",
+            "answer": "<p>أيوه، من «لكل لحظة، هديتها» أو من القائمة الأولى في الجملة اللي فوق. كل اختيار بيفتح تشكيلة مناسبة له.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{#
+  ============================================================================
+  MUHARRIK · PROCESS STORY · 3 خطوات للمعان
+  ----------------------------------------------------------------------------
+   desktop (pinned, #steps × 100vh of scroll)        mobile (stacked cards)
+   ┌───────────────────┐  — 03 / THE PROCESS         — 03 / THE PROCESS
+   │                   │  THE 3-STEP SHINE            THE 3-STEP SHINE
+   │   step image      │ ┃ 01 WASH        (bright)    ┌──────────┐
+   │   crossfades      │ ┃    text · shop →           │ img 01   │
+   │   as you scroll   │ ┆ 02 POLISH      (dim)       │ 01 WASH  │
+   │                   │ ┆ 03 PROTECT     (dim)       └──────────┘ …
+   │  01 / 03          │
+   └───────────────────┘
+
+  Scroll-telling on the motion contract (assets/mh-motion.js): the section
+  carries data-mh-pin and each step is a [data-mh-step]. On desktop the
+  script pins the section, sets --mh-p (0→1) and data-step="n" on it and
+  puts .is-active on the current step. CSS does the rest:
+    · data-step="n"  → image n fades in and settles from scale 1.06 → 1,
+                       the mono odometer rolls to "0n";
+    · .is-active     → the step is bright, the others dim;
+    · --mh-p         → the vertical yellow line fills.
+  On mobile nothing pins: every step is a card with its own image and gets
+  .is-active as it enters, which is what reveals it.
+
+  No motion (GSAP blocked, reduced motion): the dimming lives under
+  html.mh-motion only, data-step="1" is in the markup, so the page shows the
+  first image, every step bright, the line full. Nothing stays hidden.
+
+  Steps are blocks (image, title, text, link label, link url). No blocks →
+  the three default steps (wash, polish, protect) in the visitor's language
+  with the theme's no-person photos (stepImgs below). mh-step-1/2.jpg stay in
+  assets/ but are not used: the owner wants no pictures of women on stores.
+
+  Styles: assets/mh-w-b.css → "02. PROCESS STORY".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{% if isAr %}
+  {% set D = {
+    kicker: 'العملية', title: '3 خطوات', hl: 'للمعان',
+    link: 'تسوّق المنتج',
+    steps: [
+      { title: 'الغسيل', text: 'رغوة ثلجية تُذيب الأوساخ قبل أن تلمس الطلاء، ثم غسيل بدلوَين يحمي اللون من الخدوش الدقيقة.' },
+      { title: 'التلميع', text: 'مرحلتان من التلميع الآلي تزيلان الهالات والخدوش السطحية وتُعيدان عمق اللون.' },
+      { title: 'الحماية', text: 'طبقة حماية تطرد الماء والغبار وتحافظ على اللمعان.' }
+    ]
+  } %}
+{% else %}
+  {% set D = {
+    kicker: 'The process', title: 'The 3-step', hl: 'shine',
+    link: 'Shop the product',
+    steps: [
+      { title: 'Wash', text: 'Snow foam lifts the grit before anything touches the paint, then a two-bucket wash keeps the swirls away.' },
+      { title: 'Polish', text: 'Two machine stages clear haze and light scratches and bring the depth back to the colour.' },
+      { title: 'Protect', text: 'A protective coat sheds water and dust and helps hold the gloss.' }
+    ]
+  } %}
+{% endif %}
+
+{% set stepImgs = ['mh-hero-3.jpg', 'mh-p03.jpg', 'mh-step-3.jpg'] %}
+
+{# ---- normalise blocks → steps ---- #}
+{% set steps = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set i = loop.index0 %}
+  {% set dm = D.steps[i % 3] %}
+  {% set imgRaw = mediaUrl(bd.image) | trim %}
+  {% set useDemo = not (bd.title or bd.text) %}
+  {% set _ = steps.push({
+    img: imgRaw if (imgRaw | length) else (stepImgs[i % 3] | assets),
+    title: dm.title if useDemo else (bd.title | default('', true)),
+    text: dm.text if useDemo else (bd.text | default('', true)),
+    link: bd.link_text | default(D.link, true),
+    url: bd.link_url | default('/shop', true)
+  }) %}
+{% endfor %}
+{% if (steps | length) == 0 %}
+  {% for dm in D.steps %}
+    {% set _ = steps.push({ img: stepImgs[loop.index0] | assets, title: dm.title, text: dm.text, link: D.link, url: '/shop' }) %}
+  {% endfor %}
+{% endif %}
+{% set n = steps | length %}
+
+{% set kicker = d.kicker | default(D.kicker, true) %}
+{% set title = d.title | default(D.title, true) %}
+{% set hl = D.hl if not d.title else (d.title_hl | default('', true)) %}
+
+<section id="mh-ps-{{ id }}"
+         class="mh-ps{{ ' is-media-end' if d.media_side == 'end' }}"
+         data-mh-pin data-step="1"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 0 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 0 }}px; --ps-n: {{ n }};">
+  <div class="mh-ps-stage">
+    <div class="mh-ps-wrap">
+
+      {# ---- desktop image stack ---- #}
+      <div class="mh-ps-media{{ ' mh-hud' if d.show_hud != false }}" aria-hidden="true">
+        {% for s in steps %}
+          <figure class="mh-ps-img" data-i="{{ loop.index }}">
+            <img src="{{ s.img }}" alt="" decoding="async" draggable="false"{% if loop.index > 1 %} loading="lazy"{% endif %}/>
+          </figure>
+        {% endfor %}
+        <div class="mh-ps-counter mh-mono" dir="ltr">
+          <span class="mh-ps-odo-clip"><span class="mh-ps-odo">{% for s in steps %}<span>{{ pad(loop.index) }}</span>{% endfor %}</span></span>
+          <span class="mh-ps-counter-sep">/</span>
+          <span class="mh-ps-counter-tot">{{ pad(n) }}</span>
+        </div>
+      </div>
+
+      {# ---- copy column: head + steps ---- #}
+      <div class="mh-ps-copy">
+        <header class="mh-ps-head">
+          {% if kicker %}<p class="mh-kicker" data-mh-reveal="up"><span class="mh-kicker-num">03</span><span class="mh-ps-ksep">/</span>{{ kicker | safe }}</p>{% endif %}
+          {% if title or hl %}<h2 class="mh-h mh-ps-title" data-mh-reveal="up" data-mh-delay="0.1">{{ title | safe }}{% if hl %} <span class="mh-hl">{{ hl | safe }}</span>{% endif %}</h2>{% endif %}
+        </header>
+
+        <div class="mh-ps-list">
+          <div class="mh-ps-line" aria-hidden="true"><i class="mh-ps-line-fill"></i></div>
+          <ol class="mh-ps-steps" role="list">
+            {% for s in steps %}
+              <li class="mh-ps-step{{ ' is-active' if loop.index == 1 }}" data-mh-step data-i="{{ loop.index }}">
+                {# mobile card image — hidden on desktop, lazy so it never downloads there #}
+                <div class="mh-ps-card-media mh-hud" aria-hidden="true">
+                  <img src="{{ s.img }}" alt="" loading="lazy" decoding="async" draggable="false"/>
+                  <span class="mh-ps-card-num mh-mono">{{ pad(loop.index) }} / {{ pad(n) }}</span>
+                </div>
+                <div class="mh-ps-step-body">
+                  <span class="mh-ps-num mh-mono" aria-hidden="true">{{ pad(loop.index) }}</span>
+                  <div class="mh-ps-step-text">
+                    <h3 class="mh-ps-step-title">{{ s.title | safe }}</h3>
+                    {% if s.text %}<p class="mh-ps-step-p">{{ s.text | safe }}</p>{% endif %}
+                    {% if s.link and s.url %}
+                      <a href="{{ s.url }}" class="mh-ps-link">{{ s.link | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+                    {% endif %}
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          </ol>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#mh-ps-' ~ id, c=d %}

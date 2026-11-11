@@ -1,0 +1,15 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "Shop page",
+      "widget": "collection-products",
+      "settings": {
+        "title": "",
+        "products_per_page": 24,
+        "show_sort": true
+      }
+    }
+  ],
+  "name": "shop"
+}

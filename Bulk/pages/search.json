@@ -1,0 +1,7 @@
+{
+  "layout": "layout",
+  "widgets": [
+    { "name": "عنوان البحث", "widget": "page-banner", "settings": { "title": "البحث", "height": "sm" } },
+    { "name": "نتائج البحث", "widget": "search-results" }
+  ]
+}

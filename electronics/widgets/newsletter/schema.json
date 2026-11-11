@@ -1,0 +1,59 @@
+{
+  "name": "النشرة البريدية",
+  "settings": {
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الاشتراك من خدمة النشرة (Mailchimp وما شابه) — بدونه لا يظهر القسم للعملاء",
+        "en": "Sign-up link from your newsletter service (Mailchimp etc.) — without it customers do not see this section"
+      },
+      "default": ""
+    },
+    "field_name": {
+      "type": "string",
+      "label": {
+        "ar": "اسم حقل البريد عند الخدمة",
+        "en": "Email field name at the service"
+      },
+      "default": "email"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "اشترك في نشرتنا البريدية"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "Subscribe to our newsletter"
+    },
+    "text": {
+      "type": "string",
+      "label": {
+        "ar": "الوصف",
+        "en": "Text"
+      },
+      "default": "احصل على آخر التحديثات والعروض الخاصة وأكثر."
+    },
+    "text_en": {
+      "type": "string",
+      "label": {
+        "ar": "الوصف (إنجليزي)",
+        "en": "Text (English)"
+      },
+      "default": "Get the latest updates, special offers and more."
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "النشرة البريدية"
+    }
+  ]
+}

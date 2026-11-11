@@ -1,0 +1,55 @@
+{
+  "name": "شبكة المنتجات (Drop)",
+  "settings": {
+    "index": {
+      "type": "string",
+      "label": { "ar": "رقم القسم (مثل 02)", "en": "Section index (e.g. 02)" },
+      "default": "02"
+    },
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "العنوان الصغير", "en": "Kicker" },
+      "default": "تسوّق"
+    },
+    "heading": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Heading" },
+      "default": "كل القطع"
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص زر عرض الكل", "en": "View-all label" },
+      "default": "عرض الكل"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط زر عرض الكل (فارغ لإخفائه)", "en": "View-all link (empty hides it)" },
+      "default": "/shop"
+    },
+    "products": {
+      "type": "products",
+      "label": { "ar": "المنتجات", "en": "Products" }
+    },
+    "limit": {
+      "type": "range",
+      "label": { "ar": "أقصى عدد للمنتجات", "en": "Maximum products" },
+      "default": 8,
+      "min": 1,
+      "max": 24,
+      "step": 1
+    },
+    "auto_fill": {
+      "type": "boolean",
+      "label": { "ar": "إن كانت المنتجات فارغة: اعرض أحدث المنتجات تلقائياً", "en": "When empty, show the newest products automatically" },
+      "default": true
+    },
+    "anchor": {
+      "type": "string",
+      "label": { "ar": "معرّف القسم للروابط (#drop)", "en": "Section anchor id (#drop)" },
+      "default": "drop"
+    }
+  },
+  "presets": [
+    { "category": "المنتجات", "name": "شبكة المنتجات (Drop)" }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "name": "قائمة المجموعات: شريط متحرك",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر تمهيدي فوق العنوان",
+        "en": "Eyebrow above the heading"
+      },
+      "default": "أناقة وراحة"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — ضعي [smile] أو [heart] أو [star] أو [spark] أو [bloom] في أي مكان داخل الجملة لإدراج أيقونة",
+        "en": "Heading — put [smile], [heart], [star], [spark] or [bloom] anywhere in the sentence to drop an icon in"
+      },
+      "default": "ملابس ناعمة [smile] لأيام صغيرة مليانة حركة [heart]"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيفات — اتركيها فارغة لعرض أماكن مؤقتة (لا يوجد مصدر تلقائي للتصنيفات)",
+        "en": "Collections — leave empty for placeholders (there is no automatic source for collections)"
+      }
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عدد المنتجات على البطاقة (يظهر فقط إذا وفّره المتجر)",
+        "en": "Show the product count on the card (only when the store provides it)"
+      },
+      "default": true
+    },
+    "show_name": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار اسم التصنيف تحت البطاقة",
+        "en": "Show the collection name under the card"
+      },
+      "default": false
+    },
+    "card_width": {
+      "type": "range",
+      "label": {
+        "ar": "عرض البطاقة الكبيرة — الصغيرة تُشتق منها (٧١٪) وتبقى النسبة واحدة",
+        "en": "Large card width — the small one is derived from it (71%) and the aspect stays the same"
+      },
+      "default": 366,
+      "min": 240,
+      "max": 440,
+      "step": 2,
+      "unit": "px"
+    },
+    "speed": {
+      "type": "range",
+      "label": {
+        "ar": "سرعة الحركة — بكسل في الثانية · يتوقّف عند مرور المؤشّر",
+        "en": "Drift speed — pixels per second · pauses on hover"
+      },
+      "default": 36,
+      "min": 10,
+      "max": 120,
+      "step": 2
+    },
+    "bg_color": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "الخلفية", "en": "Background" },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": { "ar": "خلفية البطاقات", "en": "Card background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Heading colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "اللون المميّز", "en": "Accent colour" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الحدود", "en": "Border colour" },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "قائمة المجموعات: شريط متحرك"
+    }
+  ]
+}

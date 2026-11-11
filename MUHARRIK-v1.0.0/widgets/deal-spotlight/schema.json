@@ -1,0 +1,148 @@
+{
+  "name": "صفقة اليوم — بقعة الضوء",
+  "settings": {
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير فوق العنوان — فارغ = «صفقة اليوم»", "en": "Small line above the title — empty = “Deal of the day”" },
+      "default": ""
+    },
+    "product": {
+      "type": "products",
+      "label": { "ar": "▸ المنتج — يُؤخذ أول منتج مختار · فارغ = منتج تجريبي", "en": "▸ Product — the first picked one is used · empty = demo product" }
+    },
+    "use_demo": {
+      "type": "boolean",
+      "label": { "ar": "▸ منتج تجريبي عند عدم اختيار منتج (طقم طلاء سيراميك بصورة mh-deal)", "en": "▸ Demo product when none is picked (Ceramic Coating Kit, mh-deal picture)" },
+      "default": true
+    },
+    "image": {
+      "type": "media",
+      "label": { "ar": "صورة بديلة للمنتج — يفضّل مربّعة ١٢٠٠×١٢٠٠ بخلفية داكنة · فارغ = صورة المنتج", "en": "Replacement picture — 1200×1200 on a dark ground recommended · empty = the product's own" }
+    },
+    "headline": {
+      "type": "string",
+      "label": { "ar": "عنوان بديل — فارغ = اسم المنتج", "en": "Headline override — empty = the product title" },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": { "ar": "سطر وصفي قصير — فارغ = النص الافتراضي بلغة الزائر", "en": "A short line of copy — empty = default text in the visitor's language" },
+      "default": ""
+    },
+    "countdown_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ العدّاد التنازلي", "en": "▸ Countdown" },
+      "default": false
+    },
+    "countdown_label": {
+      "type": "string",
+      "label": { "ar": "النص فوق العدّاد — فارغ = «ينتهي العرض خلال»", "en": "Text above the countdown — empty = “Offer ends in”" },
+      "default": ""
+    },
+    "countdown_mode": {
+      "type": "select",
+      "label": { "ar": "نوع العدّاد", "en": "Timer type" },
+      "default": "daily",
+      "options": [
+        { "value": "daily", "label": { "ar": "يومي — ينتهي كل يوم منتصف الليل", "en": "Daily — ends every midnight" } },
+        { "value": "date", "label": { "ar": "حتى تاريخ محدد — يختفي بعد انتهائه", "en": "Until a date — hides once it ends" } }
+      ]
+    },
+    "countdown_end": {
+      "type": "string",
+      "label": { "ar": "تاريخ ووقت الانتهاء — مثال: 2026-12-31 23:59", "en": "End date & time — e.g. 2026-12-31 23:59" },
+      "default": "2026-12-31 23:59"
+    },
+    "stock_mode": {
+      "type": "select",
+      "label": { "ar": "مؤشّر الكمية المتبقية", "en": "Stock-left meter" },
+      "default": "auto",
+      "options": [
+        { "value": "auto", "label": { "ar": "من المخزون الفعلي — وإلا الرقم أدناه", "en": "From real inventory — else the number below" } },
+        { "value": "manual", "label": { "ar": "الرقم أدناه دائمًا", "en": "Always the number below" } },
+        { "value": "off", "label": { "ar": "مخفي", "en": "Hidden" } }
+      ]
+    },
+    "stock_left": {
+      "type": "range",
+      "label": { "ar": "الكمية المتبقية (يدوي / تجريبي)", "en": "Units left (manual / demo)" },
+      "default": 7,
+      "min": 1,
+      "max": 50,
+      "step": 1
+    },
+    "stock_total": {
+      "type": "range",
+      "label": { "ar": "الكمية الأصلية — لحساب طول المؤشّر", "en": "Starting quantity — sets the meter length" },
+      "default": 20,
+      "min": 2,
+      "max": 200,
+      "step": 1
+    },
+    "stock_text": {
+      "type": "string",
+      "label": { "ar": "نص المؤشّر — {count} = الرقم · فارغ = «باقي {count} قطع»", "en": "Meter text — {count} = the number · empty = “{count} left”" },
+      "default": ""
+    },
+    "show_buy_now": {
+      "type": "boolean",
+      "label": { "ar": "▸ زر «اشتري الآن»", "en": "▸ “Buy now” button" },
+      "default": true
+    },
+    "show_qty": {
+      "type": "boolean",
+      "label": { "ar": "▸ محدد الكمية", "en": "▸ Quantity stepper" },
+      "default": true
+    },
+    "note": {
+      "type": "string",
+      "label": { "ar": "سطر صغير تحت الأزرار — مثال: شحن مجاني فوق ١٥٠٠ ج.م · فارغ = لا شيء", "en": "Small line under the buttons — e.g. Free shipping over 1,500 · empty = none" },
+      "default": ""
+    },
+    "image_side": {
+      "type": "select",
+      "label": { "ar": "جهة الصورة — كمبيوتر", "en": "Picture side — desktop" },
+      "default": "start",
+      "options": [
+        { "value": "start", "label": { "ar": "جهة البداية (اليمين بالعربية)", "en": "Start side (right in Arabic)" } },
+        { "value": "end", "label": { "ar": "جهة النهاية", "en": "End side" } }
+      ]
+    },
+    "float": {
+      "type": "boolean",
+      "label": { "ar": "▸ الصورة تطفو وتدور ببطء", "en": "▸ Picture floats and slowly rotates" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 64,
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "خلفية القسم", "en": "Section background" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون العناوين", "en": "Title colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون النص", "en": "Text colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز (الأصفر والوهج)", "en": "Accent (the yellow and the glow)" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الخطوط", "en": "Hairline colour" }, "default": "" }
+  },
+  "presets": [
+    { "category": "المنتجات", "name": "صفقة اليوم — بقعة الضوء" }
+  ]
+}

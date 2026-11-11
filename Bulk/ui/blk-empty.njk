@@ -1,0 +1,22 @@
+{# =========================================================
+   Dark Blood - حالة فاضية مشتركة
+   الاستخدام: {% ui "blk-empty.njk", title="...", text="...", btn_text="...", btn_url="/", icon="cart|search|box" %}
+   ========================================================= #}
+<div class="blk-empty blk-anim-fade-up">
+  <div class="blk-empty-icon">
+    {% if data.icon == 'cart' %}
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 2.8h3l2.2 11a1.7 1.7 0 0 0 1.7 1.4h8.1a1.7 1.7 0 0 0 1.7-1.4l1.5-7.5H6.2"/><circle cx="9.4" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
+    {% elif data.icon == 'search' %}
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9"/></svg>
+    {% else %}
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+    {% endif %}
+  </div>
+  <h3 class="blk-empty-title">{{ data.title or t('common.nothing_here') }}</h3>
+  {% if data.text %}
+    <p class="blk-empty-text">{{ data.text }}</p>
+  {% endif %}
+  {% if data.btn_text %}
+    <a href="{{ data.btn_url | default('/') }}" class="blk-btn blk-btn-primary blk-btn-shine">{{ data.btn_text }}</a>
+  {% endif %}
+</div>

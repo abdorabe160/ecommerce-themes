@@ -1,0 +1,815 @@
+{
+  "name": "الفوتر الرئيسي",
+  "settings": {
+    "show_contact": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شريط التواصل — إظهاره",
+        "en": "▸ Contact strip — show it"
+      },
+      "default": true
+    },
+    "contact_icon_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون رموز شريط التواصل (فارغ = لون العناوين)",
+        "en": "Contact strip icon colour (empty = heading colour)"
+      },
+      "default": ""
+    },
+    "contact1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "التواصل 1 — الرمز",
+        "en": "Contact 1 — icon"
+      },
+      "default": "chat",
+      "options": [
+        {
+          "value": "chat",
+          "label": {
+            "ar": "فقاعة محادثة",
+            "en": "Chat bubble"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "ظرف بريد",
+            "en": "Envelope"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "دبّوس موقع",
+            "en": "Map pin"
+          }
+        },
+        {
+          "value": "send",
+          "label": {
+            "ar": "طائرة ورقية",
+            "en": "Paper plane"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة",
+            "en": "Truck"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "درع",
+            "en": "Shield"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون رمز",
+            "en": "No icon"
+          }
+        }
+      ]
+    },
+    "contact1_title": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 1 — العنوان (اتركه فارغاً لإخفاء الخانة)",
+        "en": "Contact 1 — title (leave empty to hide the cell)"
+      },
+      "default": ""
+    },
+    "contact1_text": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 1 — السطر تحته",
+        "en": "Contact 1 — line underneath"
+      },
+      "default": ""
+    },
+    "contact1_url": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 1 — الرابط (tel: أو mailto: أو رابط صفحة)",
+        "en": "Contact 1 — link (tel:, mailto:, or a page URL)"
+      },
+      "default": ""
+    },
+    "contact2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "التواصل 2 — الرمز",
+        "en": "Contact 2 — icon"
+      },
+      "default": "phone",
+      "options": [
+        {
+          "value": "chat",
+          "label": {
+            "ar": "فقاعة محادثة",
+            "en": "Chat bubble"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "ظرف بريد",
+            "en": "Envelope"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "دبّوس موقع",
+            "en": "Map pin"
+          }
+        },
+        {
+          "value": "send",
+          "label": {
+            "ar": "طائرة ورقية",
+            "en": "Paper plane"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة",
+            "en": "Truck"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "درع",
+            "en": "Shield"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون رمز",
+            "en": "No icon"
+          }
+        }
+      ]
+    },
+    "contact2_title": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 2 — العنوان (اتركه فارغاً لإخفاء الخانة)",
+        "en": "Contact 2 — title (leave empty to hide the cell)"
+      },
+      "default": ""
+    },
+    "contact2_text": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 2 — السطر تحته",
+        "en": "Contact 2 — line underneath"
+      },
+      "default": ""
+    },
+    "contact2_url": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 2 — الرابط (tel: أو mailto: أو رابط صفحة)",
+        "en": "Contact 2 — link (tel:, mailto:, or a page URL)"
+      },
+      "default": ""
+    },
+    "contact3_icon": {
+      "type": "select",
+      "label": {
+        "ar": "التواصل 3 — الرمز",
+        "en": "Contact 3 — icon"
+      },
+      "default": "send",
+      "options": [
+        {
+          "value": "chat",
+          "label": {
+            "ar": "فقاعة محادثة",
+            "en": "Chat bubble"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "ظرف بريد",
+            "en": "Envelope"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "دبّوس موقع",
+            "en": "Map pin"
+          }
+        },
+        {
+          "value": "send",
+          "label": {
+            "ar": "طائرة ورقية",
+            "en": "Paper plane"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة",
+            "en": "Truck"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "درع",
+            "en": "Shield"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون رمز",
+            "en": "No icon"
+          }
+        }
+      ]
+    },
+    "contact3_title": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 3 — العنوان (اتركه فارغاً لإخفاء الخانة)",
+        "en": "Contact 3 — title (leave empty to hide the cell)"
+      },
+      "default": ""
+    },
+    "contact3_text": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 3 — السطر تحته",
+        "en": "Contact 3 — line underneath"
+      },
+      "default": ""
+    },
+    "contact3_url": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 3 — الرابط (tel: أو mailto: أو رابط صفحة)",
+        "en": "Contact 3 — link (tel:, mailto:, or a page URL)"
+      },
+      "default": ""
+    },
+    "contact4_icon": {
+      "type": "select",
+      "label": {
+        "ar": "التواصل 4 — الرمز",
+        "en": "Contact 4 — icon"
+      },
+      "default": "pin",
+      "options": [
+        {
+          "value": "chat",
+          "label": {
+            "ar": "فقاعة محادثة",
+            "en": "Chat bubble"
+          }
+        },
+        {
+          "value": "phone",
+          "label": {
+            "ar": "هاتف",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "mail",
+          "label": {
+            "ar": "ظرف بريد",
+            "en": "Envelope"
+          }
+        },
+        {
+          "value": "pin",
+          "label": {
+            "ar": "دبّوس موقع",
+            "en": "Map pin"
+          }
+        },
+        {
+          "value": "send",
+          "label": {
+            "ar": "طائرة ورقية",
+            "en": "Paper plane"
+          }
+        },
+        {
+          "value": "clock",
+          "label": {
+            "ar": "ساعة",
+            "en": "Clock"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شاحنة",
+            "en": "Truck"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "درع",
+            "en": "Shield"
+          }
+        },
+        {
+          "value": "whatsapp",
+          "label": {
+            "ar": "واتساب",
+            "en": "WhatsApp"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون رمز",
+            "en": "No icon"
+          }
+        }
+      ]
+    },
+    "contact4_title": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 4 — العنوان (اتركه فارغاً لإخفاء الخانة)",
+        "en": "Contact 4 — title (leave empty to hide the cell)"
+      },
+      "default": ""
+    },
+    "contact4_text": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 4 — السطر تحته",
+        "en": "Contact 4 — line underneath"
+      },
+      "default": ""
+    },
+    "contact4_url": {
+      "type": "string",
+      "label": {
+        "ar": "التواصل 4 — الرابط (tel: أو mailto: أو رابط صفحة)",
+        "en": "Contact 4 — link (tel:, mailto:, or a page URL)"
+      },
+      "default": ""
+    },
+    "show_newsletter": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ النشرة البريدية — إظهارها",
+        "en": "▸ Newsletter — show it"
+      },
+      "default": true
+    },
+    "newsletter_title": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — العنوان",
+        "en": "Newsletter — title"
+      },
+      "default": ""
+    },
+    "newsletter_text": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — سطر الوصف",
+        "en": "Newsletter — supporting line"
+      },
+      "default": ""
+    },
+    "newsletter_action": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — رابط استقبال البريد من مزوّد القوائم (Mailchimp / Klaviyo). بدونه لن يظهر النموذج",
+        "en": "Newsletter — form action URL from your list provider (Mailchimp / Klaviyo). Without it the form is not rendered"
+      },
+      "default": ""
+    },
+    "newsletter_field": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — اسم حقل البريد عند المزوّد",
+        "en": "Newsletter — provider's email field name"
+      },
+      "default": "EMAIL"
+    },
+    "newsletter_placeholder": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — نص داخل الحقل",
+        "en": "Newsletter — input placeholder"
+      },
+      "default": ""
+    },
+    "newsletter_button": {
+      "type": "string",
+      "label": {
+        "ar": "النشرة — نص الزر (اتركه فارغاً لزر السهم الدائري)",
+        "en": "Newsletter — button label (leave empty for the round arrow button)"
+      },
+      "default": ""
+    },
+    "newsletter_note": {
+      "type": "text",
+      "label": {
+        "ar": "النشرة — السطر الصغير تحت النموذج (يقبل روابط)",
+        "en": "Newsletter — fine print under the form (accepts links)"
+      },
+      "default": ""
+    },
+    "show_brand": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ سطر تعريفي بالمتجر تحت النشرة",
+        "en": "▸ Store blurb under the newsletter"
+      },
+      "default": false
+    },
+    "brand_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص السطر التعريفي",
+        "en": "Store blurb text"
+      },
+      "default": ""
+    },
+    "social_style": {
+      "type": "select",
+      "label": {
+        "ar": "▸ شكل أيقونات التواصل",
+        "en": "▸ Social icon style"
+      },
+      "default": "circle",
+      "options": [
+        {
+          "value": "circle",
+          "label": {
+            "ar": "داخل دائرة",
+            "en": "Inside a circle"
+          }
+        },
+        {
+          "value": "plain",
+          "label": {
+            "ar": "بدون إطار",
+            "en": "Bare"
+          }
+        }
+      ]
+    },
+    "social_facebook": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Facebook",
+        "en": "Facebook URL"
+      },
+      "default": ""
+    },
+    "social_x": {
+      "type": "string",
+      "label": {
+        "ar": "رابط X",
+        "en": "X URL"
+      },
+      "default": ""
+    },
+    "social_instagram": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Instagram",
+        "en": "Instagram URL"
+      },
+      "default": ""
+    },
+    "social_tiktok": {
+      "type": "string",
+      "label": {
+        "ar": "رابط TikTok",
+        "en": "TikTok URL"
+      },
+      "default": ""
+    },
+    "social_youtube": {
+      "type": "string",
+      "label": {
+        "ar": "رابط YouTube",
+        "en": "YouTube URL"
+      },
+      "default": ""
+    },
+    "social_snapchat": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Snapchat",
+        "en": "Snapchat URL"
+      },
+      "default": ""
+    },
+    "social_whatsapp": {
+      "type": "string",
+      "label": {
+        "ar": "رابط WhatsApp",
+        "en": "WhatsApp URL"
+      },
+      "default": ""
+    },
+    "social_pinterest": {
+      "type": "string",
+      "label": {
+        "ar": "رابط Pinterest",
+        "en": "Pinterest URL"
+      },
+      "default": ""
+    },
+    "show_payments": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ وسائل الدفع — إظهار الشارات",
+        "en": "▸ Payment badges — show them"
+      },
+      "default": false
+    },
+    "pay_mada": {
+      "type": "boolean",
+      "label": {
+        "ar": "مدى",
+        "en": "mada"
+      },
+      "default": true
+    },
+    "pay_visa": {
+      "type": "boolean",
+      "label": {
+        "ar": "فيزا",
+        "en": "Visa"
+      },
+      "default": true
+    },
+    "pay_mastercard": {
+      "type": "boolean",
+      "label": {
+        "ar": "ماستركارد",
+        "en": "Mastercard"
+      },
+      "default": true
+    },
+    "pay_amex": {
+      "type": "boolean",
+      "label": {
+        "ar": "أمريكان إكسبريس",
+        "en": "American Express"
+      },
+      "default": false
+    },
+    "pay_applepay": {
+      "type": "boolean",
+      "label": {
+        "ar": "Apple Pay",
+        "en": "Apple Pay"
+      },
+      "default": true
+    },
+    "pay_stcpay": {
+      "type": "boolean",
+      "label": {
+        "ar": "STC Pay",
+        "en": "STC Pay"
+      },
+      "default": false
+    },
+    "pay_tabby": {
+      "type": "boolean",
+      "label": {
+        "ar": "تابي",
+        "en": "Tabby"
+      },
+      "default": false
+    },
+    "pay_tamara": {
+      "type": "boolean",
+      "label": {
+        "ar": "تمارا",
+        "en": "Tamara"
+      },
+      "default": false
+    },
+    "pay_paypal": {
+      "type": "boolean",
+      "label": {
+        "ar": "PayPal",
+        "en": "PayPal"
+      },
+      "default": false
+    },
+    "pay_cod": {
+      "type": "boolean",
+      "label": {
+        "ar": "الدفع عند الاستلام",
+        "en": "Cash on delivery"
+      },
+      "default": false
+    },
+    "payment_image_1": {
+      "type": "media",
+      "label": {
+        "ar": "شارة دفع مرفوعة 1 — تحل محل الشارات المرسومة كلها",
+        "en": "Uploaded payment badge 1 — replaces the whole drawn row"
+      }
+    },
+    "payment_image_2": {
+      "type": "media",
+      "label": {
+        "ar": "شارة دفع مرفوعة 2 — تحل محل الشارات المرسومة كلها",
+        "en": "Uploaded payment badge 2 — replaces the whole drawn row"
+      }
+    },
+    "payment_image_3": {
+      "type": "media",
+      "label": {
+        "ar": "شارة دفع مرفوعة 3 — تحل محل الشارات المرسومة كلها",
+        "en": "Uploaded payment badge 3 — replaces the whole drawn row"
+      }
+    },
+    "copyright": {
+      "type": "string",
+      "label": {
+        "ar": "▸ الشريط السفلي — اسم صاحب الحقوق (فارغ = اسم المتجر)",
+        "en": "▸ Bottom bar — copyright holder (empty = store name)"
+      },
+      "default": ""
+    },
+    "bottom_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "قائمة الروابط النظامية",
+        "en": "Legal links menu"
+      },
+      "default": "footer-menu"
+    },
+    "show_language_switcher": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مبدّل اللغة",
+        "en": "Show the language switcher"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_bottom_bar": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الشريط السفلي",
+        "en": "Bottom bar background"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود روابط",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان العمود",
+            "en": "Column title"
+          },
+          "default": ""
+        },
+        "menu": {
+          "type": "menu",
+          "label": {
+            "ar": "القائمة",
+            "en": "Menu"
+          },
+          "default": "footer-menu"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر الرئيسي"
+    }
+  ]
+}

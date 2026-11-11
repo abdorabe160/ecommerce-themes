@@ -1,0 +1,257 @@
+{# ============================================================================
+   LAMSA COLLECTIONS PAGE — /collections
+   Lists every collection in the store. Card visuals mirror the homepage
+   collections-section (chip label on the media) so the two feel like one system.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# never list a hidden collection or the platform's own «Home Page» #}
+{% set cols = [] %}
+{% for c in (context.collections | default([], true)) %}
+  {% if c.title and c.title != 'Home Page' and c.handle != 'home-page' and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}
+{% endfor %}
+{% set count = cols | length %}
+{% set pagination = context.pagination %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default(t('pages.collections.title'), true) %}
+{% set desc = d.description | default('') %}
+{% set showTitle = d.show_title | default(true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set colsD = d.columns_desktop | default('3') %}
+{% set ratio = d.card_ratio | default('3/4') %}
+{% set shape = d.card_shape | default('soft') %}
+{% if shape == 'circle' %}{% set ratio = '1/1' %}{% endif %}
+
+{% set colsDInt = colsD | int %}
+{# No collection alone on the last desktop row: when the count leaves one
+   over, step to a neighbouring column count that doesn't. #}
+{% if count > colsDInt and count % colsDInt == 1 %}
+  {% if colsDInt < 5 and count % (colsDInt + 1) != 1 %}{% set colsDInt = colsDInt + 1 %}
+  {% elif colsDInt > 2 and count % (colsDInt - 1) != 1 %}{% set colsDInt = colsDInt - 1 %}{% endif %}
+{% endif %}
+{% set colsD = colsDInt %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+
+
+<style>
+  .lamsa-clp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-clp-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-clp-{{ id }}-title { line-height: 1.34; }
+
+  .lamsa-clp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 14px;
+  }
+  @media (min-width: 768px) {
+    .lamsa-clp-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 26px 20px; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-clp-{{ id }}-grid { grid-template-columns: repeat({{ colsD }}, minmax(0, 1fr)); gap: 30px 24px; }
+  }
+
+
+  /* no tile alone on a last row: it spans the row, photo height capped */
+  {% if shape != 'circle' %}
+  @media (max-width: 767px) {
+    .lamsa-clp-{{ id }}-grid > :nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-clp-{{ id }}-grid > :nth-of-type(2n+1):last-of-type .lamsa-clp-{{ id }}-media { aspect-ratio: 16 / 9; border-radius: var(--radius-lg); }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .lamsa-clp-{{ id }}-grid > :nth-of-type({{ colsMid }}n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-clp-{{ id }}-grid > :nth-of-type({{ colsMid }}n+1):last-of-type .lamsa-clp-{{ id }}-media { aspect-ratio: 21 / 9; max-height: 320px; border-radius: var(--radius-lg); }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-clp-{{ id }}-grid > :nth-of-type({{ colsD }}n+1):last-of-type { grid-column: 1 / -1; }
+    .lamsa-clp-{{ id }}-grid > :nth-of-type({{ colsD }}n+1):last-of-type .lamsa-clp-{{ id }}-media { aspect-ratio: 21 / 9; max-height: 360px; border-radius: var(--radius-lg); }
+  }
+  {% endif %}
+
+  .lamsa-clp-{{ id }}-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  .lamsa-clp-{{ id }}-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    overflow: hidden;
+    background: linear-gradient(165deg, var(--color-surface) 0%, var(--color-bg-tertiary) 100%);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+    {% if shape == 'arch' %}border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
+    {% elif shape == 'circle' %}border-radius: 50%;
+    {% else %}border-radius: var(--radius-lg);{% endif %}
+  }
+  .lamsa-clp-{{ id }}-card:hover .lamsa-clp-{{ id }}-media {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+  .lamsa-clp-{{ id }}-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .lamsa-clp-{{ id }}-card:hover .lamsa-clp-{{ id }}-media img { transform: scale(1.05); }
+
+  .lamsa-clp-{{ id }}-chip {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 12px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text-primary);
+    transition: background var(--t-base) var(--ease-soft), color var(--t-base) var(--ease-soft);
+  }
+  .lamsa-clp-{{ id }}-card:hover .lamsa-clp-{{ id }}-chip { background: var(--color-accent); color: #FFF; }
+
+  .lamsa-clp-{{ id }}-name {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html[dir="ltr"] .lamsa-clp-{{ id }}-name { font-family: var(--font-display-en); }
+
+  @media (max-width: 640px) {
+    .lamsa-clp-{{ id }}-chip { inset-inline: 8px; bottom: 8px; padding: 9px 13px; gap: 6px; }
+    .lamsa-clp-{{ id }}-name { font-size: 0.8125rem; }
+  }
+</style>
+
+
+<section id="lamsa-clp-{{ id }}" class="lamsa-section" style="background: var(--color-bg-primary);">
+  <div class="lamsa-container">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+      <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <span style="color: var(--color-text-secondary);">{{ title }}</span>
+    </nav>
+
+    {# ═════════════ header ═════════════ #}
+    {% if showTitle %}
+      <div class="lamsa-head lamsa-head--center">
+        {% if eyebrow %}
+          <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+        {% endif %}
+        <h1 class="lamsa-clp-{{ id }}-title lamsa-head-title">{{ title }}</h1>
+        {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+        {% if showCount and count > 0 %}
+          <p class="lamsa-caption m-0 mt-2">
+            <span class="font-num" style="color: var(--color-text-primary); font-weight: 700;">{{ count }}</span>
+            {{ t('pages.collections.count') }}
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ grid ═════════════ #}
+    {% if count > 0 %}
+      <div class="lamsa-clp-{{ id }}-grid reveal reveal-stagger">
+        {% for col in cols %}
+          <a href="/shop/{{ col.slug | default(col.handle) | default(col._id) }}" class="lamsa-clp-{{ id }}-card">
+            <div class="lamsa-clp-{{ id }}-media">
+              {% if col.image and col.image.fileUrl and not col.image.notFound %}
+                <img src="{{ col.image.fileUrl }}" alt="{{ col.title }}" loading="lazy"/>
+              {% else %}
+                <span class="absolute inset-0 flex items-center justify-center" style="color: var(--color-accent-soft);">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.75" cy="9" r="1.75"/>
+                    <path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                  </svg>
+                </span>
+              {% endif %}
+
+              <span class="lamsa-clp-{{ id }}-chip">
+                <span class="lamsa-clp-{{ id }}-name">{{ col.title }}</span>
+                <svg class="rtl-flip shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </span>
+            </div>
+
+            {% if col.productsCount or col.productCount %}
+              <span class="lamsa-caption text-center">
+                {% ui "count.njk", n=(col.productsCount or col.productCount or 0), kind='product' %}
+              </span>
+            {% endif %}
+          </a>
+        {% endfor %}
+      </div>
+
+      {# ═════════════ pagination — plain links, no Alpine scope here ═════════════ #}
+      {% if pagination and pagination.totalPages > 1 %}
+        <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+          {% if pagination.currentPage > 1 %}
+            <a href="?page={{ pagination.currentPage - 1 }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+               aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pagination.totalPages + 1) %}
+            {% if n == pagination.currentPage %}
+              <span class="lamsa-btn-icon font-num" aria-current="page"
+                    style="background: var(--color-accent); color: #fff;">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="lamsa-btn-icon lamsa-btn-icon--outline font-num">{{ n }}</a>
+            {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+              <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pagination.hasNextPage %}
+            <a href="?page={{ pagination.currentPage + 1 }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+               aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('categories.no_categories') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('categories.no_categories_desc') }}</p>
+        <a href="/shop" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm mt-1">{{ t('pages.shop.all_products') }}</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

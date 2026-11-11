@@ -1,0 +1,13 @@
+{
+  "name": "search-results",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": ""
+    }
+  },
+  "presets": [
+    { "category": "search", "name": "search-results" }
+  ]
+}

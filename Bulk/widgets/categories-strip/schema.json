@@ -1,0 +1,61 @@
+{
+  "name": "كروت الأقسام - Categories Strip",
+  "description": "عرض شبكة الأقسام مع أنيميشن وتأثيرات توهج تفاعلية عند الماوس",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "عنوان القسم",
+      "default": "اختر فئتك الرياضية"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": "الوصف الفرعي",
+      "default": "تجهيزات وملابس صُممت خصيصاً لأعلى مستويات الأداء"
+    },
+    "collections_list": {
+      "type": "collections",
+      "label": "اختر الأقسام المعروضة",
+      "limit": 6
+    },
+    "use_store_collections": {
+      "type": "boolean",
+      "label": "اعرض تصنيفات المتجر بدل التصنيفات الافتراضية (لو مقفول بتظهر التصنيفات الافتراضية)",
+      "default": false
+    },
+    "card_height": {
+      "type": "select",
+      "label": "ارتفاع الكارت",
+      "options": [
+        {
+          "label": "مدمج (320px)",
+          "value": "320px"
+        },
+        {
+          "label": "قياسي (380px)",
+          "value": "380px"
+        },
+        {
+          "label": "كبير (440px)",
+          "value": "440px"
+        }
+      ],
+      "default": "380px"
+    },
+    "enable_glow": {
+      "type": "boolean",
+      "label": "تفعيل تأثير التوهج الأحمـر عند الـ Hover",
+      "default": true
+    },
+    "show_product_count": {
+      "type": "boolean",
+      "label": "إظهار عدد المنتجات على كارت القسم (المنصة بتحسب المنتجات المؤرشفة كمان)",
+      "default": false
+    }
+  },
+  "presets": [
+    {
+      "name": "كروت الأقسام المضيئة (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

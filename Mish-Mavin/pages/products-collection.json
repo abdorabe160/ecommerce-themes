@@ -1,0 +1,15 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "كل المنتجات",
+      "widget": "collection-products",
+      "settings": {
+        "title": "",
+        "products_per_page": 24,
+        "show_sort": true
+      }
+    }
+  ],
+  "name": "products-collection"
+}

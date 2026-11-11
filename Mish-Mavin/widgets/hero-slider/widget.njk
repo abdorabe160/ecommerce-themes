@@ -1,0 +1,47 @@
+{# البانر الرئيسي — مطابق لـ mavin-wear.com: صورة كاملة بارتفاع 55vh على الديسكتوب، وصورة كاملة على الموبايل، وزر محدد مربع #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set blocks = widget.blocks | default([]) %}
+{# QLT-08: الرئيسية لازم يكون فيها H1 واحد — عنوان أول شريحة (لو ظاهر) أو اسم المتجر مخفي بصرياً #}
+{% set h1On = wd.heading_tag != 'h2' %}
+{% set firstS = (blocks[0].settings if (blocks | length and blocks[0].settings) else {}) %}
+{% set firstShown = firstS.heading and firstS.show_heading %}
+{% if blocks | length %}
+{% if h1On and not firstShown %}<h1 class="visually-hidden">{{ (store.name if (store and store.name) else '') or firstS.heading }}</h1>{% endif %}
+<section class="mw-hero" style="--mw-hero-h: {{ wd.height | default(55) }}vh"{% if blocks | length > 1 %} x-data="mwHero({ autoplay: {{ 'true' if wd.autoplay else 'false' }}, interval: {{ (wd.interval | default(6)) * 1000 }} })"{% endif %}>
+  <div class="{% if blocks | length > 1 %}swiper mw-hero__swiper{% endif %}">
+    <div class="{% if blocks | length > 1 %}swiper-wrapper{% endif %}">
+      {% for block in blocks %}
+        {% set s = block.settings %}
+        {# الصورة المرفوعة من المحرر أولاً، وإلا صورة الثيم الافتراضية لنفس الشريحة (assets/mw-hero-N.jpg — لازم تكون في assets مباشرة، الفولدرات الفرعية مش بتتخدم من الـ CDN) #}
+        {% set dflt = loop.index <= 3 %}
+        {% set imgD = s.image.fileUrl if (s.image and s.image.fileUrl) else ((('mw-hero-' + loop.index + '.jpg') | assets) if dflt else '') %}
+        {% set imgM = s.mobile_image.fileUrl if (s.mobile_image and s.mobile_image.fileUrl) else ((('mw-hero-' + loop.index + '-mobile.jpg') | assets) if (dflt and not (s.image and s.image.fileUrl)) else imgD) %}
+        <div class="mw-hero__slide{% if blocks | length > 1 %} swiper-slide{% endif %}">
+          {% if s.button_url and not s.button_text %}<a href="{{ s.button_url }}" class="mw-hero__media" aria-label="{{ s.heading | default('Shop') }}">{% else %}<div class="mw-hero__media">{% endif %}
+            {% if imgD %}
+              {# صورة واحدة بتتحمّل حسب المقاس (picture) بدل تحميل صورتين #}
+              <picture>
+                <source media="(min-width: 750px)" srcset="{{ imgD }}" width="1920" height="1080"/>
+                <img class="mw-hero__img" src="{{ imgM }}" alt="{{ s.alt | default(s.heading) | default('') }}" width="1080" height="1290" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async" style="object-position: {{ s.focal | default('center') }}"/>
+              </picture>
+            {% else %}
+              <div class="mw-hero__blank"></div>
+            {% endif %}
+          {% if s.button_url and not s.button_text %}</a>{% else %}</div>{% endif %}
+          {% if s.eyebrow or s.heading or s.sub or s.button_text %}
+          <div class="mw-hero__content">
+            {% if s.eyebrow %}<p class="mw-hero__eyebrow">{{ s.eyebrow }}</p>{% endif %}
+            {% if s.heading and s.show_heading %}{% if loop.first and h1On %}<h1 class="mw-hero__heading">{{ s.heading }}</h1>{% else %}<h2 class="mw-hero__heading">{{ s.heading }}</h2>{% endif %}{% endif %}
+            {% if s.sub %}<p class="mw-hero__sub">{{ s.sub }}</p>{% endif %}
+            {% if s.button_text %}
+              <a href="{{ s.button_url | default('/collections') }}" class="mw-hero__btn{% if s.button_style == 'filled' %} mw-hero__btn--filled{% endif %}">{{ s.button_text }}</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    {% if blocks | length > 1 %}<div class="swiper-pagination"></div>{% endif %}
+  </div>
+</section>
+{% endif %}

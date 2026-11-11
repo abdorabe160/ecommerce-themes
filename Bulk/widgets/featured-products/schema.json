@@ -1,0 +1,131 @@
+{
+  "name": "شبكة المنتجات المميزة - Featured Products",
+  "description": "شبكة منتجات مختارة بتظهر بأنيميشن متتابع مع السكرول، فيها منتج بارز كبير (اختياري) وتابات فلترة بتتعمل أوتوماتيك من تصنيفات المنتجات",
+  "settings": {
+    "badge_text": {
+      "type": "string",
+      "label": "نص الشارة المضيئة فوق العنوان",
+      "default": "اختيارات الأبطال"
+    },
+    "title": {
+      "type": "string",
+      "label": "عنوان القسم",
+      "default": "منتجات مميزة"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": "وصف قصير تحت العنوان (اختياري)",
+      "default": "قطع مختارة بعناية عشان تمرينك يبقى على مستوى تاني."
+    },
+    "products": {
+      "type": "products",
+      "label": "اختر المنتجات المعروضة"
+    },
+    "use_store_products": {
+      "type": "boolean",
+      "label": "اعرض منتجات المتجر بدل المنتجات الافتراضية (لو مقفول بتظهر المنتجات الافتراضية)",
+      "default": false
+    },
+    "store_sort": {
+      "type": "select",
+      "label": "ترتيب منتجات المتجر",
+      "options": [
+        {
+          "label": "الافتراضي",
+          "value": ""
+        },
+        {
+          "label": "الأحدث أولاً",
+          "value": "created-desc"
+        },
+        {
+          "label": "الأعلى تقييماً",
+          "value": "rating-desc"
+        },
+        {
+          "label": "السعر: من الأقل للأعلى",
+          "value": "price-asc"
+        },
+        {
+          "label": "السعر: من الأعلى للأقل",
+          "value": "price-desc"
+        }
+      ],
+      "default": "rating-desc"
+    },
+    "products_limit": {
+      "type": "number",
+      "label": "أقصى عدد منتجات",
+      "default": 8,
+      "min": 2,
+      "max": 16,
+      "step": 1
+    },
+    "layout": {
+      "type": "select",
+      "label": "شكل الشبكة",
+      "options": [
+        {
+          "label": "أول منتج بارز وكبير",
+          "value": "spotlight"
+        },
+        {
+          "label": "شبكة عادية",
+          "value": "grid"
+        }
+      ],
+      "default": "spotlight"
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": "عدد الأعمدة على الكمبيوتر",
+      "options": [
+        {
+          "label": "3 أعمدة",
+          "value": "3"
+        },
+        {
+          "label": "4 أعمدة",
+          "value": "4"
+        }
+      ],
+      "default": "4"
+    },
+    "enable_tabs": {
+      "type": "boolean",
+      "label": "تابات فلترة بالتصنيف (بتتعمل أوتوماتيك من المنتجات المختارة)",
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": "نص زرار \"عرض الكل\" (سيبه فاضي لو مش عايزه)",
+      "default": "عرض كل المنتجات"
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": "لينك زرار \"عرض الكل\"",
+      "default": "/collections"
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": "إظهار زر المعاينة السريعة",
+      "default": true
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": "إظهار التقييم (النجوم)",
+      "default": true
+    },
+    "show_stock_urgency": {
+      "type": "boolean",
+      "label": "إظهار شريط \"أوشك على النفاد\" (3 قطع أو أقل)",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "name": "شبكة المنتجات المميزة (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

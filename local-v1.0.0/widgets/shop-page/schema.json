@@ -1,0 +1,255 @@
+{
+  "name": "صفحة المتجر",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (يُستبدل بعنوان التصنيف في صفحة التصنيف)",
+        "en": "Title (a collection's own title wins on a collection page)"
+      },
+      "default": "كل المنتجات"
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": ""
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مسار التنقّل",
+        "en": "Show the breadcrumb"
+      },
+      "default": true
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الفلاتر",
+        "en": "Show filters"
+      },
+      "default": true
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الترتيب",
+        "en": "Show sorting"
+      },
+      "default": true
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عدد المنتجات",
+        "en": "Show the product count"
+      },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        }
+      ]
+    },
+    "columns_tablet": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (تابلت)",
+        "en": "Columns (Tablet)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (موبايل)",
+        "en": "Columns (Mobile)"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "١",
+            "en": "1"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة صورة البطاقة",
+        "en": "Card Image Ratio"
+      },
+      "default": "",
+      "options": [
+        {
+          "value": "",
+          "label": {
+            "ar": "حسب إعداد الثيم",
+            "en": "Follow the theme setting"
+          }
+        },
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "طولي ممدود",
+            "en": "Tall portrait"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Soft portrait"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحات",
+      "name": "صفحة المتجر"
+    }
+  ]
+}

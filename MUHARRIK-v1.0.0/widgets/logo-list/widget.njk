@@ -1,0 +1,214 @@
+{#
+  ============================================================================
+  LOGO LIST · قائمة الشعارات
+  ----------------------------------------------------------------------------
+  A row of brand logos in circles; choosing one shows that brand's products
+  in the rail below (the active circle grows). Same rail, cards and fill
+  logic as widgets/promo-collections (HxFill, ui/hx-card.njk). Empty brand
+  slots show original demo marks (assets/hx-brand-N.svg) and demo products.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro onoff(v) %}{{ 'off' if v == false else 'on' }}{% endmacro %}
+
+{# ---- tabs: fixed slots, no blocks (a products picker inside a block breaks
+   the editor). `colId` is the first picked collection's id. ---- #}
+{% set tabs = [] %}
+{% set sorts = ['created-desc', 'price-asc', 'rating-desc', 'price-desc', 'created-desc', 'price-asc'] %}
+{% for n in [1, 2, 3, 4, 5, 6] %}
+  {% set on = d['brand' ~ n ~ '_enabled'] if d['brand' ~ n ~ '_enabled'] is defined else (n <= 5) %}
+  {% if on %}
+    {% set cols = d['brand' ~ n ~ '_collection'] | default([], true) %}
+    {% set c0 = cols[0] if (cols | length) > 0 else null %}
+    {% set colId = (c0 if c0 is string else (c0._id | default('', true))) if c0 else '' %}
+    {% set colHandle = (c0.handle | default(c0.slug, true) | default('', true)) if (c0 and not (c0 is string)) else '' %}
+    {% set logo = mediaUrl(d['brand' ~ n ~ '_logo']) | trim %}
+    {% set _ = tabs.push({
+      n: n,
+      label: d['brand' ~ n ~ '_name'] or (c0.title if (c0 and not (c0 is string) and c0.title) else (t('brands.brand') ~ ' ' ~ n)),
+      icon: logo if (logo | length) > 0 else (('mh-make-' ~ n ~ '.svg') | assets),
+      products: d['brand' ~ n ~ '_products'] | default([], true),
+      colId: colId,
+      url: ('/shop/' ~ colHandle) if colHandle else '/shop'
+    }) %}
+  {% endif %}
+{% endfor %}
+{% set set2 = false %}
+{% set title = (d.title or t('brands.title')) if d.show_title != false else '' %}
+{% set viewText = '' %}
+{% set per = d.columns_desktop | default(6, true) %}
+{% set perM = d.columns_mobile | default('2.2', true) %}
+{% set limit = d.limit | default(12, true) %}
+
+{% set fRating = onoff(d.show_rating) | trim %}
+{% set fThumbs = onoff(d.show_thumbs) | trim %}
+{% set fStock  = onoff(d.show_stock) | trim %}
+{% set fQuick  = onoff(d.show_quick_view) | trim %}
+{% set fAtc    = onoff(d.show_atc) | trim %}
+{% set fHover  = onoff(d.hover_images) | trim %}
+{% set saleBadge = (d.sale_badge or t('featured.sale_badge')) if d.show_sale_badge != false else '' %}
+{% set lowBadge  = (d.low_badge or t('featured.low_badge')) if d.show_low_badge != false else '' %}
+{% set note      = (d.card_note or t('featured.note')) if d.show_note == true else '' %}
+
+{# ---- demo stand-ins: twelve products, each tab starts at a different one ---- #}
+{% set demos = [
+  { _id: 'd1', title: t('featured.demo.p1'), slug: 'demo', pricing: { price: 890, compareAtPrice: 1190 }, averageRating: 4.5, reviewsCount: 12, quantity: 20, images: [{ fileUrl: 'mh-p01.jpg' | assets }] },
+  { _id: 'd2', title: t('featured.demo.p2'), slug: 'demo', pricing: { price: 1490, compareAtPrice: 0 }, averageRating: 5, reviewsCount: 31, quantity: 20, images: [{ fileUrl: 'mh-p09.jpg' | assets }] },
+  { _id: 'd3', title: t('promo.demo.p1'), slug: 'demo', pricing: { price: 21990, compareAtPrice: 25990 }, averageRating: 4.5, reviewsCount: 18, quantity: 20, images: [{ fileUrl: 'mh-cat-care.jpg' | assets }] },
+  { _id: 'd4', title: t('promo.demo.p2'), slug: 'demo', pricing: { price: 9490, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 7, quantity: 3, images: [{ fileUrl: 'mh-cat-interior.jpg' | assets }] },
+  { _id: 'd5', title: t('featured.demo.p5'), slug: 'demo', pricing: { price: 690, compareAtPrice: 990 }, averageRating: 5, reviewsCount: 44, quantity: 20, images: [{ fileUrl: 'mh-p14.jpg' | assets }] },
+  { _id: 'd6', title: t('promo.demo.p3'), slug: 'demo', pricing: { price: 6990, compareAtPrice: 8490 }, averageRating: 4.5, reviewsCount: 22, quantity: 20, images: [{ fileUrl: 'mh-cat-exterior.jpg' | assets }] },
+  { _id: 'd7', title: t('promo.demo.p4'), slug: 'demo', pricing: { price: 15990, compareAtPrice: 0 }, averageRating: 5, reviewsCount: 63, quantity: 20, images: [{ fileUrl: 'mh-cat-lighting.jpg' | assets }] },
+  { _id: 'd8', title: t('featured.demo.p3'), slug: 'demo', pricing: { price: 12990, compareAtPrice: 15990 }, averageRating: 4, reviewsCount: 8, quantity: 4, images: [{ fileUrl: 'mh-p11.jpg' | assets }] },
+  { _id: 'd9', title: t('promo.demo.p5'), slug: 'demo', pricing: { price: 1890, compareAtPrice: 2390 }, averageRating: 4.5, reviewsCount: 27, quantity: 20, images: [{ fileUrl: 'mh-cat-electronics.jpg' | assets }] },
+  { _id: 'd10', title: t('featured.demo.p4'), slug: 'demo', pricing: { price: 24990, compareAtPrice: 0 }, averageRating: 4.5, reviewsCount: 19, quantity: 20, images: [{ fileUrl: 'mh-p04.jpg' | assets }] },
+  { _id: 'd11', title: t('promo.demo.p6'), slug: 'demo', pricing: { price: 390, compareAtPrice: 590 }, averageRating: 4, reviewsCount: 15, quantity: 20, images: [{ fileUrl: 'mh-cat-tyres.jpg' | assets }] },
+  { _id: 'd12', title: t('featured.demo.p6'), slug: 'demo', pricing: { price: 290, compareAtPrice: 0 }, averageRating: 4, reviewsCount: 6, quantity: 3, images: [{ fileUrl: 'mh-p15.jpg' | assets }] }
+] %}
+
+{# MUHARRIK: the kicker above the title — "05 / BRAND" by default, a mono
+   readout of how many makes are listed; the merchant can type their own. #}
+{% set nTabs = tabs | length %}
+{% set kicker = d.eyebrow | default('', true) %}
+{% set showNames = d.show_names != false %}
+{% set mono = d.logo_mono != false %}
+
+<section id="hx-ll-{{ id }}"{% if (widget.blocks | default([], true) | length) == 0 %} data-hy-empty{% endif %}
+         class="hx-pc hx-ll hx-fc is-fit-{{ d.image_fit | default('contain', true) }} {{ 'is-anim' if d.animate != false }} {{ 'is-mono' if mono }} {{ 'has-names' if showNames }}"
+         style="--ll-size: {{ d.logo_size | default(100, true) }}px; --ll-bg: {{ d.logo_bg | default('color-mix(in srgb, var(--color-text-primary) 94%, var(--color-bg-primary))', true) }}; --ll-n: {{ nTabs if nTabs > 0 else 1 }}; --fc-per: {{ per }}; --fc-per-m: {{ perM }}; --hx-card-bg: {{ d.image_bg | default('var(--color-bg-tertiary)', true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --fc-accent: {{ d.color_accent }};{% endif %}"
+         x-data="{ tab: 0 }">
+  <div class="hx-fc-wrap {{ 'is-full' if d.full_width | default(true) }}">
+
+    {% if title %}
+      <header class="hx-ll-head mh-head mh-reveal">
+        <div class="mh-head-main">
+          <p class="hx-ll-kicker mh-kicker">
+            {% if kicker %}{{ kicker | safe }}{% else %}<span class="mh-kicker-num" dir="ltr">{{ '0' ~ nTabs if nTabs < 10 else nTabs }}</span><span aria-hidden="true">/</span>{{ t('brands.brand') }}{% endif %}
+          </p>
+          <h2 class="hx-pc-title mh-h">{{ title | safe }}</h2>
+        </div>
+      </header>
+    {% endif %}
+
+    {% if nTabs > 0 %}
+      {# Hairline grid of monochrome marks: a CSS mask paints each logo in the
+         current text colour (the <img> stays for the colour mode and as the
+         source of truth). The active make lights up yellow with HUD ticks. #}
+      <div class="hx-ll-logos" role="tablist" aria-label="{{ title | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}">
+        {% for tb in tabs %}
+          <button type="button" class="hx-ll-logo" role="tab"
+                  id="hx-pc-tab-{{ id }}-{{ loop.index0 }}"
+                  aria-controls="hx-pc-panel-{{ id }}-{{ loop.index0 }}"
+                  aria-label="{{ tb.label | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}" title="{{ tb.label | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags }}"
+                  style="--ll-mark: url('{{ tb.icon }}');"
+                  :class="{ 'is-active': tab === {{ loop.index0 }}, 'mh-hud': tab === {{ loop.index0 }} }"
+                  :aria-selected="tab === {{ loop.index0 }}"
+                  @click="tab = {{ loop.index0 }}; $dispatch('hx-pc-tab', { root: $root, i: {{ loop.index0 }} })"
+                  {% if loop.first %}aria-selected="true"{% endif %}>
+            <span class="hx-ll-idx mh-mono" aria-hidden="true" dir="ltr">{{ '0' ~ loop.index if loop.index < 10 else loop.index }}</span>
+            <span class="hx-ll-mark" aria-hidden="true">
+              <img src="{{ tb.icon }}" alt="" loading="lazy"/>
+            </span>
+            {% if showNames %}<span class="hx-ll-name">{{ tb.label | safe }}</span>{% endif %}
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% for tb in tabs %}
+      {% set ti = loop.index0 %}
+      {% set hasPicked = (tb.products | length) > 0 %}
+      <div class="hx-pc-panel" role="tabpanel"
+           id="hx-pc-panel-{{ id }}-{{ ti }}"
+           aria-labelledby="hx-pc-tab-{{ id }}-{{ ti }}"
+           x-show="tab === {{ ti }}" {% if not loop.first %}x-cloak{% endif %}
+           data-hx-panel="{{ ti }}">
+        <div class="hx-fc-rail" data-hx-rail>
+          <div class="hx-fc-track" data-hx-track
+               {% if not hasPicked %}data-hx-fill data-col="{{ tb.colId }}" data-sort="{{ sorts[ti % 6] }}" data-limit="{{ limit }}"{% endif %}>
+            {% if hasPicked %}
+              {% for p in tb.products %}
+                {% ui "hx-card.njk", product=p, sale_badge=saleBadge, low_badge=lowBadge, note=note, rating=fRating, thumbs=fThumbs, stock=fStock, quick=fQuick, atc=fAtc, hover=fHover %}
+              {% endfor %}
+            {% else %}
+              {% for k in range(0, 6) %}
+                {% set dp = demos[(ti * 2 + k) % 12] %}
+                {% ui "hx-card.njk", product=dp, demo='on', sale_badge=saleBadge, low_badge=lowBadge, note=note, rating=fRating, thumbs='off', stock=fStock, quick='off', atc='off', hover='off' %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          {% if d.show_arrows != false %}
+            <button type="button" class="hx-fc-arrow is-prev" data-hx-prev aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/></svg>
+            </button>
+            <button type="button" class="hx-fc-arrow is-next" data-hx-next aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>
+            </button>
+          {% endif %}
+        </div>
+        {% if viewText %}
+          {# The label is printed twice, stacked; hover rolls the second copy up
+             into place — the reference's link animation. #}
+          <div class="hx-pc-more">
+            <a href="{{ tb.url }}" class="hx-pc-all">
+              <span class="hx-pc-roll"><span>{{ viewText | safe }}</span><span aria-hidden="true">{{ viewText | safe }}</span></span>
+              <svg class="hx-pc-all-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 7 5 5-5 5M13 7l5 5-5 5"/></svg>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('hx-ll-{{ id }}');
+    if (!root) return;
+    var cardOpts = {
+      saleBadge: {{ saleBadge | dump | safe }}, lowBadge: {{ lowBadge | dump | safe }}, note: {{ note | dump | safe }},
+      rating: {{ 'false' if fRating == 'off' else 'true' }}, thumbs: {{ 'false' if fThumbs == 'off' else 'true' }},
+      stock: {{ 'false' if fStock == 'off' else 'true' }}, quickView: {{ 'false' if fQuick == 'off' else 'true' }},
+      atc: {{ 'false' if fAtc == 'off' else 'true' }}, hoverImages: {{ 'false' if fHover == 'off' else 'true' }},
+      t: {
+        quickView: {{ t('pages.product.quick_view') | dump | safe }}, addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+        image: {{ t('common.image') | dump | safe }}, inStock: {{ t('common.in_stock') | dump | safe }},
+        outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+        close: {{ t('common.close') | dump | safe }}, fullDetails: {{ t('pages.product.view_full_details') | dump | safe }}
+      }
+    };
+
+    function open(i) {
+      var panel = root.querySelector('[data-hx-panel="' + i + '"]');
+      if (!panel || !window.HxRail) return;
+      var rail = panel.querySelector('[data-hx-rail]');
+      /* measured only once the panel is visible — a hidden rail is 0 wide */
+      requestAnimationFrame(function () {
+        HxRail.init(rail);
+        HxRail.refresh(rail);
+        var track = panel.querySelector('[data-hx-fill]');
+        if (track) HxFill.run(track, cardOpts, function () { HxRail.refresh(rail); });
+      });
+    }
+    function boot() {
+      if (!window.HxFill) return;
+      open(0);
+      /* the other tabs load in the background, so switching is instant */
+      root.querySelectorAll('[data-hx-fill]').forEach(function (track) {
+        HxFill.run(track, cardOpts, function () {
+          var rail = track.closest('[data-hx-rail]');
+          if (rail && rail.offsetParent) HxRail.refresh(rail);
+        });
+      });
+      root.addEventListener('hx-pc-tab', function (e) { open(e.detail.i); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-ll-' ~ id, c=d %}

@@ -1,0 +1,167 @@
+{# ============================================================================
+   LOCAL · PRODUCT CARD  ·  SSR renderer
+   ----------------------------------------------------------------------------
+     ┌──────────────────────────┐
+     │                 [ عرض ]  │   badge: out of stock › on sale, + new
+     │          ▢▢▢             │
+     │          ▢▢▢   picture   │   contained, on the card's own ground
+     │                          │
+     │  ٤٫٩٩ ر.س   ٦٫٠٠          │   price · compare-at struck through
+     │  Keto Crunch             │   name
+     │  ★★★★½ (9)               │   only when the product HAS reviews
+     │  (      Buy now       )  │   add to cart  |  buy now
+     └──────────────────────────┘
+
+   ⚠️  THIS CARD HAS A TWIN: `LocalCard.build()` in assets/main.js renders the
+   same markup for AJAX-filled rows. Change the structure here → change it
+   there. Styling: assets/style.css → "15.5.2 PRODUCT CARD · LOCAL".
+
+   ── What the reference card has that Qumra does NOT ──
+   · "From $x" — a LISTED product carries no variants, so the lowest variant
+     price is unknown here. The card shows the product price.
+   · A description line — not in the list payload.
+   · "Choose a store to see local availability" and diet icons — no such data.
+   `averageRating` / `reviewsCount` ARE in the payload, so the stars are real;
+   a product with no reviews shows no stars rather than five empty ones.
+
+   Locals (strings, because a bare true/false does not survive `{% ui %}`):
+     product     the product (required)
+     action      'add' (default) | 'buy'
+     rating      'on' (default) | 'off'
+     badges      'on' (default) | 'off'
+     ratio       '1x1' (default) | '4x5' | '3x4' — a section may override it for
+                 every card inside it with `--lc-card-ratio` (the shop page does)
+     quick_view  'on' (default) | 'off' — the eye button on the picture
+     wrap        extra class on the <article> — 'swiper-slide' inside a slider
+
+   ── Products with options ──
+   A product that carries variants/options gets "اختر الخيارات" and the button
+   opens the QUICK VIEW, where the choice is made — never a cart line with no
+   variant. ⚠️  Qumra's LIST payload may omit variants entirely; when it does,
+   the card cannot know, shows "أضف للسلة", and productCard.addToCart() still
+   resolves the product on click and opens the quick view if it has options.
+
+   ── Stock that is not known ──
+   `quantity: 0` with no variantsCount / variants / options in the payload says
+   nothing: a product with sizes arrives like that. The card shows «عرض المنتج»
+   (a link) and no sold-out badge; LocalCard.recheck() then asks /ajax/product
+   and settles it either way.
+   ========================================================================= #}
+
+{% set p = data.product %}
+
+{% if p %}
+  {% set action = data.action | default('add') %}
+  {% set showRating = (data.rating | default('on')) != 'off' %}
+  {% set showBadges = (data.badges | default('on')) != 'off' %}
+  {% set showQuick = (data.quick_view | default('on')) != 'off' %}
+  {% set r = data.ratio | default('1x1') %}
+  {% set ratioVal = '4 / 5' if r == '4x5' else ('3 / 4' if r == '3x4' else '1 / 1') %}
+
+  {% set slug = p.slug | default(p.handle, true) | default(p._id, true) %}
+  {% set url = '/products/' ~ slug %}
+  {% set price = p.pricing.price | default(0, true) %}
+  {% set was = p.pricing.compareAtPrice | default(0, true) %}
+  {% set onSale = was and was > price %}
+  {% set inStock = p.allowBackorder or p.trackQuantity == false or (p.quantity | default(0, true)) > 0 %}
+  {# lowered + split once — a flag set inside a loop does not survive it #}
+  {# tags arrive as strings OR objects — read a name off an object, never print it #}
+  {% set tagNames = [] %}
+  {% for tg in p.tags | default([], true) %}
+    {% if tg is string %}{% set _ = tagNames.push(tg) %}
+    {% elif tg and (tg.name or tg.title or tg.label or tg.value or tg.displayName) %}{% set _ = tagNames.push(tg.name or tg.title or tg.label or tg.value or tg.displayName) %}
+    {% endif %}
+  {% endfor %}
+  {% set tagsLower = ((tagNames | join(',')) | lower).split(',') %}
+  {% set isNew = 'new' in tagsLower %}
+  {# Same test as the product page's quick-view path — any of the three means
+     a choice has to be made before anything goes in the cart. #}
+  {% set hasVariants = (p.variantsCount and p.variantsCount > 0)
+                       or ((p.variants | default([], true) | length) > 0)
+                       or ((p.options | default([], true) | length) > 0) %}
+  {% set stockUnknown = not inStock and p.variantsCount is not defined and p.variants is not defined and p.options is not defined %}
+  {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+  {% set rvCount = p.reviewsCount | default(0, true) %}
+  {% set rvAvg = p.averageRating | default(0, true) %}
+  {% set rvPct = rvAvg / 5 * 100 %}
+  {% if rvPct > 100 %}{% set rvPct = 100 %}{% elif rvPct < 0 %}{% set rvPct = 0 %}{% endif %}
+
+<article class="lc-pcard {{ data.wrap | default('', true) }}"
+         style="--lc-pcard-ratio: var(--lc-card-ratio, {{ ratioVal }});"
+         {% if not inStock %}data-lc-recheck="{{ slug }}" {% endif %}{% if not showBadges %}data-lc-no-badges {% endif %}x-data="productCard('{{ p._id }}', '{{ url }}')">
+
+  <a href="{{ url }}" class="lc-pcard-media" aria-label="{{ p.title }}">
+    {% if img %}
+      <img src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>
+    {% else %}
+      <span class="lc-pcard-noimg"><svg class="lc-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false"><path class="lc-ph-fill" d="M100 48c-14-10-44-12-58 8-16 22-8 64 12 86 12 13 28 20 46 12 18 8 34 1 46-12 20-22 28-64 12-86-14-20-44-18-58-8Z"/><rect class="lc-ph-tint" x="94" y="20" width="12" height="34" rx="6"/><ellipse class="lc-ph-tint" cx="128" cy="30" rx="22" ry="11" transform="rotate(-24 128 30)"/></svg></span>
+    {% endif %}
+  </a>
+
+  {% if showQuick %}
+    {# Contract with the modal in layouts/layout.njk — the event name and the
+       `slug` key must not change. #}
+    <button type="button" class="lc-pcard-eye"
+            aria-label="{{ t('pages.product.quick_view') }}"
+            @click.prevent="$dispatch('quick-view', { slug: '{{ slug }}' })">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+        <circle cx="12" cy="12" r="2.6"/>
+      </svg>
+    </button>
+  {% endif %}
+
+  {% if showBadges and (onSale or isNew or (not inStock and not stockUnknown)) %}
+    <div class="lc-pcard-badges">
+      {% if not inStock and not stockUnknown %}
+        <span class="lc-pcard-badge lc-pcard-badge--out">{{ t('pages.product.out_of_stock') }}</span>
+      {% elif onSale and inStock %}
+        <span class="lc-pcard-badge lc-pcard-badge--sale">{{ t('common.on_sale') }}</span>
+      {% endif %}
+      {% if isNew %}
+        <span class="lc-pcard-badge lc-pcard-badge--new">{{ t('products.new') }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="lc-pcard-body">
+    <div class="lc-pcard-prices">
+      {# Mirrors Utils.formatPrice(): a zero price is a word, not "0.00". #}
+      <span class="lc-pcard-price {{ 'is-sale' if onSale }}">{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+      {% if onSale %}<span class="lc-pcard-was">{{ was | money }}</span>{% endif %}
+    </div>
+
+    <a href="{{ url }}" class="lc-pcard-name">{{ p.title }}</a>
+
+    {% if showRating and rvCount > 0 %}
+      <div class="lc-pcard-rating">
+        <span class="lc-stars" aria-hidden="true">
+          <span class="lc-stars-base">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+          <span class="lc-stars-fill" style="width: {{ rvPct }}%;">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+        </span>
+        <span class="lc-pcard-rcount">({{ rvCount }})</span>
+      </div>
+    {% endif %}
+
+    {% if inStock and hasVariants %}
+      <button type="button" class="lc-pcard-btn"
+              @click.prevent="$dispatch('quick-view', { slug: '{{ slug }}' })">{{ t('pages.product.choose_options') }}</button>
+    {% elif inStock %}
+      {# productCard() resolves the product first: one with options opens the
+         quick view (add) or the product page (buy) instead of adding a line
+         with no variant. #}
+      <button type="button" class="lc-pcard-btn"
+              @click.prevent="{{ 'buyNow()' if action == 'buy' else 'addToCart()' }}"
+              :disabled="cartLoading || cartSuccess">
+        <span x-show="cartLoading" x-cloak class="lc-spinner" style="width:16px;height:16px;"></span>
+        <span x-show="cartSuccess && !cartLoading" x-cloak>{{ t('pages.product.added') }}</span>
+        <span x-show="!cartLoading && !cartSuccess">{{ t('pages.product.buy_now') if action == 'buy' else t('pages.product.add_to_cart') }}</span>
+      </button>
+    {% elif stockUnknown %}
+      <a href="{{ url }}" class="lc-pcard-btn">{{ t('pages.product.view_product') }}</a>
+    {% else %}
+      <button type="button" class="lc-pcard-btn" disabled>{{ t('pages.product.out_of_stock') }}</button>
+    {% endif %}
+  </div>
+</article>
+{% endif %}

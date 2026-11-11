@@ -1,0 +1,99 @@
+{
+  "name": "زر واتساب العائم",
+  "settings": {
+    "enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر واتساب",
+        "en": "Show WhatsApp button"
+      },
+      "default": true
+    },
+    "phone_number": {
+      "type": "string",
+      "label": {
+        "ar": "رقم واتساب بالصيغة الدولية (فارغ = رقم واتساب من إعدادات الثيم ← التواصل الاجتماعي، وبدون رقم لا يظهر الزر)",
+        "en": "WhatsApp number, international format (empty = the WhatsApp number from theme settings → Social; no number = no button)"
+      },
+      "default": ""
+    },
+    "message": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة افتراضية",
+        "en": "Default message"
+      },
+      "default": ""
+    },
+    "message_en": {
+      "type": "string",
+      "label": {
+        "ar": "رسالة افتراضية (إنجليزي)",
+        "en": "Default message (English)"
+      }
+    },
+    "label": {
+      "type": "string",
+      "label": {
+        "ar": "نص بجانب الأيقونة على الديسكتوب (اختياري)",
+        "en": "Text next to the icon on desktop (optional)"
+      },
+      "default": ""
+    },
+    "label_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص بجانب الأيقونة (إنجليزي)",
+        "en": "Text next to the icon (English)"
+      }
+    },
+    "position": {
+      "type": "select",
+      "label": {
+        "ar": "مكان الزر",
+        "en": "Button position"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": "بداية الصفحة — يمين في العربي / Start"
+        },
+        {
+          "value": "end",
+          "label": "نهاية الصفحة — يسار في العربي / End"
+        }
+      ]
+    },
+    "mobile": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهاره على الموبايل",
+        "en": "Show on mobile"
+      },
+      "default": true
+    },
+    "color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الزر",
+        "en": "Button color"
+      },
+      "default": ""
+    },
+    "icon_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الأيقونة",
+        "en": "Icon color"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "عناصر عامة",
+      "name": "زر واتساب العائم"
+    }
+  ]
+}

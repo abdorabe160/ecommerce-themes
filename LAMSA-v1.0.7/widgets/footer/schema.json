@@ -1,0 +1,249 @@
+{
+  "name": "الفوتر الرئيسي",
+  "settings": {
+    "footer_logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار الفوتر (فاتح — الفوتر غامق · اتركيه فارغاً لاستخدام شعار المتجر الأساسي)",
+        "en": "Footer Logo (light version — the footer is dark · leave empty to use the store's own logo)"
+      }
+    },
+    "footer_description": {
+      "type": "text",
+      "label": {
+        "ar": "نبذة قصيرة عن المتجر",
+        "en": "Short store description"
+      },
+      "default": "لمسة — منتجات عناية بالبشرة ومكياج."
+    },
+    "contact_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان قسم التواصل (اتركيه فارغاً لإخفاء القسم)",
+        "en": "Contact heading (leave empty to hide the block)"
+      },
+      "default": "تواصلي معنا"
+    },
+    "contact_phone": {
+      "type": "string",
+      "label": {
+        "ar": "رقم الهاتف",
+        "en": "Phone number"
+      },
+      "default": ""
+    },
+    "contact_whatsapp": {
+      "type": "string",
+      "label": {
+        "ar": "رقم واتساب (بالصيغة الدولية بدون +)",
+        "en": "WhatsApp number (international, no +)"
+      },
+      "default": ""
+    },
+    "contact_email": {
+      "type": "string",
+      "label": {
+        "ar": "البريد الإلكتروني",
+        "en": "Email address"
+      },
+      "default": ""
+    },
+    "contact_hours": {
+      "type": "string",
+      "label": {
+        "ar": "ساعات العمل",
+        "en": "Working hours"
+      },
+      "default": ""
+    },
+    "social_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان قسم التواصل الاجتماعي",
+        "en": "Social heading"
+      },
+      "default": "تابعينا"
+    },
+    "footer_social_instagram": {
+      "type": "string",
+      "label": {
+        "ar": "إنستغرام",
+        "en": "Instagram"
+      },
+      "default": ""
+    },
+    "footer_social_tiktok": {
+      "type": "string",
+      "label": {
+        "ar": "تيك توك",
+        "en": "TikTok"
+      },
+      "default": ""
+    },
+    "footer_social_snapchat": {
+      "type": "string",
+      "label": {
+        "ar": "سناب شات",
+        "en": "Snapchat"
+      },
+      "default": ""
+    },
+    "footer_social_x": {
+      "type": "string",
+      "label": {
+        "ar": "إكس (تويتر)",
+        "en": "X (Twitter)"
+      },
+      "default": ""
+    },
+    "footer_social_pinterest": {
+      "type": "string",
+      "label": {
+        "ar": "بنترست",
+        "en": "Pinterest"
+      },
+      "default": ""
+    },
+    "footer_social_youtube": {
+      "type": "string",
+      "label": {
+        "ar": "يوتيوب",
+        "en": "YouTube"
+      },
+      "default": ""
+    },
+    "footer_social_facebook": {
+      "type": "string",
+      "label": {
+        "ar": "فيسبوك",
+        "en": "Facebook"
+      },
+      "default": ""
+    },
+    "show_payments": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار طرق الدفع",
+        "en": "Show payment methods"
+      },
+      "default": false
+    },
+    "pay_mada": {
+      "type": "boolean",
+      "label": {
+        "ar": "مدى",
+        "en": "mada"
+      },
+      "default": true
+    },
+    "pay_visa": {
+      "type": "boolean",
+      "label": {
+        "ar": "فيزا",
+        "en": "Visa"
+      },
+      "default": true
+    },
+    "pay_mastercard": {
+      "type": "boolean",
+      "label": {
+        "ar": "ماستركارد",
+        "en": "Mastercard"
+      },
+      "default": true
+    },
+    "pay_apple_pay": {
+      "type": "boolean",
+      "label": {
+        "ar": "آبل باي",
+        "en": "Apple Pay"
+      },
+      "default": true
+    },
+    "pay_stc_pay": {
+      "type": "boolean",
+      "label": {
+        "ar": "STC Pay",
+        "en": "STC Pay"
+      },
+      "default": false
+    },
+    "pay_tabby": {
+      "type": "boolean",
+      "label": {
+        "ar": "تابي",
+        "en": "Tabby"
+      },
+      "default": false
+    },
+    "pay_tamara": {
+      "type": "boolean",
+      "label": {
+        "ar": "تمارا",
+        "en": "Tamara"
+      },
+      "default": false
+    },
+    "pay_cod": {
+      "type": "boolean",
+      "label": {
+        "ar": "الدفع عند الاستلام",
+        "en": "Cash on delivery"
+      },
+      "default": true
+    },
+    "payment_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان وسائل الدفع",
+        "en": "Payment methods heading"
+      },
+      "default": "طرق الدفع"
+    },
+    "bottom_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط الشريط السفلي (الخصوصية، الشروط…)",
+        "en": "Bottom bar links (privacy, terms…)"
+      },
+      "default": "footer-menu"
+    },
+    "show_back_to_top": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر «العودة للأعلى»",
+        "en": "Show the \"back to top\" button"
+      },
+      "default": true
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود روابط",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان العمود",
+            "en": "Column Title"
+          },
+          "default": ""
+        },
+        "menu": {
+          "type": "menu",
+          "label": {
+            "ar": "القائمة",
+            "en": "Menu"
+          },
+          "default": "footer-menu"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر الرئيسي"
+    }
+  ]
+}

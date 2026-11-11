@@ -1,0 +1,25 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "eyebrow": "",
+        "title": "الصفحة غير موجودة",
+        "message": "الرابط اللي فتحتيه مش موجود أو اتغيّر. جرّبي البحث أو تصفّحي المتجر.",
+        "show_search": true,
+        "shop_url": "/shop",
+        "home_url": "/"
+      },
+      "blocks": [
+        { "block": "link", "name": "l1", "settings": { "label": "العناية بالبشرة", "url": "/shop" } },
+        { "block": "link", "name": "l2", "settings": { "label": "المكياج", "url": "/shop" } },
+        { "block": "link", "name": "l3", "settings": { "label": "الأكثر مبيعاً", "url": "/shop" } }
+      ]
+    }
+  ]
+}

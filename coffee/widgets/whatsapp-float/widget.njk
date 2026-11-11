@@ -1,0 +1,19 @@
+{#- Floating WhatsApp chat button (theme-standard feature). Number from the widget, else the store's WhatsApp
+    link in theme settings; renders nothing without a number. Sits on the inline-start corner; lifts above the
+    product page's sticky buy bar. -#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set raw = (wd.phone_number or '') | string | trim -%}
+{%- if not raw and settings.socialWhatsapp -%}{%- set raw = (settings.socialWhatsapp | string).split('wa.me/') | last -%}{%- endif -%}
+{%- set num = raw | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') -%}
+{%- set num = num.split('?')[0] -%}
+{%- set msg = (wd['message' + L] or wd.message or '') | trim -%}
+{%- if num | length >= 6 and wd.enabled != false %}
+<a href="https://wa.me/{{ num }}{% if msg %}?text={{ msg | urlencode }}{% endif %}" target="_blank" rel="noopener noreferrer"
+   class="dc-fab dc-fab--wa {{ 'dc-fab--end' if wd.position == 'end' else '' }} {{ 'dc-fab--desktop-only' if wd.mobile == false else '' }}"
+   style="--fab-bg: {{ wd.color | default('#25D366', true) }}; --fab-fg: {{ wd.icon_color | default('#FFFFFF', true) }}"
+   aria-label="{{ t('common.chat_whatsapp') }}">
+  {% ui "icon.njk", name="whatsapp", size=28 %}
+  {%- if wd['label' + L] or wd.label %}<span class="dc-fab__label">{{ wd['label' + L] or wd.label }}</span>{%- endif %}
+</a>
+{%- endif %}

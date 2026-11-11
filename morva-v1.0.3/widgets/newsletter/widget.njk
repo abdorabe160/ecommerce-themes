@@ -1,0 +1,76 @@
+{#
+  ============================================================================
+  MORVA · NEWSLETTER — "— 05 / STAY AHEAD" + closing muted kinetic strip
+  ----------------------------------------------------------------------------
+  Qumra has no built-in newsletter endpoint, so the form posts to whatever
+  service the merchant connects (Mailchimp, Brevo, Klaviyo, a Google Form…)
+  through `form_action` + `field_name`, in a new tab — the same contract the
+  previous theme used.
+
+  With no action configured the form is NOT faked: submitting tells the
+  shopper sign-ups are not open yet, and inside the Theme Editor a hint tells
+  the merchant what to fill in. A form that says "subscribed" and sends the
+  address nowhere loses the address and lies about it.
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set action = d.form_action | default('') | trim %}
+{% set field = d.field_name | default('EMAIL', true) %}
+{% set phoneField = d.phone_field_name | default('PHONE', true) %}
+{# any   — ONE field, email or phone; main.js picks the POST name on submit
+   email · phone — one field of that kind
+   both  — two fields, at least one filled #}
+{% set mode = d.mode | default('any', true) %}
+{% set useAny = mode == 'any' %}
+{% set useEmail = mode == 'email' or mode == 'both' %}
+{% set usePhone = mode == 'phone' or mode == 'both' %}
+
+{#- No list-provider URL: the form cannot store an address, so on the live
+    store the whole band goes (the editor keeps it, with the setup hint). -#}
+<section class="mv-news" id="{{ d.anchor | default('news') }}"{% if not action %} data-mv-live-hide{% endif %}>
+  <div class="mv-news-inner">
+    <div class="mv-news-text">
+      <div class="mv-kicker reveal" style="--i: 0; --ry: 28px;">— {% if d.index %}{{ d.index }} / {% endif %}{{ d.kicker | default(t('morva.stay_ahead'), true) }}</div>
+      <h2 class="mv-h reveal" style="--i: 1; --ry: 28px;">{{ d.title | default(t('morva.news_title'), true) }}</h2>
+      <div class="mv-news-sub reveal" style="--i: 2; --ry: 28px;">{{ d.subtitle | default(t('morva.news_sub'), true) }}</div>
+    </div>
+
+    <form class="mv-news-form reveal" style="--i: 2; --ry: 24px;"
+          {% if action %}action="{{ action }}" method="post" target="_blank" rel="noopener"{% endif %}
+          x-data="mvNewsletter({ hasAction: {{ 'true' if action else 'false' }}, mode: '{{ mode }}', phoneField: {{ phoneField | dump }} })"
+          @submit="submit($event)" novalidate>
+      <div class="mv-news-row">
+        <div class="mv-news-fields">
+          {% if useAny %}
+          <input type="text" name="{{ field }}" class="mv-news-input" x-model="email" data-mv-any
+                 placeholder="{{ d.any_placeholder | default(t('newsletter.any_placeholder'), true) }}"
+                 aria-label="{{ t('newsletter.any_placeholder') }}" autocomplete="email" inputmode="email"
+                 autocapitalize="off" spellcheck="false"/>
+          {% endif %}
+          {% if useEmail %}
+          <input type="email" name="{{ field }}" class="mv-news-input" x-model="email" data-mv-email
+                 placeholder="{{ d.placeholder | default('you@email.com', true) }}"
+                 aria-label="{{ t('morva.email') }}" autocomplete="email" inputmode="email"/>
+          {% endif %}
+          {% if usePhone %}
+          <input type="tel" name="{{ phoneField }}" class="mv-news-input" x-model="phone" data-mv-phone
+                 placeholder="{{ d.phone_placeholder | default('01xxxxxxxxx', true) }}"
+                 aria-label="{{ t('morva.phone') }}" autocomplete="tel" inputmode="tel"/>
+          {% endif %}
+        </div>
+        <button type="submit" class="mv-news-cta" :disabled="done">{{ d.button | default(t('morva.subscribe'), true) }}</button>
+      </div>
+      <p class="mv-news-msg" :class="{ 'is-error': state === 'error', 'is-ok': state === 'ok' }" x-show="msg" x-text="msg" x-cloak role="status"
+         data-ok="{{ t('morva.subscribed') }}" data-invalid="{{ t('newsletter.error_format') }}" data-empty="{{ t('newsletter.error_empty') }}"
+         data-phone-invalid="{{ t('newsletter.phone_format') }}" data-phone-empty="{{ t('newsletter.phone_empty') }}"
+         data-need-one="{{ t('newsletter.need_one') }}" data-any-invalid="{{ t('newsletter.any_format') }}" data-off="{{ t('morva.news_off') }}"></p>
+      {% if not action %}
+        <p class="mv-news-msg" data-mv-editor-only hidden>{{ t('morva.news_setup') }}</p>
+      {% endif %}
+    </form>
+  </div>
+
+  {% set stripText = d.strip_text | default('') %}
+  {% if stripText %}{% ui "kinetic.njk", text=stripText, muted='on' %}{% endif %}
+</section>

@@ -1,0 +1,14 @@
+{# Back-to-top button: appears after one screen of scrolling, opposite corner to WhatsApp. #}
+{% set d = widget.data %}
+{% if d.enabled != false %}
+  <button type="button" class="hy-fab hy-fab--top"
+          x-data="{ on: false }"
+          x-init="const f = () => on = window.scrollY > window.innerHeight; f(); window.addEventListener('scroll', f, { passive: true })"
+          x-show="on" x-cloak
+          @click="window.scrollTo({ top: 0, behavior: (document.documentElement.classList.contains('hy-no-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' })"
+          aria-label="{{ t('common.back_to_top') }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M6 11l6-6 6 6"/>
+    </svg>
+  </button>
+{% endif %}

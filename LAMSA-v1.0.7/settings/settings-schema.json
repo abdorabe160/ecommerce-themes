@@ -1,0 +1,737 @@
+[
+  {
+    "label": {
+      "ar": "الهوية",
+      "en": "Identity"
+    },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": {
+          "ar": "أيقونة المتصفح (Favicon) — مربعة 512×512",
+          "en": "Browser icon (favicon) — square 512×512"
+        }
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الألوان الأساسية",
+      "en": "Core Colors"
+    },
+    "settings": {
+      "primaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون الرئيسي — وردي ترابي",
+          "en": "Primary — Dusty Rose"
+        },
+        "default": "#C97B8E"
+      },
+      "primaryColorHover": {
+        "type": "color",
+        "label": {
+          "ar": "الرئيسي عند المرور",
+          "en": "Primary Hover"
+        },
+        "default": "#B36679"
+      },
+      "primaryColorDark": {
+        "type": "color",
+        "label": {
+          "ar": "الرئيسي الغامق (نصوص على خلفية وردية)",
+          "en": "Primary Dark (text on rose wash)"
+        },
+        "default": "#9E5568"
+      },
+      "primaryColorSoft": {
+        "type": "color",
+        "label": {
+          "ar": "الرئيسي المتوسط (حلقات وفواصل)",
+          "en": "Primary Soft (rings & dividers)"
+        },
+        "default": "#F5D3DB"
+      },
+      "primaryColorLight": {
+        "type": "color",
+        "label": {
+          "ar": "الرئيسي الفاتح (خلفيات الوسوم)",
+          "en": "Primary Light (chip backgrounds)"
+        },
+        "default": "#FBE8EC"
+      },
+      "sageColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الثقة — سيج (المكوّنات والشهادات)",
+          "en": "Trust Color — Sage (ingredients & claims)"
+        },
+        "default": "#7FA99B"
+      },
+      "sageColorDark": {
+        "type": "color",
+        "label": {
+          "ar": "السيج الغامق",
+          "en": "Sage Dark"
+        },
+        "default": "#6B9285"
+      },
+      "sageColorSoft": {
+        "type": "color",
+        "label": {
+          "ar": "السيج المتوسط",
+          "en": "Sage Soft"
+        },
+        "default": "#CFE1DA"
+      },
+      "sageColorLight": {
+        "type": "color",
+        "label": {
+          "ar": "السيج الفاتح",
+          "en": "Sage Light"
+        },
+        "default": "#EAF2EF"
+      },
+      "saleColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الخصم (فارغ = اللون الرئيسي)",
+          "en": "Sale colour (empty = primary)"
+        },
+        "default": ""
+      },
+      "successColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «متوفر» (فارغ = لون الثيم)",
+          "en": "In-stock colour (empty = theme colour)"
+        },
+        "default": ""
+      },
+      "warningColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «أوشك على النفاد» (فارغ = لون الثيم)",
+          "en": "Low-stock colour (empty = theme colour)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخلفيات والنصوص",
+      "en": "Surfaces & Text"
+    },
+    "settings": {
+      "backgroundColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الموقع — وردي فاتح",
+          "en": "Page Background — Blush"
+        },
+        "default": "#FFF5F7"
+      },
+      "surfaceColor": {
+        "type": "color",
+        "label": {
+          "ar": "سطح البطاقات",
+          "en": "Card Surface"
+        },
+        "default": "#FFFFFF"
+      },
+      "wellColor": {
+        "type": "color",
+        "label": {
+          "ar": "الخلفية العميقة (حقول ومساحات فارغة)",
+          "en": "Well / Inset Background"
+        },
+        "default": "#FDECF0"
+      },
+      "textColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص الرئيسي",
+          "en": "Primary Text"
+        },
+        "default": "#3B2C31"
+      },
+      "textSecondaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص الثانوي",
+          "en": "Secondary Text"
+        },
+        "default": "#6E585E"
+      },
+      "textTertiaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص الخفيف",
+          "en": "Muted Text"
+        },
+        "default": "#76636A"
+      },
+      "borderColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود",
+          "en": "Border"
+        },
+        "default": "#F4DFE4"
+      },
+      "borderStrongColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود الواضحة",
+          "en": "Border Strong"
+        },
+        "default": "#E7C6CE"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الهيدر والفوتر",
+      "en": "Header & Footer"
+    },
+    "settings": {
+      "headerColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الهيدر",
+          "en": "Header Background"
+        },
+        "default": "#FFF5F7"
+      },
+      "headerTextColor": {
+        "type": "color",
+        "label": {
+          "ar": "نص الهيدر",
+          "en": "Header Text"
+        },
+        "default": "#3B2C31"
+      },
+      "footerColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الفوتر",
+          "en": "Footer Background"
+        },
+        "default": "#3B2C31"
+      },
+      "footerHeadingColor": {
+        "type": "color",
+        "label": {
+          "ar": "عناوين الفوتر",
+          "en": "Footer Headings"
+        },
+        "default": "#FFF5F7"
+      },
+      "footerTextColor": {
+        "type": "color",
+        "label": {
+          "ar": "نص الفوتر",
+          "en": "Footer Text"
+        },
+        "default": "#C9B6BB"
+      },
+      "footerMutedColor": {
+        "type": "color",
+        "label": {
+          "ar": "نص الفوتر الخفيف",
+          "en": "Footer Muted Text"
+        },
+        "default": "#B09BA1"
+      },
+      "footerBorderColor": {
+        "type": "color",
+        "label": {
+          "ar": "حدود الفوتر",
+          "en": "Footer Border"
+        },
+        "default": "#4E3B40"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخطوط",
+      "en": "Typography"
+    },
+    "settings": {
+      "fontDisplayArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط العناوين العربي",
+          "en": "Arabic Display Font"
+        },
+        "default": "El Messiri",
+        "options": [
+          {
+            "value": "El Messiri",
+            "label": "El Messiri"
+          },
+          {
+            "value": "Readex Pro",
+            "label": "Readex Pro"
+          },
+          {
+            "value": "Cairo",
+            "label": "Cairo"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "Rubik",
+            "label": "Rubik"
+          }
+        ]
+      },
+      "fontBodyArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص العربي",
+          "en": "Arabic Body Font"
+        },
+        "default": "Tajawal",
+        "options": [
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "Cairo",
+            "label": "Cairo"
+          },
+          {
+            "value": "IBM Plex Sans Arabic",
+            "label": "IBM Plex Sans Arabic"
+          },
+          {
+            "value": "Noto Kufi Arabic",
+            "label": "Noto Kufi Arabic"
+          },
+          {
+            "value": "Readex Pro",
+            "label": "Readex Pro"
+          }
+        ]
+      },
+      "fontLatin": {
+        "type": "select",
+        "label": {
+          "ar": "الخط اللاتيني (عناوين ونصوص وأرقام)",
+          "en": "Latin Font (display, body & numerals)"
+        },
+        "default": "Poppins",
+        "options": [
+          {
+            "value": "Poppins",
+            "label": "Poppins"
+          },
+          {
+            "value": "Jost",
+            "label": "Jost"
+          },
+          {
+            "value": "Inter",
+            "label": "Inter"
+          },
+          {
+            "value": "DM Sans",
+            "label": "DM Sans"
+          },
+          {
+            "value": "Manrope",
+            "label": "Manrope"
+          },
+          {
+            "value": "Playfair Display",
+            "label": "Playfair Display"
+          }
+        ]
+      },
+      "baseFontSize": {
+        "type": "range",
+        "label": {
+          "ar": "حجم النص الأساسي",
+          "en": "Base Font Size"
+        },
+        "default": 16,
+        "min": 14,
+        "max": 19,
+        "step": 1,
+        "unit": "px"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الشكل والإحساس",
+      "en": "Shape & Feel"
+    },
+    "settings": {
+      "cornerStyle": {
+        "type": "select",
+        "label": {
+          "ar": "انحناء الزوايا",
+          "en": "Corner Style"
+        },
+        "default": "soft",
+        "options": [
+          {
+            "value": "sharp",
+            "label": {
+              "ar": "حاد",
+              "en": "Sharp"
+            }
+          },
+          {
+            "value": "rounded",
+            "label": {
+              "ar": "مدوّر",
+              "en": "Rounded"
+            }
+          },
+          {
+            "value": "soft",
+            "label": {
+              "ar": "ناعم (موصى به)",
+              "en": "Soft (recommended)"
+            }
+          },
+          {
+            "value": "pillowy",
+            "label": {
+              "ar": "ناعم جداً",
+              "en": "Pillowy"
+            }
+          }
+        ]
+      },
+      "buttonStyle": {
+        "type": "select",
+        "label": {
+          "ar": "شكل الأزرار",
+          "en": "Button Shape"
+        },
+        "default": "pill",
+        "options": [
+          {
+            "value": "pill",
+            "label": {
+              "ar": "كبسولة (موصى به)",
+              "en": "Pill (recommended)"
+            }
+          },
+          {
+            "value": "rounded",
+            "label": {
+              "ar": "مدوّر",
+              "en": "Rounded"
+            }
+          },
+          {
+            "value": "square",
+            "label": {
+              "ar": "مربّع",
+              "en": "Square"
+            }
+          }
+        ]
+      },
+      "cardShadow": {
+        "type": "select",
+        "label": {
+          "ar": "ظل البطاقات",
+          "en": "Card Shadow"
+        },
+        "default": "soft",
+        "options": [
+          {
+            "value": "none",
+            "label": {
+              "ar": "بدون",
+              "en": "None"
+            }
+          },
+          {
+            "value": "soft",
+            "label": {
+              "ar": "ناعم (موصى به)",
+              "en": "Soft (recommended)"
+            }
+          },
+          {
+            "value": "lifted",
+            "label": {
+              "ar": "مرتفع",
+              "en": "Lifted"
+            }
+          }
+        ]
+      },
+      "sectionSpacing": {
+        "type": "select",
+        "label": {
+          "ar": "المسافات بين الأقسام",
+          "en": "Section Spacing"
+        },
+        "default": "normal",
+        "options": [
+          {
+            "value": "compact",
+            "label": {
+              "ar": "مضغوط",
+              "en": "Compact"
+            }
+          },
+          {
+            "value": "normal",
+            "label": {
+              "ar": "عادي",
+              "en": "Normal"
+            }
+          },
+          {
+            "value": "roomy",
+            "label": {
+              "ar": "واسع",
+              "en": "Roomy"
+            }
+          }
+        ]
+      },
+      "containerWidth": {
+        "type": "select",
+        "label": {
+          "ar": "أقصى عرض للمحتوى",
+          "en": "Content Max Width"
+        },
+        "default": "1280",
+        "options": [
+          {
+            "value": "1140",
+            "label": "1140px"
+          },
+          {
+            "value": "1280",
+            "label": "1280px"
+          },
+          {
+            "value": "1440",
+            "label": "1440px"
+          },
+          {
+            "value": "1600",
+            "label": "1600px"
+          }
+        ]
+      },
+      "enableAnimations": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل الحركة (إيقافها يلغي كل حركة في المتجر)",
+          "en": "Enable animations (off removes all motion)"
+        },
+        "default": true
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "بطاقة المنتج",
+      "en": "Product Card"
+    },
+    "settings": {
+      "cardImageRatio": {
+        "type": "select",
+        "label": {
+          "ar": "نسبة صورة المنتج",
+          "en": "Product Image Ratio"
+        },
+        "default": "1/1",
+        "options": [
+          {
+            "value": "1/1",
+            "label": {
+              "ar": "مربّع",
+              "en": "Square"
+            }
+          },
+          {
+            "value": "4/5",
+            "label": {
+              "ar": "طولي خفيف",
+              "en": "Portrait"
+            }
+          },
+          {
+            "value": "3/4",
+            "label": {
+              "ar": "طولي",
+              "en": "Tall"
+            }
+          }
+        ]
+      },
+      "cardShowSwatches": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار سواتش الدرجات",
+          "en": "Show Shade Swatches"
+        },
+        "default": true
+      },
+      "cardShowRating": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار التقييم بالنجوم",
+          "en": "Show Star Rating"
+        },
+        "default": true
+      },
+      "cardShowSuitability": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار وسم «مناسب لـ»",
+          "en": "Show \"Suitable For\" Tag"
+        },
+        "default": true
+      },
+      "cardShowSecondImage": {
+        "type": "boolean",
+        "label": {
+          "ar": "تبديل الصورة عند المرور",
+          "en": "Swap Image on Hover"
+        },
+        "default": true
+      },
+      "cardShowQuickView": {
+        "type": "boolean",
+        "label": {
+          "ar": "إظهار زر العرض السريع",
+          "en": "Show Quick View Button"
+        },
+        "default": true
+      },
+      "cardAddToCartStyle": {
+        "type": "select",
+        "label": {
+          "ar": "زر الإضافة للسلة",
+          "en": "Add to Cart Button"
+        },
+        "default": "tray",
+        "options": [
+          {
+            "value": "tray",
+            "label": {
+              "ar": "يظهر عند المرور",
+              "en": "Reveal on hover"
+            }
+          },
+          {
+            "value": "always",
+            "label": {
+              "ar": "ظاهر دائماً",
+              "en": "Always visible"
+            }
+          },
+          {
+            "value": "hidden",
+            "label": {
+              "ar": "مخفي",
+              "en": "Hidden"
+            }
+          }
+        ]
+      },
+      "lowStockThreshold": {
+        "type": "number",
+        "label": {
+          "ar": "حدّ تحذير «بقي عدد قليل» — نفس الرقم في صفحة المنتج والعرض السريع",
+          "en": "Low-stock warning threshold — shared by the product page and Quick View"
+        },
+        "default": 3,
+        "min": 0,
+        "max": 50,
+        "step": 1
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "التتبع والتحليلات",
+      "en": "Tracking & Analytics"
+    },
+    "settings": {
+      "googleAnalyticsId": {
+        "type": "string",
+        "label": {
+          "ar": "معرّف Google Analytics · شكله G-XXXXXXXXXX · تلاقيه في analytics.google.com ← الإدارة ← تدفقات البيانات",
+          "en": "Google Analytics ID · looks like G-XXXXXXXXXX · find it at analytics.google.com → Admin → Data streams"
+        },
+        "default": ""
+      },
+      "googleSiteVerification": {
+        "type": "string",
+        "label": {
+          "ar": "رمز تحقّق Google Search Console · انسخ ما بين علامتي التنصيص في content فقط — مش الوسم كامل · من search.google.com ← إضافة موقع ← وسم HTML",
+          "en": "Google Search Console token · copy only what is inside content=\"\" — not the whole tag · search.google.com → Add property → HTML tag"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "التواصل",
+      "en": "Contact"
+    },
+    "settings": {
+      "whatsappNumber": {
+        "type": "string",
+        "label": {
+          "ar": "رقم واتساب بالصيغة الدولية (مثال 966501234567) — يُظهر زر واتساب العائم",
+          "en": "WhatsApp number in international format (e.g. 966501234567) — shows the floating WhatsApp button"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "كود مخصص",
+      "en": "Custom Code"
+    },
+    "settings": {
+      "customCSS": {
+        "type": "css",
+        "label": {
+          "ar": "CSS مخصص",
+          "en": "Custom CSS"
+        },
+        "default": ""
+      },
+      "customJS": {
+        "type": "javascript",
+        "label": {
+          "ar": "JavaScript مخصص",
+          "en": "Custom JavaScript"
+        },
+        "default": ""
+      }
+    }
+  }
+]

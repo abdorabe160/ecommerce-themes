@@ -1,0 +1,127 @@
+{
+  "name": "تفاصيل المنتج",
+  "settings": {
+    "show_buy_now": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر اشترِ الآن",
+        "en": "Show buy now button"
+      },
+      "default": true
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر المشاركة",
+        "en": "Show share button"
+      },
+      "default": true
+    },
+    "show_sku": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار رمز المنتج (SKU)",
+        "en": "Show SKU"
+      },
+      "default": true
+    },
+    "sticky_mobile": {
+      "type": "boolean",
+      "label": {
+        "ar": "شريط شراء ثابت على الموبايل",
+        "en": "Sticky buy bar on mobile"
+      },
+      "default": true
+    },
+    "shipping_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان تبويب الشحن",
+        "en": "Shipping tab title"
+      },
+      "default": "الشحن والاستبدال"
+    },
+    "shipping_title_en": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان تبويب الشحن (إنجليزي)",
+        "en": "Shipping tab title (English)"
+      },
+      "default": "Shipping & returns"
+    },
+    "shipping_text": {
+      "type": "text",
+      "label": {
+        "ar": "محتوى تبويب الشحن والاستبدال (اتركه فارغاً لإخفائه)",
+        "en": "Shipping & returns content (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "shipping_text_en": {
+      "type": "text",
+      "label": {
+        "ar": "محتوى تبويب الشحن والاستبدال (اتركه فارغاً لإخفائه) (إنجليزي)",
+        "en": "Shipping & returns content (leave empty to hide) (English)"
+      }
+    }
+  },
+  "blocks": {
+    "highlight": {
+      "name": "ميزة أسفل زر الشراء",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "shield",
+          "options": [
+            {
+              "value": "shield",
+              "label": "ضمان / Warranty"
+            },
+            {
+              "value": "truck",
+              "label": "توصيل / Delivery"
+            },
+            {
+              "value": "refresh",
+              "label": "استبدال / Returns"
+            },
+            {
+              "value": "lock",
+              "label": "دفع آمن / Secure"
+            },
+            {
+              "value": "headset",
+              "label": "دعم / Support"
+            }
+          ]
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "النص (إنجليزي)",
+            "en": "Text (English)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "تفاصيل المنتج"
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{# ============================================================================
+   NAKHA ARTICLE PAGE — /articles/<handle>
+   A single post: hero, meta, prose body, share, then related articles.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set a = context.article | default({}) %}
+{# the platform sends the related list next to the article, as context.related_articles #}
+{% set related = context.related_articles or a.relatedArticles or a.related or [] %}
+
+{% set showHero = d.show_hero | default(true) %}
+{% set showMeta = d.show_meta | default(true) %}
+{% set showShare = d.show_share | default(true) %}
+{% set showTags = d.show_tags | default(true) %}
+{% set showRelated = d.show_related | default(true) %}
+{% set relatedTitle = d.related_title | default(t('pages.blog.related_articles'), true) %}
+{% set relatedLimit = d.related_limit | default(3, true) %}
+{% set relCount = (related | length) if (related | length) < relatedLimit else relatedLimit %}
+
+{# the cover arrives as { fileUrl }, as imageUrl, or as a plain string #}
+{% if a.image and a.image.fileUrl %}{% set heroImg = a.image.fileUrl %}
+{% elif a.imageUrl %}{% set heroImg = a.imageUrl %}
+{% elif a.image and a.image is string %}{% set heroImg = a.image %}
+{% else %}{% set heroImg = '' %}{% endif %}
+{% set body = a.content or a.description %}
+{% set blogHandle = a.blog.handle | default(a.blog.slug) if a.blog else '' %}
+
+
+<style>
+  .nakha-ap-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.24;
+    letter-spacing: normal;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-ap-{{ id }}-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+  html[dir="rtl"] .nakha-ap-{{ id }}-title { line-height: 1.38; letter-spacing: 0; }
+
+  /* the body is authored HTML — .nakha-rte styles headings, lists, quotes… */
+  .nakha-ap-{{ id }}-body { max-width: none; }
+  .nakha-ap-{{ id }}-body img { border-radius: var(--radius-lg); margin-block: 1.6em; }
+
+  .nakha-ap-{{ id }}-share {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-block: 20px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* related: one article alone on the last row takes the row */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-media { width: 40%; min-height: 220px; flex-shrink: 0; aspect-ratio: auto; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-media img { position: absolute; inset: 0; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(2n+1):not(:first-child) .nakha-acard-body { justify-content: center; padding: 24px; }
+  }
+  @media (min-width: 1024px) {
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(4n+1):not(:first-child) { grid-column: 1 / -1; flex-direction: row; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(4n+1):not(:first-child) .nakha-acard-media { width: 40%; min-height: 220px; flex-shrink: 0; aspect-ratio: auto; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(4n+1):not(:first-child) .nakha-acard-media img { position: absolute; inset: 0; }
+    .nakha-ap-{{ id }}-rel > .nakha-acard:last-child:nth-child(4n+1):not(:first-child) .nakha-acard-body { justify-content: center; padding: 24px; }
+  }
+</style>
+
+
+<article id="nakha-ap-{{ id }}" class="nakha-section" style="background: var(--color-bg-primary);"
+         x-data="{ copied: false,
+                   async share() {
+                     var url = window.location.href;
+                     if (navigator.share) {
+                       try { await navigator.share({ title: document.title, url: url }); return; }
+                       catch (e) { /* dismissed — fall through to copy */ }
+                     }
+                     try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+                     this.copied = true;
+                     var self = this;
+                     setTimeout(function () { self.copied = false; }, 2000);
+                   } }">
+
+  <div class="nakha-container nakha-container--narrow">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 nakha-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-flame transition-colors">{{ t('common.home') }}</a>
+      <svg class="nakha-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <a href="/blogs" class="hover:text-flame transition-colors">{{ t('pages.blog.title') }}</a>
+      {% if a.blog and a.blog.title %}
+        <svg class="nakha-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <a href="/blogs/{{ blogHandle }}" class="hover:text-flame transition-colors line-clamp-1">{{ a.blog.title }}</a>
+      {% endif %}
+    </nav>
+
+    {# ═════════════ header ═════════════ #}
+    <header class="flex flex-col gap-4 mb-8">
+      {% if a.category and a.category is string %}
+        <span class="nakha-eyebrow self-start">{{ a.category }}</span>
+      {% endif %}
+
+      <h1 class="nakha-ap-{{ id }}-title">{{ a.title or t('pages.blog.title') }}</h1>
+
+      {% if a.excerpt %}
+        <p class="nakha-lead m-0">{{ a.excerpt | replace('</p>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | striptags }}</p>
+      {% endif %}
+
+      {% if showMeta %}
+        <div class="nakha-article-meta">
+          {% if a.author and a.author is string %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="3.75"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>
+              </svg>
+              {{ a.author }}
+            </span>
+          {% endif %}
+          {% if a.createdAt %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/>
+              </svg>
+              {# formatted client-side: Nunjucks has no date filter #}
+              <time class="nakha-num" x-data x-init="$el.textContent =
+                      new Date('{{ a.createdAt }}').toLocaleDateString('{{ localization.language | default('ar') }}',
+                        { year: 'numeric', month: 'long', day: 'numeric' })">{{ a.createdAt }}</time>
+            </span>
+          {% endif %}
+          {% if a.views %}
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12S18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+                <circle cx="12" cy="12" r="2.75"/>
+              </svg>
+              <span class="nakha-num">{{ a.views }}</span> {{ t('pages.blog.views') }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </header>
+
+    {# ═════════════ hero ═════════════ #}
+    {% if showHero and heroImg %}
+      <div class="nakha-article-hero mb-9">
+        <img src="{{ heroImg }}" alt="{{ a.title }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    {# ═════════════ body ═════════════ #}
+    {% if body %}
+      <div class="nakha-rte nakha-ap-{{ id }}-body">{{ body | safe }}</div>
+    {% endif %}
+
+    {# ═════════════ tags ═════════════ #}
+    {% if showTags and a.tags and (a.tags | length) > 0 %}
+      <div class="flex flex-wrap gap-2 mt-9">
+        {% for tag in a.tags %}
+          {% if tag is string %}{% set tn = tag %}{% else %}{% set tn = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}{% endif %}{% if tn %}<span class="nakha-tag nakha-tag--appetite">{{ tn }}</span>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ share ═════════════ #}
+    {% if showShare %}
+      <div class="nakha-ap-{{ id }}-share mt-10">
+        <span class="nakha-label m-0">{{ t('pages.blog.share_article') }}</span>
+        <button type="button" @click="share()" class="nakha-btn nakha-btn--outline nakha-btn--sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/>
+            <path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>
+          </svg>
+          <span x-text="copied ? '{{ t('pages.blog.copied') }}' : '{{ t('common.share') }}'">{{ t('common.share') }}</span>
+        </button>
+      </div>
+    {% endif %}
+
+    {# ═════════════ back ═════════════ #}
+    <div class="mt-9">
+      <a href="{{ ('/blogs/' ~ blogHandle) if blogHandle else '/blogs' }}" class="nakha-link font-body">
+        <svg class="nakha-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+        </svg>
+        {{ t('pages.blog.back_to_articles') }}
+      </a>
+    </div>
+
+  </div>
+
+  {# ═════════════ related ═════════════ #}
+  {% if showRelated and (related | length) > 0 %}
+    <div class="nakha-container" style="margin-top: var(--section-py);">
+      <div class="nakha-head nakha-head--center">
+        <h2 class="nakha-ap-{{ id }}-title" style="font-size: clamp(1.375rem, 2.6vw, 1.875rem);">{{ relatedTitle }}</h2>
+      </div>
+      {# columns follow the count, so no lone card on the last row #}
+      {% if relCount == 1 %}{% set relGrid = 'grid-cols-1 max-w-sm mx-auto' %}
+      {% elif relCount == 2 %}{% set relGrid = 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto' %}
+      {% elif relCount == 3 %}{% set relGrid = 'grid-cols-1 sm:grid-cols-3' %}
+      {% else %}{% set relGrid = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' %}{% endif %}
+      <div class="nakha-ap-{{ id }}-rel grid {{ relGrid }} gap-6">
+        {% for ra in related %}
+          {% if loop.index <= relatedLimit %}
+            {% ui "article-card.njk", article=ra, show_excerpt='false' %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</article>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-ap-' ~ id, c=d %}

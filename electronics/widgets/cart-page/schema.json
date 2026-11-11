@@ -1,0 +1,26 @@
+{
+  "name": "صفحة السلة",
+  "settings": {
+    "note": {
+      "type": "text",
+      "label": {
+        "ar": "ملاحظة أسفل الملخص (اختياري)",
+        "en": "Note under summary (optional)"
+      },
+      "default": ""
+    },
+    "note_en": {
+      "type": "text",
+      "label": {
+        "ar": "ملاحظة أسفل الملخص (اختياري) (إنجليزي)",
+        "en": "Note under summary (optional) (English)"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة السلة",
+      "name": "صفحة السلة"
+    }
+  ]
+}

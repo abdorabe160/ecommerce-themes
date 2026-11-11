@@ -1,0 +1,30 @@
+{
+  "name": "faq",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "Frequently Asked Questions"
+    }
+  },
+  "blocks": {
+    "question": {
+      "name": "سؤال",
+      "settings": {
+        "question": {
+          "type": "string",
+          "label": { "ar": "السؤال", "en": "Question" },
+          "default": "How long does delivery take?"
+        },
+        "answer": {
+          "type": "text",
+          "label": { "ar": "الإجابة", "en": "Answer" },
+          "default": "Orders are delivered within 2-5 business days."
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "home", "name": "faq" }
+  ]
+}

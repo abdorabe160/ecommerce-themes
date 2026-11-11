@@ -1,0 +1,56 @@
+{
+  "name": "featured-collections",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "Featured Collections"
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيفات (عند عدم إضافة بطاقات)",
+        "en": "Collections (used when no cards are added)"
+      }
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "بطاقة مجموعة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "New Drop"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "Link"
+          },
+          "default": "/collections"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "featured-collections"
+    }
+  ]
+}

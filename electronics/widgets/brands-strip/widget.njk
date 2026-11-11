@@ -1,0 +1,39 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set blocks = widget.blocks | default([]) %}
+{% if blocks | length %}
+<section class="lg-section">
+  <div class="lg-container">
+    {% if wd.title %}
+      <p class="text-center text-sm font-medium text-muted mb-5">{{ wd.title }}</p>
+    {% endif %}
+
+    {% macro brandItem(s, dup) %}
+      <a href="{{ s.url | default('#') }}" class="glass glass-hover shrink-0 w-36 md:w-44 h-20 grid place-items-center px-5" aria-label="{{ s.name }}"{% if dup %} tabindex="-1" aria-hidden="true"{% endif %}>
+        {% if s.logo and s.logo.fileUrl %}
+          <img src="{{ s.logo.fileUrl }}" alt="{{ s.name }}" loading="lazy" class="max-h-9 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity">
+        {% else %}
+          <span class="font-bold tracking-wide text-muted">{{ s.name }}</span>
+        {% endif %}
+      </a>
+    {% endmacro %}
+
+    {% if wd.animate %}
+      <div class="lg-marquee">
+        {# كل مسار يجب أن يكون أعرض من الحاوية وإلا يفرغ جزء من الشريط أثناء الحركة (مع 3–4 علامات فقط) — نكرر العلامات حتى ≥ 12 عنصراً #}
+        {% set reps = ((12 / (blocks | length)) | round(0, 'ceil')) | int %}
+        <div class="lg-marquee__track">
+          {% for r in range(0, reps) %}{% for block in blocks %}{{ brandItem(block.settings, r > 0) }}{% endfor %}{% endfor %}
+        </div>
+        <div class="lg-marquee__track" aria-hidden="true">
+          {% for r in range(0, reps) %}{% for block in blocks %}{{ brandItem(block.settings, true) }}{% endfor %}{% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="flex flex-wrap justify-center gap-3">
+        {% for block in blocks %}{{ brandItem(block.settings) }}{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}

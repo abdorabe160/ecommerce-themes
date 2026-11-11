@@ -1,0 +1,94 @@
+{# =========================================================
+   Dark Blood - قائمة المقالات (المدونة)
+   /blogs/<تصنيف>: المنصة بتبعت context.blog + context.articles.
+   /blogs: المنصة بتبعت التصنيفات بس (context.blogs)، فالتصنيفات بتبقى فلتر فوق، والمقالات: لو جوه التصنيف بتتعرض هنا،
+   وإلا pages.js بيجيب كروت كل تصنيف من صفحته ([data-blog-merge]). لينكات الفلتر شغالة حتى من غير JS.
+   رابط المقال /articles/<handle> (/article بيعمل 302 ليها، و /blog/<x> بيعمل 302 لصفحة تصنيف)
+   (s.articles فاضل احتياطي للقيم القديمة المحفوظة بس، الإعداد اتشال من schema لأن نوعه مش مدعوم)
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{% set ctxb = context or {} %}
+{% set list = (blog.articles if blog and blog.articles) or articles or ctxb.articles or (ctxb.blog.articles if ctxb.blog and ctxb.blog.articles) or s.articles or [] %}
+{% set blogCats = [] %}
+{% for b in (ctxb.blogs or blogs or []) %}{% if b and b.title and blogCats.push(b) %}{% endif %}{% endfor %}
+{% if not (list | length) %}
+  {% set catPosts = [] %}
+  {% for b in blogCats %}{% for a in b.articles or [] %}{% if a and a.title and catPosts.push(a) %}{% endif %}{% endfor %}{% endfor %}
+  {% if catPosts | length %}{% set list = catPosts %}{% endif %}
+{% endif %}
+{% set mergePosts = not (list | length) and (blogCats | length) > 0 %}
+{% set emptyTitle = t('blog.empty_title') %}{% set emptyText = t('blog.empty_text') %}{% set emptyBtn = t('common.back_home') %}
+
+<section class="blk-section blk-blog" id="blkBlog-{{ widget.id }}">
+  <div class="blk-container">
+    {% if s.title %}
+      <div class="blk-section-head">
+        <h2 class="blk-section-title">{{ s.title }}</h2>
+      </div>
+    {% endif %}
+
+    {# الفلتر بيستخبى لو تصنيف واحد؛ في وضع الجلب بيفضل ظاهر لحد ما المقالات توصل (pages.js) #}
+    {% if (blogCats | length) > 1 or mergePosts %}
+      <nav class="blk-blog-cats" aria-label="{{t('blog.categories')}}">
+        <a href="/blogs" class="blk-blog-chip is-active" aria-current="page">{{t('common.all')}}</a>
+        {% for b in blogCats %}
+          <a href="/blogs/{{ b.handle or b.slug or b._id }}" class="blk-blog-chip" data-blog-cat>{{ b.title }}</a>
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {% if list | length > 0 %}
+      <div class="blk-blog-grid">
+        {% for article in list %}
+          {% set articleUrl = '/articles/' + (article.handle or article.slug or article._id) %}
+          {#- الغلاف بيوصل بأشكال مختلفة: image.fileUrl أو imageUrl أو image كنص -#}
+          {% set cover = (article.image.fileUrl if (article.image and article.image.fileUrl) else '') or article.imageUrl or (article.image if (article.image is string) else '') %}
+          {% set postDate = article.publishedAt or article.createdAt %}
+          {% set excerpt = article.excerpt or article.summary or article.content or article.description %}
+          {% set catName = article.category.title if (article.category and article.category.title) else ((article.blog.title if (article.blog and article.blog.title) else '')) %}
+          <article class="blk-blog-card blk-anim-fade-up {% if loop.first and s.feature_first != false %}is-featured{% endif %}" style="--anim-delay: {{ (loop.index0 % 6) * 0.08 }}s;">
+            <a href="{{ articleUrl }}" class="blk-blog-media">
+              {% if cover %}
+                <img src="{{ cover }}" alt="{{ article.title }}" loading="lazy">
+              {% else %}
+                <div class="blk-cat-strip-placeholder"></div>
+              {% endif %}
+              {% if catName %}
+                <span class="blk-badge-glass blk-blog-cat">{{ catName }}</span>
+              {% endif %}
+            </a>
+
+            <div class="blk-blog-body">
+              <div class="blk-blog-meta">
+                {% if postDate %}
+                  <time datetime="{{ postDate }}" data-blk-date>{{ (postDate | string).slice(0, 10) }}</time>
+                {% endif %}
+                {% if article.views %}
+                  <span>{{ article.views }} {{t('blog.views')}}</span>
+                {% endif %}
+              </div>
+              <h3 class="blk-blog-title"><a href="{{ articleUrl }}">{{ article.title }}</a></h3>
+              {% if excerpt %}
+                <p class="blk-blog-excerpt">{{ excerpt | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(140) }}</p>
+              {% endif %}
+              <a href="{{ articleUrl }}" class="blk-cat-strip-link blk-blog-more">
+                <span>{{t('blog.read_more')}}</span>
+                <svg class="blk-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% ui "blk-pagination.njk" %}
+    {% elif mergePosts %}
+      <div class="blk-blog-grid" data-blog-merge{% if s.feature_first == false %} data-no-feature{% endif %}></div>
+      <div class="blk-search-loading" data-blog-loading><span class="blk-spinner"></span></div>
+      <div data-blog-empty hidden>
+        {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/", icon="box" %}
+      </div>
+    {% else %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/", icon="box" %}
+    {% endif %}
+  </div>
+</section>

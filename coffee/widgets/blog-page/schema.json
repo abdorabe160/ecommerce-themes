@@ -1,0 +1,53 @@
+{
+  "name": "صفحة المقالات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      }
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      }
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص التعريفي",
+        "en": "Intro text"
+      }
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "النص التعريفي (إنجليزي)",
+        "en": "Intro text (English)"
+      }
+    }
+  },
+  "blocks": {
+    "article": {
+      "name": "بطاقة مقال",
+      "settings": {
+        "title": { "type": "string", "label": { "ar": "العنوان", "en": "Title" } },
+        "title_en": { "type": "string", "label": { "ar": "العنوان (إنجليزي)", "en": "Title (English)" } },
+        "text": { "type": "text", "label": { "ar": "النص", "en": "Text" } },
+        "text_en": { "type": "text", "label": { "ar": "النص (إنجليزي)", "en": "Text (English)" } },
+        "image": { "type": "media", "label": { "ar": "الصورة", "en": "Image" } },
+        "url": { "type": "string", "label": { "ar": "الرابط", "en": "URL" } },
+        "meta": { "type": "string", "label": { "ar": "سطر صغير (تاريخ أو تصنيف)", "en": "Small meta line" } }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "محتوى",
+      "name": "صفحة المقالات"
+    }
+  ]
+}

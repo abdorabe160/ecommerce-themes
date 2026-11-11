@@ -1,0 +1,129 @@
+{# قائمة منتجات مشتركة (صفحة التصنيف/المتجر/الأحدث + نتائج البحث): شريط العدد والترتيب، لوحة الفلاتر (جانبية ≥1024 / درج ≤1023)، الشبكة، «لا توجد منتجات مطابقة»، والحالة الفاضية.
+   الحالة والمنطق في mwCollection (main.js) — لازم يكون جوه عنصر x-data="mwCollection(cfg)".
+   data: products, total, dash (فلاتر لوحة التحكم [{key,label,values}]), showSort, empty ('collection' | 'search') #}
+    {% set cn = data.total | default(0, true) %}
+    {% set cn100 = cn % 100 %}
+    {% if cn == 1 %}{% set countLabel = t('collection.count_one') %}{% elif cn == 2 %}{% set countLabel = t('collection.count_two') %}{% elif cn100 >= 3 and cn100 <= 10 %}{% set countLabel = t('collection.count_few') %}{% else %}{% set countLabel = t('collection.count_many') %}{% endif %}
+    <div class="mw-toolbar">
+      <span class="mw-toolbar__count" x-text="countText" data-total="{{ cn }}">{{ countLabel | replace('{count}', cn) }}</span>
+      <div class="mw-toolbar__controls">
+        <button type="button" class="mw-filter-open" @click="openFilters()" aria-haspopup="dialog" x-show="total > 0 || activeCount" {% if not (data.products | length) %}x-cloak{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>{{ t('collection.filters') }}</span>
+          <span class="mw-filter-open__badge" x-show="activeCount" x-text="activeCount" x-cloak></span>
+        </button>
+        {% if data.showSort %}
+        <label class="mw-sort">
+          <span class="visually-hidden">{{ t('collection.sort_by') }}</span>
+          <select class="mw-select" :value="sort" @change="setSort($event.target.value)" aria-label="{{ t('collection.sort_by') }}">
+            <option value="">{{ t('collection.sort_default') }}</option>
+            <option value="createdAt-desc">{{ t('collection.sort_newest') }}</option>
+            <option value="price-asc">{{ t('collection.sort_price_asc') }}</option>
+            <option value="price-desc">{{ t('collection.sort_price_desc') }}</option>
+            <option value="rating-desc">{{ t('search.highest_rated') }}</option>
+          </select>
+        </label>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mw-collection__layout" :class="{ 'is-empty': !total && !activeCount }">
+      <div class="mw-filter-scrim" x-show="open" x-transition.opacity @click="cancelFilters()" aria-hidden="true" x-cloak></div>
+      <aside class="mw-filter-panel" :class="{ 'is-open': open }" aria-label="{{ t('collection.filters') }}" x-show="total > 0 || activeCount || open"
+             @keydown.escape.window="open && cancelFilters()" {% if not (data.products | length) %}x-cloak{% endif %} :role="open ? 'dialog' : null" :aria-modal="open ? 'true' : null">
+        <div class="mw-filter-heading">
+          <h2>{{ t('collection.filters') }}</h2>
+          <div class="mw-filter-heading__actions">
+            <button type="button" class="mw-filter-clear" x-show="activeCount" @click="clearAll()" x-cloak>{{ t('collection.clear_all') }}</button>
+            <button type="button" class="mw-drawer__close mw-filter-close" @click="cancelFilters()" aria-label="{{ t('collection.cancel') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+        <div class="mw-filter-body">
+          {% if data.dash | length %}
+            {% for f in data.dash %}
+              {% set lk = 'collection.filter_' + f.key %}{% set lbl = t(lk) %}
+              <fieldset class="mw-facet">
+                <legend>{{ lbl if (lbl and lbl != lk) else f.label }}</legend>
+                <div class="mw-facet__list">
+                {% for o in f.values %}
+                  {% set ov = (o.value if (o.value is defined) else o) | string %}
+                  <label class="mw-facet__opt">
+                    <input type="checkbox" value="{{ ov }}" :checked="isSel({{ f.key | dump | escape }}, {{ ov | dump | escape }})" @change="toggle({{ f.key | dump | escape }}, {{ ov | dump | escape }})"/>
+                    <span>{{ o.label or ov }}</span>
+                    {% if o.count is defined %}<small>{{ o.count }}</small>{% endif %}
+                  </label>
+                {% endfor %}
+                </div>
+              </fieldset>
+            {% endfor %}
+          {% else %}
+            <template x-for="f in facets" :key="f.key">
+              <fieldset class="mw-facet">
+                <legend x-text="f.label"></legend>
+                <div class="mw-facet__list">
+                  <template x-for="o in f.values" :key="f.key + '|' + o.v">
+                    <label class="mw-facet__opt">
+                      <input type="checkbox" :value="o.v" :checked="isSel(f.key, o.v)" @change="toggle(f.key, o.v)"/>
+                      <span x-text="o.v"></span>
+                      <small x-text="o.count"></small>
+                    </label>
+                  </template>
+                </div>
+              </fieldset>
+            </template>
+          {% endif %}
+          <fieldset class="mw-price-filter">
+            <legend>{{ t('collection.price') }}</legend>
+            <div class="mw-price-filter__row">
+              <label><span>{{ t('collection.from') }}</span><input type="number" inputmode="decimal" min="0" x-model="min" @change="applyPrice()" placeholder="0"/></label>
+              <label><span>{{ t('collection.to') }}</span><input type="number" inputmode="decimal" min="0" x-model="max" @change="applyPrice()" placeholder="—"/></label>
+            </div>
+            <p class="mw-price-filter__note" x-show="priceNote" x-text="priceNote" role="status" x-cloak></p>
+          </fieldset>
+        </div>
+        <div class="mw-filter-actions">
+          <button type="button" class="mw-btn mw-btn--filled mw-filter-apply" @click="applyFilters()">{{ t('collection.show_results') }}</button>
+          <button type="button" class="mw-btn mw-btn--outlined mw-filter-cancel" @click="cancelFilters()">{{ t('collection.cancel') }}</button>
+        </div>
+      </aside>
+
+      <div class="mw-collection__results">
+        {% if data.products | length %}
+          <div class="mw-products mw-products--grid" x-ref="grid" x-show="shown !== 0">
+            {% for product in data.products %}
+              {% ui "product-card.njk", product=product %}
+            {% endfor %}
+          </div>
+          <div class="mw-no-match" x-show="shown === 0" x-cloak role="status">
+            <p>{{ t('collection.no_match') }}</p>
+            <button type="button" class="mw-btn mw-btn--outlined" @click="clearAll()">{{ t('collection.clear_all') }}</button>
+          </div>
+          {% ui "pagination.njk" %}
+        {% else %}
+          {# FLT-08: فلترة على السيرفر رجّعت صفر → «لا توجد منتجات مطابقة» + مسح، مش حالة التصنيف الفاضي #}
+          <div class="mw-no-match" x-show="activeCount" x-cloak role="status">
+            <p>{{ t('collection.no_match') }}</p>
+            <button type="button" class="mw-btn mw-btn--outlined" @click="clearAll()">{{ t('collection.clear_all') }}</button>
+          </div>
+          <div x-show="!activeCount">
+            {% if data.empty == 'search' %}
+            {# SRCH-03: بحث بلا نتائج → رسالة واضحة + منتجات رائجة من المتجر #}
+            <div class="mw-empty-state">
+              <p>{{ t('search.no_results') }}</p>
+              <a href="/shop" class="mw-btn mw-btn--filled">{{ t('collection.browse_all') }}</a>
+            </div>
+            <div class="mw-pdp__look" x-data="mwRelated({ limit: 4, sort: 'rating-desc' })" x-show="html" x-cloak>
+              <h2 class="mw-pdp__look-title">{{ t('search.popular_products') }}</h2>
+              <div class="mw-pdp__look-grid" x-html="html"></div>
+            </div>
+            {% else %}
+            <div class="mw-products mw-products--grid" x-ref="grid" data-mw-demo="tops" data-mw-demo-limit="8"></div>
+            <div class="mw-empty-state" data-mw-empty>
+              <p>{{ t('collection.empty') }}</p>
+              <a href="/shop" class="mw-btn mw-btn--filled">{{ t('collection.browse_all') }}</a>
+            </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>

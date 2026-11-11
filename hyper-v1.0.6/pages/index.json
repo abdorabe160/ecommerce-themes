@@ -1,0 +1,609 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "stage_width": "inset",
+        "text_align": "center",
+        "button_shape": "pill",
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_arrows": true,
+        "show_dots": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "الشريحة الأولى",
+          "settings": {
+            "image": "",
+            "image_mobile": "",
+            "image_position": "center",
+            "eyebrow": "أناقة معاصرة",
+            "title": "غرفة الطعام والمطبخ",
+            "description": "",
+            "text_tone": "light",
+            "scrim": "light",
+            "cta1_text": "تسوّق المجموعة",
+            "cta1_url": "/shop",
+            "cta1_style": "light",
+            "cta2_text": "",
+            "cta2_url": "/shop",
+            "cta2_style": "light-outline"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "الشريحة الثانية",
+          "settings": {
+            "image": "",
+            "image_mobile": "",
+            "image_position": "center",
+            "eyebrow": "وصل حديثاً",
+            "title": "المجموعة الجديدة",
+            "description": "",
+            "text_tone": "light",
+            "scrim": "light",
+            "cta1_text": "اكتشف المجموعة",
+            "cta1_url": "/shop",
+            "cta1_style": "light",
+            "cta2_text": "",
+            "cta2_url": "/shop",
+            "cta2_style": "light-outline"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "الشريحة الثالثة",
+          "settings": {
+            "image": "",
+            "image_mobile": "",
+            "image_position": "center",
+            "eyebrow": "",
+            "title": "تصفّح كل التصنيفات",
+            "description": "",
+            "text_tone": "dark",
+            "scrim": "none",
+            "cta1_text": "التصنيفات",
+            "cta1_url": "/collections",
+            "cta1_style": "solid",
+            "cta2_text": "",
+            "cta2_url": "/shop",
+            "cta2_style": "light-outline"
+          }
+        }
+      ]
+    },
+    {
+      "name": "عرض ترويجي متحرك",
+      "widget": "scrolling-text",
+      "settings": {
+        "background_color": "#FFFFFF",
+        "text_color": "#2A2AA0",
+        "font": "body",
+        "size": "xlarge",
+        "uppercase": false,
+        "speed": "normal",
+        "separator": "dot",
+        "gap": 40,
+        "image_height": 56,
+        "pause_on_hover": true
+      },
+      "blocks": [
+        {
+          "block": "message",
+          "name": "كرسي كروس",
+          "settings": {
+            "text": "كرسي كروس",
+            "image": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "message",
+          "name": "كراسي الاسترخاء",
+          "settings": {
+            "text": "كراسي الاسترخاء",
+            "image": "",
+            "url": "/shop"
+          }
+        },
+        {
+          "block": "message",
+          "name": "كراسي القوس",
+          "settings": {
+            "text": "كراسي القوس",
+            "image": "",
+            "url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "قائمة المجموعات: شبكة",
+      "widget": "collections-section",
+      "settings": {
+        "title": "تسوّق حسب التصنيف",
+        "view_all_text": "كل المنتجات",
+        "view_all_url": "/shop",
+        "columns_desktop": "6",
+        "columns_tablet": "4",
+        "columns_mobile": "3",
+        "show_rules": true,
+        "show_count": false,
+        "background": "white",
+        "promo_enabled": false,
+        "promo_text": "تخفيضات",
+        "promo_label": "عروض وتخفيضات",
+        "promo_url": "/shop",
+        "promo_color": "",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "مجموعة مميزة",
+      "widget": "collection-products",
+      "settings": {
+        "title": "وصل حديثاً",
+        "subtitle": "تشكيلة جديدة تجمع بين البساطة والدفء في كل قطعة.",
+        "view_all_text": "كل المنتجات",
+        "view_all_url": "/shop",
+        "tab1_label": "",
+        "tab1_products": [],
+        "tab2_label": "",
+        "tab2_products": [],
+        "tab3_label": "",
+        "tab3_products": [],
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "1x1",
+        "background": "white",
+        "show_arrows": true,
+        "show_progress": true,
+        "promo_enabled": true,
+        "promo_image": "",
+        "promo_eyebrow": "الكراسي",
+        "promo_title": "كراسي بتصميم ناعم",
+        "promo_cta_text": "تسوّق الآن",
+        "promo_url": "/shop",
+        "colors_enabled": false
+      }
+    },
+    {
+      "name": "علامات تبويب المجموعة",
+      "widget": "editorial-products",
+      "settings": {
+        "eyebrow": "المجموعات المميّزة",
+        "media_position": "end",
+        "show_thumbs": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "tab",
+          "name": "تراث المعيشة",
+          "settings": {
+            "tab_title": "تراث المعيشة",
+            "tab_image": "",
+            "tab_text": "بتصميم مستوحى من الخطوط الهادئة والمواد الطبيعية الدافئة.",
+            "cta_text": "تسوّق المجموعة",
+            "cta_url": "/shop",
+            "thumb_1": "",
+            "thumb_2": "",
+            "thumb_3": "",
+            "thumb_4": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "مجموعة الملاذ",
+          "settings": {
+            "tab_title": "مجموعة الملاذ",
+            "tab_image": "",
+            "tab_text": "قطع تجمع بين الراحة اليومية والحضور الهادئ في الغرفة.",
+            "cta_text": "تسوّق المجموعة",
+            "cta_url": "/shop",
+            "thumb_1": "",
+            "thumb_2": "",
+            "thumb_3": "",
+            "thumb_4": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "سلسلة السكينة",
+          "settings": {
+            "tab_title": "سلسلة السكينة",
+            "tab_image": "",
+            "tab_text": "خامات ناعمة وألوان محايدة تصنع مساحة تهدّي البال.",
+            "cta_text": "تسوّق المجموعة",
+            "cta_url": "/shop",
+            "thumb_1": "",
+            "thumb_2": "",
+            "thumb_3": "",
+            "thumb_4": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "بطاقات العروض",
+      "widget": "offer-cards",
+      "settings": {
+        "title": "",
+        "subtitle": "",
+        "columns": "2",
+        "card_height": 380,
+        "badge_size": 96,
+        "background": "white",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "card",
+          "name": "بطاقة ١",
+          "settings": {
+            "title": "كراسي تيرن",
+            "text": "ارتقِ بمساحتك مع تصاميمنا الخالدة.",
+            "image": "",
+            "cta_text": "تسوّق الآن",
+            "cta_url": "/shop",
+            "card_color": "",
+            "text_color": "",
+            "badge_label": "",
+            "badge_value": "",
+            "badge_color": "",
+            "badge_text_color": ""
+          }
+        },
+        {
+          "block": "card",
+          "name": "بطاقة ٢",
+          "settings": {
+            "title": "كراسي كروس",
+            "text": "مقاعد أنيقة لا تفوّتها.",
+            "image": "",
+            "cta_text": "تسوّق الآن",
+            "cta_url": "/shop",
+            "card_color": "#E3EFE5",
+            "text_color": "#141414",
+            "badge_label": "",
+            "badge_value": "",
+            "badge_color": "#B8442F",
+            "badge_text_color": "#FFFFFF"
+          }
+        }
+      ]
+    },
+    {
+      "name": "المنتجات المفضلة",
+      "widget": "cta-banner",
+      "settings": {
+        "eyebrow": "منتجاتنا المفضّلة",
+        "media_position": "start",
+        "panel_color": "",
+        "products": [],
+        "show_card": true,
+        "card_width": 300,
+        "card_image_ratio": "1x1",
+        "show_nav": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "شريحة ١",
+          "settings": {
+            "image": "",
+            "quote": "غرفة الطعام والمطبخ",
+            "author_name": "",
+            "author_role": ""
+          }
+        },
+        {
+          "block": "slide",
+          "name": "شريحة ٢",
+          "settings": {
+            "image": "",
+            "quote": "ركن المعيشة",
+            "author_name": "",
+            "author_role": ""
+          }
+        },
+        {
+          "block": "slide",
+          "name": "شريحة ٣",
+          "settings": {
+            "image": "",
+            "quote": "مساحات واسعة",
+            "author_name": "",
+            "author_role": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط تمرير كتالوج الصور",
+      "widget": "spaces-gallery",
+      "settings": {
+        "title": "استوحِ من المساحات",
+        "subtitle": "",
+        "tile_height": 560,
+        "tile_height_mobile": 340,
+        "background": "white",
+        "show_badge": true,
+        "show_arrows": true,
+        "show_progress": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "space",
+          "name": "مساحة ١",
+          "settings": {
+            "image": "",
+            "ratio": "3x4",
+            "alt": "ركن معيشة بألوان دافئة",
+            "products": [],
+            "link_url": "/shop"
+          }
+        },
+        {
+          "block": "space",
+          "name": "مساحة ٢",
+          "settings": {
+            "image": "",
+            "ratio": "2x3",
+            "alt": "مطبخ بأقواس",
+            "products": [],
+            "link_url": "/shop"
+          }
+        },
+        {
+          "block": "space",
+          "name": "مساحة ٣",
+          "settings": {
+            "image": "",
+            "ratio": "16x9",
+            "alt": "طاولة طعام خشبية",
+            "products": [],
+            "link_url": "/shop"
+          }
+        },
+        {
+          "block": "space",
+          "name": "مساحة ٤",
+          "settings": {
+            "image": "",
+            "ratio": "4x3",
+            "alt": "غرفة نوم هادئة",
+            "products": [],
+            "link_url": "/shop"
+          }
+        },
+        {
+          "block": "space",
+          "name": "مساحة ٥",
+          "settings": {
+            "image": "",
+            "ratio": "1x1",
+            "alt": "رف كتب أخضر",
+            "products": [],
+            "link_url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "علامات تبويب المجموعة — معكوس",
+      "widget": "editorial-products",
+      "settings": {
+        "eyebrow": "غرف مختارة",
+        "media_position": "start",
+        "show_thumbs": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "tab",
+          "name": "غرفة الطعام",
+          "settings": {
+            "tab_title": "غرفة الطعام",
+            "tab_image": "",
+            "tab_text": "طاولات وكراسي تجمع العائلة حول طاولة واحدة.",
+            "cta_text": "تسوّق المجموعة",
+            "cta_url": "/shop",
+            "thumb_1": "",
+            "thumb_2": "",
+            "thumb_3": "",
+            "thumb_4": ""
+          }
+        },
+        {
+          "block": "tab",
+          "name": "غرفة النوم",
+          "settings": {
+            "tab_title": "غرفة النوم",
+            "tab_image": "",
+            "tab_text": "هدوء يبدأ من السرير وينتهي عند آخر تفصيلة.",
+            "cta_text": "تسوّق المجموعة",
+            "cta_url": "/shop",
+            "thumb_1": "",
+            "thumb_2": "",
+            "thumb_3": "",
+            "thumb_4": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط تمرير متعدد الأعمدة",
+      "widget": "split-slider",
+      "settings": {
+        "media_position": "end",
+        "slider_height": 420,
+        "gap": 16,
+        "background": "white",
+        "show_arrows": true,
+        "show_dots": true,
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "tile1_image": "",
+        "tile1_title": "مصابيح الطاولات",
+        "tile1_note": "",
+        "tile1_url": "/shop",
+        "tile2_image": "",
+        "tile2_title": "كراسي الاسترخاء",
+        "tile2_note": "",
+        "tile2_url": "/shop",
+        "tile3_image": "",
+        "tile3_title": "الطاولات الجانبية",
+        "tile3_note": "",
+        "tile3_url": "/shop",
+        "tile4_image": "",
+        "tile4_title": "ديكور المنزل",
+        "tile4_note": "",
+        "tile4_url": "/shop",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "شريحة ١",
+          "settings": {
+            "image": "",
+            "eyebrow": "غرفة الطعام والمطبخ",
+            "title": "الفرق في التفاصيل",
+            "text": "قطع مختارة للمعيشة والطعام والنوم.",
+            "cta_text": "تسوّق الآن",
+            "cta_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "شريحة ٢",
+          "settings": {
+            "image": "",
+            "eyebrow": "غرفة المعيشة",
+            "title": "تصفّح غرفة المعيشة",
+            "text": "كنب وطاولات وإضاءة لكل جلسة.",
+            "cta_text": "تسوّق الآن",
+            "cta_url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "صورة مع نص",
+      "widget": "image-text",
+      "settings": {
+        "eyebrow": "أثاث وديكور",
+        "title": "قطع لكل ركن في البيت",
+        "text": "تصفّح التشكيلة واختر ما يناسب مساحتك.",
+        "cta_text": "تصفّح المنتجات",
+        "cta_url": "/shop",
+        "image": "",
+        "media_position": "start",
+        "image_ratio": "1x1",
+        "seal_enabled": true,
+        "seal_text": "أثاث · إضاءة · ديكور · ",
+        "seal_icon": "chair",
+        "seal_size": 150,
+        "seal_spin": true,
+        "seal_color": "",
+        "seal_text_color": "",
+        "background": "white",
+        "colors_enabled": false
+      },
+      "blocks": []
+    },
+    {
+      "name": "متعدد الأعمدة",
+      "widget": "features-bar",
+      "settings": {
+        "style": "image",
+        "title": "",
+        "columns_desktop": "4",
+        "columns_mobile": "1",
+        "gap": 28,
+        "align": "start",
+        "icon_size": 30,
+        "image_ratio": "1x1",
+        "background": "white",
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "column",
+          "name": "عمود ١",
+          "settings": {
+            "icon": "none",
+            "custom_icon": "",
+            "image": "",
+            "title": "غرفة المعيشة",
+            "text": "كنب وطاولات لكل جلسة.",
+            "url": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "عمود ٢",
+          "settings": {
+            "icon": "none",
+            "custom_icon": "",
+            "image": "",
+            "title": "غرفة النوم",
+            "text": "أسرّة وكومودينو وإضاءة هادئة.",
+            "url": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "عمود ٣",
+          "settings": {
+            "icon": "none",
+            "custom_icon": "",
+            "image": "",
+            "title": "غرفة الطعام",
+            "text": "طاولات وكراسي للعائلة.",
+            "url": ""
+          }
+        },
+        {
+          "block": "column",
+          "name": "عمود ٤",
+          "settings": {
+            "icon": "none",
+            "custom_icon": "",
+            "image": "",
+            "title": "الإضاءة",
+            "text": "نجف وأباجورات لكل غرفة.",
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "شهادات العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "ماذا يقول عملاؤنا",
+        "columns": "1.9",
+        "columns_tablet": "1.4",
+        "columns_mobile": "1.05",
+        "show_arrows": true,
+        "loop": true,
+        "autoplay": false,
+        "autoplay_speed": 7,
+        "colors_enabled": false
+      },
+      "blocks": []
+    }
+  ]
+}

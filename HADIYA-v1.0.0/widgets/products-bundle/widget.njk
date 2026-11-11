@@ -1,0 +1,498 @@
+{#
+  ============================================================================
+  HYPER · PRODUCTS BUNDLE  ·  حزمة منتجات
+  ----------------------------------------------------------------------------
+    ┌──────────────────────┬────────────────────────────────┐
+    │                      │        BUNDLE & SAVE           │
+    │   photograph with    │      Buy 2 Get 10% Off         │
+    │   numbered pins ①②   │        ①          ②            │
+    │   on the garments    │     ┌─────┐    ┌─────┐         │
+    │                      │     │card │    │card │         │
+    │                      │      ( Add All To Cart › )     │
+    └──────────────────────┴────────────────────────────────┘
+
+  Styled in assets/style.css → "15.15 PRODUCTS BUNDLE".
+
+  ⚠️  The SPACING in that section is provisional — it follows the proportions
+  measured off the highlight section of the same reference, because no
+  recording of this one has been measured yet. The structure below is not.
+
+  ── The pins ──
+  Each product carries `pin_x` / `pin_y`, a percentage across and down the
+  PHOTOGRAPH. They are applied with `left` / `top`, never logical insets: the
+  photograph does not mirror in Arabic, so a coordinate read off it must not
+  either. Hovering a pin lifts its card and vice versa, which is the only thing
+  that tells a shopper which number is which garment.
+
+  ── The variant picker ──
+  `HayatVariants()` from main.js, the same resolver the product page uses — it
+  already knows how to match a combination to a variant and to judge a value
+  unavailable from real stock data. This adds a compact summary control over
+  it; it does not reimplement any of it.
+
+  ── Add All To Cart ──
+  `CartManager.addMany()`, added to main.js for this. Looping `add()` would
+  toast once per product and open the cart drawer once per product — `addMany`
+  posts them sequentially and shows the result once.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set eyebrow  = d.eyebrow | default('', true) %}
+{% set title    = d.title | default('', true) %}
+{% set ctaText  = d.cta_text | default('', true) %}
+{% set mediaPos = d.media_position | default('start', true) %}
+{# ── The cap, and why it is FOUR ──
+   A merchant can pick any number from the builder; this composition cannot
+   show any number. Measured: the copy column is 42–46% of a 1200 container,
+   i.e. ~500px, so four cards with their gaps come to ~112px each — already
+   tight for a name, a price and a picker. Five would be 86px. Ten wrapped into
+   three rows of numbered discs beside a photograph carrying ten pins, eight of
+   them stacked on the same default coordinate.
+
+   So the extra ones are NOT rendered rather than rendered badly. A bundle is
+   "buy 2 get 10% off" — it is two to four things by nature, and a section that
+   silently drops the eleventh is more honest than one that shows a ruin. #}
+{% set BUNDLE_MAX = 4 %}
+{% set picked   = d.products | default([], true) %}
+{% set products = picked.slice(0, BUNDLE_MAX) %}
+{% set count    = products | length %}
+{% set dropped  = (picked | length) - count %}
+{# The card count is not a setting. It IS the number of products picked —
+   a separate "cards per row" knob can only ever disagree with it, and the
+   reference simply shows the products it bundles. Capped at 4 so a long
+   bundle does not shave the cards to slivers; the phone drops to 2 in CSS. #}
+{% set per      = count if count > 0 else 2 %}
+{% set mediaW   = d.media_width | default(52) %}
+{% set mediaH   = d.media_height | default(105) %}
+{% set gapW     = d.column_gap | default(6) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% set shotSrc = mediaUrl(d.media_image) | trim %}
+{# HADIYA: no demo photograph — baby-supplies' one was a children's outfit.
+   Without an upload the frame shows its gift-paper ground (theme.css). #}
+{% set hasMedia = (shotSrc | length) > 0 %}
+
+{# Pin coordinates live in one field per product so the Theme Editor shows them
+   next to each other: "50,30 · 46,62". A `products` picker cannot carry extra
+   fields, and a block that holds one breaks the editor's settings panel — the
+   warning the old widget in this folder carried. #}
+{% set pinList = (d.pins | default('', true)).split('·') %}
+
+{# Which products actually carry a coordinate. `.push()` and not `{% set %}`
+   inside the loop — Nunjucks scopes a `set` to the block it runs in, so a flag
+   assigned in a `{% for %}` reads back as its pre-loop value. #}
+{% set pinned = [] %}
+{% for raw in pinList %}
+  {% set xy = (raw | trim).split(',') %}
+  {% set _ = pinned.push(((raw | trim) and (xy | length) > 1 and (xy[0] | trim) and (xy[1] | trim)) and true or false) %}
+{% endfor %}
+{% set anyPinned = true if (true in pinned) else false %}
+
+<section id="hy-bnd-{{ id }}"
+         class="hy-bnd {{ 'hy-bnd--end' if mediaPos == 'end' }}"
+         x-data="{
+           active: 0,
+           picks: {},
+           adding: false,
+           ready() {
+             for (var k in this.picks) { if (this.picks[k].blocked) return false; }
+             return Object.keys(this.picks).length > 0;
+           },
+           addAll() {
+             if (this.adding || !this.ready()) return;
+             var self = this;
+             var items = Object.keys(this.picks).map(function (k) {
+               return { productId: self.picks[k].id, quantity: 1, options: self.picks[k].variantId || undefined };
+             });
+             this.adding = true;
+             /* addMany reports its own success and failure — this only has to
+                put the button back. */
+             Promise.resolve(window.CartManager && window.CartManager.addMany(items))
+               .catch(function () {})
+               .then(function () { self.adding = false; });
+           }
+         }">
+
+  <div class="hy-bnd-inner">
+
+    {# ---------- photograph ---------- #}
+    <div class="hy-bnd-media">
+      {% if hasMedia %}
+        <img src="{{ shotSrc }}" alt="{{ title }}" loading="lazy"/>
+      {% else %}
+        {# HADIYA: the theme's gift illustration until a photo is uploaded #}
+        <img src="{{ 'slot-bundle.jpg' | assets }}" alt="" loading="lazy"/>
+      {% endif %}
+
+      {# ⚠️  A pin is drawn ONLY where a coordinate was actually given. Falling
+         back to 50,50 looks harmless with two products and stacks every
+         unplaced pin on the same spot the moment there are more — and a pin at
+         a made-up position is a lie about where the garment is. No
+         coordinate, no pin, and no number on its card either: the number means
+         nothing without the pin it points at. #}
+      {% for p in products %}
+        {% set raw = pinList[loop.index0] | default('', true) | trim %}
+        {% set xy = raw.split(',') %}
+        {% if pinned[loop.index0] %}
+          <button type="button"
+                  class="hy-bnd-pin"
+                  style="--pin-x: {{ xy[0] | trim }}%; --pin-y: {{ xy[1] | trim }}%;"
+                  :class="active === {{ loop.index }} && 'is-active'"
+                  @mouseenter="active = {{ loop.index }}"
+                  @mouseleave="active = 0"
+                  @focus="active = {{ loop.index }}"
+                  @blur="active = 0"
+                  aria-label="{{ p.title }}">{{ loop.index }}</button>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# ---------- copy ---------- #}
+    <div class="hy-bnd-copy">
+      {% if eyebrow %}<p class="hy-bnd-eyebrow">{{ eyebrow }}</p>{% endif %}
+      {% if title %}<h2 class="hy-bnd-title">{{ title }}</h2>{% endif %}
+
+      {% if count > 0 %}
+        <div class="hy-bnd-items">
+          {% for p in products %}
+            {% set n = loop.index %}
+            {% set price = p.pricing.price | default(0, true) %}
+            {% set was   = p.pricing.compareAtPrice | default(0, true) %}
+            {% set onSale = was and was > price %}
+            {% set url = '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true)) %}
+
+            {# One component per item: HayatVariants for the resolving, plus the
+               panel's open state. `picks` lives on the SECTION, and Alpine's
+               scope chain is what lets a child write into it — that is how the
+               one CTA knows every chosen variant without a store. #}
+            {# `x-data` names a component — it never carries JSON. `| dump`
+               emits real double quotes, which CLOSE an HTML attribute: the
+               first build put the option groups straight in here and Alpine
+               reported "Unexpected token ';'" on a truncated expression. The
+               config goes in a <script> below instead, which is where the
+               product page builds its own HayatVariants call and why it never
+               hit this. #}
+            <div class="hy-bnd-item"
+                 :class="active === {{ n }} && 'is-active'"
+                 @mouseenter="active = {{ n }}"
+                 @mouseleave="active = 0"
+                 x-data="hyBundleItem('{{ id }}', {{ loop.index0 }})">
+
+              {# The slot is RESERVED whenever any product in this bundle is
+                 pinned, even for the ones that are not: the disc is 28px plus
+                 its margin, so a row mixing pinned and unpinned cards stood
+                 40px out of step without this. Nothing is reserved when no
+                 product is pinned at all — that would be dead space. #}
+              {% if anyPinned %}
+                {% if pinned[loop.index0] %}
+                  <span class="hy-bnd-n" aria-hidden="true">{{ n }}</span>
+                {% else %}
+                  <span class="hy-bnd-n hy-bnd-n--blank" aria-hidden="true"></span>
+                {% endif %}
+              {% endif %}
+
+              <a href="{{ url }}" class="hy-bnd-shot">
+                {% if p.images and p.images[0] and p.images[0].fileUrl %}
+                  <img src="{{ p.images[0].fileUrl }}" alt="{{ p.title }}" loading="lazy"/>
+                {% endif %}
+                {% if onSale %}<span class="hy-pcard-badge hy-pcard-badge--sale">{{ t('common.on_sale') }}</span>{% endif %}
+              </a>
+
+              <a href="{{ url }}" class="hy-bnd-name">{{ p.title }}</a>
+
+              <div class="hy-bnd-money">
+                <span class="hy-price {{ 'hy-price--sale' if onSale }}">{% if price == 0 and p.pricing and p.pricing.price == 0 %}{{ t('common.free') }}{% elif price != 0 %}{{ price | money }}{% endif %}</span>
+                {% if onSale %}<span class="hy-price-was">{{ was | money }}</span>{% endif %}
+              </div>
+
+              {% if (p.options | default([], true) | length) > 0 %}
+                <div class="hy-bnd-pick" :class="panel && 'is-open'" @click.outside="panel = false">
+                  <button type="button" class="hy-bnd-pick-btn"
+                          @click="panel = !panel"
+                          :aria-expanded="panel ? 'true' : 'false'">
+                    <span x-text="summary()">{{ t('pages.product.choose_options') }}</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+
+                  <div class="hy-bnd-pick-panel" x-show="panel" x-cloak style="display: none;">
+                    {# INDICES in the attributes, never names or labels — an
+                       option called «اللون» is fine but a label with a quote or
+                       an apostrophe in it would break the expression the same
+                       way the JSON did. The component reads the real strings
+                       from its own config. #}
+                    {% for o in p.options %}
+                      {% set oi = loop.index0 %}
+                      <div class="hy-bnd-opt">
+                        <span class="hy-bnd-opt-name">{{ o.name }}</span>
+                        <div class="hy-bnd-opt-vals">
+                          {% for v in (o.values | default([], true)) %}
+                            <button type="button" class="hy-bnd-val"
+                                    :class="isOn({{ oi }}, {{ loop.index0 }}) && 'is-on'"
+                                    :disabled="isOff({{ oi }}, {{ loop.index0 }})"
+                                    @click="pick({{ oi }}, {{ loop.index0 }})">{{ v.label | default(v.title, true) }}</button>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if ctaText %}
+          <div class="hy-bnd-cta">
+            {# The shared solid pill, not a bespoke one — `ui/section-colors.njk`
+               covers `.hy-btn--solid` already, and a widget that invents its own
+               button has to be registered there or its colour picker silently
+               does nothing — which is exactly what happened to the widget this
+               folder replaced. #}
+            <button type="button"
+                    class="hy-btn hy-btn--solid hy-btn--pill hy-btn--arrow"
+                    @click="addAll()"
+                    :disabled="adding || !ready()">
+              <span>{{ ctaText }}</span>
+              <i class="hy-btn-arrow" aria-hidden="true">
+                <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+              </i>
+            </button>
+          </div>
+        {% endif %}
+
+      {% else %}
+        {# The real row at its real size, in grey — inert and aria-hidden like
+           every skeleton in this theme (15.29.1). #}
+        <div class="hy-bnd-items" data-hy-placeholder data-hy-auto-bundle aria-hidden="true">
+          {% for i in range(0, 2) %}
+            <div class="hy-bnd-item">
+              <span class="hy-bnd-n">{{ i + 1 }}</span>
+              <span class="hy-bnd-shot hy-ph-box"></span>
+              <span class="hy-ph-line" style="--ph-line-w: 70%; margin-block-start: 14px;"></span>
+              <span class="hy-ph-line" style="--ph-line-w: 40%; --ph-line-h: 10px; margin-block-start: 8px;"></span>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="hy-bnd-cta">
+          {# Shown by the auto-fill below once it has products to add. #}
+          {% if ctaText %}
+            <button type="button" hidden data-hy-auto-cta
+                    class="hy-btn hy-btn--solid hy-btn--pill hy-btn--arrow"
+                    @click="addAll()"
+                    :disabled="adding || !ready()">
+              <span>{{ ctaText }}</span>
+              <i class="hy-btn-arrow" aria-hidden="true">
+                <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+              </i>
+            </button>
+          {% endif %}
+          <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+            </svg>
+            {{ t('common.placeholder_add') }}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% if count == 0 %}
+<script>
+  /* ---- nothing picked: borrow the store's products ----
+     HayatAuto (main.js) hands over a few products; each is looked up in full,
+     because the list payload carries no options and "add all" cannot add a
+     product with options blind. The two SIMPLE ones make the bundle, so the one
+     button really does add both; only if the store has fewer does a product
+     with options join — as a link, and without a place in `picks`.
+     The item mirrors the server card above, minus pins: an auto product has
+     no coordinate on the photograph. */
+  (function () {
+    var root = document.getElementById('hy-bnd-{{ id }}');
+    if (!root) return;
+    var L = { sale: {{ t('common.on_sale') | dump | safe }}, free: {{ t('common.free') | dump | safe }} };
+    var WANT = 2;
+
+    function item(p) {
+      var A = window.HayatAuto, esc = HayatCard.esc, url = A.url(p), img = A.img(p);
+      var price = (p.pricing && p.pricing.price) || 0, was = (p.pricing && p.pricing.compareAtPrice) || 0;
+      var sale = was && was > price;
+      return '<div class="hy-bnd-item">' +
+        '<a href="' + url + '" class="hy-bnd-shot">' +
+          (img ? '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy"/>' : '') +
+          (sale ? '<span class="hy-pcard-badge hy-pcard-badge--sale">' + esc(L.sale) + '</span>' : '') +
+        '</a>' +
+        '<a href="' + url + '" class="hy-bnd-name">' + esc(p.title) + '</a>' +
+        '<div class="hy-bnd-money">' +
+          '<span class="hy-price' + (sale ? ' hy-price--sale' : '') + '">' + esc(price ? window.formatMoney(price) : L.free) + '</span>' +
+          (sale ? '<span class="hy-price-was">' + esc(window.formatMoney(was)) + '</span>' : '') +
+        '</div></div>';
+    }
+
+    function fill() {
+      var box = root.querySelector('[data-hy-auto-bundle]');
+      if (!box || !window.HayatAuto) return;
+      HayatAuto.take(WANT * 2).then(function (list) {
+        return Promise.all(list.map(function (p) { return HayatAuto.full(p); }));
+      }).then(function (list) {
+        if (!list.length) {                      /* skeleton stays in the builder; `hy-live` hides it */
+          root.setAttribute('data-hy-empty', '');
+          return;
+        }
+        var ok = list.filter(function (p) { return HayatAuto.inStock(p) && !HayatAuto.hasOptions(p); });
+        var rest = list.filter(function (p) { return ok.indexOf(p) === -1; });
+        var chosen = ok.concat(rest).slice(0, WANT);
+
+        box.innerHTML = chosen.map(item).join('');
+        box.removeAttribute('data-hy-placeholder');
+        box.removeAttribute('aria-hidden');
+
+        var hint = root.querySelector('.hy-bnd-cta .hy-ph-hint');
+        if (hint) hint.remove();
+
+        var picks = {};
+        chosen.forEach(function (p, i) { if (ok.indexOf(p) !== -1) picks[i] = { id: p._id }; });
+        var cta = root.querySelector('[data-hy-auto-cta]');
+        if (cta && Object.keys(picks).length && window.Alpine) {
+          Alpine.$data(root).picks = picks;
+          cta.hidden = false;
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fill);
+    } else {
+      fill();
+    }
+  })();
+</script>
+{% endif %}
+
+{% if count > 0 %}
+<script>
+  /* ---- item config ----
+     Built HERE and not in an `x-data` attribute. `| dump` emits real double
+     quotes; inside an attribute they terminate it. In a <script> they are just
+     JavaScript, which is why the product page has always built its own
+     HayatVariants call this way. */
+  window.__hyBnd = window.__hyBnd || {};
+  window.__hyBnd['{{ id }}'] = [
+    {% for p in products %}
+    {
+      productId: '{{ p._id }}',
+      price: {{ p.pricing.price | default(0, true) }},
+      compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+      chooseLabel: {{ t('pages.product.choose_options') | dump | safe }},
+      groups: [
+        {% for o in p.options | default([], true) %}{% if (o.values | default([], true) | length) > 0 %}
+        { name: {{ (o.name | default('', true)) | dump | safe }},
+          values: [{% for v in o.values %}{ id: '{{ v._id | default(v.id, true) }}', label: {{ (v.label | default(v.title, true) | default('', true)) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+        {% endif %}{% endfor %}
+      ],
+      variants: [
+        {% for v in p.variants | default([], true) %}
+        {# `trackQuantity` and `allowBackorder` ride along per VARIANT, not just
+           per product: the shared resolver judges a chosen variant by its own
+           three fields, and a variant that omits them is treated as tracked —
+           so leaving them out quietly marked every untracked or backorderable
+           variant sold out the moment its count reached 0. #}
+        { id: '{{ v._id | default(v.id, true) }}',
+          price: {{ v.price | default(p.pricing.price, true) | default(0, true) }},
+          quantity: {{ v.quantity | default(0, true) }},
+          trackQuantity: {{ 'true' if v.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if v.allowBackorder else 'false' }},
+          options: {{ (v.options | default([], true)) | dump | safe }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  /* Registered ONCE for the page — a second bundle section must not re-register
+     the component, and `alpine:init` is the only point at which Alpine.data is
+     accepted. Same guard the header uses for its search component. */
+  document.addEventListener('alpine:init', function () {
+    if (window.__hyBndReady) return;
+    window.__hyBndReady = true;
+
+    Alpine.data('hyBundleItem', function (sectionId, index) {
+      var cfg = (window.__hyBnd[sectionId] || [])[index] || { groups: [], variants: [] };
+
+      /* The shared resolver does the real work: matching a combination to a
+         variant and judging a value unavailable from actual stock. */
+      return Object.assign(window.HayatVariants(cfg), {
+        panel: false,
+        _cfg: cfg,
+
+        init: function () {
+          this.initVariants();
+          this.report();
+          this.$watch('currentVariantId', () => this.report());
+        },
+
+        /* Writes this item's choice onto the SECTION's `picks`. Alpine's scope
+           chain is what makes that reach the parent, and it is how one CTA
+           knows every chosen variant without a store. */
+        report: function () {
+          this.picks[index] = {
+            id: cfg.productId,
+            variantId: this.currentVariantId,
+            blocked: !this.selectionComplete() || this.comboUnavailable
+          };
+        },
+
+        /* Indices in, real strings out — see the note on the value buttons. */
+        _v: function (oi, vi) {
+          var g = this._cfg.groups[oi];
+          return g && g.values[vi] ? { name: g.name, val: g.values[vi] } : null;
+        },
+        pick: function (oi, vi) {
+          var r = this._v(oi, vi);
+          if (r) this.selectOption(r.name, r.val.id, r.val.label);
+        },
+        isOn: function (oi, vi) {
+          var r = this._v(oi, vi);
+          return !!r && this.selectedOptions[r.name] === r.val.id;
+        },
+        isOff: function (oi, vi) {
+          var r = this._v(oi, vi);
+          return !!r && this.valueDisabled(r.name, r.val.id);
+        },
+        summary: function () {
+          var picked = this._cfg.groups
+            .map((g) => this.selectedLabels[g.name])
+            .filter(Boolean);
+          return picked.length ? picked.join(' / ') : this._cfg.chooseLabel;
+        }
+      });
+    });
+  });
+</script>
+{% endif %}
+
+{# Shape knobs. The `-set` suffix is load-bearing: this block is an ID selector,
+   so a plain name here would beat the stylesheet's responsive rules and a
+   merchant's desktop value would survive into a 390px viewport. #}
+<style>
+  #hy-bnd-{{ id }} {
+    --hy-bnd-media-set: {{ mediaW }}%;
+    --hy-bnd-h-set: {{ mediaH }};
+    --hy-bnd-gap-set: {{ gapW }}%;
+    --hy-bnd-per-set: {{ per }};
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-bnd-' ~ id, c=d %}

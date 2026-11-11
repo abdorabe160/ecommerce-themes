@@ -1,0 +1,240 @@
+{
+  "name": "مقاطع فيديو قابلة للتسوق",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Heading"
+      },
+      "default": "شاهد، اطبخ، تسوّق"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر تحت العنوان",
+        "en": "Line under the heading"
+      },
+      "default": "أطيب منتجاتنا… بالصوت والصورة."
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "▸ المنتجات — بالترتيب: المنتج الأول تحت الفيديو الأول، الثاني تحت الثاني… (قمرة لا تسمح باختيار منتج داخل كل فيديو)",
+        "en": "▸ Products — in order: the 1st under the 1st video, the 2nd under the 2nd… (Qumra does not allow a product picker inside each video)"
+      }
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "الفيديوهات الظاهرة — كمبيوتر",
+        "en": "Visible videos — desktop"
+      },
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "الفيديوهات الظاهرة — جوال",
+        "en": "Visible videos — mobile"
+      },
+      "default": "1.6",
+      "options": [
+        {
+          "value": "1.2",
+          "label": {
+            "ar": "واحد وجزء صغير",
+            "en": "One and a sliver"
+          }
+        },
+        {
+          "value": "1.6",
+          "label": {
+            "ar": "واحد وأكثر من نصف",
+            "en": "One and a half+"
+          }
+        },
+        {
+          "value": "2.2",
+          "label": {
+            "ar": "اثنان وجزء",
+            "en": "Two and a peek"
+          }
+        }
+      ]
+    },
+    "autoplay": {
+      "type": "select",
+      "label": {
+        "ar": "تشغيل الفيديو في القسم",
+        "en": "Playback in the section"
+      },
+      "default": "view",
+      "options": [
+        {
+          "value": "view",
+          "label": {
+            "ar": "تلقائي عند الظهور على الشاشة (بدون صوت)",
+            "en": "Automatic while on screen (muted)"
+          }
+        },
+        {
+          "value": "hover",
+          "label": {
+            "ar": "عند مرور الماوس فقط",
+            "en": "Only on hover"
+          }
+        },
+        {
+          "value": "off",
+          "label": {
+            "ar": "صورة ثابتة — يعمل عند الفتح فقط",
+            "en": "Still image — plays only when opened"
+          }
+        }
+      ]
+    },
+    "open_viewer": {
+      "type": "boolean",
+      "label": {
+        "ar": "فتح الفيديو بملء الشاشة بأسلوب الريلز عند الضغط",
+        "en": "Open full-screen, reels style, on tap"
+      },
+      "default": true
+    },
+    "show_product": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار بطاقة المنتج تحت كل فيديو",
+        "en": "Show the product card under each video"
+      },
+      "default": true
+    },
+    "show_vendor": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار اسم العلامة فوق السعر (إن وُجد)",
+        "en": "Show the brand above the price (when set)"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية بطاقة المنتج",
+        "en": "Product card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Headings colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "video": {
+      "name": "فيديو",
+      "settings": {
+        "video": {
+          "type": "media",
+          "label": {
+            "ar": "▸ الفيديو — ارفع ملف mp4 أو webm (طولي ٩:١٦ مثل الريلز)",
+            "en": "▸ Video — upload an mp4 or webm file (portrait 9:16, like a reel)"
+          }
+        },
+        "video_url": {
+          "type": "string",
+          "label": {
+            "ar": "أو رابط فيديو — يوتيوب (عادي أو Shorts — الـShorts تملأ الإطار الطولي تمامًا) أو رابط mp4 مباشر",
+            "en": "Or a video link — YouTube (regular or Shorts — Shorts fill the portrait frame exactly) or a direct .mp4 link"
+          },
+          "default": ""
+        },
+        "poster": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الغلاف — تظهر قبل التشغيل",
+            "en": "Cover image — shows before it plays"
+          }
+        },
+        "caption": {
+          "type": "string",
+          "label": {
+            "ar": "وصف قصير يظهر في وضع ملء الشاشة (اختياري)",
+            "en": "Short caption shown full-screen (optional)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "مقاطع فيديو قابلة للتسوق"
+    }
+  ]
+}

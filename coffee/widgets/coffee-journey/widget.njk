@@ -1,0 +1,56 @@
+{# The process is a real sequence, told with four quiet image-led steps. #}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = wd['title' + L] or wd.title or t('journey.title') -%}
+{%- set text = wd['text' + L] or wd.text or t('journey.text') -%}
+{%- set btnText = (wd['button_text' + L] or wd.button_text) or t('journey.cta') -%}
+{%- set btnUrl = wd.button_url or '/shop' -%}
+{%- set image = wd.image.fileUrl or wd.image.url or wd.image or ('journey-cherries-wide-1024.webp' | assets) -%}
+{%- set labels = ['farm', 'roast', 'brew', 'cup'] -%}
+{%- set steps = [] -%}
+{%- for b in widget.blocks | default([]) -%}
+  {%- set s = b.data or b.settings or {} -%}
+  {%- if (s['title' + L] or s.title) -%}
+    {%- if steps.push({'image': s.image.fileUrl or s.image.url or s.image, 'title': s['title' + L] or s.title, 'text': s['text' + L] or s.text}) -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if not steps.length -%}
+  {%- set steps = [
+    {'image': 'stage-farm-240.webp' | assets, 'title': t('journey.farm_title'), 'text': t('journey.farm_text')},
+    {'image': 'stage-roast-240.webp' | assets, 'title': t('journey.roast_title'), 'text': t('journey.roast_text')},
+    {'image': 'stage-brew-240.webp' | assets, 'title': t('journey.brew_title'), 'text': t('journey.brew_text')},
+    {'image': 'stage-cup-240.webp' | assets, 'title': t('journey.cup_title'), 'text': t('journey.cup_text')}
+  ] -%}
+{%- endif -%}
+<section class="dc-journey section surface-dark" aria-labelledby="dc-journey-title">
+  <div class="shell">
+    <div class="dc-journey__intro">
+      <div class="dc-journey__copy">
+        <p class="eyebrow">{{ t('journey.eyebrow') }}</p>
+        <h2 id="dc-journey-title" class="h-section dc-journey__title">{{ title }}</h2>
+        <p class="dc-journey__text">{{ text }}</p>
+        {%- if btnUrl %}
+        <a href="{{ btnUrl }}" class="btn btn-primary dc-journey__cta">
+          <span>{{ btnText }}</span>
+          {% ui "icon.njk", name="arrow", size=18, cls="btn-arrow" %}
+        </a>
+        {%- endif %}
+      </div>
+      <figure class="dc-journey__photo" data-reveal="media">
+        <img src="{{ image }}" alt="{{ t('journey.image_alt') }}" width="1024" height="640" loading="lazy" decoding="async">
+        <figcaption>{{ t('journey.photo_caption') }}</figcaption>
+      </figure>
+    </div>
+    <ol class="dc-journey__steps">
+      {%- for step in steps %}
+      <li class="dc-journey__step" data-reveal>
+        {%- if step.image %}<span class="dc-journey__step-art"><img src="{{ step.image }}" alt="" width="240" height="240" loading="lazy" decoding="async"><span class="dc-journey__step-index" aria-hidden="true">0{{ loop.index }}</span></span>{%- endif %}
+        <div>
+          <h3>{{ step.title }}</h3>
+          {%- if step.text %}<p>{{ step.text }}</p>{%- endif %}
+        </div>
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>

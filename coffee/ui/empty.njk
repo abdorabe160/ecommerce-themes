@@ -1,0 +1,11 @@
+{#- {% ui "empty.njk", icon="cart", title="…", text="…", url="/shop", button="…" %} -#}
+<div class="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
+  <span class="mb-6 grid h-16 w-16 place-items-center rounded-full bg-espresso/5 text-coffee">
+    {% ui "icon.njk", name=(data.icon or 'bean'), size=28 %}
+  </span>
+  {%- if data.title %}<h2 class="h-card text-xl">{{ data.title }}</h2>{% endif %}
+  {%- if data.text %}<p class="mt-2 text-soft">{{ data.text }}</p>{% endif %}
+  {%- if data.url and data.button %}
+  <a href="{{ data.url }}" class="btn btn-dark mt-8">{{ data.button }} {% ui "icon.njk", name="arrow", size=18, cls="btn-arrow" %}</a>
+  {%- endif %}
+</div>

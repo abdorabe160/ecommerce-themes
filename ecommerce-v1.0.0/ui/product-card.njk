@@ -1,0 +1,360 @@
+{# ============================================================================
+   HYPER PRODUCT CARD  ·  SSR renderer
+   ----------------------------------------------------------------------------
+   ⚠️  THIS CARD HAS A TWIN: `HayatCard.build()` in assets/main.js renders the
+   same markup for AJAX results (filters, search, lazy grids). If you change
+   the STRUCTURE here, change it there too. All styling lives in
+   assets/style.css → "15.7 PRODUCT CARD", so the two can never drift
+   visually — only the markup order has to stay in sync.
+   ----------------------------------------------------------------------------
+   The card is the photograph. Price and name sit on its lower corner; badge,
+   quick view and add-to-cart float over it. Nothing is below the image.
+
+   Usage (written without the tag braces so no parser sees them here):
+     ui "product-card.njk", product=item
+     ui "product-card.njk", product=item, image_ratio='2x3', atc_style='always'
+
+   Locals (all optional — they fall back to the theme settings):
+     product          the product object (required)
+     image_ratio      '3x4' | '2x3' | '1x1' | '4x5'
+     show_second_image · show_quick_view · show_badge
+     atc_style        'tray' (reveal on hover) | 'always' | 'hidden'
+     variant          'overlay' (default) | 'compact' | 'catalog'
+     (catalog only) New / Popular / Hot badges from the tags named below, and
+     a low-stock "selling fast" strip from LOW_STOCK_AT — all read real fields
+     info_order       'price' (default) | 'name'
+     show_eyebrow     'off' hides the collection line on the catalog variant
+     show_swatches    'off' hides the option swatches on the catalog variant
+   ========================================================================= #}
+
+{% set p = data.product %}
+
+{% if p %}
+
+  {# ---------------- card defaults ----------------------------------------
+     These were Theme Editor settings (`settings.cardImageRatio` and friends).
+     The global settings are COLOURS AND FONTS ONLY now, so the defaults live
+     here as literals and a section that wants something else passes it per
+     widget — which is where the choice belongs, since one grid wanting square
+     images says nothing about the next one.
+
+     ⚠️  `cardDefaults` in layouts/layout.njk holds THE SAME NINE VALUES for the
+     AJAX renderer (HayatCard.build). Change one list and you must change the
+     other, or a filtered grid stops matching the grid it replaces. #}
+  {% set DEF_RATIO = '2x3' %}
+  {% set DEF_SECOND_IMAGE = true %}
+  {% set DEF_QUICK_VIEW = true %}
+  {% set DEF_BADGE = true %}
+  {% set DEF_ATC = 'tray' %}
+  {% set BADGE_STYLE = 'vertical' %}
+  {# The tags that earn a badge, and the tone each one is painted in. The
+     reference stacks up to three of these on one card — New, Popular, Hot —
+     and every one of them is a TAG the merchant puts on the product, because
+     a list payload carries `tags` and nothing else that could imply them.
+     Renaming a tag here is the whole change; the labels come from locales. #}
+  {% set NEW_TAG = 'new' %}
+  {% set POPULAR_TAG = 'popular' %}
+  {% set HOT_TAG = 'hot' %}
+  {% set SHOW_NEW_BADGE = true %}
+  {% set LOW_STOCK_AT = 5 %}
+
+  {# ---------------- resolve options: local override → default ------------- #}
+  {% set ratio     = data.image_ratio | default(DEF_RATIO) %}
+  {# ⚠️  The on/off locals are read as STRINGS ('on' / 'off'), not booleans.
+     Qalab's `{% ui %}` is a custom tag and a bare `true`/`false` literal does
+     not survive it — `show_badge=false` arrived undefined and the card fell
+     back to the theme default, so the sections that asked for no badge got one
+     anyway. A caller may still pass a real boolean from a variable; both forms
+     are accepted here, and 'off' is the only thing that turns a flag off. #}
+  {% set showAlt   = (data.show_second_image | string) != 'false' and (data.show_second_image | string) != 'off' if data.show_second_image is defined else DEF_SECOND_IMAGE %}
+  {% set showQuick = (data.show_quick_view   | string) != 'false' and (data.show_quick_view   | string) != 'off' if data.show_quick_view   is defined else DEF_QUICK_VIEW %}
+  {% set showBadge = (data.show_badge        | string) != 'false' and (data.show_badge        | string) != 'off' if data.show_badge        is defined else DEF_BADGE %}
+  {% set atcStyle  = data.atc_style | default(DEF_ATC) %}
+  {% set badgeStyle = BADGE_STYLE %}
+  {# 'overlay' → info sits ON the image (the big card).
+     'compact' → info sits BELOW it, bag icon on the image (the rails).
+     'catalog' → info below too, plus a collection eyebrow and option swatches.
+     Same markup every time; the class is the only difference. #}
+  {% set variant   = data.variant | default('overlay') %}
+  {% set isCatalog = variant == 'catalog' %}
+  {# ⚠️  The `is defined` guard is NOT optional. Qalab's `| string` filter calls
+     `.toString()` on its input, so piping an ABSENT local through it throws
+     `Cannot read properties of undefined (reading 'toString')` and takes the
+     whole card down — every caller that does not pass these two (which is all
+     of them today) rendered an error box instead of a product. The three flags
+     above are written the same way for the same reason. #}
+  {% set showEyebrow  = ((data.show_eyebrow  | string) != 'off') if data.show_eyebrow  is defined else true %}
+  {% set showSwatches = ((data.show_swatches | string) != 'off') if data.show_swatches is defined else true %}
+  {# 'price' (default) or 'name' — which line leads. See the note in 15.9. #}
+  {% set infoOrder = data.info_order | default('price') %}
+
+  {# Keep in sync with HayatCard.ratioValue() in assets/main.js. #}
+  {% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+  {% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+  {% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+  {% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+  {# ---------------- pricing ---------------------------------------------- #}
+  {% set price = p.pricing.price | default(0) %}
+  {% set wasPrice = p.pricing.compareAtPrice | default(0) %}
+  {% set onSale = wasPrice and wasPrice > price %}
+
+  {# ---------------- stock ------------------------------------------------ #}
+  {% set untracked = p.allowBackorder or (not p.trackQuantity) %}
+  {% set inStock = untracked or (p.quantity | default(0)) > 0 %}
+  {# `variantsCount` is not in Qumra's LIST payload — a listed product carries
+     no options/variants field at all — so this is true only on the rare page
+     that hands the card a full product. When it is false the card still cannot
+     assume "simple": productCard.addToCart() resolves the product before it
+     adds anything. See the note in main.js. #}
+  {% set hasVariants = (p.variantsCount and p.variantsCount > 0)
+                       or ((p.variants | default([]) | length) > 0)
+                       or ((p.options | default([]) | length) > 0) %}
+
+  {# ---------------- images ----------------------------------------------- #}
+  {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+  {% set imgAlt = p.images[1].fileUrl if showAlt and p.images and (p.images | length) > 1 else '' %}
+
+  {# ---------------- catalog extras --------------------------------------- #}
+  {# ⚠️  Both of these are resolved WITHOUT accumulating inside a loop.
+     Nunjucks scopes `{% set %}` to the block it runs in, so a variable assigned
+     inside `{% for %}` reads back as its pre-loop value outside it — a "find
+     the first match" loop returns nothing, every time, silently. #}
+
+  {# The eyebrow. Two things are guarded, not one:
+       · the list may be absent or empty — hence the `| length` test before any
+         index is taken;
+       · `collections[0]` may be an id STRING rather than an object depending on
+         where the product came from, and `.title` on a string is undefined, so
+         that case renders nothing instead of printing a raw hash. #}
+  {% set eyeCols = p.collections | default([]) %}
+  {% set eyebrowCol = (eyeCols[0].title | default('')) if (isCatalog and showEyebrow and (eyeCols | length) > 0) else '' %}
+
+  {# Swatches. Qumra option values carry an IMAGE, never a hex code — the same
+     mechanism widgets/product-detail paints its swatches from. Values from ALL
+     options are emitted into one row and the ones without an image are skipped,
+     rather than picking "the colour option" first: choosing it would need a
+     find-first loop, which is the bug above. In practice only one option ever
+     carries images, so the result is the same row either way.
+
+     Two things the CSS handles instead of the template, for the same reason:
+       · the cap  →  .hy-pcard-swatch:nth-child(n+6) { display: none }
+       · the row disappearing when no value had an image
+          →  .hy-pcard-swatches:not(:has(.hy-pcard-swatch)) { display: none } #}
+  {% set wantSwatches = isCatalog and showSwatches and (p.options | default([]) | length) > 0 %}
+
+  {# ---- "New" and "Selling fast": both from REAL fields, never invented ----
+     The list payload carries `tags`, `quantity` and `trackQuantity` and no
+     `createdAt`, so "new" cannot be computed from a date — it is a tag the
+     merchant puts on the product, and NEW_TAG above names which one.
+     "Selling fast" is genuine low stock: a product that is not tracked has no
+     count to be low, so it never qualifies. #}
+  {# ⚠️  Lowered and split ONCE, outside every test. `in` against this list is
+     what keeps the three lookups below out of a loop — Nunjucks scopes
+     `{% set %}` to the block it runs in, so a flag assigned inside `{% for %}`
+     reads back as its pre-loop value and every badge silently vanishes. #}
+  {% set wantTags = isCatalog and SHOW_NEW_BADGE %}
+  {% set ptagList = [] %}{% for tg in p.tags | default([]) %}{% if tg is string %}{% set _ = ptagList.push(tg) %}{% elif tg %}{% set _ = ptagList.push(tg.displayName or tg.name or tg.title or tg.label or tg.value or '') %}{% endif %}{% endfor %}
+  {% set tagsLower = ((ptagList | join(',')) | lower).split(',') if wantTags else [] %}
+  {% set isNew = (NEW_TAG | lower) in tagsLower %}
+  {% set isPopular = (POPULAR_TAG | lower) in tagsLower %}
+  {% set isHot = (HOT_TAG | lower) in tagsLower %}
+
+  {% set lowStockAt = LOW_STOCK_AT %}
+  {% set isLowStock = isCatalog and lowStockAt > 0 and p.trackQuantity and not p.allowBackorder
+                      and (p.quantity | default(0)) > 0 and (p.quantity | default(0)) <= lowStockAt %}
+
+  {% set url = '/product/' ~ (p.slug | default(p.handle) | default(p._id)) %}
+  {% set slug = p.slug | default(p.handle) | default(p._id) %}
+
+  {% set modeCls = 'hy-pcard--always' if atcStyle == 'always' else ('hy-pcard--tray' if atcStyle == 'tray' else '') %}
+  {% set modeCls = 'hy-pcard--compact' if variant == 'compact' else modeCls %}
+  {% set modeCls = modeCls ~ ' hy-pcard--catalog' if isCatalog else modeCls %}
+  {% set modeCls = modeCls ~ ' hy-pcard--name-first' if infoOrder == 'name' else modeCls %}
+
+
+{# `--hy-card-ratio` is the escape hatch an ANCESTOR needs. This declaration is
+   inline, so no stylesheet rule can outrank it — the same problem `--hy-sec-bg`
+   solves for section backgrounds (see ui/section-colors.njk, note 2). Routing
+   the value through a custom property lets a page that owns the whole grid set
+   the ratio once for every card in it, while the card's own value stays the
+   fallback everywhere else. #}
+<article class="hy-pcard {{ modeCls }}"
+         style="--pcard-ratio: var(--hy-card-ratio, {{ ratioVal }});"
+         x-data="productCard('{{ p._id }}', '{{ url }}')">
+
+ {# The frame is the positioning context for every overlay. It has to be the
+    IMAGE, not the card: once `info` drops below the photograph the card grows
+    taller, and anything anchored to the card lands under the price instead of
+    on the picture. See assets/style.css → 15.7 for the full note. #}
+ <div class="hy-pcard-frame">
+
+  {# ═══════════════════ media ═══════════════════ #}
+  <a href="{{ url }}" class="hy-pcard-media" aria-label="{{ p.title }}">
+    {% if img %}
+      <img src="{{ img }}"
+           alt="{{ p.title }}"
+           loading="lazy"
+           class="hy-pcard-img hy-pcard-img--primary {{ 'hy-pcard-img--only' if not imgAlt }}"/>
+      {% if imgAlt %}
+        <img src="{{ imgAlt }}" alt="" loading="lazy" class="hy-pcard-img hy-pcard-img--alt"/>
+      {% endif %}
+    {% else %}
+      <span class="hy-pcard-noimg">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18"/>
+          <circle cx="8.75" cy="9" r="1.5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+        </svg>
+      </span>
+    {% endif %}
+  </a>
+
+  {# ═══════════════════ badges ═══════════════════
+     A STACK, not one badge. It was sale-XOR-new on the reasoning that two
+     labels in one corner is one too many — but the reference stacks them, and
+     it is right to: "Sale" and "New" answer different questions, and a shopper
+     scanning a rail reads the pair as one fact about the product. The order is
+     fixed rather than merchant-set: the discount is the thing being decided
+     on, so it leads whatever else is true.
+
+     The wrapper renders even when empty; it has no box of its own, and a
+     `{% if %}` around it would need a fourth condition kept in step with the
+     three below. #}
+  {% if showBadge %}
+    <div class="hy-pcard-badges">
+      {% if onSale %}
+        {# The SIZE of the discount, not the fact of one. "تخفيض" told a shopper
+           something the struck-through price already said; a percentage is the
+           number they are actually deciding on.
+
+           Falls back to the word when the figure rounds to zero: a 0.4% cut is
+           a real sale and "−0%" reads as broken. That is the only thing keeping
+           `common.on_sale` alive, and it is worth keeping for it. #}
+        {% set pct = ((wasPrice - price) / wasPrice * 100) | round %}
+        <span class="hy-pcard-badge hy-pcard-badge--sale {{ 'hy-pcard-badge--vertical' if badgeStyle == 'vertical' }}">
+          {% if pct > 0 %}−{{ pct }}%{% else %}{{t('common.on_sale')}}{% endif %}
+        </span>
+      {% endif %}
+      {% if isNew %}
+        <span class="hy-pcard-badge hy-pcard-badge--new {{ 'hy-pcard-badge--vertical' if badgeStyle == 'vertical' }}">{{t('products.new')}}</span>
+      {% endif %}
+      {% if isPopular %}
+        <span class="hy-pcard-badge hy-pcard-badge--popular {{ 'hy-pcard-badge--vertical' if badgeStyle == 'vertical' }}">{{t('products.popular')}}</span>
+      {% endif %}
+      {% if isHot %}
+        <span class="hy-pcard-badge hy-pcard-badge--hot {{ 'hy-pcard-badge--vertical' if badgeStyle == 'vertical' }}">{{t('products.hot')}}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {# ═══════════════════ quick view ═══════════════════
+     Dispatches to the modal wired up in layouts/layout.njk. Contract with
+     assets/main.js — do not rename the event or its `slug` key. #}
+  {% if showQuick %}
+    <button type="button"
+            class="hy-pcard-eye"
+            aria-label="{{t('pages.product.quick_view')}}"
+            @click.prevent="$dispatch('quick-view', { slug: '{{ slug }}' })">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+        <circle cx="12" cy="12" r="2.6"/>
+      </svg>
+    </button>
+  {% endif %}
+
+  {# ═══════════════════ add to cart ═══════════════════ #}
+  {% if inStock and atcStyle != 'hidden' %}
+    <div class="hy-pcard-atc">
+      {% if hasVariants %}
+        {# Variants can't be resolved from a grid — send them to the product. #}
+        <a href="{{ url }}" class="hy-btn hy-btn--sm hy-btn--light">
+          <span class="hy-pcard-atc-face">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path stroke-linejoin="round" d="M4.5 7.5h15l-1.1 12a1.5 1.5 0 0 1-1.5 1.35H7.1a1.5 1.5 0 0 1-1.5-1.35L4.5 7.5Z"/>
+              <path stroke-linecap="round" d="M8.75 10V6.75a3.25 3.25 0 0 1 6.5 0V10"/>
+            </svg>
+            <span class="hy-pcard-atc-label">{{t('pages.product.choose_options')}}</span>
+          </span>
+        </a>
+      {% else %}
+        <button type="button"
+                class="hy-btn hy-btn--sm hy-btn--light"
+                @click.prevent="addToCart()"
+                :disabled="cartLoading || cartSuccess"
+                aria-label="{{t('pages.product.add_to_cart')}}">
+          {# x-cloak, not just x-show: Alpine boots at the end of <body>, so
+             without it every card paints a spinner until then. #}
+          <span x-show="cartLoading" x-cloak class="hy-spinner" style="width:14px;height:14px;"></span>
+          <span x-show="cartSuccess && !cartLoading" x-cloak class="hy-pcard-atc-face">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            <span class="hy-pcard-atc-label">{{t('pages.product.added')}}</span>
+          </span>
+          <span x-show="!cartLoading && !cartSuccess" class="hy-pcard-atc-face">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path stroke-linejoin="round" d="M4.5 7.5h15l-1.1 12a1.5 1.5 0 0 1-1.5 1.35H7.1a1.5 1.5 0 0 1-1.5-1.35L4.5 7.5Z"/>
+              <path stroke-linecap="round" d="M8.75 10V6.75a3.25 3.25 0 0 1 6.5 0V10"/>
+            </svg>
+            <span class="hy-pcard-atc-label">{{t('pages.product.add_to_cart')}}</span>
+          </span>
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if isLowStock %}
+    {# The text is repeated so the CSS marquee has a second copy to scroll into
+       — the animation moves the track by exactly half its width. #}
+    <div class="hy-pcard-rush" aria-hidden="true">
+      <div class="hy-pcard-rush-track">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg><span>{{t('products.selling_fast')}}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg><span>{{t('products.selling_fast')}}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg><span>{{t('products.selling_fast')}}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg><span>{{t('products.selling_fast')}}</span>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if not inStock %}
+    <div class="hy-pcard-soldout"><span>{{t('pages.product.out_of_stock')}}</span></div>
+  {% endif %}
+
+ </div>{# /frame #}
+
+  {# ═══════════════════ info ═══════════════════
+     Outside the frame, so a variant can move it off the photograph and under
+     it without touching the markup. #}
+  <div class="hy-pcard-info">
+    {% if eyebrowCol %}
+      <span class="hy-pcard-eyebrow">{{ eyebrowCol }}</span>
+    {% endif %}
+    <div class="hy-pcard-prices">
+      {# Mirrors Utils.formatPrice() in main.js — a zero price is a word, not
+         "0.00". The two renderers have to agree or a filtered grid would say
+         something different from the grid it replaced. #}
+      <span class="hy-price {{ 'hy-price--sale' if onSale }}">{% if price == 0 %}{{t('common.free')}}{% else %}{{ price | money }}{% endif %}</span>
+      {% if onSale %}
+        <span class="hy-price-was">{{ wasPrice | money }}</span>
+      {% endif %}
+    </div>
+    <a href="{{ url }}" class="hy-pcard-name hy-clamp-2">{{ p.title }}</a>
+    {% if wantSwatches %}
+      <div class="hy-pcard-swatches" aria-hidden="true">
+        {% for o in p.options %}
+          {% for v in (o.values | default([])) %}
+            {% if v.image and v.image.fileUrl %}
+              <span class="hy-pcard-swatch" title="{{ v.label }}">
+                <img src="{{ v.image.fileUrl }}" alt="" loading="lazy"/>
+              </span>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+</article>
+
+{% endif %}

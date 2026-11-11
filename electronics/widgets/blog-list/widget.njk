@@ -1,0 +1,95 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# بيانات الصفحة تصل للويدجت داخل context: صفحة مدونة /blogs/<handle> → blog + articles + pagination،
+   وصفحة كل المدونات /blogs → blogs (التصنيفات بس). الصفحة تعرض المقالات، والتصنيفات فلتر فوقها يستخبى لو تصنيف واحد.
+   روابط المقالات /articles/<handle>. #}
+{% set ctx = context or {} %}
+{% set b = blog or ctx.blog %}
+{% set articles = ctx.articles or articles or (b and (b.articles or b.data)) or wd.articles or [] %}
+{% if articles.data %}{% set articles = articles.data %}{% endif %}
+{% if not (articles | length) and b and b.articles and (b.articles | length) %}{% set articles = b.articles %}{% endif %}
+{% set cats = [] %}
+{% for bl in blogs or ctx.blogs or [] %}{% if bl and bl.title and (bl.handle or bl.slug) and cats.push(bl) %}{% endif %}{% endfor %}
+{# مقالات جوه التصنيفات نفسها (لو المنصة بعتتها)، وإلا lgBlogMerge يجيبها من صفحة كل تصنيف #}
+{% if not (articles | length) %}
+  {% set inCats = [] %}
+  {% for bl in cats %}{% for a in bl.articles or [] %}{% if a and a.title and inCats.push(a) %}{% endif %}{% endfor %}{% endfor %}
+  {% if inCats | length %}{% set articles = inCats %}{% endif %}
+{% endif %}
+{% set merge = not (articles | length) and (cats | length) > 0 %}
+{% set pg = (b and b.pagination) or ctx.pagination %}
+{% set pageHandle = (ctx.page and ctx.page.handle) or page.type %}
+{# heading_tag = h1 في صفحات المدونة (pages/blog.json و blogs.json) — عنوان الصفحة الوحيد H1 حتى لو لم يصل page.handle #}
+{% set isPage = (b and b.title) or pageHandle == 'blog' or pageHandle == 'blogs' or wd.heading_tag == 'h1' %}
+{% macro postCard(a) %}
+  {% set aurl = '/articles/' + (a.handle or a.slug or a._id) %}
+  {#- الغلاف بيوصل بأشكال مختلفة: image.fileUrl أو imageUrl أو image كنص -#}
+  {% set imgStr = (a.image | string) if a.image else '' %}
+  {% set cover = (a.image.fileUrl if (a.image and a.image.fileUrl) else '') or a.imageUrl or (imgStr if (imgStr.indexOf('http') == 0 or imgStr.indexOf('/') == 0) else '') %}
+  {% set postDate = a.publishedAt or a.createdAt %}
+  <article class="glass glass-hover overflow-hidden flex flex-col" data-lg-post="{{ aurl }}">
+    <a href="{{ aurl }}" class="aspect-[16/10] bg-white/50 grid place-items-center overflow-hidden" tabindex="-1" aria-hidden="true">
+      {% if cover %}
+        <img src="{{ cover }}" alt="" loading="lazy" width="400" height="250" class="w-full h-full object-cover">
+      {% else %}
+        <span class="lg-post-cover">{% ui "icon.njk", name="device", cls="w-12 h-12" %}</span>
+      {% endif %}
+    </a>
+    <div class="p-5 flex flex-col gap-2 flex-1">
+      {% if postDate %}<time class="text-xs text-muted" datetime="{{ postDate }}">{{ (postDate | string).slice(0, 10) }}</time>{% endif %}
+      <h2 class="font-semibold leading-snug">
+        <a href="{{ aurl }}" class="line-clamp-2 min-h-[44px] hover:text-primary">{{ a.title }}</a>
+      </h2>
+      <p class="text-sm text-muted line-clamp-3">{{ (a.excerpt or a.summary or a.description or a.content or '') | replace('</p>', ' </p>') | replace('</li>', ' </li>') | replace('</h2>', ' </h2>') | replace('<br', ' <br') | striptags | truncate(140) }}</p>
+      <a href="{{ aurl }}" class="btn-link mt-auto">
+        {{t('blog.read_more')}} {% ui "icon.njk", name="arrow", cls="w-3.5 h-3.5 lg-flip-rtl" %}
+      </a>
+    </div>
+  </article>
+{% endmacro %}
+{% if isPage or (articles | length) %}
+<section class="lg-section {% if isPage %}!pt-6{% endif %}">
+  <div class="lg-container">
+    {% if isPage %}
+      <h1 class="lg-title !text-2xl md:!text-3xl mb-5">{{ (b and b.title) or (wd['title' + L] or wd.title) or t('blog.title') }}</h1>
+    {% elif (wd['title' + L] or wd.title) %}
+      <h2 class="lg-title mb-5">{{ (wd['title' + L] or wd.title) }}</h2>
+    {% endif %}
+
+    {# فلتر التصنيفات: لينكات عادية شغالة من غير JS، ويستخبى لو تصنيف واحد #}
+    {% if (cats | length) > 1 %}
+      <nav class="lg-blog-cats" aria-label="{{t('blog.categories')}}">
+        <a href="/blogs" class="lg-chip is-active" aria-current="page">{{t('blog.all')}}</a>
+        {% for bl in cats %}
+          <a href="/blogs/{{ bl.handle or bl.slug }}" class="lg-chip" data-blog-cat>{{ bl.title }}</a>
+        {% endfor %}
+      </nav>
+    {% elif b and b.title %}
+      <nav class="lg-blog-cats" aria-label="{{t('blog.categories')}}"><a href="/blogs" class="lg-chip">{{t('blog.all')}}</a></nav>
+    {% elif merge %}
+      {% for bl in cats %}<a href="/blogs/{{ bl.handle or bl.slug }}" class="hidden" data-blog-cat aria-hidden="true" tabindex="-1">{{ bl.title }}</a>{% endfor %}
+    {% endif %}
+
+    {% if articles | length %}
+      <div class="lg-post-grid">
+        {% for a in articles %}{{ postCard(a) }}{% endfor %}
+      </div>
+      {% if pg %}{% ui "pagination.njk", pagination=pg %}{% endif %}
+    {% elif merge %}
+      <div x-data="lgBlogMerge()">
+        <div class="lg-post-grid" x-show="loading" aria-hidden="true">
+          <div class="lg-skeleton h-[320px]"></div><div class="lg-skeleton h-[320px]"></div>
+        </div>
+        <div class="lg-post-grid" x-ref="grid" x-show="count > 0" x-cloak></div>
+        <div x-show="!loading && !count" x-cloak>
+          {% ui "empty.njk", icon="calendar", title=t('blog.empty'), url="/", button=t('not_found.back_home') %}
+        </div>
+      </div>
+    {% elif isPage %}
+      {% ui "empty.njk", icon="calendar", title=t('blog.empty'), url="/", button=t('not_found.back_home') %}
+    {% endif %}
+  </div>
+</section>
+{% endif %}

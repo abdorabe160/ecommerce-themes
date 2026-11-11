@@ -1,0 +1,59 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "nav_layout": "logo-start",
+        "logo_height": 34,
+        "header_menu": "header-menu",
+        "sticky": true,
+        "overlay_hero": false,
+        "show_announcement": true,
+        "announcement_text": "روتين على مقاس بشرتك — اكتشفي الجديد",
+        "announcement_link_text": "تسوّقي الآن",
+        "announcement_link_url": "/shop",
+        "announcement_tone": "rose",
+        "show_search": true,
+        "show_cart": true,
+        "show_language_switcher": true
+      },
+      "blocks": [
+        {
+          "block": "mega",
+          "name": "العناية بالبشرة",
+          "settings": {
+            "nav_label": "العناية بالبشرة",
+            "nav_url": "/shop",
+            "col1_title": "حسب نوع البشرة",
+            "col2_title": "حسب المشكلة",
+            "col3_title": "",
+            "col4_title": "",
+            "promo_eyebrow": "روتين مقترح",
+            "promo_title": "روتين الصباح في ٣ خطوات",
+            "promo_url": "/shop"
+          }
+        },
+        {
+          "block": "mega",
+          "name": "المكياج",
+          "settings": {
+            "nav_label": "المكياج",
+            "nav_url": "/shop",
+            "col1_title": "الوجه",
+            "col2_title": "العيون والشفاه",
+            "col3_title": "",
+            "col4_title": "",
+            "promo_eyebrow": "جديد",
+            "promo_title": "درجات تناسب لون بشرتك",
+            "promo_url": "/shop"
+          }
+        }
+      ]
+    }
+  ]
+}

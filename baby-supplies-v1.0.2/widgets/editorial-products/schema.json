@@ -1,0 +1,155 @@
+{
+  "name": "علامات تبويب المجموعة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Heading"
+      },
+      "default": "استكشفي التصنيفات"
+    },
+    "cards_per_view": {
+      "type": "range",
+      "label": {
+        "ar": "عدد البطاقات الظاهرة",
+        "en": "Cards in view"
+      },
+      "default": 5,
+      "min": 3,
+      "max": 6,
+      "step": 1
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة الصورة",
+        "en": "Image ratio"
+      },
+      "default": "3x4",
+      "options": [
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤ — طولية (مثل التصميم)",
+            "en": "3:4 — portrait"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        }
+      ]
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عدد المنتجات بجانب الاسم",
+        "en": "Show the product count beside the name"
+      },
+      "default": true
+    },
+    "show_progress": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط التقدّم",
+        "en": "Show the progress bar"
+      },
+      "default": true
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show the arrows"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "tab": {
+      "name": "تبويب",
+      "settings": {
+        "tab_title": {
+          "type": "string",
+          "label": {
+            "ar": "اسم التبويب — اتركه فارغًا لإخفاء شريط التبويبات",
+            "en": "Tab label — leave empty to hide the tab strip"
+          },
+          "default": ""
+        },
+        "collections": {
+          "type": "collections",
+          "label": {
+            "ar": "التصنيفات المعروضة في هذا التبويب",
+            "en": "The collections this tab shows"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المجموعات",
+      "name": "علامات تبويب المجموعة: شريط تمرير"
+    }
+  ]
+}

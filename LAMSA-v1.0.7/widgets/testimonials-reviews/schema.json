@@ -1,0 +1,297 @@
+{
+  "name": "آراء العملاء",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "آراء العميلات"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "نتائج <em>حقيقية</em> بكلماتهن"
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير (اختياري)",
+        "en": "Short Description (optional)"
+      },
+      "default": ""
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "سلايدر",
+            "en": "Slider"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة",
+            "en": "Grid"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "blush",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        }
+      ]
+    },
+    "ba_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صور قبل/بعد",
+        "en": "Before/After Image Ratio"
+      },
+      "default": "1/1",
+      "options": [
+        {
+          "value": "1/1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4/5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Portrait 4:5"
+          }
+        },
+        {
+          "value": "4/3",
+          "label": {
+            "ar": "عرضي",
+            "en": "Landscape 4:3"
+          }
+        }
+      ]
+    },
+    "show_summary": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار ملخّص التقييم أعلى السكشن",
+        "en": "Show the rating summary above the section"
+      },
+      "default": true
+    },
+    "summary_rating": {
+      "type": "string",
+      "label": {
+        "ar": "متوسّط التقييم",
+        "en": "Average Rating"
+      },
+      "default": ""
+    },
+    "summary_count": {
+      "type": "string",
+      "label": {
+        "ar": "نص عدد التقييمات",
+        "en": "Reviews Count Text"
+      },
+      "default": ""
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل (للسلايدر)",
+        "en": "Navigation Arrows (slider)"
+      },
+      "default": true
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "تشغيل السلايدر تلقائياً",
+        "en": "Autoplay Slider"
+      },
+      "default": false
+    },
+    "autoplay_speed": {
+      "type": "number",
+      "label": {
+        "ar": "سرعة التبديل (ثانية)",
+        "en": "Autoplay Delay (seconds)"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 15,
+      "step": 1
+    }
+  },
+  "blocks": {
+    "review": {
+      "name": "تقييم",
+      "settings": {
+        "review_text": {
+          "type": "text",
+          "label": {
+            "ar": "نص التقييم",
+            "en": "Review Text"
+          },
+          "default": ""
+        },
+        "reviewer_name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميلة",
+            "en": "Reviewer Name"
+          },
+          "default": ""
+        },
+        "reviewer_role": {
+          "type": "string",
+          "label": {
+            "ar": "المدينة أو نوع البشرة",
+            "en": "City or skin type"
+          },
+          "default": ""
+        },
+        "rating": {
+          "type": "number",
+          "label": {
+            "ar": "التقييم (من ٥)",
+            "en": "Rating (out of 5)"
+          },
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        },
+        "verified": {
+          "type": "boolean",
+          "label": {
+            "ar": "شراء موثّق",
+            "en": "Verified purchase"
+          },
+          "default": true
+        },
+        "avatar": {
+          "type": "media",
+          "label": {
+            "ar": "صورة العميلة (اختياري)",
+            "en": "Reviewer Photo (optional)"
+          }
+        },
+        "image_before": {
+          "type": "media",
+          "label": {
+            "ar": "صورة «قبل» — ترفعينها مع «بعد» لعرض المقارنة",
+            "en": "\"Before\" image — upload with \"after\" to show the comparison"
+          }
+        },
+        "image_after": {
+          "type": "media",
+          "label": {
+            "ar": "صورة «بعد»",
+            "en": "\"After\" image"
+          }
+        },
+        "duration": {
+          "type": "string",
+          "label": {
+            "ar": "مدة الاستخدام (تظهر فوق المقارنة)",
+            "en": "Usage duration (shown above the comparison)"
+          },
+          "default": ""
+        },
+        "product": {
+          "type": "products",
+          "label": {
+            "ar": "المنتج المُقيَّم (اختياري — اختاري منتجاً واحداً)",
+            "en": "Reviewed product (optional — pick one)"
+          },
+          "default": []
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "آراء العملاء"
+    }
+  ]
+}

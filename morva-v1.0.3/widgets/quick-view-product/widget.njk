@@ -1,0 +1,161 @@
+{#
+  ============================================================================
+  MORVA · QUICK VIEW — fetched as /products/<slug>?widgetKey=quick-view-product
+  and injected into the layout's modal (#quick-view-content-dynamic).
+  ----------------------------------------------------------------------------
+  The product page's own vocabulary (.mv-pdp-*, .mv-opt*, .mv-buyrow) in a
+  compact two-column card. Buying logic is the SAME HayatVariants() engine
+  the product page spreads, so the modal can never disagree with the page
+  about what is addable.
+  ============================================================================
+#}
+{% set p = context.product %}
+{% if p %}
+{% set images = p.images | default([]) %}
+{% set imgCount = images | length %}
+{% set url = '/products/' ~ (p.slug | default(p.handle) | default(p._id)) %}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{% set pCols = p.collections | default([]) %}
+{% set pColTitle = pCols[0].title if (pCols | length) > 0 and pCols[0].title else '' %}
+
+<div class="mv-qv-grid" x-data="quickViewProduct()">
+  <div class="mv-qv-media">
+    <div class="mv-qv-main">
+      {% if imgCount > 0 %}
+        {% for img in images %}
+          <img class="mv-fill" src="{{ img.fileUrl }}" alt="{{ p.title }}" x-show="activeImage === {{ loop.index0 }}"
+               {% if not loop.first %}x-cloak loading="lazy"{% endif %}/>
+        {% endfor %}
+      {% else %}
+        <span class="mv-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/><path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span>
+      {% endif %}
+      <span class="mv-tag mv-tag--sale" x-show="hasDiscount() && discountPercent > 0" x-cloak x-text="'−' + discountPercent + '%'"></span>
+    </div>
+    {% if imgCount > 1 %}
+      <div class="mv-qv-thumbs" role="group" aria-label="{{ p.title }}">
+        {% for img in images %}
+          <button type="button" class="mv-qv-thumb" :class="activeImage === {{ loop.index0 }} && 'is-active'"
+                  @click="activeImage = {{ loop.index0 }}" aria-label="{{ loop.index }}">
+            <img class="mv-fill" src="{{ img.fileUrl }}" alt="" loading="lazy"/>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mv-pdp-info">
+    <div class="mv-pdp-head">
+      <div class="mv-pdp-kicker">{{ pColTitle if pColTitle else store.name }}</div>
+      <h2 class="mv-pdp-name">{{ p.title }}</h2>
+      <div class="mv-price mv-pdp-price">
+        <s class="mv-was" x-show="hasDiscount()" x-cloak x-text="displayComparePrice()"></s>
+        <span x-text="displayPrice()">{% if (p.pricing.price | default(0)) == 0 %}{{ t('common.free') }}{% else %}{{ p.pricing.price | default(0) | money }}{% endif %}</span>
+      </div>
+    </div>
+
+    {% for option in p.options %}
+      {% if (option.values | length) > 0 %}
+        {% set isColor = option.type == 'color' or (option.name | lower) in ['color', 'colour', 'colors', 'colours', 'اللون', 'لون', 'الألوان', 'ألوان', 'الالوان', 'الوان'] %}
+        <div class="mv-pdp-block">
+          <div class="mv-opt">
+            <div class="mv-opt-label">
+              <span>{{ option.name }}</span>
+              <span class="mv-opt-pick" data-opt="{{ option.name }}" x-text="selectedLabels[$el.dataset.opt] || ''"></span>
+            </div>
+            <div class="mv-opt-values" role="group" aria-label="{{ option.name }}">
+              {% for v in option.values %}
+                {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+                {% set vHex = v.value if v.value and (v.value | string).indexOf('#') == 0 else '' %}
+                <button type="button" class="mv-optchip{{ ' mv-optchip--swatch' if isColor or vImg }}"
+                        data-opt="{{ option.name }}" data-val="{{ v._id }}" data-label="{{ v.label }}"
+                        :class="{ 'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val, 'is-off': valueDisabled($el.dataset.opt, $el.dataset.val) }"
+                        :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                        @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)">
+                  {% if isColor or vImg %}<span class="mv-swatch-dot" data-swatch="{{ v.label }}" {% if vHex %}style="background: {{ vHex }};"{% endif %}>{% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% endif %}</span>{% endif %}
+                  {{ v.label }}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="mv-pdp-block">
+      <div class="mv-buyrow">
+        <div class="mv-qty mv-qty--lg" role="group" aria-label="{{ t('morva.quantity') }}">
+          <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="{{ t('morva.decrease') }}">−</button>
+          <span class="mv-qty-val" x-text="qty">1</span>
+          <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="{{ t('morva.increase') }}">+</button>
+        </div>
+        <button type="button" class="mv-btn" @click="addToCart()" :disabled="addDisabled()">
+          <span x-show="addingToCart" x-cloak class="mv-spinner"></span>
+          <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }} ✓</span>
+          <span x-show="!addingToCart && !addedSuccess">
+            <span x-show="!isOutOfStock">{{ t('morva.add_to_bag') }}</span>
+            <span x-show="isOutOfStock" x-cloak>{{ t('morva.sold_out') }}</span>
+          </span>
+        </button>
+      </div>
+      <button type="button" class="mv-btn mv-btn--outline mv-btn--block" @click="buyNow()" :disabled="addDisabled()">{{ t('morva.buy_now') }}</button>
+      <span class="mv-hint" x-show="!selectionComplete() && !isOutOfStock && !formError">{{ t('morva.select_prompt') }}</span>
+      <p class="mv-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+      <a href="{{ url }}" class="mv-qv-more" @click="$store.modal.close()">{{ t('morva.full_details') }} <span class="mv-arrow" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.quickViewProduct = function () {
+    return Object.assign(window.HayatVariants({
+      productId: '{{ p._id }}',
+      sku: {{ (p.sku | default('', true)) | dump | safe }},
+      price: {{ p.pricing.price | default(0, true) }},
+      compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+      groups: [
+        {% for option in p.options %}{% if (option.values | length) > 0 %}
+        { name: {{ option.name | default('', true) | dump | safe }},
+          values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ v.label | default('', true) | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] },
+        {% endif %}{% endfor %}
+      ],
+      variants: [
+        {% for variant in p.variants %}
+        {
+          id: '{{ variant._id }}',
+          price: {{ variant.pricing.price | default(p.pricing.price, true) | default(0, true) }},
+          compareAtPrice: {{ variant.pricing.compareAtPrice | default(p.pricing.compareAtPrice, true) | default(0, true) }},
+          sku: {{ (variant.sku | default('', true)) | dump | safe }},
+          quantity: {{ variant.quantity | default(0, true) }},
+          available: {{ (variant.inventoryLevel.available if (variant.inventoryLevel and variant.inventoryLevel.available is defined) else variant.quantity) | default(0, true) }},
+          trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+          options: {{ variant.options | default([], true) | dump | safe }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      strings: {
+        selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+        comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+        maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+        outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+        variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+        addError:           {{ t('common.error') | dump | safe }},
+        listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+      }
+    }), {
+      activeImage: 0,
+      init() {
+        var self = this;
+        this.initVariants();
+        Qumra.cart.get()
+          .then(function (data) { self.cartLines = (data && data.items) || []; })
+          .catch(function () { self.cartLines = []; });
+      }
+    });
+  };
+</script>
+{% endif %}

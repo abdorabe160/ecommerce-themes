@@ -1,0 +1,434 @@
+{# ============================================================================
+   PEBBLE HERO — a colour, a cut-out, and copy down the start edge
+   ----------------------------------------------------------------------------
+       ┌──────────────────────────────────────────────────────────────┐
+       │                        ▓▓▓▓▓▓▓▓▓                             │
+       │  NEW CAMPAIGN         ▓▓▓▓▓▓▓▓▓▓▓                            │
+       │  Softness           ▓▓▓▓▓▓▓▓▓▓▓▓▓▓                           │
+       │  in Comfort        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓                          │
+       │  ( Shop ▸ )       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓        1 / 2  ──  ‹ ›  │
+       └──────────────────╴ the cut-out runs off the bottom ╶─────────┘
+              ╭─────────────── the next section laps over ────────────╮
+
+   ── What makes this hero different from an ordinary one ──
+   The image is NOT a background. Each slide is a flat COLOUR with a picture
+   standing in a column on it — so there is no scrim anywhere, because the copy
+   never lands on the photograph and there is nothing to darken.
+
+   `image_fit: contain` is there for a cut-out PNG, which is bottom-anchored so
+   the subject runs off the lower edge. `text_tone` switches the copy between
+   light and dark, because a pale ground needs dark type either way.
+
+   Measured off the reference at 1440px: stage 750px tall, copy starting 120px
+   in (the page's own measure), title ~60px on a 74px line, the CTA pill 45px
+   tall, and the pager 40px off the bottom at the end edge.
+
+   ── Why it runs up under the header ──
+   The header is `position: fixed` WITH A SPACER that reserves its height, so a
+   section placed after it starts below it — and a floating header card then
+   sits on the page's own white with nothing behind it to be inset FROM. It
+   reads as a plain full-width bar, which is exactly what it looked like the
+   first time this shipped.
+
+   `overlap_header` pulls the stage back up by that reserved height so the card
+   floats on the slide's colour, the way the reference does. It is a setting and
+   not automatic because only the FIRST section on a page may do this; a hero
+   further down would slide under whatever is above it.
+
+   ── The picture is the BACKGROUND, and it drifts ──
+   Earlier versions of this widget gave the picture a column of the stage and a
+   width setting. That was wrong for the same reason twice: the rendered result
+   depended on the photograph's own aspect ratio, so one number produced a wide
+   band for a landscape shot and a sliver — or a face-filling close-up — for a
+   portrait one. A background has no such argument with its source.
+
+   The drift is a transform on the <img>, not `background-attachment: fixed`,
+   which iOS has never supported and which repaints the whole layer on every
+   frame. The image is oversized by the travel distance in BOTH directions so no
+   edge is ever exposed, and the box above it clips the difference.
+
+   ── Cover or contain, and why the drift differs between them ──
+   `cover` oversizes the picture by the travel distance in both directions, so
+   the transform can move it either way without exposing an edge.
+
+   `contain` cannot do that: the picture already fits the stage exactly, and
+   growing it to make room for the drift is the one thing `contain` exists to
+   prevent. So it goes the other way — the picture is INSET by the travel
+   distance instead, which leaves it room to move and keeps it inside the stage
+   at both extremes. It is slightly smaller than the stage as a result, and the
+   slide's own colour is what shows around it.
+
+   ── The veil ──
+   The copy now lands on a photograph, so `scrim` puts a wash over the picture
+   and a gradient under the words. It is per-slide because how much a slide
+   needs depends on that slide's photograph, and `none` emits nothing.
+
+   ── The lip at the bottom ──
+   The section that follows laps over the stage with rounded top corners. A
+   widget cannot reach the one after it, so the hero draws that lip itself: a
+   band of page colour pinned to its own lower edge. `sheet_radius: 0` turns it
+   off for a layout that does not want it.
+
+   All styling lives in assets/style.css → "15.5 HERO".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set slides = widget.blocks | default([]) %}
+{% set count = slides | length %}
+
+{% set overlap = d.overlap_header %}
+{% set overlap = true if overlap is not defined else overlap %}
+{% set parallax = d.parallax %}
+{% set parallax = true if parallax is not defined else parallax %}
+{% set parStrength = d.parallax_strength | default(18) %}
+{% set hDesk = d.height | default(750) %}
+{% set hMob = d.height_mobile | default(560) %}
+{% set lip = d.sheet_radius | default(0) %}
+
+{% set autoplay = d.autoplay | default(true) %}
+{% set speed = d.autoplay_speed | default(6, true) %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showCounter = d.show_counter | default(true) %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+{# A `media` setting arrives as an object once the merchant uploads through the
+   Theme Editor, but a plain URL string is what a hand-written page JSON (and
+   every preview/seed value) can express. Accept both, plus `url` as well as
+   `fileUrl`, so neither source silently renders nothing. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+{% macro slideBody(s, isFirst, idx) %}
+  {% set img = mediaUrl(s.image) | trim %}
+  {% set imgM = mediaUrl(s.image_mobile) | trim %}
+  {# Demo picture while the field is empty: assets/demo-*.jpg are CC0 photos
+     (sources in _ref/demo-images-sources.txt). An uploaded image replaces it. #}
+  {# House rule: no women or girls in a fallback picture, so demo-hero-* (family
+     photos) stay in assets/ unused and these baby-only frames stand in. #}
+  {% set demoN = (idx | default(0)) % 2 %}
+  {% set usingDemoImg = (img | length) == 0 %}
+  {% if usingDemoImg %}
+    {% if demoN == 0 %}
+      {% set img = 'demo-bundle.jpg' | assets %}
+      {% set demoM = 'demo-stack-2.jpg' | assets %}
+    {% else %}
+      {% set img = 'demo-highlight.jpg' | assets %}
+      {% set demoM = 'demo-stack-1.jpg' | assets %}
+    {% endif %}
+    {% set imgM = imgM if (imgM | length) else demoM %}
+  {% endif %}
+
+  {# ⚠️  Test a macro's result with `| length`, never for truthiness. A macro
+     returns a SafeString OBJECT, and an object is truthy even when it holds an
+     empty string — `trim` and `string` both preserve safeness, so neither
+     converts it back to a primitive. Guarding on the raw value instead makes
+     every slide read as having an image, and an empty src renders as a broken
+     box on the ones that do not. #}
+  {% set hasImg = (img | length) > 0 %}
+  {% set hasM = (imgM | length) > 0 %}
+
+  {% set tone = s.text_tone | default('light') %}
+  {% set focus = s.image_focus | default('center') %}
+  {% set fit = s.image_fit | default('cover') %}
+  {% set scrim = s.scrim | default('soft') %}
+  {# The stand-in pictures are pale, so white copy needs more wash than a
+     merchant's own photo was tuned for (2.5:1 on the soft wash). #}
+  {% if usingDemoImg and scrim == 'soft' %}{% set scrim = 'strong' %}{% endif %}
+
+  <div class="hy-hero-slide is-{{ tone }}"
+       style="--hy-slide-bg: {{ s.bg_color | default('color-mix(in srgb, var(--color-accent) 70%, var(--color-bg-tertiary))', true) }};">
+
+    {% if hasImg %}
+      {# The image is the slide's BACKGROUND — full bleed, behind everything.
+         `data-hy-par` is the hook the parallax script moves; the element it
+         translates is the <img>, never this box, because the box is what clips
+         the oversize the drift needs. #}
+      <div class="hy-hero-media hy-hero-media--{{ fit }}" style="--hy-hero-focus: {{ focus }};">
+        {% if hasM %}
+          <picture data-hy-par>
+            <source media="(max-width: 767px)" srcset="{{ imgM }}"/>
+            <img src="{{ img }}" alt="{{ s.title | default('') }}"
+                 {% if isFirst %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+          </picture>
+        {% else %}
+          <img src="{{ img }}" alt="{{ s.title | default('') }}" data-hy-par
+               {% if isFirst %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        {% endif %}
+      </div>
+
+      {# The veil. Two layers in one element: a flat wash over the whole picture
+         so nothing on it competes with the copy, and a gradient rising from the
+         copy's own edge so the words have their own ground. Both scale with the
+         one setting; `none` renders nothing at all. #}
+      {% if scrim != 'none' %}
+        <span class="hy-hero-scrim hy-hero-scrim--{{ scrim }}" aria-hidden="true"></span>
+      {% endif %}
+    {% endif %}
+
+    <div class="hy-hero-content">
+      <div class="hy-hero-copy">
+        {% if s.eyebrow %}
+          <p class="hy-hero-eyebrow">{{ s.eyebrow }}</p>
+        {% endif %}
+
+        {% if s.title %}
+          {# Exactly one <h1> per page — the first slide takes it, the rest are
+             <h2>. Three <h1>s in a carousel is a real SEO fault, not a nitpick. #}
+          {% if isFirst %}
+            <h1 class="hy-hero-title">{{ s.title }}</h1>
+          {% else %}
+            <h2 class="hy-hero-title">{{ s.title }}</h2>
+          {% endif %}
+        {% endif %}
+
+        {% if s.description %}
+          {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+             (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the
+             CSS. #}
+          <div class="hy-hero-desc">{{ s.description | safe }}</div>
+        {% endif %}
+
+        {% if s.cta_text %}
+          {% set style = s.cta_style | default('light') %}
+          <a href="{{ s.cta_url | default('/shop') }}"
+             class="hy-btn hy-btn--lg hy-btn--pill hy-btn--arrow hy-btn--{{ style }}">
+            <span>{{ s.cta_text }}</span>
+            <i class="hy-btn-arrow" aria-hidden="true">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                   stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+
+{# With no slides this section is removed on the live store, and the page's one
+   H1 with it. A first slide with no title has no H1 either, since only the first
+   slide may print one. In both, the store name keeps the heading there for screen
+   readers and search, visually hidden the same way as the footer's honeypot. #}
+{% if count == 0 or not slides[0].data.title %}
+  <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;">{{ store.name or t('common.home') }}</h1>
+{% endif %}
+<section id="hy-hero-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %} class="hy-hero {{ 'is-overlapping' if overlap }}">
+  <style>
+    #hy-hero-{{ id }} {
+      --hy-hero-h: {{ hMob }}px;
+      --hy-hero-lip: {{ lip }}px;
+      --hy-hero-par: {{ parStrength }};
+    }
+    @media (min-width: 768px) {
+      #hy-hero-{{ id }} { --hy-hero-h: {{ hDesk }}px; }
+    }
+  </style>
+
+  <div id="hy-heroStage-{{ id }}" class="hy-hero-stage">
+
+    {% if count > 1 %}
+      {# Swiper resolves direction off the element (`el.dir`, then the computed
+         style) — there is no `rtl` init option. The fade effect does not
+         translate, so this changes nothing visually here; it keeps every slider
+         in the theme declaring direction the same way. #}
+      <div id="hy-heroSw-{{ id }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+        <div class="swiper-wrapper">
+          {% for block in slides %}
+            <div class="swiper-slide">
+              {{ slideBody(block.data, loop.first, loop.index0) }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% elif count == 1 %}
+      {{ slideBody(slides[0].data, true, 0) }}
+    {% else %}
+      {# No slides yet. The stage is drawn at its real height with the copy
+         block sketched in, so the merchant sees the shape they are filling
+         rather than a collapsed strip. A preset cannot seed blocks — see the
+         note in style.css → "15.29.1". #}
+      <div class="hy-hero-slide is-light" data-hy-placeholder aria-hidden="true"
+           style="--hy-slide-bg: var(--color-bg-tertiary);">
+        <div class="hy-hero-content">
+          <div class="hy-hero-copy">
+            <span class="hy-ph-line hy-ph-line--sm" style="--ph-line-w: 30%;"></span>
+            <span class="hy-ph-line hy-ph-line--lg"></span>
+            <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 62%;"></span>
+            <span class="hy-ph-hint" style="margin-block-start: 14px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+              </svg>
+              {{ t('common.placeholder_add') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if count > 1 and (showArrows or showCounter) %}
+      <div class="hy-hero-pager">
+        {% if showCounter %}
+          {# The numbers are written by Swiper's own pagination in `custom`
+             render mode, and the bar underneath is a plain element whose width
+             this widget's script sets. Swiper's `progressbar` type would have
+             been one element for both jobs — and it cannot carry the numbers. #}
+          <span class="hy-hero-count">
+            <span id="hy-heroNow-{{ id }}">1</span>
+            <span class="hy-hero-count-sep" aria-hidden="true">/</span>
+            <span>{{ count }}</span>
+          </span>
+          <span class="hy-hero-track">
+            <span id="hy-heroBar-{{ id }}" class="hy-hero-bar"></span>
+          </span>
+        {% endif %}
+
+        {% if showArrows %}
+          <span class="hy-hero-arrows">
+            <button type="button" id="hy-heroPrev-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+              </svg>
+            </button>
+            <button type="button" id="hy-heroNext-{{ id }}" class="hy-hero-arrow" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </button>
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# The lip the next section would draw if a widget could reach it. Last in
+       the stage so it paints over the slide, and `aria-hidden` because it is
+       pure decoration standing in for a neighbour. #}
+    {% if lip > 0 %}
+      <span class="hy-hero-lip" aria-hidden="true"></span>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    var stage = document.getElementById('hy-heroStage-{{ id }}');
+    if (!stage) return;
+
+    {% if parallax %}
+    /* ---- Parallax ----
+       A transform on the <img>, not `background-attachment: fixed` — iOS has
+       never supported that, and where it does work it repaints the whole layer
+       on every frame.
+
+       The picture is oversized by the travel distance in BOTH directions and
+       the box above it clips the difference, so no edge is ever exposed no
+       matter where the stage sits in the viewport.
+
+       Position is read from the STAGE's rect rather than from scrollY, so the
+       effect is the same whether this hero is the first section on the page or
+       the fifth. The sign is what makes it read as lag: scrolling down moves
+       the rect up, `top` goes negative, the shift goes positive, and the
+       picture slides DOWN against the page. */
+    (function () {
+      var reduce = document.documentElement.classList.contains('hy-no-motion') || (window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if (reduce) return;
+
+      var layers = stage.querySelectorAll('[data-hy-par]');
+      if (!layers.length) return;
+
+      var factor = {{ parStrength }} / 100;
+      var travel = 0;
+      var ticking = false;
+
+      /* Remeasured on resize AND after the fonts settle: the stage's height is
+         a `min-height` the copy can exceed, so it is not known until layout. */
+      function measure() {
+        var h = stage.offsetHeight || 0;
+        var vh = window.innerHeight || 0;
+        travel = (vh + h) / 2 * factor;
+        stage.style.setProperty('--hy-par-px', travel.toFixed(1) + 'px');
+      }
+
+      function apply() {
+        ticking = false;
+        var r = stage.getBoundingClientRect();
+        var vh = window.innerHeight || 0;
+        /* 0 when the stage's centre is on the viewport's centre; ±travel at the
+           two extremes where it is entirely off one edge. */
+        var shift = (vh / 2 - (r.top + r.height / 2)) * factor;
+        if (shift > travel) shift = travel;
+        if (shift < -travel) shift = -travel;
+        for (var i = 0; i < layers.length; i++) {
+          layers[i].style.transform = 'translate3d(0,' + shift.toFixed(1) + 'px,0)';
+        }
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(apply);
+      }
+
+      measure(); apply();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', function () { measure(); apply(); });
+      window.addEventListener('load', function () { measure(); apply(); });
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { measure(); apply(); });
+      }
+    })();
+    {% endif %}
+
+    if ({{ count }} < 2) return;
+
+    var el = document.getElementById('hy-heroSw-{{ id }}');
+    if (!el || typeof Swiper === 'undefined') return;
+
+    var now = document.getElementById('hy-heroNow-{{ id }}');
+    var bar = document.getElementById('hy-heroBar-{{ id }}');
+    var total = {{ count | int }};
+
+    /* The counter and the bar are the same fact twice, so they are written
+       together. `realIndex`, not `activeIndex`: with `loop: true` Swiper keeps
+       duplicated slides at both ends and `activeIndex` counts those — the
+       counter read "3 / 2" on the last slide before this was corrected. */
+    function sync(sw) {
+      var i = sw.realIndex + 1;
+      if (now) now.textContent = i;
+      if (bar) bar.style.width = (i / total * 100) + '%';
+    }
+
+    new Swiper(el, {
+      /* Crossfade, measured off the reference: the background colour blends
+         through an intermediate value between the two slides rather than one
+         sliding over the other. */
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      speed: 600,
+      loop: true,
+      grabCursor: false,
+      {% if autoplay and settings.enableAnimations != false %}
+      autoplay: { delay: {{ (speed * 1000) | int }}, disableOnInteraction: false, pauseOnMouseEnter: true },
+      {% endif %}
+      {% if showArrows %}
+      navigation: { prevEl: '#hy-heroPrev-{{ id }}', nextEl: '#hy-heroNext-{{ id }}' },
+      {% endif %}
+      a11y: { enabled: true },
+      on: {
+        init: function () { sync(this); },
+        slideChange: function () { sync(this); }
+      }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-hero-' ~ id, c=d %}

@@ -1,0 +1,1079 @@
+{# ============================================================================
+   LAMSA PRODUCT DETAIL (PDP)
+   ----------------------------------------------------------------------------
+   NOTE: DATA REALITY: Qumra products expose only _id, title, handle, description
+   (HTML), sku, quantity, pricing, images[], options[], variants[], tags[],
+   averageRating, reviewsCount — there are NO metafields. So:
+     · per-product copy lives in `description`, split by bracket markers
+       ([وصف قصير] [الحجم] [وصف طويل] [تفاصيل: …]) — see
+       ui/product-description.njk. Short + size render under the price; a
+       `panel` block with source="description" renders the long part and is
+       followed by one panel per [تفاصيل: …] marker
+     · store-wide copy (shipping, returns, how we test) → source="text"
+   Nothing here invents a data source that doesn't exist.
+
+   NOTE: JS CONTRACT — preserved verbatim from the previous version:
+     · reads `context.product` (NOT the bare `product` global)
+     · exposes window['productPage_<widget.id>'] which x-data calls directly
+     · matches variants client-side against the dumped `variants` array,
+       comparing `variant.options` (array of option-VALUE ids)
+     · adds to cart via Qumra.cart.add(id, qty, optionIds)
+   Restyle the markup freely; do not change those four things.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set p = context.product %}
+{% set panels = widget.blocks | default([]) %}
+
+{% set galleryLayout = d.gallery_layout | default('thumbs-side') %}
+{% set thumbsSide = galleryLayout == 'thumbs-side' %}
+{% set thumbsBelow = galleryLayout == 'thumbs-below' %}
+{% set stacked = galleryLayout == 'stacked' %}
+{% set ratio = d.image_ratio | default('1/1') %}
+{% set showZoom = d.show_zoom | default(true) %}
+
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showRating = d.show_rating | default(true) %}
+{% set showShadeLabels = d.show_shade_labels | default(true) %}
+{% set showSavings = d.show_savings | default(true) %}
+{% set showStock = d.show_stock_status | default(true) %}
+{% set showShortDesc = d.show_short_description | default(true) %}
+{% set showSize = d.show_size | default(true) %}
+{# ONE threshold for the whole theme (settings → بطاقة المنتج). Quick View
+   reads the same setting — never give either of them its own number. #}
+{% set lowStock = settings.lowStockThreshold | default(3, true) %}
+{% set showQty = d.show_qty | default(true) %}
+{% set showBuyNow = d.show_buy_now | default(true) %}
+{% set showSku = d.show_sku | default(false) %}
+{% set showShare = d.show_share | default(true) %}
+{% set showSticky = d.show_sticky_bar | default(true) %}
+
+{% set showRelated = d.show_related | default(true) %}
+{% set relatedTitle = d.related_title | default(t('pages.product.related_products'), true) %}
+{% set relatedLimit = d.related_limit | default(4, true) %}
+{# never the open product itself; only what will really be shown decides the columns #}
+{% set related = [] %}
+{% for rp in (context.related_products | default([], true)) %}
+  {% if rp and (rp._id | string) != (p._id | string) and (related | length) < (relatedLimit | int) %}{% set _ = related.push(rp) %}{% endif %}
+{% endfor %}
+
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{# The server's own isAvailable verdict wins; the field rule is the fallback. #}
+{% if p.isAvailable is defined and p.isAvailable != null %}
+  {% set canPurchase = p.isAvailable %}
+{% else %}
+  {% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+{% endif %}
+
+{# ---- description parts (see ui/product-description.njk) — the block set
+        captures raw HTML, so print these with | safe ---- #}
+{% set descShort %}{% if showShortDesc %}{% ui "product-description.njk", description=(p.description or ""), part='short' %}{% endif %}{% endset %}
+{% set descSize %}{% if showSize %}{% ui "product-description.njk", description=(p.description or ""), part='size' %}{% endif %}{% endset %}
+{% set descShort = descShort | trim %}
+{% set descSize = descSize | trim %}
+
+{# ---- breadcrumb section: the first collection the product belongs to ---- #}
+{% set crumbCol = p.collections[0] if p.collections and (p.collections | length) > 0 else null %}
+{% set images = p.images | default([]) %}
+{% set imgCount = images | length %}
+{# The side rail only renders when there is more than one image — the gallery
+   grid must not reserve its 78px track otherwise, or the single main image
+   collapses into that track. #}
+{% set railSide = thumbsSide and imgCount > 1 %}
+{% set rating = p.averageRating | default(0) %}
+{% set reviews = p.reviewsCount | default(0) %}
+{% set full = rating | round(0, 'floor') %}
+{% set hasHalf = (rating - full) >= 0.25 %}
+
+
+{# ============================ MACROS ============================ #}
+{% macro pdIcon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if name == 'flask' %}
+    <path d="M9.5 3v5.6L5.4 17.2A2 2 0 0 0 7.2 20.2h9.6a2 2 0 0 0 1.8-3L14.5 8.6V3"/>
+    <path d="M8.4 3h7.2"/><path d="M7.6 15h8.8"/>
+  {% elif name == 'droplet' %}
+    <path d="M12 21c4 0 7-3 7-7 0-4.5-4-8-7-11C9 6 5 9.5 5 14c0 4 3 7 7 7Z"/>
+    <path d="M12 17.6c1.9 0 3.4-1.5 3.4-3.4"/>
+  {% elif name == 'leaf' %}
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/>
+    <path d="M2 21c0-3 1.9-5.4 3-7"/>
+  {% elif name == 'shipping' %}
+    <path d="M2.5 6h11v9.5h-11z"/><path d="M13.5 9.5h3.3l3.2 3v3h-6.5z"/>
+    <circle cx="6.5" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>
+  {% elif name == 'returns' %}
+    <path d="M3 12a9 9 0 1 0 9-9 9.7 9.7 0 0 0-6.7 2.7L3 8"/><path d="M3 3v5h5"/>
+  {% elif name == 'shield' %}
+    <path d="M12 3l7.5 3v5.6c0 4.5-3.1 7.3-7.5 8.9-4.4-1.6-7.5-4.4-7.5-8.9V6z"/>
+    <path d="M9 12.2l2.2 2.2 4.3-4.4"/>
+  {% else %}
+    <circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% macro pdStars(full, hasHalf) %}
+  {% set star = 'm12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z' %}
+  <span class="lamsa-stars">
+    {% for i in [1, 2, 3, 4, 5] %}
+      {% if i <= full %}
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+      {% elif i == full + 1 and hasHalf %}
+        <span class="lamsa-star-half">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+        </span>
+      {% else %}
+        <svg class="lamsa-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+      {% endif %}
+    {% endfor %}
+  </span>
+{% endmacro %}
+
+
+<style>
+  /* ================= layout ================= */
+  .lamsa-pd-{{ id }}-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 36px;
+    align-items: start;
+  }
+  @media (min-width: 1024px) {
+    .lamsa-pd-{{ id }}-row { grid-template-columns: 1.05fr 0.95fr; gap: 56px; }
+  }
+
+  /* ================= gallery ================= */
+  .lamsa-pd-{{ id }}-gal {
+    display: grid;
+    gap: 12px;
+    {% if railSide %}grid-template-columns: 78px minmax(0, 1fr);{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+  }
+  @media (max-width: 767px) {
+    .lamsa-pd-{{ id }}-gal { grid-template-columns: minmax(0, 1fr); }
+    .lamsa-pd-{{ id }}-gal > .lamsa-pd-{{ id }}-thumbs { order: 2; }
+  }
+
+  /* ---- sticky gallery (desktop) ----
+     The image column pins while the long side — description panels, related
+     products — scrolls past it.
+
+     Why this works at all: `.lamsa-pd-*-row` sets `align-items: start`. A
+     stretched grid child is exactly as tall as its row, so its travel space is
+     zero and `sticky` never fires once. `start` is the load-bearing line here.
+
+     NOT for `stacked` — that layout is deliberately a scrolling column of
+     full-bleed images; pinning it would pin the thing you scroll.
+
+     The max-height cap is the other half of the rule: a `3/4` ratio in a wide
+     column runs past the viewport on a short laptop, and a sticky element
+     taller than the screen is one you can never reach the bottom of. The cap
+     turns that case into an inner scroll instead of an unreachable half. At
+     `1/1` — the default — it never triggers. */
+  {% if not stacked %}
+    @media (min-width: 1024px) {
+      .lamsa-pd-{{ id }}-galcol {
+        position: sticky;
+        top: calc(var(--lamsa-header-h, 0px) + 24px);
+        max-height: calc(100vh - var(--lamsa-header-h, 0px) - 48px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+    }
+  {% endif %}
+
+  .lamsa-pd-{{ id }}-main {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: radial-gradient(118% 100% at 50% 8%, #FFF 0%, var(--color-bg-primary) 52%, var(--color-bg-tertiary) 100%);
+    box-shadow: var(--shadow-sm);
+    {% if showZoom %}cursor: zoom-in;{% endif %}
+  }
+  .lamsa-pd-{{ id }}-main img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+  .lamsa-pd-{{ id }}-main img.is-active { opacity: 1; }
+
+  .lamsa-pd-{{ id }}-stack { display: flex; flex-direction: column; gap: 12px; }
+  .lamsa-pd-{{ id }}-stack > a {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--color-bg-tertiary);
+    box-shadow: var(--shadow-sm);
+  }
+  .lamsa-pd-{{ id }}-stack img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  .lamsa-pd-{{ id }}-thumbs {
+    display: flex;
+    gap: 10px;
+    scrollbar-width: none;
+    {% if railSide %}flex-direction: column; overflow-y: auto;{% else %}flex-direction: row; overflow-x: auto;{% endif %}
+  }
+  .lamsa-pd-{{ id }}-thumbs::-webkit-scrollbar { display: none; }
+  @media (max-width: 767px) {
+    .lamsa-pd-{{ id }}-thumbs { flex-direction: row; overflow-x: auto; }
+  }
+
+  .lamsa-pd-{{ id }}-thumb {
+    position: relative;
+    flex-shrink: 0;
+    width: {{ '100%' if railSide else '72px' }};
+    aspect-ratio: 1;
+    overflow: hidden;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-tertiary);
+    opacity: 0.65;
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease-soft), opacity var(--t-fast) var(--ease-soft);
+  }
+  @media (max-width: 767px) { .lamsa-pd-{{ id }}-thumb { width: 66px; } }
+  .lamsa-pd-{{ id }}-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .lamsa-pd-{{ id }}-thumb:hover { opacity: 1; }
+  .lamsa-pd-{{ id }}-thumb.is-active { border-color: var(--color-accent); opacity: 1; }
+
+  /* ================= info ================= */
+  .lamsa-pd-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.5rem, 3vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1.28;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-pd-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-pd-{{ id }}-title { line-height: 1.4; }
+
+  .lamsa-pd-{{ id }}-opt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-pd-{{ id }}-opt:hover { border-color: var(--color-accent-soft); }
+  .lamsa-pd-{{ id }}-opt.active {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+    color: var(--color-accent-dark);
+    font-weight: 700;
+  }
+
+  .lamsa-pd-{{ id }}-divider { height: 1px; margin: 0; border: 0; background: var(--color-border); }
+
+  /* ================= short description · size · sold out ================= */
+  .lamsa-pd-{{ id }}-short { color: var(--color-text-secondary); font-size: 0.975rem; }
+  .lamsa-pd-{{ id }}-short > :first-child { margin-top: 0; }
+  .lamsa-pd-{{ id }}-short > :last-child { margin-bottom: 0; }
+
+  .lamsa-pd-{{ id }}-size { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .lamsa-pd-{{ id }}-size-val {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .lamsa-pd-{{ id }}-oos {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
+    border-radius: var(--radius-input);
+    background: var(--color-error-light);
+    color: var(--color-error);
+  }
+  .lamsa-pd-{{ id }}-oos strong { font-size: 0.975rem; font-weight: 700; }
+  .lamsa-pd-{{ id }}-oos .lamsa-caption { color: var(--color-text-secondary); }
+  .lamsa-pd-{{ id }}-oos-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-surface);
+  }
+
+  /* ================= sticky bar ================= */
+  .lamsa-pd-{{ id }}-sticky { display: none; }
+  @media (max-width: 1023px) {
+    .lamsa-pd-{{ id }}-sticky.is-on { display: flex; }
+    /* keep the footer reachable under the fixed bar */
+    body:has(.lamsa-pd-{{ id }}-sticky.is-on) { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  }
+</style>
+
+
+{% if p %}
+<section id="lamsa-pd-{{ id }}" class="lamsa-section" x-data="productPage_{{ id }}()">
+  <div class="lamsa-container">
+
+    {# ═════════════════ breadcrumb ═════════════════ #}
+    {% if showBreadcrumb %}
+      <nav class="flex items-center gap-2 flex-wrap mb-7 lamsa-caption" aria-label="breadcrumb">
+        {# المتجر ← القسم ← اسم المنتج #}
+        <a href="/shop" class="hover:text-accent transition-colors">{{ t('pages.shop.title') }}</a>
+        {% if crumbCol and crumbCol.title %}
+          <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+          <a href="/collections/{{ crumbCol.handle | default(crumbCol.slug) | default(crumbCol._id) }}"
+             class="hover:text-accent transition-colors line-clamp-1">{{ crumbCol.title }}</a>
+        {% endif %}
+        <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <span class="line-clamp-1" aria-current="page" style="color: var(--color-text-secondary);">{{ p.title }}</span>
+      </nav>
+    {% endif %}
+
+    <div class="lamsa-pd-{{ id }}-row">
+
+      {# ═══════════════════════ GALLERY ═══════════════════════ #}
+      <div class="lamsa-pd-{{ id }}-galcol">
+        {% if imgCount == 0 %}
+          <div class="lamsa-pd-{{ id }}-main" style="cursor: default;">
+            <span class="absolute inset-0 flex items-center justify-center" style="color: var(--color-accent-soft);">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.75" cy="9" r="1.75"/>
+                <path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+              </svg>
+            </span>
+          </div>
+
+        {% elif stacked %}
+          <div class="lamsa-pd-{{ id }}-stack">
+            {% for image in images %}
+              <a {% if showZoom %}href="{{ image.fileUrl }}" class="glightbox" data-gallery="pd-{{ id }}"{% endif %}>
+                <img src="{{ image.fileUrl }}" alt="{{ p.title }}"
+                     {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </a>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="lamsa-pd-{{ id }}-gal">
+            {% if railSide %}
+              <div class="lamsa-pd-{{ id }}-thumbs" role="tablist">
+                {% for image in images %}
+                  <button type="button" role="tab"
+                          class="lamsa-pd-{{ id }}-thumb"
+                          :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                          :aria-selected="activeImageIndex === {{ loop.index0 }}"
+                          @click="setImage({{ loop.index0 }})"
+                          aria-label="{{ p.title }} — {{ loop.index }}">
+                    <img src="{{ image.fileUrl }}" alt="" loading="lazy"/>
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="min-w-0">
+              <div class="lamsa-pd-{{ id }}-main" {% if showZoom %}@click="openZoom()"{% endif %}>
+                {# NOTE: :class MUST use the object form here, not `cond && 'is-active'`.
+                   The first image also carries a STATIC is-active (so the gallery
+                   is not blank before Alpine boots), and the string form only ever
+                   removes classes Alpine itself added — it would never strip the
+                   static one. The first image then stayed visible forever and every
+                   thumbnail click stacked another image on top of it. The object
+                   form removes the class on a falsy value no matter who set it. #}
+                {% for image in images %}
+                  <img src="{{ image.fileUrl }}" alt="{{ p.title }}"
+                       class="{% if loop.first %}is-active{% endif %}"
+                       :class="{ 'is-active': activeImageIndex === {{ loop.index0 }} }"
+                       {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                {% endfor %}
+
+                <span class="lamsa-badge lamsa-badge--sale font-num absolute top-4 start-4 z-10"
+                      x-show="hasDiscount()" x-cloak
+                      x-text="'−' + discountPercent + '%'"></span>
+              </div>
+
+              {% if thumbsBelow and imgCount > 1 %}
+                <div class="lamsa-pd-{{ id }}-thumbs mt-3" role="tablist">
+                  {% for image in images %}
+                    <button type="button" role="tab"
+                            class="lamsa-pd-{{ id }}-thumb"
+                            :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                            :aria-selected="activeImageIndex === {{ loop.index0 }}"
+                            @click="setImage({{ loop.index0 }})"
+                            aria-label="{{ p.title }} — {{ loop.index }}">
+                      <img src="{{ image.fileUrl }}" alt="" loading="lazy"/>
+                    </button>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# hidden anchors give GLightbox a gallery for the zoom click #}
+          {% if showZoom %}
+            <div class="hidden">
+              {% for image in images %}
+                <a href="{{ image.fileUrl }}" class="glightbox" data-gallery="pd-{{ id }}"
+                   id="pdZoom-{{ id }}-{{ loop.index0 }}"></a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {# ═══════════════════════ INFO ═══════════════════════ #}
+      <div class="flex flex-col gap-5" id="pdInfo-{{ id }}">
+
+        {% if p.tags and (p.tags | length) > 0 %}
+          <div class="flex flex-wrap gap-2">
+            {% for tag in p.tags %}
+              {#- Live tags are objects ({ name, displayName… }); printed raw they read «[object Object]». -#}
+              {% if tag is string %}{% set tagText = tag %}{% elif tag.displayName %}{% set tagText = tag.displayName %}{% elif tag.name %}{% set tagText = tag.name %}{% elif tag.title %}{% set tagText = tag.title %}{% elif tag.label %}{% set tagText = tag.label %}{% elif tag.value %}{% set tagText = tag.value %}{% else %}{% set tagText = '' %}{% endif %}
+              {% if loop.index <= 3 and tagText %}<span class="lamsa-suit">{{ tagText }}</span>{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <h1 class="lamsa-pd-{{ id }}-title">{{ p.title }}</h1>
+
+        {% if showRating and reviews > 0 %}
+          <div class="flex items-center gap-2.5 flex-wrap">
+            {{ pdStars(full, hasHalf) }}
+            <span class="lamsa-rating-count">{{ rating }} · {{ reviews }} {{ t('pages.product.reviews_count') }}</span>
+          </div>
+        {% endif %}
+
+        {# ---- price ---- #}
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="lamsa-price lamsa-price--lg" x-text="displayPrice()">{{ p.pricing.price | default(0, true) | money }}</span>
+          <span class="lamsa-price-was" x-show="hasDiscount()" x-cloak x-text="displayComparePrice()"></span>
+          {% if showSavings %}
+            <span class="lamsa-tag lamsa-tag--rose lamsa-tag--sale" x-show="hasDiscount()" x-cloak>
+              {{ t('pages.cart.savings') }} <span x-text="displaySavings()"></span>
+            </span>
+          {% endif %}
+        </div>
+
+        {# ---- short description ---- #}
+        {% if descShort %}
+          <div class="lamsa-pd-{{ id }}-short lamsa-prose">{{ descShort | safe }}</div>
+        {% endif %}
+
+        {# ---- size ---- #}
+        {% if descSize %}
+          <div class="lamsa-pd-{{ id }}-size">
+            <span class="lamsa-label m-0">{{ t('pages.product.size_label') }}</span>
+            <span class="lamsa-pd-{{ id }}-size-val">{{ descSize }}</span>
+          </div>
+        {% endif %}
+
+        {# ---- out of stock: always shown, regardless of show_stock_status.
+                Rendered visible server-side when the product is sold out, so
+                the notice never waits for Alpine to boot. ---- #}
+        <div class="lamsa-pd-{{ id }}-oos" role="alert"
+             x-show="stockState() === 'out'"{% if canPurchase %} style="display: none;"{% endif %}>
+          <span class="lamsa-pd-{{ id }}-oos-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 8.5 12 3.5 3 8.5v7l9 5 9-5z"/><path d="M3.5 8.8 12 13.5l8.5-4.7M12 13.5v7"/>
+              <path d="m4 4 16 16"/>
+            </svg>
+          </span>
+          <span class="flex flex-col gap-0.5 min-w-0">
+            <strong>{{ t('pages.product.out_of_stock_notice') }}</strong>
+            <span class="lamsa-caption">{{ t('pages.product.out_of_stock_hint') }}</span>
+          </span>
+        </div>
+
+        {# ---- stock line — exactly ONE per state, see LamsaStock in main.js:
+                out → the alert above · incart / nomatch → always shown, they
+                are the reason the button is off · in / low → show_stock_status ---- #}
+        <div class="flex flex-wrap gap-2" x-show="stockState() !== 'out'"{% if not canPurchase %} style="display: none;"{% endif %}>
+          {% if showStock %}
+            <span class="lamsa-tag lamsa-tag--sage lamsa-tag--stock" x-show="stockState() === 'in'">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              <span x-text="inStockText()">{{ t('pages.product.in_stock') }}</span>
+            </span>
+            <span class="lamsa-tag lamsa-tag--rose lamsa-tag--low" x-show="stockState() === 'low'" x-cloak x-text="lowStockText()"></span>
+          {% endif %}
+          <span class="lamsa-tag" x-show="stockState() === 'incart'" x-cloak
+                style="background: var(--color-warning-light); color: var(--color-text-primary);">
+            {{ t('pages.product.all_in_cart') }}
+          </span>
+          <span class="lamsa-tag" x-show="stockState() === 'nomatch'" x-cloak
+                style="background: var(--color-error-light); color: var(--color-error);">
+            {{ t('pages.product.combo_unavailable') }}
+          </span>
+        </div>
+
+        <hr class="lamsa-pd-{{ id }}-divider"/>
+
+        {# ---- options: colour → swatches, otherwise pills ---- #}
+        {% if p.options and (p.options | length) > 0 %}
+          <div class="flex flex-col gap-5">
+            {% for option in p.options %}
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="lamsa-label m-0">{{ option.name }}</span>
+                  {% if showShadeLabels %}
+                    <span class="lamsa-caption" x-text="selectedLabels[{{ option.name | dump | escape }}] || ''"></span>
+                  {% endif %}
+                </div>
+
+                {% if option.type == 'color' %}
+                  <div class="lamsa-swatches">
+                    {% for value in option.values %}
+                      <button type="button"
+                              class="lamsa-swatch lamsa-swatch--lg"
+                              data-swatch="{{ value.label }}" data-swatch-value="{{ value.value }}"
+                              :class="selectedOptions[{{ option.name | dump | escape }}] === '{{ value._id }}' && 'is-active'"
+                              :aria-pressed="selectedOptions[{{ option.name | dump | escape }}] === '{{ value._id }}'"
+                              @click="selectOption({{ option.name | dump | escape }}, '{{ value._id }}', {{ (value.label or '') | dump | escape }})"
+                              title="{{ value.label }}"
+                              aria-label="{{ value.label }}"></button>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="flex flex-wrap gap-2">
+                    {% for value in option.values %}
+                      <button type="button"
+                              class="lamsa-pd-{{ id }}-opt"
+                              :class="selectedOptions[{{ option.name | dump | escape }}] === '{{ value._id }}' && 'active'"
+                              :aria-pressed="selectedOptions[{{ option.name | dump | escape }}] === '{{ value._id }}'"
+                              @click="selectOption({{ option.name | dump | escape }}, '{{ value._id }}', {{ (value.label or '') | dump | escape }})">
+                        {{ value.label }}
+                      </button>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# ---- qty + add to cart ---- #}
+        <div class="flex items-center gap-3 flex-wrap">
+          {% if showQty %}
+            <div class="lamsa-qty shrink-0">
+              <button type="button" @click="qty > 1 && qty--" :disabled="qty <= 1" aria-label="-">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M5 12h14"/>
+                </svg>
+              </button>
+              <span class="lamsa-qty-value" x-text="qty">1</span>
+              <button type="button" @click="qtyUp()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+
+          <button type="button"
+                  @click="addToCart()"
+                  :disabled="blocked() || addingToCart"
+                  class="lamsa-btn lamsa-btn--primary lamsa-btn--lg flex-1"
+                  style="min-width: 200px;">
+            <span x-show="addingToCart" class="lamsa-spinner" style="width:17px;height:17px;border-width:2px;"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak class="inline-flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              {{ t('pages.product.added') }}
+            </span>
+            <span x-show="!addingToCart && !addedSuccess" x-text="buttonLabel()">{{ t('pages.product.add_to_cart') if canPurchase else t('pages.product.out_of_stock') }}</span>
+          </button>
+        </div>
+
+        {% if showBuyNow %}
+          <button type="button"
+                  @click="buyNow()"
+                  :disabled="blocked() || addingToCart"
+                  class="lamsa-btn lamsa-btn--outline lamsa-btn--lg lamsa-btn--block">
+            {{ t('pages.product.buy_now') }}
+          </button>
+        {% endif %}
+
+        {# ---- sku + share ---- #}
+        {% if showSku or showShare %}
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            {% if showSku and p.sku %}
+              <span class="lamsa-caption">{{ t('pages.product.sku') }}: <span dir="ltr">{{ p.sku }}</span></span>
+            {% else %}
+              <span></span>
+            {% endif %}
+            {% if showShare %}
+              <button type="button" @click="share()" class="lamsa-btn lamsa-btn--ghost lamsa-btn--sm">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/>
+                  <path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>
+                </svg>
+                <span x-text="shared ? '{{ t('pages.blog.copied') }}' : '{{ t('pages.product.share') }}'">{{ t('pages.product.share') }}</span>
+              </button>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# ---- detail panels (accordion) ---- #}
+        {% if (panels | length) > 0 %}
+          <div class="lamsa-acc mt-2">
+            {% for block in panels %}
+              {% set b = block.data %}
+              {% set fromDesc = (b.source | default('description')) == 'description' %}
+              {% if fromDesc %}
+                {% set body %}{% ui "product-description.njk", description=(p.description or ""), part='long' %}{% endset %}
+                {% set body = body | trim %}
+              {% else %}
+                {% set body = b.text %}
+              {% endif %}
+              {% if body %}
+                <div class="lamsa-acc-item"
+                     x-data="{ open: {{ 'true' if b.open_by_default else 'false' }} }"
+                     :class="open && 'is-open'">
+                  <button type="button" class="lamsa-acc-trigger" @click="open = !open" :aria-expanded="open">
+                    <span class="flex items-center gap-2.5 min-w-0">
+                      <span class="text-accent shrink-0">{{ pdIcon(b.icon | default('info'), 18) }}</span>
+                      <span>{{ b.title }}</span>
+                    </span>
+                    <span class="lamsa-acc-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </span>
+                  </button>
+                  <div x-show="open" x-collapse class="lamsa-acc-panel">
+                    <div class="lamsa-prose">{{ body | safe }}</div>
+                  </div>
+                </div>
+              {% endif %}
+              {# per-product [تفاصيل: …] panels follow the description panel #}
+              {% if fromDesc %}
+                {% ui "product-description.njk", description=(p.description or ""), part='details' %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════════════ RELATED ═══════════════════════ #}
+  {% if showRelated and (related | length) > 0 %}
+    <div class="lamsa-container" style="margin-top: var(--section-py);">
+      <div class="lamsa-head lamsa-head--center">
+        <h2 class="lamsa-pd-{{ id }}-title">{{ relatedTitle }}</h2>
+      </div>
+      <div class="lamsa-related" data-n="{{ related | length }}">
+        {% for rp in related %}
+          {% ui "product-card.njk", product=rp %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ═══════════════════════ STICKY BUY BAR (mobile) ═══════════════════════ #}
+  {% if showSticky %}
+    <div class="lamsa-buybar lamsa-pd-{{ id }}-sticky" :class="showBar && 'is-on'">
+      <div class="flex flex-col min-w-0 flex-1">
+        <span class="lamsa-caption line-clamp-1">{{ p.title }}</span>
+        <span class="lamsa-price" x-text="displayPrice()">{{ p.pricing.price | default(0, true) | money }}</span>
+      </div>
+      <button type="button"
+              @click="addToCart()"
+              :disabled="blocked() || addingToCart"
+              class="lamsa-btn lamsa-btn--primary shrink-0">
+        <span x-show="addingToCart" class="lamsa-spinner" style="width:16px;height:16px;border-width:2px;"></span>
+        <span x-show="!addingToCart" x-text="buttonLabel()">{{ t('pages.product.add_to_cart') if canPurchase else t('pages.product.out_of_stock') }}</span>
+      </button>
+    </div>
+  {% endif %}
+</section>
+
+
+<script>
+  /* GA4 view_item source. A plain object on purpose — this script runs while the
+     body is parsed, long before main.js defines anything, so it must not call
+     out to a global. Analytics.init() reads it once main.js is up. */
+  window.__LAMSA_VIEW_ITEM__ = {
+    item_id: {{ (p._id | default(p.slug) | default('', true)) | dump | safe }},
+    item_name: {{ (p.title | default('', true)) | dump | safe }},
+    price: {{ p.pricing.price | default(0, true) }}
+  };
+</script>
+
+<script>
+  /* ==========================================================================
+     Factory hung on `window` (NOT Alpine.data) — the x-data above calls
+     productPage_<id>() directly. Same contract as the previous version.
+     ======================================================================= */
+  (function () {
+    var wid = '{{ id }}';
+
+    window['productPage_' + wid] = function () {
+      return {
+        qty: 1,
+        activeImageIndex: 0,
+        addingToCart: false,
+        addedSuccess: false,
+        variantSelected: false,
+        selectedOptions: {},
+        selectedLabels: {},
+        shared: false,
+        showBar: false,
+        currentVariantId: null,
+        cartLines: [],
+        threshold: {{ lowStock | default(3, true) }},
+        product: {
+          id: '{{ p._id }}',
+          isAvailable: {{ ('true' if p.isAvailable else 'false') if (p.isAvailable is defined and p.isAvailable != null) else 'null' }},
+          trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+          quantity: {{ p.quantity | default(0, true) }}
+        },
+        unitPrice: {{ p.pricing.price | default(0, true) }},
+        unitComparePrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+        discountPercent: {% if hasDiscount %}{{ (((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice) * 100) | round(0, 'floor') }}{% else %}0{% endif %},
+
+        /* ---- money: window.formatMoney is Utils.formatMoney, which mirrors
+                the server-side `| money` filter (same separators & symbol) ---- */
+        displayPrice()        { return window.formatMoney ? window.formatMoney(this.unitPrice * this.qty) : ''; },
+        displayComparePrice() {
+          if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+          return window.formatMoney ? window.formatMoney(this.unitComparePrice * this.qty) : '';
+        },
+        displaySavings() {
+          if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+          return window.formatMoney ? window.formatMoney((this.unitComparePrice - this.unitPrice) * this.qty) : '';
+        },
+        hasDiscount() { return !!(this.unitComparePrice && this.unitComparePrice > this.unitPrice); },
+
+        /* The locale string carries a count placeholder in double braces — fill it
+           here so the sentence stays translatable instead of being glued together.
+           NOTE: Match it with THIS regex, never a plain string literal. This is a
+           .njk file: a literal pair of open braces is consumed by Nunjucks before
+           the browser ever sees it (there is no `count` template var, so it
+           renders empty) and the emitted JS collapses to .replace('', qty) —
+           which prepends the number to the start of the sentence. The escaped
+           form below never puts two braces side by side, so Nunjucks leaves it
+           alone and it reaches the browser intact. */
+        lowStockText() {
+          return {{ t('pages.product.low_stock') | dump | safe }}
+            .replace(/\{\{\s*count\s*\}\}/g, this.available());
+        },
+        /* the count rides on the SAME line as «متوفر», and only when it is a
+           real number: a variant is picked (or there are none) and it is capped */
+        inStockText() {
+          var avail = this.available();
+          if (avail === null || this.stockState() === 'nomatch') return {{ t('pages.product.in_stock') | dump | safe }};
+          return {{ t('pages.product.in_stock_count') | dump | safe }}
+            .replace(/\{\{\s*count\s*\}\}/g, avail);
+        },
+
+        /* ---- stock — every number the shopper reads subtracts their cart.
+                All rules live in LamsaStock (assets/main.js); read it first. ---- */
+        hasVariants() { return this.variants.length > 0; },
+        currentVariant() {
+          var id = this.currentVariantId;
+          return id ? this.variants.find(function (v) { return v.id === id; }) || null : null;
+        },
+        stockLimit() {
+          if (!window.LamsaStock) return null;
+          return LamsaStock.limit(this.product, this.hasVariants() ? this.currentVariant() : null);
+        },
+        inCart() {
+          if (!window.LamsaStock) return 0;
+          return LamsaStock.inCart(this.cartLines, this.product.id, this.hasVariants() ? this.currentVariantId : null);
+        },
+        available() { return window.LamsaStock ? LamsaStock.available(this.stockLimit(), this.inCart()) : null; },
+        maxQty() { return window.LamsaStock ? LamsaStock.maxQty(this.stockLimit(), this.inCart()) : null; },
+        stockState() {
+          if (this.hasVariants() && !this.currentVariantId) return 'nomatch';
+          if (!window.LamsaStock) return {{ ("'in'" if canPurchase else "'out'") | safe }};
+          return LamsaStock.state(this.stockLimit(), this.inCart(), this.threshold);
+        },
+        /* the button turns off only when nothing can be bought — and the line
+           above it always says why */
+        blocked() { var st = this.stockState(); return st === 'out' || st === 'incart' || st === 'nomatch'; },
+        get isOutOfStock() { return this.blocked(); },
+        buttonLabel() {
+          var st = this.stockState();
+          if (st === 'out') return {{ t('pages.product.out_of_stock') | dump | safe }};
+          if (st === 'nomatch') return {{ t('pages.product.unavailable') | dump | safe }};
+          if (st === 'incart') return {{ t('pages.product.in_cart') | dump | safe }};
+          return {{ t('pages.product.add_to_cart') | dump | safe }};
+        },
+        qtyUp() {
+          var cap = this.maxQty();
+          if (cap === null || this.qty < cap) this.qty++;
+        },
+        clampQty() {
+          var cap = this.maxQty();
+          if (cap !== null && this.qty > cap) this.qty = cap;
+          if (this.qty < 1) this.qty = 1;
+        },
+        /* the add guard compares against available(), never maxQty() — the
+           stepper's floor of 1 would let "1 > 1 → false" through every click */
+        guardQty() {
+          var avail = this.available();
+          if (avail === null) return true;
+          if (avail <= 0) return false;
+          if (this.qty > avail) {
+            this.qty = avail;
+            if (window.Qumra && Qumra.toast) {
+              Qumra.toast.warning({{ t('pages.product.only_available') | dump | safe }}
+                .replace(/\{\{\s*count\s*\}\}/g, avail));
+            }
+            return false;
+          }
+          return true;
+        },
+
+        optionValues: { {% for option in p.options %}{% for value in option.values %}'{{ value._id }}': { n: {{ option.name | dump | safe }}, l: {{ (value.label or '') | dump | safe }} },{% endfor %}{% endfor %} },
+
+        /* ---- variants dumped server-side; `options` holds option-VALUE ids ---- */
+        variants: [
+          {% for variant in p.variants %}
+          {
+            id: '{{ variant._id }}',
+            price: {{ variant.pricing.price | default(0, true) }},
+            compareAtPrice: {{ variant.pricing.compareAtPrice | default(0, true) }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            isAvailable: {{ ('true' if variant.isAvailable else 'false') if (variant.isAvailable is defined and variant.isAvailable != null) else 'null' }},
+            {# the variant's first image → its index in the gallery, resolved here
+               once. _id arrives as an ObjectId-like object, so `==` against the
+               variant's id is false even when both print the same hex: | string
+               on BOTH sides. -1 = no image → leave the gallery where it is. #}
+            {% set vImgRaw = variant.images[0] if variant.images and (variant.images | length) > 0 else '' %}
+            {% set vImg = ((vImgRaw._id if vImgRaw._id else vImgRaw) | string) if vImgRaw else '' %}
+            {% set vHits = [] %}
+            {% for img in images %}{% if vImg and (img._id | string) == vImg %}{% if vHits.push(loop.index0) %}{% endif %}{% endif %}{% endfor %}
+            imageIndex: {{ vHits[0] if (vHits | length) > 0 else -1 }},
+            options: {{ variant.options | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+
+        init() {
+          var self = this;
+
+          {% for option in p.options %}
+            {% if (option.values | length) > 0 %}
+              this.selectedOptions[{{ option.name | dump | safe }}] = '{{ option.values[0]._id }}';
+              this.selectedLabels[{{ option.name | dump | safe }}] = {{ option.values[0].label | dump | safe }};
+            {% endif %}
+          {% endfor %}
+
+          {% if (p.options | length) > 0 %}
+            this.variantSelected = true;
+            this.matchVariant();
+          {% endif %}
+
+          /* the first shade sold out must not read as the whole product sold out:
+             start on the first variant that can still be bought */
+          var cur = this.currentVariant();
+          if (window.LamsaStock && this.variants.length && (!cur || LamsaStock.limit(this.product, cur) === 0)) {
+            var ok = this.variants.find(function (v) { return v.options && v.options.length && LamsaStock.limit(self.product, v) !== 0; });
+            if (ok) {
+              ok.options.forEach(function (vid) {
+                var o = self.optionValues[vid];
+                if (o) { self.selectedOptions[o.n] = vid; self.selectedLabels[o.n] = o.l; }
+              });
+              this.matchVariant();
+            }
+          }
+
+          /* the cart feeds available(): what the shopper already holds is
+             subtracted from every number they read. Kept live via cart:updated,
+             which CartManager emits after every add / change / remove. */
+          Qumra.cart.get().then(function (data) {
+            self.cartLines = (data && data.items) || [];
+            self.clampQty();
+          }).catch(function () { /* cart unavailable — nothing to subtract */ });
+          window.addEventListener('cart:updated', function (e) {
+            self.cartLines = (e.detail && e.detail.items) || [];
+            self.clampQty();
+          });
+
+          {% if showSticky %}
+          /* the sticky bar appears only once the real buy button is off-screen */
+          var anchor = document.getElementById('pdInfo-' + wid);
+          if (anchor && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              self.showBar = !entries[0].isIntersecting;
+            }, { rootMargin: '-140px 0px 0px 0px' }).observe(anchor);
+          }
+          {% endif %}
+        },
+
+        setImage(idx) { this.activeImageIndex = idx; },
+
+        openZoom() {
+          {% if showZoom and imgCount > 0 and not stacked %}
+          var link = document.getElementById('pdZoom-' + wid + '-' + this.activeImageIndex);
+          if (link) link.click();
+          {% endif %}
+        },
+
+        selectOption(name, valueId, label) {
+          this.selectedOptions[name] = valueId;
+          this.selectedLabels[name] = label;
+          this.variantSelected = true;
+          this.matchVariant();
+        },
+
+        matchVariant() {
+          var selectedIds = Object.values(this.selectedOptions);
+
+          var matched = this.variants.find(function (v) {
+            if (!v.options || !v.options.length) return false;
+            if (v.options.length !== selectedIds.length) return false;
+            for (var i = 0; i < selectedIds.length; i++) {
+              if (v.options.indexOf(selectedIds[i]) === -1) return false;
+            }
+            return true;
+          });
+
+          /* an option combination with no variant must NOT keep the previous
+             variant — that would add the old one under the new labels */
+          if (!matched) { this.currentVariantId = null; return; }
+
+          this.currentVariantId = matched.id;
+          this.unitPrice = matched.price;
+          if (matched.imageIndex >= 0) this.setImage(matched.imageIndex);
+          this.clampQty();
+
+          if (matched.compareAtPrice && matched.compareAtPrice > matched.price) {
+            this.unitComparePrice = matched.compareAtPrice;
+            this.discountPercent = Math.floor(((matched.compareAtPrice - matched.price) / matched.compareAtPrice) * 100);
+          } else {
+            this.unitComparePrice = 0;
+            this.discountPercent = 0;
+          }
+        },
+
+        async addToCart() {
+          if (this.blocked() || this.addingToCart || !this.guardQty()) return;
+          this.addingToCart = true;
+          try {
+            var optionIds = Object.values(this.selectedOptions);
+            await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+            this.qty = 1;
+            this.addedSuccess = true;
+            var self = this;
+            setTimeout(function () { self.addedSuccess = false; }, 2000);
+          } catch (err) {
+            /* CartManager already toasted the reason */
+          } finally {
+            this.addingToCart = false;
+          }
+        },
+
+        async buyNow() {
+          if (this.blocked() || this.addingToCart || !this.guardQty()) return;
+          this.addingToCart = true;
+          try {
+            var optionIds = Object.values(this.selectedOptions);
+            await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+            window.location.href = '/cart';
+          } catch (err) {
+            this.addingToCart = false;
+          }
+        },
+
+        async share() {
+          var url = window.location.href;
+          /* native share sheet on mobile, clipboard on desktop */
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: {{ p.title | dump | safe }}, url: url });
+              return;
+            } catch (e) { /* dismissed — fall through to copy */ }
+          }
+          try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+          this.shared = true;
+          var self = this;
+          setTimeout(function () { self.shared = false; }, 2000);
+        }
+      };
+    };
+  })();
+
+  {% if showZoom and imgCount > 0 %}
+  (function () {
+    if (typeof GLightbox === 'undefined') return;
+    GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true });
+  })();
+  {% endif %}
+</script>
+
+{# Structured data for search engines. Prices go out exactly as the store
+   holds them — Qumra serves major units (`123456 | money` → «123,456»), so
+   nothing is divided. Every string goes through `| dump`: one quote in a
+   title would otherwise break the JSON silently. #}
+{% set ldImgs = [] %}{% for img in p.images | default([]) %}{% if img.fileUrl %}{% set _ = ldImgs.push(img.fileUrl) %}{% endif %}{% endfor %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ (p.title | default('', true)) | dump | safe }},
+  {% if ldImgs | length %}"image": {{ ldImgs | dump | safe }},{% endif %}
+  {% if p.sku %}"sku": {{ p.sku | dump | safe }},{% endif %}
+  "description": {{ (p.description | default('', true) | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('<br>', ' ') | striptags | truncate(300)) | dump | safe }},
+  "url": {{ ((store.url | default('', true)) ~ '/products/' ~ (p.slug | default(p.handle) | default(p._id))) | dump | safe }},
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": {{ (localization.currency.currencyCode | default('SAR')) | dump | safe }},
+    "price": "{{ (p.pricing.price if p.pricing else 0) | default(0, true) }}",
+    "availability": "https://schema.org/{{ 'InStock' if canPurchase else 'OutOfStock' }}"
+  }
+}
+</script>
+{% else %}
+{#- No product in the context (deleted, unpublished, mistyped link): the page
+    keeps its one H1 and a way on instead of an empty shell whose script ran
+    on an undefined product. -#}
+<section id="lamsa-pd-{{ id }}" class="lamsa-section">
+  <div class="lamsa-container" style="text-align: center; padding-block: var(--space-16, 64px);">
+    <h1 style="margin: 0 0 12px;">{{ t('pages.404.title') }}</h1>
+    <p style="margin: 0 0 24px; color: var(--color-text-secondary);">{{ t('pages.404.message') }}</p>
+    <a href="/shop" class="lamsa-btn lamsa-btn--primary">{{ t('pages.404.browse_shop') }}</a>
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,39 @@
+{
+  "name": "شريط العلامات التجارية",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": "علامات تجارية نثق بها"
+    },
+    "animate": {
+      "type": "boolean",
+      "label": { "ar": "حركة تلقائية", "en": "Auto scroll" },
+      "default": true
+    }
+  },
+  "blocks": {
+    "brand": {
+      "name": "علامة تجارية",
+      "settings": {
+        "logo": {
+          "type": "media",
+          "label": { "ar": "الشعار", "en": "Logo" }
+        },
+        "name": {
+          "type": "string",
+          "label": { "ar": "الاسم", "en": "Name" },
+          "default": "Brand"
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "الرابط", "en": "Link" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الصفحة الرئيسية", "name": "شريط العلامات التجارية" }
+  ]
+}

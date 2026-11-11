@@ -1,0 +1,25 @@
+{#-
+  Language switch (ar ⇄ en only). {% ui "lang-switch.njk", style="pill" | "text", cls="…" %}
+  One <button data-lang-switch="xx"> per other language present in localization.availableLanguages
+  (main.js handles the click: lang cookie + reload). Labels are written in their own language.
+  Renders nothing when no other language is available. Designed for dark surfaces (cream text).
+-#}
+{%- set cur = (localization.language if localization else '') | default('ar') -%}
+{%- set avail = (localization.availableLanguages if localization else null) or ['ar', 'en'] -%}
+{%- set codes = [] -%}
+{%- for l in avail -%}
+  {%- set code = (l if (l is string) else (l.code or l.language or l.locale or l.isoCode or '')) | lower -%}
+  {%- if codes.push(code) -%}{%- endif -%}
+{%- endfor -%}
+{%- set labels = { 'ar': 'العربية', 'en': 'English' } -%}
+{%- set style = data.style | default('text') -%}
+{%- for code in ['ar', 'en'] -%}
+  {%- if code in codes and code != cur %}
+  <button type="button" data-lang-switch="{{ code }}" lang="{{ code }}" dir="{{ 'rtl' if code == 'ar' else 'ltr' }}"
+          aria-label="{{ t('lang.switch_to') | replace('{lang}', labels[code]) }}"
+          class="group/lang inline-flex min-h-11 shrink-0 items-center gap-2 font-display text-sm transition-colors duration-300 ease-calm aria-busy:opacity-60 {{ 'rounded-full border border-cream/20 px-4 text-cream hover:border-cream/45 hover:bg-cream/5' if style == 'pill' else 'px-1 text-cream/80 hover:text-cream' }} {{ data.cls }}">
+    {% ui "icon.njk", name="globe", size=17, cls="opacity-80" %}
+    <span>{{ labels[code] }}</span>
+  </button>
+  {%- endif -%}
+{%- endfor -%}

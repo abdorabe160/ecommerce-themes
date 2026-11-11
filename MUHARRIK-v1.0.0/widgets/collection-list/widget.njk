@@ -1,0 +1,163 @@
+{#
+  ============================================================================
+  COLLECTION LIST · قائمة التصنيفات
+  ----------------------------------------------------------------------------
+  One tinted panel: a pitch (small line, title, up to four promises with
+  icons, a button) beside a grid of collection tiles (picture + name).
+  Tiles come from the `collections` picker (its image, title and handle);
+  with none picked, eight demo tiles with the theme's own CC0 pictures and
+  names in the visitor's language (locales → clist.*). Every text field left
+  empty falls back to the same locale defaults.
+
+  Styles: assets/sections.css → "COLLECTION LIST".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% macro icon(k) %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if k == 'shield' %}<path d="M12 3 19 5.6v5.2c0 4.4-2.9 7.9-7 9.2-4.1-1.3-7-4.8-7-9.2V5.6L12 3Z"/><path d="m9.2 11.8 2 2 3.8-4"/>
+  {% elif k == 'truck' %}<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>
+  {% elif k == 'support' %}<path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="3" y="12.5" width="4" height="5.5" rx="1.5"/><rect x="17" y="12.5" width="4" height="5.5" rx="1.5"/><path d="M19 18v.5a2.5 2.5 0 0 1-2.5 2.5H13"/>
+  {% elif k == 'tag' %}<path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.4 1.4 0 0 1 0 2l-7.1 7.1a1.4 1.4 0 0 1-2 0l-8-8Z"/><circle cx="8" cy="8" r="1.4"/>
+  {% elif k == 'card' %}<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 9.5h19M6 14.5h4"/>
+  {% elif k == 'returns' %}<path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6"/><path d="M17.9 3.4v3.2h-3.2M6.1 20.6v-3.2h3.2"/>
+  {% elif k == 'gift' %}<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12M12 8.5S10.8 4 8.3 4.3C6.5 4.5 6.7 7 8.4 8.2M12 8.5s1.2-4.5 3.7-4.2c1.8.2 1.6 2.7-.1 3.9"/>
+  {% elif k == 'star' %}<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% set defIcons = ['shield', 'truck', 'support', 'tag'] %}
+{% set eyebrow = d.eyebrow or t('clist.eyebrow') %}
+{% set title = d.title or t('clist.title') %}
+{% set btnText = (d.button_text or t('clist.button')) if d.show_button != false else '' %}
+
+{# ---- tiles: picked collections, else demo ---- #}
+{% set picked = d.collections | default([], true) %}
+{% set tiles = [] %}
+{% for c in picked %}
+  {% if loop.index <= (12 if (d.layout == 'strip') else 8) and c and not (c is string) %}
+    {% set _ = tiles.push({ title: c.title | default('', true), url: '/shop/' ~ (c.handle | default(c.slug, true) | default(c._id, true)), img: (c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '') }) %}
+  {% endif %}
+{% endfor %}
+{% set isDemoTiles = (tiles | length) == 0 %}
+{% set layout = d.layout | default('start', true) %}
+{% set isStrip = layout == 'strip' %}
+{% if (tiles | length) == 0 and isStrip %}
+  {# Cut-outs only, so every tile reads the same: a tinted square with the
+     product standing on it. #}
+  {% set stripImgs = ['mh-cat-tyres.jpg', 'mh-cat-electronics.jpg', 'mh-cat-lighting.jpg', 'mh-cat-interior.jpg', 'mh-cat-care.jpg', 'mh-cat-exterior.jpg', 'mh-p11.jpg', 'mh-p12.jpg'] %}
+  {% for im in stripImgs %}
+    {% set _ = tiles.push({ title: t('clist.s.s' ~ loop.index), url: '/collections', img: im | assets }) %}
+  {% endfor %}
+{% endif %}
+{% if (tiles | length) == 0 %}
+  {% set demoImgs = ['mh-p09.jpg', 'mh-p01.jpg', 'mh-build-5.jpg', 'mh-p04.jpg', 'mh-build-2.jpg', 'mh-build-3.jpg', 'mh-p11.jpg', 'mh-p14.jpg'] %}
+  {% for im in demoImgs %}
+    {% set _ = tiles.push({ title: t('clist.c.c' ~ loop.index), url: '/collections', img: im | assets }) %}
+  {% endfor %}
+{% endif %}
+
+{% if isStrip %}
+<section id="hx-cl-{{ id }}" class="hx-cls {{ 'is-zoom' if d.hover_zoom != false }}"
+         style="--cls-tile: {{ d.panel_bg | default('var(--color-bg-tertiary)', true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-cl-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% set stripTitle = d.title or t('clist.strip_title') %}
+    {# MUHARRIK: morva head — mono kicker (the merchant's small line, else the
+       tile count as a readout) + display title + outlined "view all". #}
+    {% if stripTitle %}
+      <header class="hx-cls-head mh-head mh-reveal">
+        <div class="mh-head-main">
+          <p class="hx-cls-kicker mh-kicker">
+            {% if d.eyebrow %}{{ d.eyebrow | safe }}{% else %}<span class="mh-kicker-num" dir="ltr">{{ '0' ~ (tiles | length) if (tiles | length) < 10 else (tiles | length) }}</span><span aria-hidden="true">/</span>{{ t('common.categories') }}{% endif %}
+          </p>
+          <h2 class="hx-cls-title mh-h">{{ stripTitle | safe }}</h2>
+        </div>
+        {% if d.show_button != false %}<a href="{{ d.button_url | default('/collections', true) }}" class="hx-cls-all mh-viewall">{{ (d.button_text or t('common.view_all')) | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+      </header>
+    {% endif %}
+    <ul class="hx-cls-row" role="list"{% if isDemoTiles %} data-hx-cols{% endif %}>
+      {% for tl in tiles %}
+        <li>
+          <a href="{{ tl.url }}" class="hx-cls-item mh-hud">
+            {# A cut-out (png/webp/svg) stands on the tile and overflows it; a
+               photo with its own background fills the tile instead. #}
+            {% set il = tl.img | lower %}
+            {% set cut = il.indexOf('.png') > -1 or il.indexOf('.webp') > -1 or il.indexOf('.svg') > -1 %}
+            <span class="hx-cls-media {{ 'is-cut' if cut else 'is-photo' }}">{% if tl.img %}<img src="{{ tl.img }}" alt="" loading="lazy"/>{% endif %}</span>
+            <span class="hx-cls-name">{{ tl.title | safe }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% else %}
+<section id="hx-cl-{{ id }}"
+         class="hx-cl {{ 'is-zoom' if d.hover_zoom != false }} is-{{ d.layout | default('start', true) }} is-r-{{ d.image_ratio | default('square', true) }}"
+         style="--cl-bg: {{ d.panel_bg | default('var(--color-bg-tertiary)', true) }}; --cl-tile: {{ d.tile_bg | default('var(--color-bg-secondary)', true) }}; --cl-icon: {{ d.icon_bg | default('var(--color-accent)', true) }}; --cl-per: {{ d.columns_desktop | default(4, true) }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --cl-btn: {{ d.color_accent }};{% endif %}">
+  <div class="hx-cl-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    <div class="hx-cl-panel">
+      <div class="hx-cl-pitch">
+        {% if eyebrow %}<p class="hx-cl-eyebrow mh-kicker">{{ eyebrow | safe }}</p>{% endif %}
+        {% if title %}<h2 class="hx-cl-title mh-h">{{ title | safe }}</h2>{% endif %}
+        {% if d.show_features != false %}
+          <ul class="hx-cl-feats" role="list">
+            {% for n in [1, 2, 3, 4] %}
+              {% set k = d['feature' ~ n ~ '_icon'] | default(defIcons[n - 1]) %}
+              {% set txt = d['feature' ~ n ~ '_text'] or t('clist.f.' ~ k) %}
+              {% if txt %}
+                <li class="hx-cl-feat{{ ' hy-editor-only' if not d['feature' ~ n ~ '_text'] }}"><span class="hx-cl-ico">{{ icon(k) }}</span><span>{{ txt | safe }}</span></li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if btnText %}<a href="{{ d.button_url | default('/collections', true) }}" class="hx-cl-btn mh-btn">{{ btnText | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+      </div>
+      <ul class="hx-cl-grid" role="list"{% if isDemoTiles %} data-hx-cols{% endif %}>
+        {% for tl in tiles %}
+          <li>
+            <a href="{{ tl.url }}" class="hx-cl-tile mh-hud">
+              <span class="hx-cl-media">{% if tl.img %}<img src="{{ tl.img }}" alt="" loading="lazy"/>{% endif %}</span>
+              <span class="hx-cl-name">{{ tl.title | safe }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
+{% if isDemoTiles %}
+<script>
+  /* Nothing picked → the store's real collections replace the demo tiles
+     (read off /collections by HayatAuto.collections(), main.js). A real
+     collection without a picture keeps that tile's demo picture. */
+  (function () {
+    function boot() {
+      var ul = document.querySelector('#hx-cl-{{ id }} [data-hx-cols]');
+      if (!ul || ul.__hx || !window.HayatAuto || !HayatAuto.collections) return;
+      ul.__hx = true;
+      HayatAuto.collections().then(function (list) {
+        if (!list || !list.length) return;
+        var lis = [].slice.call(ul.children);
+        lis.forEach(function (li, i) {
+          var c = list[i];
+          if (!c) { li.remove(); return; }
+          var a = li.querySelector('a'), nm = li.querySelector('.hx-cl-name, .hx-cls-name'), im = li.querySelector('img'), md = li.querySelector('.hx-cls-media');
+          a.setAttribute('href', c.url); nm.textContent = c.title;
+          if (c.image && im) { im.src = c.image; if (md) { md.classList.remove('is-cut'); md.classList.add('is-photo'); } }
+        });
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#hx-cl-' ~ id, c=d %}

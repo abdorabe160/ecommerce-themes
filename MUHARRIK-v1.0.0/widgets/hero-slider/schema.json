@@ -1,0 +1,230 @@
+{
+  "name": "سلايدر الواجهة",
+  "settings": {
+    "height": {
+      "type": "select",
+      "label": { "ar": "▸ ارتفاع السلايدر", "en": "▸ Slider height" },
+      "default": "full",
+      "options": [
+        { "value": "full", "label": { "ar": "ملء الشاشة", "en": "Full screen" } },
+        { "value": "large", "label": { "ar": "كبير", "en": "Large" } },
+        { "value": "medium", "label": { "ar": "متوسط", "en": "Medium" } }
+      ]
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": { "ar": "تشغيل تلقائي", "en": "Autoplay" },
+      "default": true
+    },
+    "interval": {
+      "type": "range",
+      "label": { "ar": "مدة كل شريحة", "en": "Time per slide" },
+      "default": 6,
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "s"
+    },
+    "hl_style": {
+      "type": "select",
+      "label": { "ar": "الكلمة المميزة في العنوان", "en": "Highlighted word in the title" },
+      "default": "yellow",
+      "options": [
+        { "value": "yellow", "label": { "ar": "بلون الهوية", "en": "Accent colour" } },
+        { "value": "outline", "label": { "ar": "مفرّغة (خط خارجي)", "en": "Hollow outline" } }
+      ]
+    },
+    "show_index": {
+      "type": "boolean",
+      "label": { "ar": "إظهار رقم الشريحة الكبير المفرّغ", "en": "Show the large hollow slide number" },
+      "default": true
+    },
+    "show_specs": {
+      "type": "boolean",
+      "label": { "ar": "إظهار شريط المواصفات", "en": "Show the spec readout" },
+      "default": true
+    },
+    "show_hud": {
+      "type": "boolean",
+      "label": { "ar": "إظهار إطار الزوايا (HUD)", "en": "Show the HUD corner frame" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 0,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (الكلمة المميزة، الشرائط، الخطوط)", "en": "Accent colour (highlight word, bars, line field)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية الزر الأساسي", "en": "Primary button background" },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": { "ar": "نص الزر الأساسي", "en": "Primary button text" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": { "ar": "▸ الصورة (كمبيوتر) — يفضّل ١٩٢٠×١٠٨٠ · فارغ = أرضية الكربون وخطوط الطريق", "en": "▸ Image (desktop) — 1920×1080 recommended · empty = carbon ground + line field" }
+        },
+        "image_mobile": {
+          "type": "media",
+          "label": { "ar": "صورة الموبايل (اختيارية) — يفضّل ١٠٨٠×١٣٥٠", "en": "Mobile image (optional) — 1080×1350 recommended" }
+        },
+        "image_position": {
+          "type": "select",
+          "label": { "ar": "تركيز الصورة عند القص", "en": "Image focus when cropped" },
+          "default": "center",
+          "options": [
+            { "value": "center", "label": { "ar": "المنتصف", "en": "Centre" } },
+            { "value": "left", "label": { "ar": "اليسار", "en": "Left" } },
+            { "value": "right", "label": { "ar": "اليمين", "en": "Right" } },
+            { "value": "top", "label": { "ar": "الأعلى", "en": "Top" } },
+            { "value": "bottom", "label": { "ar": "الأسفل", "en": "Bottom" } }
+          ]
+        },
+        "overlay": {
+          "type": "range",
+          "label": { "ar": "تعتيم الصورة خلف النص", "en": "Image darkening behind the text" },
+          "default": 55,
+          "min": 0,
+          "max": 90,
+          "step": 5,
+          "unit": "%"
+        },
+        "kicker": {
+          "type": "string",
+          "label": { "ar": "السطر الصغير — مثال: الأداء · العناية بالسيارة (فارغ = نص الثيم بلغة الزائر)", "en": "Kicker — e.g. PERFORMANCE · CAR CARE (empty = theme copy in the visitor's language)" },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": { "ar": "العنوان (فارغ = نص الثيم بلغة الزائر)", "en": "Title (empty = theme copy in the visitor's language)" },
+          "default": ""
+        },
+        "title_hl": {
+          "type": "string",
+          "label": { "ar": "الكلمة المميزة — تُضاف بعد العنوان بلون الهوية أو مفرّغة", "en": "Highlighted word — appended to the title in the accent colour or hollow" },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": { "ar": "النص", "en": "Text" },
+          "default": ""
+        },
+        "button_text": {
+          "type": "string",
+          "label": { "ar": "نص الزر الأساسي (فارغ = نص الثيم)", "en": "Primary button label (empty = theme copy)" },
+          "default": ""
+        },
+        "button_url": {
+          "type": "string",
+          "label": { "ar": "رابط الزر الأساسي — مثال: /shop أو /shop/<التشكيلة>", "en": "Primary button link — e.g. /shop or /shop/<collection>" },
+          "default": "/shop"
+        },
+        "button2_text": {
+          "type": "string",
+          "label": { "ar": "نص الزر الثاني (اختياري)", "en": "Secondary button label (optional)" },
+          "default": ""
+        },
+        "button2_url": {
+          "type": "string",
+          "label": { "ar": "رابط الزر الثاني — مثال: /collections", "en": "Secondary button link — e.g. /collections" },
+          "default": ""
+        },
+        "spec_1_label": {
+          "type": "string",
+          "label": { "ar": "▸ مواصفة ١ — العنوان (مثال: 0–100)", "en": "▸ Spec 1 — label (e.g. 0–100)" },
+          "default": ""
+        },
+        "spec_1_value": {
+          "type": "string",
+          "label": { "ar": "مواصفة ١ — القيمة (مثال: 4.2S)", "en": "Spec 1 — value (e.g. 4.2S)" },
+          "default": ""
+        },
+        "spec_2_label": {
+          "type": "string",
+          "label": { "ar": "مواصفة ٢ — العنوان", "en": "Spec 2 — label" },
+          "default": ""
+        },
+        "spec_2_value": {
+          "type": "string",
+          "label": { "ar": "مواصفة ٢ — القيمة", "en": "Spec 2 — value" },
+          "default": ""
+        },
+        "spec_3_label": {
+          "type": "string",
+          "label": { "ar": "مواصفة ٣ — العنوان", "en": "Spec 3 — label" },
+          "default": ""
+        },
+        "spec_3_value": {
+          "type": "string",
+          "label": { "ar": "مواصفة ٣ — القيمة", "en": "Spec 3 — value" },
+          "default": ""
+        },
+        "align": {
+          "type": "select",
+          "label": { "ar": "مكان النص", "en": "Text position" },
+          "default": "start",
+          "options": [
+            { "value": "start", "label": { "ar": "بداية السطر", "en": "Line start" } },
+            { "value": "center", "label": { "ar": "المنتصف", "en": "Centre" } },
+            { "value": "end", "label": { "ar": "نهاية السطر", "en": "Line end" } }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "الواجهة", "name": "سلايدر الواجهة" }
+  ]
+}

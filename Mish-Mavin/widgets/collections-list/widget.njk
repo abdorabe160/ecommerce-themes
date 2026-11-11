@@ -1,0 +1,28 @@
+{# صفحة كل التصنيفات (/collections) — بطاقات بنفس تصميم "Shop by category".
+   المصدر: التصنيفات المختارة من المحرر، وإن لم توجد فقائمة التصنيفات اللي بيبعتها المتجر للصفحة (collections). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set picked = wd.collections or [] %}
+{% set ctx = context or {} %}
+{% set list = picked if (picked | length) else (collections or ctx.collections or []) %}
+{% set fallbackImgs = { 'tops': 'mw-cat-1.jpg', 'compression': 'mw-cat-2.jpg', 'compressions': 'mw-cat-2.jpg', 'tanks': 'mw-cat-3.jpg', 'tanktop': 'mw-fc-5.jpg', 'bottoms': 'mw-cat-4.jpg', 'hoodies': 'mw-fc-4.jpg', 'new-arrivals': 'mw-fc-1.jpg', 'new-drop': 'mw-fc-1.jpg', 'tshirts': 'mw-fc-2.jpg', 't-shirts': 'mw-fc-2.jpg', 'best-sellers': 'mw-fc-3.jpg', 'shorts': 'mw-fc-6.jpg', 'home-page': 'mw-hero-1-mobile.jpg' } %}
+<section class="mw-page">
+  <div class="container">
+    <div class="mw-collection-hero">
+      <h1 class="mw-collection-hero__title">{{ wd.title or t('collection.all') }}</h1>
+    </div>
+    <div class="mw-cats__grid"{% if not (list | length) %} data-mw-demo="collections"{% endif %}>
+      {% for c in list %}{% if c and c.title and (c.handle or c.slug) and (c.handle or c.slug) != 'home-page' and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}
+        <a href="/collections/{{ c.handle or c.slug }}" class="mw-cat">
+          <div class="mw-cat__media">
+            {# التصنيف من غير صورة (قمرة بتبعت صورة placeholder من /system/assets/) → صورة من الثيم حسب اسم التصنيف #}
+            {% set cimg = c.image.fileUrl if (c.image and c.image.fileUrl and not ('/system/assets/' in c.image.fileUrl)) else '' %}
+            {% if not cimg %}{% set cimg = (fallbackImgs[c.handle or c.slug] or ('mw-cat-' + ((loop.index0 % 4) + 1) + '.jpg')) | assets %}{% endif %}
+            <img src="{{ cimg }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="600" height="800"/>
+          </div>
+          <span class="mw-cat__label">{{ c.title }}</span>
+        </a>
+      {% endif %}{% endfor %}
+    </div>
+    {% if not (list | length) %}<p class="mw-empty" data-mw-empty>{{t('collection.no_collections') | default('No collections yet.') }}</p>{% endif %}
+  </div>
+</section>

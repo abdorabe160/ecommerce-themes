@@ -1,0 +1,79 @@
+{
+  "name": "صفحة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "محتوى الصفحة",
+      "widget": "page-content",
+      "settings": {
+        "show_breadcrumb": true,
+        "show_title": true,
+        "eyebrow": "",
+        "title_override": "",
+        "width": "narrow",
+        "boxed": true,
+        "background": "canvas",
+        "fallback_text": "",
+        "show_updated": false
+      }
+    },
+    {
+      "name": "شريط الخدمات",
+      "widget": "features-bar",
+      "settings": {
+        "style": "trust",
+        "background": "alt",
+        "icon_tone": "appetite",
+        "icon_shape": "square",
+        "columns": "4",
+        "align": "start",
+        "show_dividers": true,
+        "boxed": false,
+        "border_top": true,
+        "border_bottom": true,
+        "compact": false
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "مخبوزات",
+          "settings": {
+            "icon": "oven",
+            "title": "مخبوزات",
+            "description": "خبز ومعجنات وفطائر"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "حلويات",
+          "settings": {
+            "icon": "star",
+            "title": "حلويات",
+            "description": "كيك وتشيز كيك وحلو شرقي"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "وجبات",
+          "settings": {
+            "icon": "chef",
+            "title": "وجبات",
+            "description": "سندوتشات وأطباق للغدا والعشا"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "اطلب أونلاين",
+          "settings": {
+            "icon": "bag",
+            "title": "اطلب أونلاين",
+            "description": "تصفّح المنيو وضيف للسلة في خطوات"
+          }
+        }
+      ]
+    }
+  ]
+}

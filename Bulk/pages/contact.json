@@ -1,0 +1,9 @@
+{
+  "layout": "layout",
+  "title": "تواصل معنا",
+  "name": "تواصل معنا",
+  "widgets": [
+    { "name": "عنوان الصفحة", "widget": "page-banner", "settings": { "title": "تواصل معنا", "subtitle": "" } },
+    { "name": "نموذج التواصل", "widget": "contact-form", "settings": { "heading_tag": "h2" } }
+  ]
+}

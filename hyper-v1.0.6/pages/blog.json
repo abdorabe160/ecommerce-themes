@@ -1,0 +1,21 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونة",
+      "widget": "blog-page",
+      "settings": {
+        "show_hero": true,
+        "feature_first": true,
+        "show_date": true,
+        "show_excerpt": true,
+        "columns": "3",
+        "background": "white",
+        "colors_enabled": false
+      }
+    }
+  ]
+}

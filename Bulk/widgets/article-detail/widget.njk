@@ -1,0 +1,85 @@
+{# =========================================================
+   Dark Blood - صفحة مقال
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# المقال: المتغير العام article أو context.article (شكل بيانات المنصة) #}
+{% set article = article if (article and article.title) else (context.article if (context and context.article and context.article.title) else null) %}
+
+{% if article %}
+  {#- الغلاف بيوصل بأشكال مختلفة: image.fileUrl أو imageUrl أو image كنص. والمقالة بترجع لتصنيفها لو معروف -#}
+  {% set cover = (article.image.fileUrl if (article.image and article.image.fileUrl) else '') or article.imageUrl or (article.image if (article.image is string) else '') %}
+  {% set postDate = article.publishedAt or article.createdAt %}
+  {% set postBlogHandle = (article.blog.handle or article.blog.slug) if article.blog else '' %}
+  {% set blogUrl = ('/blogs/' + postBlogHandle) if postBlogHandle else '/blogs' %}
+  <article class="blk-section blk-article" id="blkArticle-{{ widget.id }}">
+    <div class="blk-container blk-article-container">
+
+      <header class="blk-article-head">
+        <nav class="blk-breadcrumb blk-anim-fade-up" aria-label="{{t('common.breadcrumb')}}">
+          <a href="/">{{t('common.home')}}</a>
+          <span class="blk-breadcrumb-sep">/</span>
+          <a href="{{ blogUrl }}">{{ article.blog.title if (article.blog and article.blog.title) else t('common.blog') }}</a>
+          <span class="blk-breadcrumb-sep">/</span>
+          <span aria-current="page">{{ article.title }}</span>
+        </nav>
+
+        {% if article.category and article.category.title %}
+          <span class="blk-cat-badge blk-anim-fade-up">{{ article.category.title }}</span>
+        {% endif %}
+
+        <h1 class="blk-article-title blk-anim-fade-up" style="--anim-delay: 0.1s;">{{ article.title }}</h1>
+
+        <div class="blk-blog-meta blk-anim-fade-up" style="--anim-delay: 0.15s;">
+          {% if postDate %}
+            <time datetime="{{ postDate }}" data-blk-date>{{ (postDate | string).slice(0, 10) }}</time>
+          {% endif %}
+          {% if article.views %}
+            <span>{{ article.views }} {{t('blog.views')}}</span>
+          {% endif %}
+          {% if article.content %}
+            <span>{{ ((article.content | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | wordcount) / 200) | round(0, 'ceil') }} {{t('blog.min_read')}}</span>
+          {% endif %}
+        </div>
+      </header>
+
+      {% if cover %}
+        <figure class="blk-article-cover blk-anim-fade-up" style="--anim-delay: 0.2s;">
+          <img src="{{ cover }}" alt="{{ article.title }}" loading="lazy" decoding="async">
+        </figure>
+      {% endif %}
+
+      <div class="blk-rich-text blk-article-body">
+        {{ article.content | safe }}
+      </div>
+
+      {% if s.show_share != false %}
+        <div class="blk-article-share">
+          <span>{{t('blog.share')}}</span>
+          <a class="blk-icon-btn" target="_blank" rel="noopener" aria-label="{{t('common.facebook')}}" data-share="facebook" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V5h-3c-2.8 0-4 1.7-4 4v2H8v4h2v8h4v-8h3l1-4h-4V9.5c0-.3.2-.5.5-.5z"/></svg>
+          </a>
+          <a class="blk-icon-btn" target="_blank" rel="noopener" aria-label="{{t('common.whatsapp')}}" data-share="whatsapp" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.6-.1 1.2z"/></svg>
+          </a>
+          <button type="button" class="blk-icon-btn" aria-label="{{t('blog.copy_link')}}" data-share="copy">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+          </button>
+        </div>
+      {% endif %}
+
+      <a href="{{ blogUrl }}" class="blk-section-link blk-article-back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        {{t('blog.all_articles')}}
+      </a>
+    </div>
+  </article>
+{% else %}
+  <section class="blk-section">
+    <div class="blk-container">
+      {% set emptyTitle = t('blog.not_found') %}{% set emptyBtn = t('blog.back') %}
+      {#- الصفحة لازم يبقى فيها H1 واحد حتى والمقال مش موجود -#}
+      <h1 class="blk-sr-only">{{ emptyTitle }}</h1>
+      {% ui "blk-empty.njk", title=emptyTitle, btn_text=emptyBtn, btn_url="/blogs", icon="box" %}
+    </div>
+  </section>
+{% endif %}

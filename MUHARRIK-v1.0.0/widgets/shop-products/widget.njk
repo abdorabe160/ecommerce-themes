@@ -1,0 +1,160 @@
+{# ============================================================================
+   HYPER SHOP PRODUCTS — the grid injected into the shop page
+   ----------------------------------------------------------------------------
+   ⚠️  Qumra mounts this widget into
+       #products-grid-wrapper[data-qumra-section="shop-products"] and re-renders
+       it on every filter / sort / page change. It runs INSIDE the
+       collectionFilter() Alpine scope, so goToPage() is available here.
+
+   ⚠️  Three contracts, all load-bearing:
+     · .shop-products-content — style.css hides this markup unless it sits
+       inside [data-qumra-section], so a stray server-rendered copy of the grid
+       can never appear twice on the page.
+     · #products-count-data — main.js copies its innerHTML into the toolbar
+       count after every run. Keep the id, keep it hidden.
+     · the cards come from ui/product-card.njk, the same partial the home page
+       uses, so a filtered grid matches the row that linked to it.
+   ========================================================================= #}
+<div class="shop-products-content">
+
+{% set d = widget.data %}
+{# /shop and /shop/<handle> send context.shop; /collections/<handle> sends
+   context.products + context.pagination. #}
+{% set products = context.shop.products or context.products or [] %}
+{% set pagination = context.shop.pagination or context.pagination %}
+{% set totalItems = pagination.totalItems if pagination else (products | length) %}
+{# No ratio setting here on purpose. `shop-page` owns it and pushes it down as
+   `--hy-card-ratio` on the section, which reaches these cards AND the ones
+   main.js rebuilds after a filter. A second copy on this widget is what made
+   the setting look dead: the two disagreed and each won on a different path. #}
+{% set ratio = '' %}
+
+{# ---- count source ----
+   main.js mirrors this into the toolbar after every filter run. It does NOT
+   run on first paint — this partial is server rendered — so the small script
+   below does that one initial copy. Without it the count sits empty until the
+   shopper touches a filter. #}
+<div id="products-count-data" style="display: none;">
+  {% ui "count.njk", n=(totalItems or 0), kind='product' %}
+</div>
+
+{% if (products | length) > 0 %}
+  <div class="hy-shop-grid hx-shop-grid">
+    {% for p in products %}
+      {% ui "hx-card.njk", product=p, sale_badge=t('featured.sale_badge'), low_badge=t('featured.low_badge'), note='', rating='on', thumbs='on', stock='on', quick='on', atc='on', hover='on' %}
+    {% endfor %}
+  </div>
+
+  {# ---- pagination — goToPage() comes from the collectionFilter scope ---- #}
+  {% if pagination and pagination.totalPages > 1 %}
+    <nav class="hy-pager" aria-label="pagination">
+      <button type="button" class="hy-pager-btn"
+              {% if pagination.currentPage <= 1 %}disabled{% endif %}
+              @click="goToPage({{ pagination.currentPage - 1 }})"
+              aria-label="{{t('common.prev')}}">
+        <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+        </svg>
+      </button>
+
+      {% for n in range(1, pagination.totalPages + 1) %}
+        {# Show the first, the last, and a window around the current page —
+           a 40-page collection would otherwise print 40 buttons. #}
+        {% if n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+          <button type="button" class="hy-pager-btn {{ 'is-active' if n == pagination.currentPage }}"
+                  @click="goToPage({{ n }})">{{ n }}</button>
+        {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+          <span class="hy-pager-gap">…</span>
+        {% endif %}
+      {% endfor %}
+
+      <button type="button" class="hy-pager-btn"
+              {% if pagination.currentPage >= pagination.totalPages %}disabled{% endif %}
+              @click="goToPage({{ pagination.currentPage + 1 }})"
+              aria-label="{{t('common.next')}}">
+        <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+        </svg>
+      </button>
+    </nav>
+  {% endif %}
+{% else %}
+  {# THREE different kinds of "nothing", not two.
+
+     · A filter or a search that matched nothing is a real answer, and gets one.
+     · An EMPTY COLLECTION is also a real answer — someone opened a category the
+       merchant has not stocked. This case used to fall through to the branch
+       below, so a shopper on a live store was shown eight fake product cards
+       and the line "Sample content — pick your products in the Theme Editor",
+       which is a sentence written for the merchant and addressed to a customer.
+       `hasFilters` alone could not see it: an empty collection carries no
+       applied filter and no query.
+     · A store with NO products at all is a merchant looking at their own
+       unfinished shop, and a grid of placeholders tells them more than an
+       apology does. That is the only case the skeleton is for.
+
+     The way out matters as much as the message: a dead end with no link is how
+     a session ends. Both real-answer cases get a route back to the full shop. #}
+  {% set col = context.shop.collection if (context.shop and context.shop.collection and context.shop.collection._id) else (context.collection | default(null)) %}
+  {# ⚠️  What the server actually sends (measured on the dev store):
+       context.shop.filters.applied = { filters: { price: {min}, 101: [..] }, sort, q }
+     `context.shop.appliedFilters` does not exist, so this test was always
+     false — a price range that matched nothing fell through to the merchant
+     placeholder grid: eight skeleton cards and "0 products" above them, on a
+     live shop, for a customer. `| length` counts an object's keys here. #}
+  {% set applied = context.shop.filters.applied if (context.shop and context.shop.filters and context.shop.filters.applied) else {} %}
+  {% set hasFilters = (applied.filters | default({}, true) | length) > 0
+                      or (applied.q | default('', true) | length) > 0
+                      or (context.query.q | default('', true) | length) > 0
+                      or (context.shop.appliedFilters | default([], true) | length) > 0
+                      or (context.shop.query | default('', true) | length) > 0 %}
+  {% if hasFilters or col %}
+    <div class="hy-empty">
+      <span class="hy-empty-title">
+        {{ t('pages.search.no_results') if hasFilters else t('products.no_products') }}
+      </span>
+      {% if hasFilters %}
+        <p class="m-0 text-sm">{{t('pages.search.try_different')}}</p>
+      {% endif %}
+      <a href="/shop" class="hy-btn hy-btn--outline hy-btn--sm" style="margin-block-start: var(--space-4);">
+        {{t('pages.shop.all_products')}}
+      </a>
+    </div>
+  {% else %}
+    <div class="hy-shop-grid hx-shop-grid">
+      {% ui "placeholder.njk", kind='product', count='8', image_ratio=ratio %}
+    </div>
+    <p class="hy-ph-note">{{ t('common.placeholder_note') }}</p>
+  {% endif %}
+{% endif %}
+
+<script>
+  (function () {
+    /* ---- 1. put the grid where it belongs -------------------------------
+       Qumra renders this widget in PAGE ORDER (it is the second entry in
+       pages/shop.json) and, on a filter run, again inside
+       #products-grid-wrapper. style.css only shows the copy that sits inside
+       that wrapper — otherwise the grid would appear twice.
+
+       On a first load the mounted copy does not exist yet, so the only copy
+       present is the page-order one and the rule hides it: the shopper lands
+       on an empty results column with a working product count beside it, and
+       the products appear only after they touch a filter.
+
+       Moving the page-order copy into the wrapper fixes that at the source. It
+       is a no-op when Qumra did mount one (`contains` is already true), so it
+       is safe whichever way the platform renders. ------------------------- */
+    var wrap = document.getElementById('products-grid-wrapper');
+    var content = document.currentScript && document.currentScript.closest('.shop-products-content');
+    if (wrap && content && !wrap.contains(content)) wrap.appendChild(content);
+
+    /* ---- 2. one initial copy of the count into the toolbar --------------
+       main.js owns every later update; it does not run on first paint
+       because this partial is server rendered. */
+    var src = document.getElementById('products-count-data');
+    var dst = document.getElementById('products-count-toolbar');
+    if (src && dst) dst.innerHTML = src.innerHTML;
+  })();
+</script>
+
+</div>

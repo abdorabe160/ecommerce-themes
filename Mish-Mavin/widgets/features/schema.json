@@ -1,0 +1,60 @@
+{
+  "name": "features",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "item": {
+      "name": "ميزة",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "features"
+    }
+  ]
+}

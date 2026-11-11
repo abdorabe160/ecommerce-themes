@@ -1,0 +1,252 @@
+{# ============================================================================
+   LAMSA CART PAGE
+   ----------------------------------------------------------------------------
+   Rows come from ui/cart-item.njk — the same partial the drawer uses, so the
+   two views of the cart can never disagree.
+
+   ⚠️  data-* hooks read by CartManager._updateUI() / _refreshDrawer():
+       data-cart-count · data-cart-total · data-cart-savings-row · data-cart-savings
+       (plus data-cart-item / data-item-total / data-item-compare inside each row)
+
+   ⚠️  NO coupon input. Qumra exposes cart.couponApplied / couponDiscount as
+   READ-ONLY values and documents no coupon endpoint — an input here could not
+   submit anywhere. The applied discount is displayed; entering one happens at
+   checkout.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set title = d.title | default(t('pages.cart.title'), true) %}
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showSavings = d.show_savings | default(true) %}
+{% set showDiscount = d.show_discount_row | default(true) %}
+{% set freeThreshold = d.free_shipping_threshold | default(0) %}
+{% set confirmRemove = d.confirm_remove | default(true) %}
+{% set checkoutUrl = d.checkout_url | default('/checkout') %}
+{% set shopUrl = d.continue_shopping_url | default('/shop') %}
+{% set noteText = d.note_text | default('') %}
+
+{% set itemCount = cart.items | length %}
+
+
+<style>
+  .lamsa-cp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-cp-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-cp-{{ id }}-title { line-height: 1.34; }
+
+  .lamsa-cp-{{ id }}-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (min-width: 1024px) {
+    .lamsa-cp-{{ id }}-row { grid-template-columns: minmax(0, 1fr) 366px; gap: 40px; }
+    .lamsa-cp-{{ id }}-summary { position: sticky; top: 108px; }
+  }
+
+  .lamsa-cp-{{ id }}-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  .lamsa-cp-{{ id }}-summary-box {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 26px;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+  @media (max-width: 640px) { .lamsa-cp-{{ id }}-summary-box { padding: 20px; } }
+
+  /* free-shipping progress */
+  .lamsa-cp-{{ id }}-ship {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 14px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--color-sage-light);
+  }
+  .lamsa-cp-{{ id }}-bar {
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+  }
+  .lamsa-cp-{{ id }}-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-sage);
+    transition: width var(--t-slow) var(--ease-out);
+  }
+</style>
+
+
+<section id="lamsa-cp-{{ id }}" class="lamsa-section" data-cart-page
+         x-data="cartInteraction({
+           items: [{% for item in cart.items %}{ id: '{{ item._id }}', qty: {{ item.quantity }} }{% if not loop.last %},{% endif %}{% endfor %}],
+           confirmRemove: {{ 'true' if confirmRemove else 'false' }}
+         })">
+  <div class="lamsa-container">
+
+    {# ═══════════════ has items ═══════════════ #}
+    <div x-show="activeItems.length > 0" {% if itemCount == 0 %}x-cloak{% endif %}>
+
+      {% if showBreadcrumb %}
+        <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+          <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+          <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+          <span style="color: var(--color-text-secondary);">{{ title }}</span>
+        </nav>
+      {% endif %}
+
+      <div class="flex items-baseline gap-3 flex-wrap mb-7">
+        {# Both states sit in the page and Alpine swaps them, so only the one the
+           server opened on is the H1. #}
+        {% if itemCount > 0 %}<h1 class="lamsa-cp-{{ id }}-title">{{ title }}</h1>{% else %}<h2 class="lamsa-cp-{{ id }}-title">{{ title }}</h2>{% endif %}
+        <span class="lamsa-caption">
+          {{ t('pages.cart.items_label') }} <span data-cart-count>{{ cart.totalQuantity | default(0, true) }}</span>
+        </span>
+      </div>
+
+      <div class="lamsa-cp-{{ id }}-row">
+
+        {# ═════════ items ═════════ #}
+        <div class="lamsa-cp-{{ id }}-list" data-cart-container>
+          {# rows come from ui/cart.njk in 'list' mode — same macro the drawer uses #}
+          {% ui "cart.njk", variant='list' %}
+
+          <div class="flex items-center justify-between gap-3 px-4 pb-2 pt-1">
+            <a href="{{ shopUrl }}" class="lamsa-link font-body">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+              {{ t('pages.cart.continue_shopping') }}
+            </a>
+            <button type="button" @click="Qumra.cart.clear()"
+                    class="lamsa-btn lamsa-btn--ghost lamsa-btn--sm"
+                    style="color: var(--color-text-tertiary);">
+              {{ t('pages.cart.clear') }}
+            </button>
+          </div>
+        </div>
+
+        {# ═════════ summary ═════════ #}
+        <div class="lamsa-cp-{{ id }}-summary">
+          <div class="lamsa-cp-{{ id }}-summary-box" data-cart-footer>
+
+            <span class="lamsa-label m-0">{{ t('pages.cart.order_summary') }}</span>
+
+            {# ---- free shipping progress ---- #}
+            {% if freeThreshold > 0 %}
+              {% set remaining = freeThreshold - (cart.totalPrice | default(0)) %}
+              <div class="lamsa-cp-{{ id }}-ship">
+                {% if remaining > 0 %}
+                  <span class="lamsa-text-sm" style="color: var(--color-sage-hover); font-weight: 600;">
+                    {{ t('pages.cart.free_shipping_left') }} {{ remaining | money }}
+                  </span>
+                {% else %}
+                  <span class="lamsa-text-sm inline-flex items-center gap-2" style="color: var(--color-sage-hover); font-weight: 600;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                    </svg>
+                    {{ t('pages.cart.free_shipping_earned') }}
+                  </span>
+                {% endif %}
+                <span class="lamsa-cp-{{ id }}-bar">
+                  <span style="width: {{ 100 if remaining <= 0 else ((cart.totalPrice | default(0)) / freeThreshold * 100) | round }}%;"></span>
+                </span>
+              </div>
+            {% endif %}
+
+            <div class="flex flex-col gap-2.5">
+              <div class="lamsa-csum-row">
+                <span>{{ t('pages.cart.subtotal') }}</span>
+                <span class="font-num" style="color: var(--color-text-primary);" data-cart-total>{{ cart.totalPrice | money }}</span>
+              </div>
+
+              {% if showSavings %}
+                <div class="lamsa-csum-row" data-cart-savings-row
+                     {% if not cart.totalSavings or cart.totalSavings <= 0 %}style="display: none;"{% endif %}>
+                  <span>{{ t('pages.cart.savings') }}</span>
+                  <span class="font-num" style="color: var(--color-accent); font-weight: 700;" data-cart-savings>
+                    -{{ cart.totalSavings | money }}
+                  </span>
+                </div>
+              {% endif %}
+
+              {% if showDiscount and cart.couponApplied %}
+                <div class="lamsa-csum-row">
+                  <span>{{ t('pages.cart.discount') }}</span>
+                  <span class="font-num" style="color: var(--color-accent); font-weight: 700;">
+                    -{{ cart.couponDiscount | money }}
+                  </span>
+                </div>
+              {% endif %}
+
+              <div class="lamsa-csum-row">
+                <span>{{ t('pages.cart.shipping') }}</span>
+                <span style="color: var(--color-text-tertiary);">{{ t('pages.cart.calculated_at_checkout') }}</span>
+              </div>
+
+              <div class="lamsa-csum-row lamsa-csum-row--total">
+                <span>{{ t('pages.cart.total') }}</span>
+                <span class="lamsa-price lamsa-price--lg" data-cart-total>{{ cart.totalPrice | money }}</span>
+              </div>
+            </div>
+
+            <a href="{{ checkoutUrl }}" class="lamsa-btn lamsa-btn--primary lamsa-btn--lg lamsa-btn--block">
+              {{ t('pages.cart.checkout') }}
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+
+            {% if noteText %}
+              <p class="lamsa-caption text-center m-0">{{ noteText }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {# ═══════════════ empty ═══════════════ #}
+    <div x-show="activeItems.length === 0" {% if itemCount > 0 %}x-cloak{% endif %} data-cart-empty>
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon" style="width: 108px; height: 108px;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+            <path d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+          </svg>
+        </span>
+        {% if itemCount > 0 %}<h2 class="lamsa-cp-{{ id }}-title">{{ t('cart.empty_title') }}</h2>{% else %}<h1 class="lamsa-cp-{{ id }}-title">{{ t('cart.empty_title') }}</h1>{% endif %}
+        <p class="lamsa-text-sm m-0 max-w-md mx-auto">{{ t('cart.empty_message') }}</p>
+        <a href="{{ shopUrl }}" class="lamsa-btn lamsa-btn--primary lamsa-btn--lg mt-2">
+          {{ t('cart.continue_shopping') }}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>

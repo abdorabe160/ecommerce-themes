@@ -1,0 +1,23 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "image_ratio": "1x1",
+        "show_zoom": true,
+        "kicker": "",
+        "show_description": true,
+        "oos_note": "هذا المنتج غير متوفر حالياً. تابعنا ليصلك إشعار الإصدار القادم.",
+        "show_related": true,
+        "related_title": "قطع مشابهة",
+        "related_limit": 4
+      },
+      "blocks": []
+    }
+  ]
+}

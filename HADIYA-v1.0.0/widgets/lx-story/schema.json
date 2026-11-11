@@ -1,0 +1,102 @@
+{
+  "name": "جملة البراند",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق النص — اتركه فارغاً لإخفائه",
+        "en": "Small line above — leave empty to hide"
+      },
+      "default": "فن الإهداء"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ الجملة الرئيسية",
+        "en": "▸ The statement"
+      },
+      "default": "الهدية مش في اللي جوّه العلبة، الهدية في إنك افتكرت."
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "نص قصير — اتركه فارغاً لإخفائه",
+        "en": "Short text — leave empty to hide"
+      },
+      "default": ""
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الخلفية — من غيرها بتظهر صورة الثيم",
+        "en": "Background picture — the theme's photo shows without one"
+      }
+    },
+    "link_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط — اتركه فارغاً لإخفائه",
+        "en": "Link text — leave empty to hide"
+      },
+      "default": "اكتشف المجموعة"
+    },
+    "link_url": {
+      "type": "string",
+      "label": {
+        "ar": "الرابط",
+        "en": "Link"
+      },
+      "default": "/shop"
+    },
+    "height": {
+      "type": "range",
+      "label": {
+        "ar": "الارتفاع",
+        "en": "Height"
+      },
+      "default": 620,
+      "min": 420,
+      "max": 900,
+      "step": 20,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز",
+        "en": "Accent"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "جملة البراند"
+    }
+  ]
+}

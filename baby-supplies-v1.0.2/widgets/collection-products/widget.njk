@@ -1,0 +1,318 @@
+{# ============================================================================
+   PEBBLE PRODUCT TABS · CAROUSEL — one rail per tab, of real product cards
+   ----------------------------------------------------------------------------
+     Hot This Week                            ( Best Sellers ) New Arrivals
+     ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌──
+     │ [New]  │ │        │ │ [Sale] │ │ [Hot]  │ │
+     │ [Popul]│ │   🔍   │ │        │ │        │ │   ← the 5th is cut by the
+     │        │ │        │ │        │ │        │ │     viewport: that sliver
+     │        │ │(Add ▸+)│ │        │ │        │ │     IS the scroll hint
+     └────────┘ └────────┘ └────────┘ └────────┘ └──
+      Logo Polo   Stripe Hat  Backpack   Backpack
+      $45.00      $15.00      $22 $32    $55.00
+      ▬           ▬           ▬          ▬
+     ▬▬▬───────────────                        ( ‹ ) ( › )
+
+   Measured off the reference at 1440px:
+     container  1200, and the rail runs from its start edge to the viewport's
+     cards      four across it with a 10px gap — which is where 292.5px comes
+                from, not the other way round
+     tile       3:4, rounded 12
+     tabs       32px pills on the head's end edge, the active one on #E7E7E7
+     progress   225px, 2px tall, at the start edge
+     arrows     38px circles at the end edge, on the progress bar's own row
+
+   ── It shares its rail with the collection tabs ──
+   The shell (`.hy-ct-*`, assets/style.css → 15.10) and the behaviour
+   (`HayatRail`, assets/main.js) are the same two sections' worth of code
+   serving both, because they are the same thing over different cards. This one
+   adds `.hy-ct--products`, which is the measured difference: four across
+   instead of five, a 10px gap, a 225px indicator and 38px arrows.
+
+   ── Tabs ──
+   Three fixed slots (`tab1_*` … `tab3_*`), NOT repeatable blocks.
+
+   ⚠️  They were blocks, each holding its own `products` picker, and the Theme
+   Editor would not render the block's settings at all with one there. No
+   original widget in this theme puts `products` inside a `blocks` entry —
+   `media` and `menu` are the only pickers that appear in one — so the type is
+   supported at widget level only. Do not move these back into blocks.
+
+   A slot with no LABEL is not a tab and renders nothing. With fewer than two
+   labelled slots no tab strip renders at all and the section is just a rail —
+   which is what pages/product.json wants for "قد يعجبك أيضاً".
+
+   Every set is rendered SERVER-SIDE and the inactive rails are `hidden`, not
+   fetched on click: the sets are already in the page JSON, so a request would
+   be a round trip to redisplay what the browser is holding.
+
+   ── Cards ──
+   ui/product-card.njk on the server, HayatCard.build() over AJAX. Both live in
+   one place each; this widget never writes card markup itself. `catalog` is
+   the variant — see 15.9.1.
+
+   ── Empty states ──
+   A merchant drops this in before picking anything, so an empty tab falls back
+   to fetching the newest products. If the STORE is empty too, the rail draws
+   placeholder cards rather than a bare apology: the merchant sees the real
+   layout at the real size, waiting to be filled.
+
+   All styling lives in assets/style.css → "15.10 COLLECTION TABS" (the shell)
+   and "15.9.1 CATALOG VARIANT" (the cards).
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{# Fixed slots, listed once here so every loop below stays in step. #}
+{% set tabs = [
+  { label: d.tab1_label | default(''), products: d.tab1_products | default([]) },
+  { label: d.tab2_label | default(''), products: d.tab2_products | default([]) },
+  { label: d.tab3_label | default(''), products: d.tab3_products | default([]) }
+] %}
+{# Counted with an inline-if sum rather than a loop: Nunjucks scopes `{% set %}`
+   to the block it runs in, so a counter incremented inside `{% for %}` reads
+   back as its pre-loop value outside it. #}
+{% set labelled = (1 if d.tab1_label else 0) + (1 if d.tab2_label else 0) + (1 if d.tab3_label else 0) %}
+{% set showTabs = labelled > 1 %}
+{# Which slot opens. NOT `loop.first` — a merchant who labels slots 2 and 3 and
+   leaves slot 1 blank renders no rail for slot 1, and `loop.first` then marks
+   nothing, so every rail kept its `hidden` and the section rendered as a bare
+   heading. A plain expression, because a loop that found it could not report
+   back out: Nunjucks scopes `{% set %}` to the block it runs in. #}
+{% set firstIdx = 0 if d.tab1_label else (1 if d.tab2_label else (2 if d.tab3_label else 0)) %}
+
+{% set title = d.title | default('') %}
+{% set subtitle = d.subtitle | default('') %}
+{% set viewAllText = d.view_all_text | default('') %}
+{% set viewAllUrl = d.view_all_url | default('/shop') %}
+
+{% set per = d.columns_desktop | default('4') | float %}
+{% set perM = d.columns_mobile | default('2') | float %}
+{% set ratio = d.card_image_ratio | default('3x4') %}
+{% set bg = d.background | default('white') %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showBar = d.show_progress | default(true) %}
+
+{# ---- Fallback size ----
+   Only ever applies to the automatic "newest products" fallback; a hand-picked
+   list is shown in full. It is both SENT to the API and applied with `slice` —
+   see the note beside the request. #}
+{% set limit = 12 %}
+
+{% set promoOn = d.promo_enabled | default(false) %}
+{% set promoImg = d.promo_image.fileUrl if d.promo_image and d.promo_image.fileUrl else (d.promo_image if d.promo_image is string else '') %}
+{# Demo picture while the field is empty: assets/demo-*.jpg are CC0 photos
+   (sources in _ref/demo-images-sources.txt). An uploaded image replaces it. #}
+{# demo-promo shows a girl (house rule: no women or girls), so it stays unused. #}
+{% set promoImg = promoImg if promoImg else ('demo-bundle.jpg' | assets) %}
+{% set promoUrl = d.promo_url | default('/shop') %}
+
+
+<section id="hy-pt-{{ id }}"
+         class="hy-ct hy-ct--products {{ 'hy-ct--well' if bg == 'well' }}"
+         data-hy-rail-root>
+  <style>
+    /* NOTE: The `-set` suffix is load-bearing. This is an ID selector, so anything
+       it writes outranks every class rule in the stylesheet — the responsive
+       ones included. Written as `--hy-ct-per` directly, a desktop count of 4
+       survived into a 390px viewport and put four cards on a phone.
+
+       The stylesheet reads these as the value for EACH band and decides
+       nothing else; the fraction on the phone count is what leaves a sliver of
+       the next card showing, which is how a rail says it scrolls on a screen
+       with no scrollbar and no hover. */
+    #hy-pt-{{ id }} {
+      --hy-ct-per-set: {{ per }};
+      --hy-ct-per-md-set: {{ 3 if per > 3 else per }};
+      --hy-ct-per-sm-set: {{ perM + 0.2 }};
+    }
+  </style>
+
+  {# ---- head ---- #}
+  {% if title or subtitle or showTabs or viewAllText %}
+    <div class="hy-container">
+      <div class="hy-ct-head">
+        <div class="hy-pt-headings">
+          {% if title %}<h2 class="hy-ct-title">{{ title }}</h2>{% endif %}
+          {% if subtitle %}<p class="hy-pt-sub">{{ subtitle }}</p>{% endif %}
+        </div>
+
+        {# The tab strip and the "view all" link share the head's end edge, so
+           only one of them can have it. Tabs win when there are any: they
+           change what the rail SHOWS, while the link only leaves it. #}
+        {% if showTabs %}
+          <div class="hy-ct-tabs" role="tablist" aria-label="{{ title | default(t('products.shop'), true) }}">
+            {# Unlabelled slots are skipped, but `loop.index0` still counts them
+               so the tab indices stay in step with the rails below. There is no
+               fallback label on purpose — a shared one makes every unnamed tab
+               read identically. #}
+            {% for tb in tabs %}
+              {% if tb.label %}
+                <button type="button"
+                        class="hy-ct-tab {{ 'is-active' if loop.index0 == firstIdx }}"
+                        role="tab"
+                        id="hy-ptTab-{{ id }}-{{ loop.index0 }}"
+                        data-hy-tab="{{ loop.index0 }}"
+                        aria-controls="hy-ptRail-{{ id }}-{{ loop.index0 }}"
+                        aria-selected="{{ 'true' if loop.index0 == firstIdx else 'false' }}">{{ tb.label }}</button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% elif viewAllText %}
+          <a href="{{ viewAllUrl }}" class="hy-ct-all">
+            <span>{{ viewAllText }}</span>
+            <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ---- rails: one per tab ----
+     Slot 1 renders even unlabelled, so a section with no tabs at all is still
+     a product rail. #}
+  <div class="hy-ct-rails">
+    {% for tb in tabs %}
+      {% if tb.label or (loop.first and labelled == 0) %}
+        {% set products = tb.products %}
+        {% set hasServer = (products | length) > 0 %}
+        {% set outer = loop %}
+
+        <div class="hy-ct-rail taqa-scroll-thin"
+             id="hy-ptRail-{{ id }}-{{ loop.index0 }}"
+             data-hy-rail="{{ loop.index0 }}"
+             data-hy-pane="{{ id }}-{{ loop.index0 }}"
+             role="{{ 'tabpanel' if showTabs else 'group' }}"
+             {% if showTabs %}aria-labelledby="hy-ptTab-{{ id }}-{{ loop.index0 }}"{% endif %}
+             {% if loop.index0 != firstIdx %}hidden{% endif %}>
+
+          {% if promoOn and loop.index0 == firstIdx and promoImg %}
+            {# The promo tile rides in the FIRST slot of the rail rather than
+               sitting outside it: outside it would need its own column and the
+               rail's scroll would start past it, which on a phone hides it
+               entirely behind the first product. #}
+            <a href="{{ promoUrl }}" class="hy-promo">
+              <img src="{{ promoImg }}" alt="{{ d.promo_title | default('') }}" loading="lazy" class="hy-promo-img"/>
+              <span class="hy-promo-scrim"></span>
+              <span class="hy-promo-body">
+                {% if d.promo_eyebrow %}<span class="hy-promo-eyebrow">{{ d.promo_eyebrow }}</span>{% endif %}
+                {% if d.promo_title %}<span class="hy-promo-title">{{ d.promo_title }}</span>{% endif %}
+              </span>
+              {% if d.promo_cta_text %}
+                <span class="hy-promo-cta">{{ d.promo_cta_text }}</span>
+              {% endif %}
+            </a>
+          {% endif %}
+
+          {% for p in products %}
+            {# `show_eyebrow='off'` — the reference puts nothing between the
+               photograph and the name, and a collection line there competes
+               with the tab the shopper just chose. #}
+            {% ui "product-card.njk", product=p, image_ratio=ratio, variant='catalog', show_eyebrow='off' %}
+          {% endfor %}
+
+          {% if not hasServer %}
+            {# Placeholders for a store with nothing in it yet. They live INSIDE
+               the rail so it has its true height from the first paint; the
+               script replaces them the moment real products arrive, and leaves
+               them standing if none ever do. #}
+            {% ui "placeholder.njk", kind='product', count=per, image_ratio=ratio, variant='catalog' %}
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {# ---- foot ---- #}
+  {% if showBar or showArrows %}
+    <div class="hy-container">
+      <div class="hy-ct-foot">
+        {% if showBar %}
+          <span class="hy-ct-track" role="presentation">
+            <span class="hy-ct-bar" data-hy-bar></span>
+          </span>
+        {% endif %}
+
+        {% if showArrows %}
+          <span class="hy-ct-arrows">
+            <button type="button" class="hy-ct-arrow" data-hy-prev aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+              </svg>
+            </button>
+            <button type="button" class="hy-ct-arrow" data-hy-next aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+              </svg>
+            </button>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+{# The rail's behaviour — the tabs, the arrows and the progress bar — is
+   HayatRail in assets/main.js, which this section opts into with the
+   `data-hy-rail-*` attributes above. Only the fallback fetch is local, because
+   only this section has one. #}
+<script>
+  (function () {
+    var root = document.getElementById('hy-pt-{{ id }}');
+    if (!root) return;
+
+    /* Mirrors the locals passed to ui "product-card.njk" above, so an AJAX card
+       and a server card resolve their options identically. An empty ratio means
+       "inherit the theme setting", which HayatCard already does through its own
+       defaults — so it must not be sent as an empty string. */
+    var cardOpts = { variant: 'catalog', showEyebrow: false };
+    {% if ratio %}cardOpts.imageRatio = '{{ ratio }}';{% endif %}
+
+    var LIMIT = {{ limit | int }};
+
+    /* Only the rails that rendered with nothing picked. */
+    var empty = [];
+    root.querySelectorAll('[data-hy-rail]').forEach(function (rail) {
+      if (!rail.querySelector('[data-hy-placeholder]')) return;
+      empty.push(rail);
+    });
+    if (!empty.length) return;
+
+    /* HayatAuto (main.js) makes the one product request the page shares, and
+       hands each empty rail the NEXT run of it, so two tabs left empty do not
+       show the same cards. It also knows not to send `limit` — the search
+       endpoint rejects it, which is why this fallback used to fill nothing.
+       Deferred to DOMContentLoaded: main.js loads after this script. */
+    function fill() {
+      if (!window.HayatAuto) return;
+      empty.forEach(function (rail) {
+        HayatAuto.take(LIMIT).then(function (list) {
+          if (!list.length) return;              /* leave the placeholders standing */
+          /* Keep the promo tile — it rides in the rail's first slot. */
+          var promo = rail.querySelector('.hy-promo');
+          rail.innerHTML = list.map(function (p) {
+            return HayatCard.build(p, cardOpts);
+          }).join('');
+          if (promo) rail.insertBefore(promo, rail.firstChild);
+          /* The bar and the arrows were sized against placeholders. Re-running
+             the controller is free — it flags the root, so this only
+             re-measures. */
+          window.dispatchEvent(new Event('resize'));
+        });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fill);
+    } else {
+      fill();
+    }
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-pt-' ~ id, c=d %}

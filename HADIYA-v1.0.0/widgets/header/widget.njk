@@ -1,0 +1,1067 @@
+{# ============================================================================
+   PEBBLE HEADER — one row, and a bar that changes shape on scroll
+   ----------------------------------------------------------------------------
+     ┌ announcement ─── message · language ───────────────── (optional, off) ┐
+     │                                                                        │
+     │   ┌ 24px ────────────────────────────────────────────────────────┐    │
+     │   │ Shop ⌄  Collections ⌄  …    LOGO    prompt  ⌕  ♡  🛒        │    │  scrollY = 0
+     │   └──── white card · max 1200px · radius 8px ────────────────────┘    │
+     │                                                                        │
+     ├────────── the same row, edge to edge, radius 0 ──────────────────────┤  scrollY > 0
+     └────────────────────────────────────────────────────────────────────────┘
+
+   ── The shape change is the whole idea ──
+   At the top of the page the bar is a CARD floating over the hero; the moment
+   the page moves it spreads to the viewport edge. Measured off the reference:
+   the height does NOT change (72px in both states) and the logo does NOT move
+   (dead centre in both). Only three things animate — the bar's inline margin,
+   its radius, and its top gap. Everything else is still.
+
+   That is why the row is a `1fr auto 1fr` grid rather than a flex row: the
+   centre column is centred on the BAR regardless of how wide the nav or the
+   action cluster get, so the logo cannot drift by a few pixels as the bar
+   resizes. A flex row with `justify-content: space-between` would have moved it.
+
+   ── What the reference design has that Qumra does NOT, and what replaces it ──
+   · A person icon           →  themes ship without one, and Qumra has no route
+     for it here, so that icon would link to a 404.
+     The slot is a merchant-defined link instead — `action_link_url` with a
+     choice of icon — and it renders NOTHING until the merchant fills it in.
+   · "Pages" / "Features" menus → those are demo-theme routes. The nav is
+     `nav_item` blocks pointing at the pages Qumra actually serves; the field
+     label lists them.
+   · Mega menu with nested columns → the `menu` setting returns a FLAT list of
+     `{ title, url }`; Qumra has no nested link lists. A nav item's dropdown is
+     therefore that flat list split across 1–4 columns, with one optional promo
+     image per item.
+
+   ── The search field is a real form, not a decoration ──
+   `/shop` IS the search results page: collectionFilter() in assets/main.js
+   reads `?q=` from the URL on init, and reads the collection from the PATH
+   (`/shop/<handle>`). The live dropdown calls Qumra.search.search(), which hits
+   /ajax/search/products.
+
+   Contracts with assets/main.js — do not rename:
+     toggleModal('sidebar' | 'cart')  ·  $store.cart.totalQuantity
+     Qumra.search.search
+   All styling lives in assets/style.css → "15.1 HEADER".
+   ========================================================================= #}
+
+{# ---- External-link test ----
+   Identical to the macro in widgets/footer/widget.njk, and duplicated rather
+   than shared on purpose: ui/sidebar.njk is itself a `ui` partial included by
+   this widget, and `{% ui %}` calling `{% ui %}` is a construct this theme
+   bans outright (see the header of ui/cart.njk). Six characters of duplication
+   beat reintroducing nested includes.
+
+   `indexOf` rather than the `in` operator — `in` is written for arrays and
+   dicts here and throws on an undefined string. The second test lets an
+   absolute link to THIS store stay in-tab; `store.url` is guarded so a render
+   without it cannot make every link external by accident. #}
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set navItems = widget.blocks | default([], true) %}
+
+{% set storeName = store.name | default('', true) %}
+{% set logo = d.header_logo if d.header_logo and d.header_logo.fileUrl else store.logo %}
+{% set logoH = d.logo_height | default(30) %}
+
+{# ---- Shape ----
+   `floating` OFF means the bar is edge-to-edge from the first frame and never
+   changes — which is also what `sticky` OFF has to imply, since a bar that
+   scrolls away with the page has no "scrolled" state to spread into. Resolving
+   that here rather than in the CSS keeps the two settings from contradicting
+   each other in a way the merchant can see but not fix. #}
+{% set isSticky = d.sticky | default(true) %}
+{% set isFloat = (d.floating | default(true)) and isSticky %}
+{% set floatW = d.float_width | default(1200) %}
+{% set floatGap = d.float_gap | default(24) %}
+{% set floatR = d.float_radius | default(8) %}
+
+{% set showTop = d.topbar_enabled | default(false) %}
+{% set topMsg = d.topbar_message | default('', true) %}
+{% set topMsgUrl = d.topbar_message_url | default('', true) %}
+{% set showLocale = d.topbar_show_locale | default(true) %}
+
+{% set showSearch = d.show_search | default(true) %}
+{% set searchStyle = d.search_style | default('inline', true) %}
+
+{% set actionUrl = d.action_link_url | default('', true) %}
+{# No person icon: themes ship without one, and a
+   silhouette in the header reads as one whatever the link points to. A value
+   saved before the option was removed falls back to the heart. #}
+{% set actionIcon = d.action_link_icon | default('heart', true) %}
+{% if actionIcon == 'user' %}{% set actionIcon = 'heart' %}{% endif %}
+{% set showCart = d.show_cart | default(true) %}
+
+{% set navOn = d.nav_enabled | default(true) %}
+{% set navExtra = d.nav_extra_menu or false %}
+
+{% set rawLang = localization.language | default('ar', true) %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+{% set currencyCode = localization.currency.currencyCode | default('', true) %}
+
+{# ---- Current path, for the active-link underline ----
+   Trailing slashes are stripped so '/shop' and '/shop/' resolve to the same
+   link. Home collapses to '' rather than '/', which is what lets the match be
+   an equality test: with '/' kept, a startswith test would light up Home on
+   every page and an equality test would fail on '/shop/'.
+
+   `curFull` keeps the query. A nav item whose own URL carries one — the offers
+   link is `/shop?sort=discount` — is a DIFFERENT destination from plain /shop,
+   and comparing paths alone lit both of them at once. Items with a query
+   therefore match on the whole URL, and if Qalab ever hands back a `page.url`
+   with the query stripped they simply never match: a missing underline, never
+   a wrong one. #}
+{% set curFull = page.url | default('/', true) %}
+{% set curPath = curFull.split('?')[0] %}
+{% set curPath = curPath.slice(0, -1) if (curPath | length) > 1 and curPath.slice(-1) == '/' else curPath %}
+{% set curPath = '' if curPath == '/' else curPath %}
+
+
+{# ============================ MACROS ============================ #}
+
+{# A menu picker hands back either { items: [...] } or a bare [...]. Normalise
+   once here so every call site can just iterate. #}
+{#- A menu item with `children` (the third level of a Qumra menu) becomes a
+    small group: the item as its heading, the children under it. They used
+    to be dropped, so a nested menu lost everything below the second level. -#}
+{% macro menuLinks(menu, cls) %}
+  {% for item in (menu.items if menu.items else menu) %}
+    {% if item.children and (item.children | length) > 0 %}
+      <div class="hy-drop-group">
+        <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }} class="{{ cls }} hy-drop-link--parent">{{ item.title }}</a>
+        {% for ch in item.children %}
+          <a href="{{ ch.url | default('#', true) }}"{{ extAttrs(ch.url) }} class="{{ cls }} hy-drop-sublink">{{ ch.title }}</a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }} class="{{ cls }}">{{ item.title }}</a>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro caret(cls) %}
+  <svg class="{{ cls | default('hy-caret', true) }}" width="11" height="11" viewBox="0 0 12 12"
+       fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/>
+  </svg>
+{% endmacro %}
+
+{# The action-slot icon. Five shapes, one of which the merchant picks — a
+   `select` rather than five booleans, because exactly one can be shown. #}
+{% macro actionSvg(key) %}
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if key == 'heart' %}
+      <path d="M12 20.3 4.8 13.4a4.4 4.4 0 0 1 6.2-6.2l1 1 1-1a4.4 4.4 0 0 1 6.2 6.2L12 20.3Z"/>
+    {% elif key == 'whatsapp' %}
+      <path d="M3.5 20.5 5 16.8A7.8 7.8 0 1 1 8 19.4l-4.5 1.1Z"/>
+      <path d="M9 9.4c0 3 2.6 5.6 5.6 5.6"/>
+    {% elif key == 'phone' %}
+      <path d="M5 3.8h3.1l1.6 4-2 1.3a11.4 11.4 0 0 0 5.2 5.2l1.3-2 4 1.6v3.1a1.8 1.8 0 0 1-2 1.8A15.9 15.9 0 0 1 3.2 5.8a1.8 1.8 0 0 1 1.8-2Z"/>
+    {% elif key == 'truck' %}
+      <path d="M2.8 7.2h9.4v9H2.8zM12.2 10.2h3.6l2.4 2.6v3.4h-6z"/>
+      <circle cx="6.4" cy="18" r="1.7"/><circle cx="16.2" cy="18" r="1.7"/>
+    {% else %}
+      <circle cx="12" cy="8.2" r="3.6"/>
+      <path d="M5.6 19.6a6.8 6.8 0 0 1 12.8 0"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+<header id="hy-header-{{ id }}"
+        class="hy-header {{ 'is-sticky' if isSticky }} {{ 'has-float' if isFloat }} {{ 'is-float' if isFloat }}">
+
+  {# ═══════════════════════ 1 · ANNOUNCEMENT ═══════════════════════
+     Off by default — the reference preset has no strip, and an empty coloured
+     band above a floating card reads as a mistake rather than as a choice. It
+     stays available because "شحن مجاني فوق ٥٠٠" is the single most useful line
+     a baby shop can put on every page. #}
+  {% if showTop and (topMsg or showLocale) %}
+    <div class="hy-topbar" id="hy-topbar-{{ id }}">
+      {# Absolutely positioned rather than a fourth grid child: the row is a
+         three-column grid (spacer · message · end) and a fourth cell would
+         knock the message off centre. #}
+      <button type="button"
+              id="hy-topbarX-{{ id }}"
+              class="hy-topbar-close"
+              aria-label="{{ t('common.close') }}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div class="hy-topbar-row">
+        <span class="hy-topbar-start" aria-hidden="true"></span>
+
+        {% if topMsg %}
+          {% if topMsgUrl %}
+            <a href="{{ topMsgUrl }}" class="hy-topbar-msg">{{ topMsg }}</a>
+          {% else %}
+            <p class="hy-topbar-msg">{{ topMsg }}</p>
+          {% endif %}
+        {% else %}
+          <span class="hy-topbar-msg" aria-hidden="true"></span>
+        {% endif %}
+
+        <div class="hy-topbar-end">
+          {% if showLocale %}
+            {# The reference puts a country + currency picker here. Currency is
+               resolved server-side from `localization.market` and there is
+               nothing a shopper can post to, so it renders as a LABEL; the
+               control beside it is the language switcher, which is real. #}
+            <div class="hy-locale" x-data="{ open: false }" @click.outside="open = false">
+              <button type="button"
+                      class="hy-locale-btn"
+                      @click="open = !open"
+                      :aria-expanded="open ? 'true' : 'false'"
+                      aria-label="{{ t('common.language') }}">
+                <span>{{ 'English' if currentLang == 'en' else 'العربية' }}</span>
+                {% if currencyCode %}<span class="hy-locale-cur">({{ currencyCode }})</span>{% endif %}
+                {{ caret('hy-caret hy-caret--sm') }}
+              </button>
+
+              <div class="hy-locale-drop"
+                   x-show="open" x-cloak
+                   x-transition:enter="transition ease-out duration-200"
+                   x-transition:enter-start="opacity-0 -translate-y-1"
+                   x-transition:enter-end="opacity-100 translate-y-0"
+                   x-transition:leave="transition ease-in duration-150"
+                   x-transition:leave-start="opacity-100"
+                   x-transition:leave-end="opacity-0">
+                {% form 'lang' %}
+                  <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>
+                    <span class="font-body">العربية</span>
+                    {% if currentLang == 'ar' %}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                    {% endif %}
+                  </button>
+                  <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>
+                    <span class="font-body-en">English</span>
+                    {% if currentLang == 'en' %}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/></svg>
+                    {% endif %}
+                  </button>
+                {% endform %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+
+  {# ═══════════════════════ 2 · THE BAR ═══════════════════════
+     One element carries the whole shape change. `.hy-hbar` is what gets the
+     white ground, the radius and the margins; `.hy-hrow` inside it is the
+     three-column grid that never moves. #}
+  <div class="hy-hbar">
+    <div class="hy-hrow"
+         x-data="{
+           open: null,
+           _t: null,
+           show(k) { clearTimeout(this._t); this.open = k },
+           hide()  { clearTimeout(this._t); this._t = setTimeout(() => { this.open = null }, 160) },
+           close() { clearTimeout(this._t); this.open = null }
+         }"
+         @keydown.escape.window="close()">
+
+      {# ---- start: nav on desktop, burger on mobile ---- #}
+      <div class="hy-hstart">
+        <button type="button"
+                onclick="toggleModal('sidebar')"
+                class="hy-icon-btn hy-mob"
+                aria-label="{{ t('common.menu') }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+            <path stroke-linecap="round" d="M3 7h18M3 12h18M3 17h18"/>
+          </svg>
+        </button>
+
+        {% if navOn and ((navItems | length) > 0 or navExtra) %}
+          <nav class="hy-nav hy-desk" aria-label="{{ t('common.menu') }}">
+            {% for block in navItems %}
+              {# Blocks arrive wrapped — the settings live on `.data`, never on
+                 the block itself. Reading b.nav_label off the wrapper yields
+                 undefined, the guard below goes false, and the whole nav
+                 renders as nothing with no error anywhere. #}
+              {% set b = block.data %}
+              {% if b.nav_label %}
+                {% set links = b.nav_menu.items if b.nav_menu and b.nav_menu.items else b.nav_menu %}
+                {% set hasDrop = links and (links | length) > 0 %}
+                {% set cols = b.nav_columns | default('1', true) %}
+                {% set promo = b.nav_image.fileUrl if b.nav_image and b.nav_image.fileUrl else '' %}
+                {% set wide = cols != '1' %}
+
+                {# Normalise the block's own URL the same way the current path
+                   was, so '/shop/' and '/shop' compare equal. #}
+                {% set bRaw = b.nav_url | default('', true) %}
+                {% set bUrl = bRaw.split('?')[0] %}
+                {% set bUrl = bUrl.slice(0, -1) if (bUrl | length) > 1 and bUrl.slice(-1) == '/' else bUrl %}
+                {% set bUrl = '' if bUrl == '/' else bUrl %}
+                {% set isActive = (bRaw == curFull) if (bRaw.indexOf('?') > -1) else (bUrl == curPath) %}
+
+                {# `--wide` goes position:static so the multi-column panel can
+                   anchor to the bar instead of to this item — see the note on
+                   `.hy-hrow` in style.css. #}
+                <div class="hy-nav-item {{ 'hy-nav-item--wide' if hasDrop and wide }}"
+                     {% if hasDrop %}@mouseenter="show({{ loop.index }})" @mouseleave="hide()"{% endif %}>
+
+                  <a href="{{ b.nav_url | default('#', true) }}"
+                     class="hy-nav-link {{ 'is-active' if isActive }} {{ 'is-hot' if b.nav_highlight }}"
+                     {% if hasDrop %}@focus="show({{ loop.index }})" :aria-expanded="open === {{ loop.index }} ? 'true' : 'false'"{% endif %}>
+                    <span>{{ b.nav_label }}</span>
+                    {% if b.nav_badge %}<span class="hy-nav-badge">{{ b.nav_badge }}</span>{% endif %}
+                    {% if hasDrop %}{{ caret('hy-caret hy-nav-caret') }}{% endif %}
+                  </a>
+
+                  {% if hasDrop %}
+                    <div class="hy-drop {{ 'hy-drop--wide' if wide }}"
+                         x-show="open === {{ loop.index }}"
+                         x-cloak
+                         @mouseenter="show({{ loop.index }})"
+                         @mouseleave="hide()"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0">
+                      <div class="hy-drop-inner">
+                        <div class="hy-drop-links" style="--hy-drop-cols: {{ cols }};">
+                          {{ menuLinks(b.nav_menu, 'hy-drop-link') }}
+                        </div>
+
+                        {% if promo and wide %}
+                          <a href="{{ b.nav_image_url | default(b.nav_url, true) | default('#', true) }}" class="hy-drop-promo">
+                            <img src="{{ promo }}" alt="{{ b.nav_image_caption | default('', true) }}" loading="lazy"/>
+                            {% if b.nav_image_caption %}
+                              <span class="hy-drop-promo-cap">{{ b.nav_image_caption }}</span>
+                            {% endif %}
+                          </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            {# ---- extra links, and the overflow that catches them ----
+               The four nav BLOCKS are what the row is drawn for and they always
+               stay: each can carry a mega-menu, and a mega-menu inside a
+               dropdown is not a thing. `nav_extra_menu` items are plain links,
+               so they are the ones that fold.
+
+               Every extra link is printed TWICE — once as a row item and once
+               as a `.hy-drop-link` in the panel — and the script below hides
+               one copy or the other. Moving the node instead would mean
+               rewriting its markup on every resize, because the row wants
+               `.hy-nav-item > .hy-nav-link` and the panel wants a bare
+               `.hy-drop-link`. Two copies and an `hidden` attribute is cheaper
+               and cannot get the two out of step.
+
+               ⚠️  Both lists are printed in the SAME order and the script pairs
+               them by index. Anything added to one has to be added to the
+               other. #}
+            {% if navExtra %}
+              {% set extraItems = (navExtra.items if navExtra.items else navExtra) %}
+
+              {% for item in extraItems %}
+                <div class="hy-nav-item" data-hy-nav-extra>
+                  <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }} class="hy-nav-link">
+                    <span>{{ item.title }}</span>
+                  </a>
+                </div>
+              {% endfor %}
+
+              {# `hidden` at rest: with room for every link this item never
+                 appears, and a merchant who picked a two-item menu on a wide
+                 screen sees exactly what they picked. The script is what
+                 reveals it. #}
+              <div class="hy-nav-item hy-nav-item--more" data-hy-nav-more hidden
+                   @mouseenter="show('more')" @mouseleave="hide()">
+                <a href="#" class="hy-nav-link"
+                   @click.prevent="open === 'more' ? close() : show('more')"
+                   @focus="show('more')"
+                   :aria-expanded="open === 'more' ? 'true' : 'false'">
+                  <span>{{ t('header.more') }}</span>
+                  {{ caret('hy-caret hy-nav-caret') }}
+                </a>
+
+                {# The same panel every other nav dropdown uses, at one column.
+                   `open` is keyed by loop.index for the blocks above, so a
+                   STRING key here can never collide with one of them. #}
+                <div class="hy-drop hy-drop--more"
+                     x-show="open === 'more'"
+                     x-cloak
+                     @mouseenter="show('more')"
+                     @mouseleave="hide()"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0">
+                  <div class="hy-drop-inner">
+                    <div class="hy-drop-links" style="--hy-drop-cols: 1;">
+                      {% for item in extraItems %}
+                        <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }}
+                           class="hy-drop-link" data-hy-nav-folded hidden>{{ item.title }}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </nav>
+        {% endif %}
+      </div>
+
+      {# ---- centre: the brand ----
+         Its own grid column, so it is centred on the bar and cannot drift when
+         the nav or the action cluster changes width. #}
+      <a href="/" class="hy-brand" aria-label="{{ storeName }}">
+        {% if logo and logo.fileUrl %}
+          {# Only the merchant's height rides inline. The width cap has to
+             respond to the viewport and an inline style cannot, so the rest
+             lives in style.css → "15.1 HEADER". #}
+          <img src="{{ logo.fileUrl }}" alt="{{ storeName }}"
+               class="hy-brand-logo" style="--hy-logo-h: {{ logoH }}px;"/>
+        {% else %}
+          <span class="hy-wordmark">{{ storeName }}</span>
+        {% endif %}
+      </a>
+
+      {# ---- end: search prompt + icons ---- #}
+      <div class="hy-hend">
+        {% if showSearch %}
+          {# ---- Search ----
+             NOT a sheet. The reference expands the prompt INTO a 255×40 pill in
+             the bar and hangs the results under it — the page stays where it is
+             and the shopper keeps their place. The previous full-screen sheet
+             (ui/search.njk, now removed) threw the whole page away to ask one
+             question.
+
+             The wrap is `position: relative` so the panel anchors to the field
+             on desktop; below 1024 it goes static and the panel spans the bar —
+             see "15.3 SEARCH" in style.css. #}
+          <div class="hy-hsearch-wrap"
+               x-data="hySearch({{ 'true' if (d.search_show_suggestions | default(true)) else 'false' }})"
+               @click.outside="close()"
+               @keydown.escape.window="close()">
+
+            {# collapsed — the prompt #}
+            <button type="button"
+                    x-show="!open"
+                    class="hy-hsearch {{ 'hy-hsearch--icon' if searchStyle == 'icon' }}"
+                    @click="expand()"
+                    aria-label="{{ t('header.search') }}">
+              {% if searchStyle != 'icon' %}
+                {# `, true` is load-bearing: Nunjucks' `default` fires on
+                   UNDEFINED only, and this setting's schema default is "", which
+                   is defined. Without it a merchant who never touched the field —
+                   or who cleared it — gets an empty prompt and the translated
+                   fallback never runs. #}
+                <span class="hy-hsearch-text hy-desk">{{ d.search_placeholder | default(t('header.search_placeholder'), true) }}</span>
+              {% endif %}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <path stroke-linecap="round" d="m20 20-3.9-3.9"/>
+              </svg>
+            </button>
+
+            {# expanded — a real form. `action` is set statically AND bound:
+               Alpine boots at the end of <body>, so a bind-only action would
+               submit to the current URL for anyone who hits Enter before then. #}
+            <form class="hy-hfield"
+                  x-show="open"
+                  x-cloak
+                  role="search"
+                  method="get"
+                  action="/shop"
+                  @submit="open = false">
+              <input type="search"
+                     name="q"
+                     x-ref="field"
+                     x-model="q"
+                     class="hy-hfield-input"
+                     autocomplete="off"
+                     @input.debounce.250ms="run()"
+                     @keydown.arrow-down.prevent="move(1)"
+                     @keydown.arrow-up.prevent="move(-1)"
+                     @keydown.enter="if (enter()) $event.preventDefault()"
+                     :aria-activedescendant="active >= 0 ? 'hy-sr-{{ id }}-' + active : null"
+                     aria-autocomplete="list"
+                     placeholder="{{ d.search_placeholder | default(t('header.search_placeholder'), true) }}"
+                     aria-label="{{ t('header.search') }}"/>
+
+              <button type="button"
+                      class="hy-hfield-clear"
+                      x-show="q.length > 0"
+                      @click="clearQuery()">{{ t('pages.search.clear') }}</button>
+
+              {# One slot, two jobs: submit while the panel is shut, close it
+                 while it is open. Two buttons side by side would have put a ✕
+                 next to a ⌕ that do nearly the same thing. #}
+              <button type="submit"
+                      class="hy-hfield-go"
+                      x-show="!panelOpen"
+                      aria-label="{{ t('header.search') }}">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"/>
+                  <path stroke-linecap="round" d="m20 20-3.9-3.9"/>
+                </svg>
+              </button>
+              <button type="button"
+                      class="hy-hfield-go"
+                      x-show="panelOpen"
+                      x-cloak
+                      @click="close()"
+                      aria-label="{{ t('common.close') }}">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </form>
+
+            {# ---- results panel ---- #}
+            <div class="hy-spanel"
+                 x-show="panelOpen"
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+
+              <div x-show="loading" class="hy-spanel-state">
+                <span class="hy-spinner" style="width: 22px; height: 22px;"></span>
+              </div>
+
+              <template x-if="!loading && (terms.length || results.length)">
+                <div>
+                  <template x-if="terms.length">
+                    <div class="hy-spanel-block">
+                      <p class="hy-spanel-head">{{ t('pages.search.suggestions') }}</p>
+                      <div class="hy-spanel-chips">
+                        <template x-for="term in terms" :key="term">
+                          <a class="hy-chip" :href="'/shop?q=' + encodeURIComponent(term)" x-text="term"></a>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template x-if="results.length">
+                    <div class="hy-spanel-block">
+                      <p class="hy-spanel-head">{{ t('pages.search.related') }}</p>
+                      <div class="hy-sres">
+                        <template x-for="(p, i) in results" :key="p._id">
+                          <a class="hy-sres-card"
+                             :id="'hy-sr-{{ id }}-' + i"
+                             :class="active === i && 'is-active'"
+                             @mouseenter="active = i"
+                             :href="productUrl(p)">
+                            <span class="hy-sres-media">
+                              <template x-if="p.images && p.images.length">
+                                <img :src="p.images[0].fileUrl" :alt="p.title" loading="lazy"/>
+                              </template>
+                              <template x-if="onSale(p)">
+                                <span class="hy-sres-badge">{{ t('common.on_sale') }}</span>
+                              </template>
+                            </span>
+                            <span class="hy-sres-name" x-text="p.title"></span>
+                            <span class="hy-sres-money">
+                              <span class="hy-sres-price" x-text="money(p.pricing && p.pricing.price)"></span>
+                              <template x-if="onSale(p)">
+                                <span class="hy-sres-was" x-text="money(p.pricing.compareAtPrice)"></span>
+                              </template>
+                            </span>
+                          </a>
+                        </template>
+                      </div>
+
+                      <a class="hy-btn hy-btn--solid hy-btn--pill hy-spanel-all" :href="allUrl()">
+                        {{ t('pages.search.view_all') }}
+                      </a>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <div x-show="!loading && searched && !terms.length && !results.length" class="hy-spanel-state">
+                <p>{{ t('pages.search.no_results') }}</p>
+              </div>
+            </div>
+          </div>
+
+        {% endif %}
+
+        {% if actionUrl %}
+          <a href="{{ actionUrl }}"{{ extAttrs(actionUrl) }}
+             class="hy-icon-btn hy-desk"
+             aria-label="{{ d.action_link_label | default(t('header.quick_link'), true) }}">
+            {{ actionSvg(actionIcon) }}
+          </a>
+        {% endif %}
+
+        {% if showCart %}
+          <button type="button"
+                  onclick="toggleModal('cart')"
+                  class="hy-icon-btn hy-cart-btn"
+                  aria-label="{{ t('header.cart') }}"
+                  x-data>
+            {# Drawn to fill the 24-box evenly rather than to a formula: the
+               first pass hung the basket off the bottom-right and read as a
+               different icon from the two beside it. #}
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.2 2.8h3l2.2 11a1.7 1.7 0 0 0 1.7 1.4h8.1a1.7 1.7 0 0 0 1.7-1.4l1.5-7.5H6.2"/>
+              <circle cx="9.4" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
+            </svg>
+            {# The SSR count is PRINTED, and x-cloak is conditional.
+
+               Alpine boots at the very end of <body>, and `x-text` writes
+               nothing until it does — so an unconditionally cloaked, empty span
+               left the badge missing for the first frames of EVERY page load,
+               on a value the server already knew. On a slow connection a
+               shopper with items in their cart sees an empty bag icon, which is
+               the one thing this badge exists to prevent.
+
+               With a count the span carries the number and no cloak, so it is
+               painted with the page and Alpine takes over on the same value —
+               no flash, nothing to reconcile. With no count the cloak hides it
+               until `x-show` takes the same decision a moment later. #}
+            {% set ssrQty = cart.totalQuantity | default(0, true) %}
+            <span class="hy-count"
+                  x-show="$store.cart.totalQuantity > 0"
+                  x-text="$store.cart.totalQuantity"
+                  {% if ssrQty == 0 %}x-cloak{% endif %}>{{ ssrQty }}</span>
+          </button>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</header>
+
+{# ---- The search dimmer ----
+   OUTSIDE <header>, and that is the whole point. The header is
+   `position: fixed` with a z-index, which makes it a STACKING CONTEXT: a child
+   of it can never paint below it, whatever z-index it is given. Rendered
+   inside, this element dimmed the bar it belongs to — the one part of the page
+   that has to stay lit while someone is typing in it.
+
+   Out here it sits between the page and the header on the normal scale. #}
+{% if showSearch %}
+  <div class="taqa-overlay hy-sdim"
+       x-data
+       x-show="$store.search.open"
+       x-cloak
+       @click="$store.search.dismiss()"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"></div>
+{% endif %}
+
+{# Spacer — a fixed header no longer occupies flow space, so this reserves it.
+   Its height is written by sync() below, which remeasures on every event that
+   can change it. #}
+{% if isSticky %}
+  <div id="hy-header-spacer-{{ id }}" aria-hidden="true"></div>
+{% endif %}
+
+<script>
+  (function () {
+    var header = document.getElementById('hy-header-{{ id }}');
+    if (!header) return;
+
+    {% if isSticky %}
+    var spacer = document.getElementById('hy-header-spacer-{{ id }}');
+
+    /* Remeasured on every event that can change the header's height: a web font
+       swapping in, a viewport resize, the announcement bar being dismissed.
+       Setting it once on parse would leave a gap or an overlap the moment any
+       of those fire.
+
+       The measurement is taken in the FLOATING state, which is the taller
+       one — it carries the top gap. Reserving the floating height and not the
+       spread height is deliberate: the spacer only matters while the page is at
+       the top, and the moment it is not, the bar is spread and shorter by
+       exactly `float_gap`, which is scrolled past anyway. */
+    var sync = function () {
+      var h = header.offsetHeight;
+      if (spacer) spacer.style.height = h + 'px';
+      /* Same measurement, second consumer: html { scroll-padding-top } needs it
+         so an #anchor clears the fixed header instead of landing behind it.
+         Written on <html> because that is the element the property applies to. */
+      document.documentElement.style.setProperty('--hy-header-h', h + 'px');
+      var top = header.querySelector('.hy-topbar');
+      header.style.setProperty('--hy-topbar-h', (top ? top.offsetHeight : 0) + 'px');
+    };
+    sync();
+    window.addEventListener('load', sync);
+    window.addEventListener('resize', sync);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(header);
+    {% endif %}
+
+    /* ---- Announcement bar · dismiss ----
+       sessionStorage, not localStorage: an announcement is a campaign, and a
+       shopper who closes it should see the NEXT one. localStorage would keep it
+       shut across visits and the merchant would never know why their banner
+       stopped working.
+
+       The key carries a hash of the message, so changing the text brings the
+       bar back for everyone who dismissed the previous one. Without that, a
+       merchant editing the announcement would be shouting at a closed room.
+
+       Read and applied HERE, inline, while the body is still parsing: the bar
+       is a few nodes above this script, so it is hidden before the browser has
+       painted it and there is no flash of a bar that then vanishes.
+
+       try/catch on every access — Safari private mode throws on the first read
+       of sessionStorage, and an uncaught throw here would take the whole header
+       script down with it. */
+    (function () {
+      var bar = document.getElementById('hy-topbar-{{ id }}');
+      if (!bar) return;
+
+      /* djb2 over the rendered message — short, stable, and enough to tell one
+         announcement from the next. */
+      var msg = {{ topMsg | default('', true) | dump | safe }};
+      var h = 5381;
+      for (var i = 0; i < msg.length; i++) h = ((h << 5) + h + msg.charCodeAt(i)) | 0;
+      var KEY = 'hy-topbar-closed:' + (h >>> 0).toString(36);
+
+      var closed = false;
+      try { closed = sessionStorage.getItem(KEY) === '1'; } catch (e) {}
+      if (closed) { bar.remove(); return; }
+
+      var btn = document.getElementById('hy-topbarX-{{ id }}');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+
+        /* Collapse, then remove. A bare remove() drops the bar's height out of
+           the document in one frame and the whole page snaps upward — correct,
+           and unpleasant enough to read as a glitch.
+
+           The height has to be pinned to its measured pixel value first:
+           `auto` is not an animatable value, so going straight to 0 from it
+           transitions nothing. One forced reflow between the two writes is what
+           makes the browser treat them as two states rather than collapsing
+           them into the final one.
+
+           `prefers-reduced-motion` skips to the end — this is a layout
+           collapse, exactly the kind of motion that setting asks us not to
+           make. */
+        var reduce = document.documentElement.classList.contains('hy-no-motion') || (window.matchMedia
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (reduce) { bar.remove(); return; }
+
+        bar.style.height = bar.offsetHeight + 'px';
+        bar.style.overflow = 'hidden';
+        void bar.offsetHeight;                      /* forced reflow */
+        bar.style.transition = 'height 240ms var(--ease-out), opacity 160ms linear';
+        bar.style.height = '0px';
+        bar.style.opacity = '0';
+
+        /* transitionend can fail to arrive — a background tab throttles it, and
+           a display change mid-flight swallows it — so the removal is on a
+           timer that the event can only bring forward. */
+        var done = false;
+        var finish = function () { if (done) return; done = true; bar.remove(); };
+        bar.addEventListener('transitionend', finish);
+        setTimeout(finish, 320);
+      });
+    })();
+
+    {% if navOn and navExtra %}
+    /* ---- Nav overflow ----
+       The row is a three-column grid whose outer columns are `minmax(0, 1fr)`,
+       and that symmetry is the ONLY reason the brand sits dead centre. So the
+       nav can never be wider than half the row minus the logo — measured at
+       1024 the start cell is 431px and six Arabic labels come to 489. The
+       `overflow: hidden` on `.hy-hstart` is what stops them painting over the
+       brand, and what it does instead is cut the last one in half.
+
+       So: the row shows what fits, and the rest goes in the panel. The blocks
+       are never folded — only `nav_extra_menu` items, which is also the only
+       list whose length the row was not drawn around.
+
+       Measured against `scrollWidth`, not a sum of widths: the nav is a flex
+       row inside an `overflow: hidden` cell, so its box is already clipped to
+       the cell while `scrollWidth` still reports what the content wants. */
+    var nav = header.querySelector('.hy-nav');
+    var cell = header.querySelector('.hy-hstart');
+    if (nav && cell) {
+      var extras = [].slice.call(nav.querySelectorAll('[data-hy-nav-extra]'));
+      var folded = [].slice.call(nav.querySelectorAll('[data-hy-nav-folded]'));
+      var more   = nav.querySelector('[data-hy-nav-more]');
+
+      var fitNav = function () {
+        if (!more || !extras.length) return;
+
+        /* Always measured from the everything-shown state. Folding from
+           wherever the last pass left off cannot UNfold: once an item is
+           hidden it stops counting toward scrollWidth, so a widening viewport
+           would read "it fits" and never bring it back. */
+        for (var i = 0; i < extras.length; i++) {
+          extras[i].hidden = false;
+          folded[i].hidden = true;
+        }
+        more.hidden = true;
+
+        /* `.hy-desk` is display:none below 1024 — the burger owns the links
+           there and the sidebar already lists every one of them. offsetParent
+           is the cheapest way to ask whether this row is on screen at all. */
+        if (!nav.offsetParent) return;
+        if (nav.scrollWidth <= cell.clientWidth) return;
+
+        /* Revealing "المزيد" costs width of its own, so it goes in BEFORE the
+           loop counts — folding two links to make room for a third item that
+           was not measured is how this kind of loop ends up one item short. */
+        more.hidden = false;
+        for (var j = extras.length - 1; j >= 0; j--) {
+          extras[j].hidden = true;
+          folded[j].hidden = false;
+          if (nav.scrollWidth <= cell.clientWidth) break;
+        }
+      };
+
+      fitNav();
+      window.addEventListener('resize', fitNav);
+      /* Cairo swaps in after first paint and every label changes width with it.
+         Without this the fold is decided against the fallback face — which on
+         Arabic is narrower, so it under-folds and the clipping comes back. */
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNav);
+      window.addEventListener('load', fitNav);
+    }
+    {% endif %}
+
+    {% if showSearch %}
+    /* ---- Search ----
+       Registered on `alpine:init` like every other component in this theme —
+       defining it at parse time would race Alpine's boot at the end of <body>.
+
+       `$store.search` exists only so the dimmer, which is a SIBLING of the
+       field rather than a descendant, can see whether the panel is up. Alpine
+       scopes x-data to its own subtree, so the two cannot share state any other
+       way without wrapping half the header in a component. */
+    document.addEventListener('alpine:init', function () {
+      if (window.__hySearchReady) return;   /* one header per page, but the
+                                               Theme Editor can re-inject it */
+      window.__hySearchReady = true;
+
+      /* `open` is REPORTED by the field (the dimmer reads it). `nonce` is the
+         other direction — the dimmer bumps it to say "the user dismissed this",
+         and the field watches it.
+
+         They have to be two things. With one shared boolean, the field could
+         not tell "the panel closed because the query got too short" from "the
+         user clicked away", and treated both as the second: deleting down to
+         one character shut the whole field, so the last letter could not be
+         erased without reopening it. */
+      Alpine.store('search', {
+        open: false,
+        nonce: 0,
+        dismiss: function () { this.nonce++; }
+      });
+
+      Alpine.data('hySearch', function (showTerms) {
+        /* `live` and `count` were two Theme Editor knobs and are literals now.
+           Live suggestions are the whole point of an in-bar field — one that
+           only answers on Enter may as well be the full-screen sheet this
+           replaced — and the panel is drawn for THREE rows: a fourth runs it
+           past the bottom of the bar on a laptop. */
+        var COUNT = 3;
+        return {
+          q: '',
+          open: false,
+          loading: false,
+          searched: false,
+          results: [],
+          terms: [],
+          /* -1 = nothing highlighted, which is also "Enter submits the form and
+             goes to the full results page". Any other value is an index into
+             `results`, and Enter opens that product instead. */
+          active: -1,
+
+          /* The panel is derived, never assigned. Two booleans for "the field is
+             open" and "the panel is up" drifted apart the moment anything closed
+             one without the other — the dimmer stayed lit over a shut field. */
+          get panelOpen() {
+            return this.open && this.q.trim().length >= 2 &&
+                   (this.loading || this.searched);
+          },
+
+          init: function () {
+            /* The dimmer lives outside this component's tree, so the store is
+               how it finds out. `$watch` rather than a setter on every path
+               that can change the panel — there are five of them. */
+            this.$watch('panelOpen', (v) => { Alpine.store('search').open = v; });
+            /* A counter, not the boolean above: see the note on the store. This
+               only ever fires when someone actually clicks the dimmer. */
+            this.$watch('$store.search.nonce', () => this.close());
+          },
+
+          expand: function () {
+            this.open = true;
+            /* Focusing while the field is still display:none silently does
+               nothing in every browser — wait for the paint. */
+            this.$nextTick(() => this.$refs.field && this.$refs.field.focus());
+          },
+
+          close: function () {
+            this.open = false;
+            this.active = -1;
+            Alpine.store('search').open = false;
+          },
+
+          clearQuery: function () {
+            this.q = '';
+            this.results = [];
+            this.terms = [];
+            this.searched = false;
+            this.active = -1;
+            this.$refs.field && this.$refs.field.focus();
+          },
+
+          /* Wraps at both ends: Down from the last lands back on the field
+             (active = -1) rather than sticking, which is how a shopper gets back
+             to editing what they typed without reaching for the mouse. */
+          move: function (step) {
+            if (!this.panelOpen || !this.results.length) return;
+            var n = this.results.length;
+            this.active = this.active + step;
+            if (this.active >= n) this.active = -1;
+            if (this.active < -1) this.active = n - 1;
+          },
+
+          /* Returns TRUE when it handled the key, so the caller knows whether to
+             let the form submit. Enter on a highlighted row must not do both. */
+          enter: function () {
+            if (!this.panelOpen || this.active < 0 || !this.results[this.active]) return false;
+            window.location.href = this.productUrl(this.results[this.active]);
+            return true;
+          },
+
+          productUrl: function (p) { return '/products/' + (p.slug || p.handle || p._id); },
+          allUrl: function () { return '/shop?q=' + encodeURIComponent(this.q.trim()); },
+          money: function (v) { return Qumra.utils.formatMoney(v || 0); },
+          onSale: function (p) {
+            var c = p.pricing && p.pricing.compareAtPrice, x = p.pricing && p.pricing.price;
+            return !!(c && c > x);
+          },
+
+          run: function () {
+            var self = this;
+            var q = (this.q || '').trim();
+            /* A new query invalidates the highlight — index 2 of the old list is
+               a different product in the new one. */
+            this.active = -1;
+            if (q.length < 2) { this.results = []; this.terms = []; this.searched = false; return; }
+
+            this.loading = true;
+            /* suggest() is ALREADY debounced 300ms inside main.js and its third
+               argument is a RESULT LIMIT, not a delay. The @input debounce here
+               is 250ms and they stack — which is the point: the outer one stops
+               the spinner flashing on every keystroke, the inner one stops the
+               request. */
+            Qumra.search.suggest(q, function (data) {
+              var r = (data && data.resources) || {};
+              var list = r.products || (data && data.products) || [];
+              self.results = list.slice(0, COUNT);
+              /* Qumra returns `queries` on some stores and only `collections` on
+                 others. Either is a reasonable chip; a collection is arguably the
+                 better one, since it always leads somewhere that exists. */
+              var terms = r.queries || [];
+              if (!terms.length && r.collections)
+                terms = r.collections.map(function (c) { return c.title; });
+              self.terms = showTerms ? terms.slice(0, 6) : [];
+              self.searched = true;
+              self.loading = false;
+            }, COUNT);
+          }
+        };
+      });
+    });
+    {% endif %}
+
+    {% if isFloat %}
+    /* ---- The shape change ----
+       `is-float` is ON at rest and comes OFF the moment the page moves; every
+       animated property lives on that one class in the CSS.
+
+       The threshold is 4px, not 0. A trackpad and an iOS rubber-band both emit
+       scroll events at scrollY between 0 and 1 while the page has not actually
+       moved, and a 0 threshold made the bar flicker between its two shapes
+       under a resting finger.
+
+       rAF-gated: `scroll` fires far more often than the screen repaints, and
+       toggling a class that animates four properties on every one of those was
+       measurably more work than the animation itself. */
+    var ticking = false;
+    var apply = function () {
+      ticking = false;
+      header.classList.toggle('is-float', window.scrollY <= 4);
+    };
+    apply();
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(apply);
+    }, { passive: true });
+
+    /* A reload restores the scroll position AFTER this script runs, and bfcache
+       restores it with no scroll event at all — both leave a spread page
+       wearing the floating bar. */
+    window.addEventListener('load', apply);
+    window.addEventListener('pageshow', apply);
+    {% endif %}
+  })();
+</script>
+
+{# ---- Global panels triggered from the header ---- #}
+{% ui "sidebar.njk", nav_items=navItems, extra_menu=navExtra, currentLang=currentLang, showLang=showLocale, action_url=actionUrl, action_label=(d.action_link_label or "") %}
+{#- Qalab's `ui` tag rejects an undefined argument and prints an error box
+    instead of the drawer — every setting a merchant never touched (no upsell
+    products, no empty-state collections) arrives undefined, so each one is
+    given a defined fallback here. -#}
+{% ui "cart.njk", free_shipping=(d.cart_free_shipping or 0), upsell_title=(d.cart_upsell_title or ''), upsell=(d.cart_upsell_products or []), empty_collections=(d.cart_empty_collections or []), footer_dark=(d.cart_footer_dark if d.cart_footer_dark is defined else true), note=(d.cart_note or '') %}
+
+{# Shape and announcement colours. These are the widget's OWN style block and
+   must stay ABOVE the section-colours include — both target the same id with
+   identical specificity, so source order decides. #}
+<style>
+  /* The `-set` suffix is load-bearing. This block is an ID selector, so
+     anything it writes beats every class rule in the stylesheet — including
+     the responsive ones. Written to the plain names, the merchant's desktop
+     gap and radius survived into a 390px viewport and the phone's own values
+     in "15.1 RESPONSIVE" never applied.
+
+     The stylesheet reads these as the DESKTOP values and decides what the
+     narrower breakpoints use. */
+  #hy-header-{{ id }} {
+    --hy-float-w-set: {{ floatW }}px;
+    --hy-float-gap-set: {{ floatGap }}px;
+    --hy-float-r-set: {{ floatR }}px;
+    --hy-topbar-bg: {{ d.topbar_bg | default('var(--color-accent)', true) }};
+    --hy-topbar-fg: {{ d.topbar_text | default('var(--color-text-on-accent)', true) }};
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-header-' ~ id, c=d %}

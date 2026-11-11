@@ -1,0 +1,7 @@
+<button type="button"
+        x-cloak x-show="scrolled" x-transition.opacity
+        @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        class="lg-fab lg-fab--top btn btn-glass btn-icon fixed z-30 end-5"
+        aria-label="{{t('common.back_to_top')}}">
+  {% ui "icon.njk", name="arrow-up", cls="w-5 h-5" %}
+</button>

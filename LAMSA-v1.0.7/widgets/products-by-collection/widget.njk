@@ -1,0 +1,377 @@
+{# ============================================================================
+   LAMSA PRODUCTS BY COLLECTION — "منتجات من قسم"
+   ----------------------------------------------------------------------------
+   The merchant picks ONE collection; the section fills itself with that
+   collection's products.
+
+   NOTE: DATA REALITY: the `collections` schema type hands the template only
+       { _id, title, handle, image } — there is NO products array on it (see
+       docs/theme-structure/widgets.md → "بيانات نوع collections"). So unlike
+       collection-products (which receives a hand-picked `products` array and
+       renders server-side), this widget MUST fetch:
+           GET /ajax/search/products?collectionId=<_id>&sort=<sort>
+       and render with LamsaCard.build() — the same renderer ui/product-card.njk
+       mirrors, so the cards are visually identical to every other section.
+
+   Because the products arrive after paint, the grid ships `limit` skeleton
+   cards at the right aspect ratio. They occupy the final layout exactly, so
+   swapping in the real cards causes no shift.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{# NOTE: ONE collection per section, and that rule is enforced HERE.
+   The `collections` schema type has no single-select option — Qumra documents
+   min/max only for `range` (docs/theme-structure/widgets.md), so the editor's
+   picker will happily accept several. Everything after the first is dropped;
+   the setting's label says so. #}
+{% set picked = d.collection | default([]) %}
+{% set col = picked[0] if (picked | length) > 0 else null %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{# Empty title falls back to the collection's own name, so the section is
+   never headless just because the merchant didn't retype it. #}
+{% set title = d.title | default('') %}
+{% if not title and col %}{% set title = col.title %}{% endif %}
+{% set desc = d.description | default('') %}
+
+{% set sort = d.sort | default('created-desc') %}
+{% set layout = d.layout | default('grid') %}
+{% set isSlider = layout == 'slider' %}
+{% set headerAlign = d.header_align | default('split') %}
+{% set isCenter = headerAlign == 'center' %}
+
+{% set bg = d.background | default('white') %}
+{% set limit = d.limit | default(8, true) %}
+{% set ratio = d.card_image_ratio | default('1/1') %}
+
+{% set showViewAll = d.show_view_all | default(true) %}
+{% set viewAllText = d.view_all_text | default('') %}
+{% if not viewAllText %}{% set viewAllText = t('common.view_all') %}{% endif %}
+{# Same URL shape as collections-section / collections-page. #}
+{% set viewAllUrl = ('/shop/' ~ (col.slug | default(col.handle) | default(col._id))) if col else '' %}
+
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showProgress = d.show_progress | default(true) %}
+
+{# ---- columns ---- #}
+{% set colsD = d.columns_desktop | default('4', true) %}
+{% set colsM = d.columns_mobile | default('2') %}
+{% if colsD == '2' %}{% set spv = 2 %}
+{% elif colsD == '3' %}{% set spv = 3 %}
+{% elif colsD == '5' %}{% set spv = 5 %}
+{% else %}{% set spv = 4 %}{% endif %}
+
+{# ---- background ---- #}
+{% if bg == 'blush' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-surface)' %}{% endif %}
+
+{# Skeleton count: never more than the grid can show in one screen. #}
+{% set skelCount = limit if limit < 8 else 8 %}
+
+
+<style>
+  #lamsa-pbc-{{ id }} { background: {{ bgVal }}; }
+
+  /* ---------- header ---------- */
+  .lamsa-pbc-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    letter-spacing: -0.008em;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-pbc-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-pbc-{{ id }}-title { letter-spacing: 0; line-height: 1.34; }
+  .lamsa-pbc-{{ id }}-title em { font-style: normal; color: var(--color-accent); }
+  .lamsa-pbc-{{ id }}-title p { margin: 0; }
+  #lamsa-pbc-{{ id }} .lamsa-head-desc p { margin: 0; }
+  #lamsa-pbc-{{ id }} .lamsa-head-desc p + p { margin-block-start: 0.5em; }
+
+  /* ---------- grid ---------- */
+  .lamsa-pbc-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat({{ colsM }}, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+  @media (min-width: 641px) {
+    .lamsa-pbc-{{ id }}-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+  }
+  @media (min-width: 768px) {
+    .lamsa-pbc-{{ id }}-grid { grid-template-columns: repeat({{ 3 if spv > 3 else spv }}, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-pbc-{{ id }}-grid { grid-template-columns: repeat({{ spv }}, minmax(0, 1fr)); gap: 48px 28px; }
+  }
+
+  /* ---------- slider ----------
+     Swiper REQUIRES horizontal clipping — with `overflow: visible` every slide
+     paints across the page. `overflow-x: clip` clips sideways while still
+     letting the card's hover lift and shadow bleed vertically. */
+  .lamsa-pbc-{{ id }}-sw { overflow: hidden; }
+  @supports (overflow-x: clip) {
+    .lamsa-pbc-{{ id }}-sw { overflow-x: clip; overflow-y: visible; }
+  }
+  .lamsa-pbc-{{ id }}-sw .swiper-wrapper { align-items: stretch; }
+  .lamsa-pbc-{{ id }}-sw .swiper-slide { height: auto; display: flex; }
+  .lamsa-pbc-{{ id }}-sw .swiper-slide > * { width: 100%; }
+
+  .lamsa-pbc-{{ id }}-prog {
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    height: 3px;
+    margin-top: 36px;
+    border-radius: var(--radius-pill);
+    background: var(--color-border) !important;
+  }
+  .lamsa-pbc-{{ id }}-prog .swiper-scrollbar-drag {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent) !important;
+  }
+
+  /* ---------- skeleton card ---------- */
+  .lamsa-pbc-{{ id }}-skel { display: flex; flex-direction: column; gap: 12px; }
+  .lamsa-pbc-{{ id }}-skel > .s-media {
+    width: 100%;
+    aspect-ratio: {{ ratio | replace('/', ' / ') }};
+    border-radius: var(--radius-media);
+  }
+  .lamsa-pbc-{{ id }}-skel > .s-line { height: 13px; }
+  .lamsa-pbc-{{ id }}-skel > .s-line--short { width: 45%; }
+</style>
+
+
+<section id="lamsa-pbc-{{ id }}" class="lamsa-section"{% if not col %} data-lamsa-empty{% endif %}>
+  <div class="lamsa-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="lamsa-head lamsa-head--center">
+          {% if eyebrow %}
+            <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+          {% endif %}
+          {% if title %}
+            <div class="lamsa-pbc-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>
+          {% endif %}
+          {# `text` settings return block HTML (<p>…</p>), so this wrapper is a
+             div — a <p> here would be auto-closed by the parser and the copy
+             would escape the styled block. #}
+          {% if desc %}<div class="lamsa-head-desc">{{ desc | safe }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div class="lamsa-head lamsa-head--split">
+          <div class="min-w-0">
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+            {% endif %}
+            {% if title %}
+              <div class="lamsa-pbc-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>
+            {% endif %}
+            {% if desc %}<div class="lamsa-head-desc">{{ desc | safe }}</div>{% endif %}
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            {% if isSlider and showArrows %}
+              {# Hidden until the fetch lands — arrows that steer nothing are worse
+                 than no arrows. #}
+              <div class="flex items-center gap-2" id="pbcNav-{{ id }}" style="display:none">
+                <button type="button" id="pbcPrev-{{ id }}"
+                        class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.prev') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+                  </svg>
+                </button>
+                <button type="button" id="pbcNext-{{ id }}"
+                        class="lamsa-btn-icon lamsa-btn-icon--outline"
+                        aria-label="{{ t('common.next') }}">
+                  <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                  </svg>
+                </button>
+              </div>
+            {% endif %}
+
+            {% if showViewAll and viewAllUrl %}
+              <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm max-sm:hidden">
+                {{ viewAllText }}
+                <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═══════════════ products ═══════════════ #}
+    {% if isSlider %}
+      <div class="swiper lamsa-pbc-{{ id }}-sw" id="pbcSwiper-{{ id }}">
+        <div class="swiper-wrapper" id="pbcWrapper-{{ id }}">
+          {% for n in range(0, skelCount) %}
+            <div class="swiper-slide">
+              <div class="lamsa-pbc-{{ id }}-skel" aria-hidden="true">
+                <div class="s-media lamsa-skeleton"></div>
+                <div class="s-line lamsa-skeleton"></div>
+                <div class="s-line s-line--short lamsa-skeleton"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if showProgress %}
+          <div class="swiper-scrollbar lamsa-pbc-{{ id }}-prog" id="pbcProg-{{ id }}" style="display:none"></div>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="lamsa-pbc-{{ id }}-grid" id="pbcGrid-{{ id }}" data-lone-m="{{ colsM }}" data-lone-t="{{ 3 if spv > 3 else spv }}" data-lone-d="{{ spv }}">
+        {% for n in range(0, skelCount) %}
+          <div class="lamsa-pbc-{{ id }}-skel" aria-hidden="true">
+            <div class="s-media lamsa-skeleton"></div>
+            <div class="s-line lamsa-skeleton"></div>
+            <div class="s-line s-line--short lamsa-skeleton"></div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═══════════════ empty / no collection picked ═══════════════ #}
+    <div id="pbcEmpty-{{ id }}" class="lamsa-empty" {% if col %}style="display: none;"{% endif %}>
+      <span class="lamsa-empty-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+          <path stroke-linecap="round" d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+        </svg>
+      </span>
+      <p class="lamsa-text-sm m-0">
+        {%- if col %}{{ t('products.no_products') }}{% else %}{{ t('categories.no_categories_desc') }}{% endif -%}
+      </p>
+    </div>
+
+    {# ═══════════════ view all — centered header, or mobile ═══════════════ #}
+    {% if showViewAll and viewAllUrl %}
+      {# Always visible, like its desktop twin in the header: the link points at
+         the collection page, which is valid whether or not the fetch succeeded. #}
+      <div class="text-center mt-12 max-sm:mt-8 {{ '' if isCenter else 'sm:hidden' }}"
+           id="pbcViewAll-{{ id }}">
+        <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--outline">
+          {{ viewAllText }}
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+
+<script>
+  (function () {
+    var collectionId = {{ (col._id if col else '') | dump | safe }};
+    var isSlider     = {{ 'true' if isSlider else 'false' }};
+    var limit        = {{ limit | int }};
+    var sort         = {{ sort | dump | safe }};
+    var cardOpts     = { imageRatio: {{ ratio | dump | safe }} };
+
+    var grid  = document.getElementById(isSlider ? 'pbcWrapper-{{ id }}' : 'pbcGrid-{{ id }}');
+    var empty = document.getElementById('pbcEmpty-{{ id }}');
+
+    function show(elId) {
+      var el = document.getElementById(elId);
+      if (el) el.style.display = '';
+    }
+
+    /* Nothing picked in the editor → the skeletons would shimmer forever.
+       Drop them and leave the hint that is already in the DOM. */
+    function bail() {
+      if (grid) grid.innerHTML = '';
+      var sw = document.getElementById('pbcSwiper-{{ id }}');
+      if (sw) sw.style.display = 'none';
+      if (empty) empty.style.display = '';
+    }
+
+    function initSlider() {
+      if (!isSlider || typeof Swiper === 'undefined') return;
+      {% if showArrows %}show('pbcNav-{{ id }}');{% endif %}
+      {% if showProgress %}show('pbcProg-{{ id }}');{% endif %}
+      new Swiper('#pbcSwiper-{{ id }}', {
+        slidesPerView: 1.25,
+        spaceBetween: 16,
+        speed: 480,
+        watchOverflow: true,
+        breakpoints: {
+          641:  { slidesPerView: 2.2, spaceBetween: 24 },
+          768:  { slidesPerView: {{ (3 if spv > 3 else spv) | int }}, spaceBetween: 26 },
+          1024: { slidesPerView: {{ spv | int }}, spaceBetween: 28 }
+        },
+        {% if showArrows %}
+        navigation: { prevEl: '#pbcPrev-{{ id }}', nextEl: '#pbcNext-{{ id }}' },
+        {% endif %}
+        {% if showProgress %}
+        scrollbar: { el: '#pbcProg-{{ id }}', draggable: true, hide: false },
+        {% endif %}
+        a11y: { enabled: true }
+      });
+    }
+
+    async function load() {
+      if (!collectionId || !grid) { bail(); return; }
+
+      try {
+        var url = new URL('/ajax/search/products', window.location.origin);
+        url.searchParams.set('collectionId', collectionId);
+        url.searchParams.set('sort', sort);
+        /* NOTE: DO NOT send `limit`. /ajax/search/products pipes the raw query
+           value straight into Mongo's $limit stage without casting, and query
+           values are always strings — so `limit=8` returns
+             500 "invalid argument to $limit stage: Expected a number"
+           and the whole section falls into bail(). The endpoint pages at 20 by
+           default; we slice to `limit` on the client below. */
+
+        var res = await fetch(url.toString());
+        if (!res.ok) throw new Error(res.status);
+        var data = await res.json();
+
+        var items = (data.products || data.results || data.items || data.data || []).slice(0, limit);
+        if (!items.length) { bail(); return; }
+
+        if (isSlider) {
+          grid.innerHTML = items.map(function (p) {
+            return '<div class="swiper-slide">' + LamsaCard.build(p, cardOpts) + '</div>';
+          }).join('');
+          /* LamsaCard markup carries x-data — Alpine has already booted by now,
+             so the injected cards must be initialised by hand. */
+          if (window.Alpine) {
+            grid.querySelectorAll('[x-data]').forEach(function (el) { Alpine.initTree(el); });
+          }
+          initSlider();
+        } else {
+          LamsaCard.mount(grid, items, cardOpts);
+        }
+
+      } catch (e) {
+        console.error('[products-by-collection] fetch failed', e);
+        bail();
+      }
+    }
+
+    /* LamsaCard lives in main.js, which is parsed before Alpine boots. Waiting
+       for DOMContentLoaded guarantees both are on the page. */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', load);
+    } else {
+      load();
+    }
+  })();
+</script>

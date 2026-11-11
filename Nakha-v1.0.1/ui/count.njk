@@ -1,0 +1,17 @@
+{# ============================================================================
+   NAKHA COUNT — "منتج واحد · منتجان · 3 منتجات · 11 منتج"
+   Locals: n (number) · kind ('product' | 'article' | 'collection' | 'review', default product)
+   Twin for counts that change in the browser: Utils.count() in assets/main.js.
+   ========================================================================= #}
+{%- set n = (data.n or 0) | int -%}
+{%- set k = data.kind or 'product' -%}
+{%- set m = n % 100 -%}
+{%- if k == 'article' -%}
+  {%- if n == 1 -%}{{ t('counts.article_one') }}{%- elif n == 2 -%}{{ t('counts.article_two') }}{%- elif m >= 3 and m <= 10 -%}{{ t('counts.article_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.article_many') | replace('{n}', n) }}{%- endif -%}
+{%- elif k == 'collection' -%}
+  {%- if n == 1 -%}{{ t('counts.collection_one') }}{%- elif n == 2 -%}{{ t('counts.collection_two') }}{%- elif m >= 3 and m <= 10 -%}{{ t('counts.collection_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.collection_many') | replace('{n}', n) }}{%- endif -%}
+{%- elif k == 'review' -%}
+  {%- if n == 1 -%}{{ t('counts.review_one') }}{%- elif n == 2 -%}{{ t('counts.review_two') }}{%- elif m >= 3 and m <= 10 -%}{{ t('counts.review_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.review_many') | replace('{n}', n) }}{%- endif -%}
+{%- else -%}
+  {%- if n == 1 -%}{{ t('counts.product_one') }}{%- elif n == 2 -%}{{ t('counts.product_two') }}{%- elif m >= 3 and m <= 10 -%}{{ t('counts.product_few') | replace('{n}', n) }}{%- else -%}{{ t('counts.product_many') | replace('{n}', n) }}{%- endif -%}
+{%- endif -%}

@@ -1,0 +1,280 @@
+{# =========================================================
+   Dark Blood - شبكة منتجات (صفحة التصنيف / كل المنتجات / الأحدث)
+   مصدر المنتجات (data-plp-source):
+   - server: بيانات الصفحة من المنصة (context.shop / context.products / context.collection — الشكل الحقيقي على المتجر):
+     المنتجات بتترسم هنا (SEO ومن غير JS)، والفلاتر والترتيب والتقسيم بيتبعتوا للسيرفر في اللينك
+   - collection: المتغير collection القديم فيه products
+   - chosen: منتجات مختارة من إعدادات الويدجت
+   - global: مفيش بيانات من المنصة (المحرر / لينكات ?category= القديمة) → الـ JS بيجيب المنتجات من /ajax/search/products
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{% set ctx = context or {} %}
+{% set shop = ctx.shop or {} %}
+{% set applied = (shop.filters.applied if (shop.filters and shop.filters.applied) else {}) %}
+{# المجموعة: collection العام ← context.collection (صفحة /collections/<handle>) ← context.shop.collection (/shop/<collection>) #}
+{% if collection and (collection._id or collection.slug or collection.handle or collection.title) %}
+  {% set col = collection %}
+{% elif ctx.collection and (ctx.collection._id or ctx.collection.title) %}
+  {% set col = ctx.collection %}
+{% elif shop.collection and (shop.collection._id or shop.collection.title) %}
+  {% set col = shop.collection %}
+{% else %}
+  {% set col = null %}
+{% endif %}
+{% set onCollection = col %}
+{# مجموعة متعطّل عنها البيع (لو اتفتحت بلينك مباشر): رسالة إنها مش متاحة بدل منتجاتها (نفس شروط blkIsCollectionVisible) #}
+{% set collectionHidden = onCollection and (col.active === false or col.isActive === false or col.published === false or col.isPublished === false or col.visible === false or col.isVisible === false or col.availableForSale === false or col.enabled === false or col.salesEnabled === false or col.hidden === true or col.deleted === true or (col.salesChannels and col.salesChannels.onlineStore === false) or col.isHidden === true or (((col.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}
+{# لو المنصة بعتت page.url وهو لينك قسم، مانعرضش كل المتجر حتى لو collection مش موجود #}
+{% set urlIsCollection = page and page.url and ('/collections/' in page.url) and not ('/collections/all' in page.url) %}
+{# لينكات الأقسام القديمة (/shop?category=men) والمنتج فوق الشوب: الـ JS هو اللي بيحدد القسم #}
+{% set legacyCategory = applied.category or applied.cid %}
+
+{% if collection and collection.products %}
+  {% set source = 'collection' %}
+  {% set products = collection.products %}
+  {% set pg = collection.pagination or ctx.pagination or {} %}
+{% elif ctx.products and ctx.products.length is defined and not legacyCategory %}
+  {% set source = 'server' %}
+  {% set products = ctx.products %}
+  {% set pg = ctx.pagination or {} %}
+{% elif shop.products and shop.products.length is defined and not legacyCategory %}
+  {% set source = 'server' %}
+  {% set products = shop.products %}
+  {% set pg = shop.pagination or {} %}
+{% elif s.products and (s.products | length) > 0 %}
+  {% set source = 'chosen' %}
+  {% set products = s.products %}
+  {% set pg = {} %}
+{% else %}
+  {% set source = 'global' %}
+  {% set products = [] %}
+  {% set pg = {} %}
+{% endif %}
+
+{# FLT-01: فلاتر لوحة التحكم — context.shop.filters.available = [{ key|name|handle, label|title, values|options }]
+   أو collection.filters.<name> = [{ value, label, count }]. موجودة = الفلترة على السيرفر (filters[name][]= في اللينك).
+   مش موجودة = فلاتر من وسوم المنتجات (key:value) + التوفر + السعر على الصفحة نفسها #}
+{% set rawFilters = (shop.filters.available if (shop.filters and shop.filters.available) else null) or ctx.filters or (col.filters if col else null) or (collection.filters if collection else null) %}
+{% set flist = [] %}
+{% if rawFilters and rawFilters.length is defined %}
+  {% for f in rawFilters %}
+    {% set fk = (f.key or f.name or f.handle or f.id or '') | string %}
+    {% set fv = f.values or f.options or [] %}
+    {% if fk and fk != 'price' and fv.length and flist.push({ name: fk, label: f.label or f.title or fk, opts: fv }) %}{% endif %}
+  {% endfor %}
+{% elif rawFilters %}
+  {% for fname, fopts in rawFilters %}
+    {% if fname != 'price' and fname != 'applied' and fname != 'available' and fopts and fopts.length and flist.push({ name: fname, label: fname, opts: fopts }) %}{% endif %}
+  {% endfor %}
+{% endif %}
+{% set serverFilters = (flist | length) > 0 and (source == 'server' or source == 'collection') %}
+{% set serverKeys = [] %}
+{% for f in flist %}{% if serverKeys.push(f.name) %}{% endif %}{% endfor %}
+
+{% set cols = s.columns_desktop | default('4') %}
+{% set hideQuickView = s.show_quick_view == false %}
+{# العنوان الافتراضي بيتترجم، واللي التاجر كتبه بيفضل زي ما هو #}
+{% set emptyTitle = s.empty_title if (s.empty_title and s.empty_title != 'مفيش منتجات هنا لسه') else t('defaults.empty_title') %}
+{% set emptyText = t('common.coming_soon') %}
+{% set backHome = t('common.back_home') %}
+{% set browseAll = t('collection.browse_all') %}
+{% set remote = source == 'global' and s.load_all_products !== false and not urlIsCollection %}
+{% set remoteSort = s.remote_sort | default('') %}
+{% set unavailableTitle = t('collection.unavailable_title') %}
+{% set unavailableText = t('collection.unavailable_text') %}
+{% set isServer = source == 'server' or source == 'collection' %}
+{% set showFilters = s.show_filters !== false %}
+{% set totalItems = (pg.totalItems or (products | length)) | int %}
+{# الترتيب: قيم المنصة اللي بتشتغل فعلًا على /shop (createdAt-desc ...)، والـ AJAX بيستخدم created-desc #}
+{% set sortOpts = [
+  { v: '', l: t('collection.sort_default') },
+  { v: 'createdAt-desc' if isServer else 'created-desc', l: t('collection.sort_newest') },
+  { v: 'price-asc', l: t('collection.sort_price_asc') },
+  { v: 'price-desc', l: t('collection.sort_price_desc') },
+  { v: 'rating-desc', l: t('collection.sort_rating') }
+] %}
+{% set filterCfg = {
+  mode: 'server' if serverFilters else 'client',
+  serverKeys: serverKeys,
+  isServer: isServer,
+  totalItems: totalItems,
+  stockLabel: t('collection.filter_in_stock'),
+  results: t('collection.results'),
+  showing: t('collection.showing'),
+  priceSwapped: t('filters.price_swapped')
+} %}
+
+{% if collectionHidden %}
+<section class="blk-section blk-plp" id="blkPlp-{{ widget.id }}">
+  <div class="blk-container">
+    {% ui "blk-empty.njk", title=unavailableTitle, text=unavailableText, btn_text=browseAll, btn_url="/collections", icon="box" %}
+  </div>
+</section>
+{% else %}
+<section class="blk-section blk-plp" id="blkPlp-{{ widget.id }}" data-plp-filters="{{ filterCfg | dump }}">
+  <div class="blk-container">
+
+    {% if s.title %}
+      <div class="blk-section-head">
+        <h2 class="blk-section-title">{{ s.title }}</h2>
+      </div>
+    {% endif %}
+
+    {% if (products | length) > 0 or remote or isServer %}
+      <div class="blk-plp-toolbar blk-anim-fade-up" data-plp-toolbar>
+        <span class="blk-plp-count" data-plp-count-text>{% if remote %}<strong data-plp-count>…</strong> {{t('common.products_word')}}{% else %}{% ui "blk-count.njk", n=totalItems %}{% endif %}</span>
+
+        <div class="blk-plp-controls">
+          {% if showFilters %}
+            <button type="button" class="blk-btn blk-btn-outline blk-filter-open" data-filter-open aria-haspopup="dialog" aria-controls="blkFilters-{{ widget.id }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+              <span>{{t('filters.open')}}</span>
+              <span class="blk-filter-badge" data-filter-badge hidden></span>
+            </button>
+          {% endif %}
+          {% if s.show_sort != false %}
+            <label class="blk-select-wrap">
+              <span class="blk-sr-only">{{t('collection.sort_by')}}</span>
+              <select class="blk-select" data-plp-sort>
+                {% for o in sortOpts %}
+                  <option value="{{ o.v or 'default' }}" {% if (remote and remoteSort == o.v and o.v) or (not o.v and not remoteSort) %}selected{% endif %}>{{ o.l }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          {% endif %}
+
+          <div class="blk-view-toggle" role="group" aria-label="{{t('collection.view_mode')}}">
+            <button type="button" class="blk-view-btn is-active" data-plp-cols="{{ cols }}" aria-label="{{t('collection.grid_large')}}" aria-pressed="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button type="button" class="blk-view-btn" data-plp-cols="2" aria-label="{{t('collection.grid_wide')}}" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {# chips الفلاتر المفعّلة + «مسح الكل» #}
+      <div class="blk-filter-chips" data-filter-chips hidden></div>
+
+      <div class="blk-plp-layout{% if showFilters %} has-filters{% endif %}">
+        {% if showFilters %}
+          <div class="blk-filter-scrim" data-filter-scrim hidden></div>
+          {# FLT-11: على الموبايل والتابلت درج (Drawer) بزر «عرض النتائج» و«إلغاء» — الإلغاء بيرجّع اللي كان قبل الفتح #}
+          <aside class="blk-filter-panel" id="blkFilters-{{ widget.id }}" data-filter-panel aria-label="{{t('filters.title')}}">
+            <div class="blk-filter-head">
+              <h2 class="blk-filter-title">{{t('filters.title')}}</h2>
+              <button type="button" class="blk-filter-clear" data-filter-clear hidden>{{t('filters.clear_all')}}</button>
+              <button type="button" class="blk-icon-btn blk-filter-close" data-filter-cancel aria-label="{{t('filters.cancel')}}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+              </button>
+            </div>
+
+            <div class="blk-filter-body">
+              {% if serverFilters %}
+                {% for fl in flist %}
+                  {% set lk = 'filters.name_' ~ fl.name %}{% set lbl = t(lk) %}
+                  <fieldset class="blk-facet" data-facet="{{ fl.name }}">
+                    <legend>{{ lbl if lbl != lk else fl.label }}</legend>
+                    <div class="blk-facet-list">
+                      {% for o in fl.opts %}
+                        {% set ov = (o.value if (o.value is defined and o.value !== null) else (o.handle or o.label or o)) | string %}
+                        <label class="blk-facet-opt">
+                          <input type="checkbox" value="{{ ov }}" data-facet-input="{{ fl.name }}">
+                          <span class="blk-facet-name">{{ o.label or o.title or ov }}</span>
+                          {% if o.count is defined %}<small class="blk-facet-count">{{ o.count }}</small>{% endif %}
+                        </label>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                {% endfor %}
+              {% else %}
+                {# الوسوم key:value بتتبني هنا من الكروت (pages.js) #}
+                <div data-facet-auto></div>
+              {% endif %}
+
+              {% if s.show_price_filter !== false %}
+                <fieldset class="blk-facet blk-price-filter" data-price-filter>
+                  <legend>{{t('filters.price')}}</legend>
+                  <div class="blk-price-inputs">
+                    <label><span>{{t('filters.from')}}</span><input class="blk-input" type="number" inputmode="decimal" min="0" step="any" placeholder="0" data-price-min></label>
+                    <label><span>{{t('filters.to')}}</span><input class="blk-input" type="number" inputmode="decimal" min="0" step="any" placeholder="—" data-price-max></label>
+                  </div>
+                  <p class="blk-price-note" data-price-note role="status" hidden></p>
+                </fieldset>
+              {% endif %}
+            </div>
+
+            <div class="blk-filter-actions">
+              <button type="button" class="blk-btn blk-btn-primary" data-filter-apply>{{t('filters.show_results')}}</button>
+              <button type="button" class="blk-btn blk-btn-outline" data-filter-cancel>{{t('filters.cancel')}}</button>
+            </div>
+          </aside>
+        {% endif %}
+
+        <div class="blk-plp-results">
+          {% if (products | length) > 0 or remote %}
+            <div class="blk-prod-grid" data-plp-grid data-plp-source="{{ source }}"
+              {% if remote %}data-plp-remote aria-busy="true"{% endif %}
+              data-sort="{{ remoteSort }}"
+              {% if onCollection %}
+                data-collection-id="{{ col._id }}"
+                data-collection-slug="{{ col.slug | default(col.handle) }}"
+                data-collection-title="{{ col.title }}"
+              {% endif %}
+              {% if hideQuickView %}data-hide-quickview{% endif %}
+              style="--grid-cols: {{ cols }};">
+              {% if remote %}
+                {# كروت هيكلية لحد ما المنتجات توصل #}
+                {% for i in range(8) %}
+                  <div class="blk-plp-skel" aria-hidden="true">
+                    <span class="blk-plp-skel-img"></span>
+                    <span class="blk-plp-skel-line"></span>
+                    <span class="blk-plp-skel-line is-short"></span>
+                  </div>
+                {% endfor %}
+              {% else %}
+                {% for product in products %}
+                  {% ui "blk-product-card.njk", product=product, hide_quick_view=hideQuickView %}
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {# FLT-08: الفلاتر مارجّعتش منتجات — رسالة + «مسح الفلاتر» (مش رسالة المجموعة الفاضية) #}
+          <div class="blk-no-match" data-plp-no-match role="status" hidden>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9M8 11h6"/></svg>
+            <p>{{t('filters.no_results')}}</p>
+            <button type="button" class="blk-btn blk-btn-outline" data-filter-clear>{{t('filters.clear')}}</button>
+          </div>
+
+          {% if not remote and (products | length) > 0 %}
+            <div data-plp-pagination>{% ui "blk-pagination.njk", pagination=pg %}</div>
+          {% endif %}
+
+          {# بيستخدمهم الـ JS لو جاب المنتجات بنفسه (ومنهم لو صفحة قسم اتعرضت بمنتجات المتجر كلها) #}
+          <div class="blk-plp-more" data-plp-more-wrap hidden>
+            <button type="button" class="blk-btn blk-btn-outline" data-plp-more>
+              <span>{{t('collection.load_more')}}</span>
+            </button>
+          </div>
+
+          {# الـ JS بيظهرها لو لينك القسم طلع لمجموعة متعطّل عنها البيع #}
+          <div data-plp-unavailable hidden>
+            {% ui "blk-empty.njk", title=unavailableTitle, text=unavailableText, btn_text=browseAll, btn_url="/collections", icon="box" %}
+          </div>
+
+          {# COL-07: مجموعة فاضية (من غير فلاتر) — رسالة + رجوع. في المعاينة الـ JS بيعرض منتجات تجريبية مكانها #}
+          <div data-plp-empty {% if not (isServer and (products | length) == 0) %}hidden{% endif %}>
+            {% set emptyBtn = browseAll if onCollection else backHome %}{% set emptyUrl = "/collections" if onCollection else "/" %}
+            {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url=emptyUrl, icon="box" %}
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=backHome, btn_url="/", icon="box" %}
+    {% endif %}
+  </div>
+</section>
+{% endif %}

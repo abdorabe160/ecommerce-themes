@@ -1,0 +1,192 @@
+{
+  "name": "الفوتر",
+  "settings": {
+    "color_1": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background color"
+      },
+      "default": ""
+    },
+    "color_2": {
+      "type": "color",
+      "label": {
+        "ar": "لون التوهج",
+        "en": "Glow color"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النصوص والروابط",
+        "en": "Text & links color"
+      },
+      "default": ""
+    },
+    "about_text": {
+      "type": "text",
+      "label": {
+        "ar": "نبذة عن المتجر",
+        "en": "About text"
+      },
+      "default": ""
+    },
+    "about_text_en": {
+      "type": "text",
+      "label": {
+        "ar": "نبذة عن المتجر (إنجليزي)",
+        "en": "About text (English)"
+      }
+    },
+    "menu_1_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القائمة الأولى",
+        "en": "First menu title"
+      },
+      "default": "روابط سريعة"
+    },
+    "menu_1_title_en": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القائمة الأولى (إنجليزي)",
+        "en": "First menu title (English)"
+      },
+      "default": "Quick links"
+    },
+    "menu_1": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الأولى",
+        "en": "First menu"
+      },
+      "default": "footer-menu"
+    },
+    "menu_2_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القائمة الثانية",
+        "en": "Second menu title"
+      },
+      "default": "خدمة العملاء"
+    },
+    "menu_2_title_en": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القائمة الثانية (إنجليزي)",
+        "en": "Second menu title (English)"
+      },
+      "default": "Customer service"
+    },
+    "menu_2": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الثانية (اختياري)",
+        "en": "Second menu (optional)"
+      },
+      "default": "footer-menu"
+    },
+    "phone": {
+      "type": "string",
+      "label": {
+        "ar": "رقم الهاتف",
+        "en": "Phone"
+      },
+      "default": ""
+    },
+    "email": {
+      "type": "string",
+      "label": {
+        "ar": "البريد الإلكتروني",
+        "en": "Email"
+      },
+      "default": ""
+    },
+    "address": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Address"
+      },
+      "default": ""
+    },
+    "address_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Address (English)"
+      }
+    },
+    "pay_visa": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض VISA (فعّلها فقط إذا كانت مفعّلة في متجرك)",
+        "en": "Show VISA (only if enabled in your store)"
+      },
+      "default": false
+    },
+    "pay_mastercard": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض Mastercard",
+        "en": "Show Mastercard"
+      },
+      "default": false
+    },
+    "pay_mada": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض مدى",
+        "en": "Show mada"
+      },
+      "default": false
+    },
+    "pay_paypal": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض PayPal",
+        "en": "Show PayPal"
+      },
+      "default": false
+    },
+    "pay_applepay": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض Apple Pay",
+        "en": "Show Apple Pay"
+      },
+      "default": false
+    },
+    "pay_googlepay": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض Google Pay",
+        "en": "Show Google Pay"
+      },
+      "default": false
+    },
+    "pay_cod": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض الدفع عند الاستلام",
+        "en": "Show cash on delivery"
+      },
+      "default": false
+    },
+    "payments_image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة وسائل الدفع (بديل اختياري)",
+        "en": "Payment methods image (optional)"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر"
+    }
+  ]
+}

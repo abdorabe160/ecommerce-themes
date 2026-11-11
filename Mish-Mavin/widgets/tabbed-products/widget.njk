@@ -1,0 +1,33 @@
+{# منتجات بتبويبات (قسم MEN) — مطابق لـ mavin-wear.com: عنوان كبير على اليسار، تبويبات (Tops / Compressions / Tanks / Bottoms)، سلايدر منتجات، ورابط "عرض الكل". #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set tabs = widget.blocks | default([]) %}
+{% if tabs | length %}
+<section class="mw-tabbed" x-data="{ tab: 0 }">
+  <div class="container">
+    {% if wd.title %}<h2 class="mw-tabbed__title mw-align-{{ wd.heading_align | default('left') }}">{{ wd.title }}</h2>{% endif %}
+    {% if tabs | length > 1 %}
+    <div class="mw-tabs" role="tablist">
+      {% for b in tabs %}
+        <button type="button" role="tab" class="mw-tab{% if loop.first %} is-active{% endif %}" :class="{ 'is-active': tab === {{ loop.index0 }} }" :aria-selected="tab === {{ loop.index0 }}" @click="tab = {{ loop.index0 }}">{{ b.settings.title | default('Tab') }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% for b in tabs %}
+      {% set s = b.settings %}
+      {% set products = (s.products or []).slice(0, wd.limit | default(10)) %}
+      <div role="tabpanel" {% if not loop.first %}x-cloak {% endif %}x-show="tab === {{ loop.index0 }}">
+        <div class="mw-products mw-products--carousel"{% if not products | length %} data-mw-demo="{{ s.demo_set | default('tops') }}" data-mw-demo-limit="{{ wd.limit | default(10) }}"{% endif %}>
+          {% for product in products %}
+            {% ui "product-card.njk", product=product %}
+          {% endfor %}
+        </div>
+        {% if wd.show_view_all != false %}
+          <div class="mw-section__foot">
+            <a href="{{ s.url | default(wd.view_all_url) | default('/collections') }}" class="mw-link">{{ wd.view_all_text | default(t('common.view_all')) | default('View all') }}</a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

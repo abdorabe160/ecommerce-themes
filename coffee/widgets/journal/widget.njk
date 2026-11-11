@@ -1,0 +1,95 @@
+{#-
+  Journal / brewing guides.
+  Data priority: platform articles (blog.articles or articles when the platform exposes them on
+  /blog) → merchant-authored blocks → section mode only: three bundled brewing tips (real
+  editorial copy, deliberately unlinked — nothing dead, nothing invented).
+  section mode = homepage band; page mode = /blogs landing (h1 + empty state).
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set mode = wd.mode or 'section' -%}
+{%- set isPage = mode == 'page' -%}
+{%- set ctx = context or {} -%}
+{%- set bd = blog or ctx.blog or {} -%}
+{%- set adl = articles or ctx.articles or ctx.posts or [] -%}
+{%- set arts = bd.articles if (bd and bd.articles and bd.articles.length) else (adl if (adl and adl.length) else []) -%}
+{%- set title = (wd['title' + L] or wd.title) or t('journal.title') -%}
+{%- set text = (wd['text' + L] or wd.text) or t('journal.text') -%}
+{%- set eyebrow = (wd['eyebrow' + L] or wd.eyebrow) or t('journal.eyebrow') -%}
+{%- set linkText = (wd['link_text' + L] or wd.link_text) or t('journal.view_blog') -%}
+{%- set blocks = widget.blocks | default([]) -%}
+{%- set surface = wd.surface or 'cream' -%}
+{%- set surfaceClass = {'white': 'surface-white', 'cream': 'surface-cream', 'sand': 'surface-sand', 'dark': 'surface-dark'}[surface] or 'surface-cream' -%}
+
+{%- macro card(url, img, heading, body, meta, srcset) -%}
+<article class="dc-journal-card" data-reveal>
+  {%- if img %}<div class="dc-journal-card__media"><img src="{{ img }}"{% if srcset %} srcset="{{ srcset }}" sizes="(min-width:761px) 33vw, 100vw"{% endif %} alt="" width="600" height="400" loading="lazy" decoding="async"></div>{%- else %}<div class="dc-journal-card__media dc-journal-card__media--art"><svg width="56" height="56" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true" focusable="false"><ellipse cx="20" cy="20" rx="6.6" ry="10.2" transform="rotate(-32 20 20)" stroke-width="1.5"/><path d="M16.9 11.6c3.2 3 .4 6.6 1.9 9.6 1.2 2.5 4.1 3.4 5 6.9" stroke-width="1.4" stroke-linecap="round"/></svg></div>{%- endif %}
+  <div class="dc-journal-card__body">
+    {%- if meta %}<p class="dc-journal-card__meta">{{ meta | safe }}</p>{%- endif %}
+    <h3 class="dc-journal-card__title">{{ heading }}</h3>
+    {%- if body %}<p class="dc-journal-card__text">{{ body }}</p>{%- endif %}
+    {%- if url %}<a class="dc-journal-card__link" href="{{ url }}">{{ t('journal.read_more') }}</a>{%- endif %}
+  </div>
+</article>
+{%- endmacro -%}
+
+{%- set items = [] -%}
+{%- for a in arts -%}
+  {%- set aimg = '' -%}
+  {%- if a.image %}{%- set aimg = a.image.fileUrl or a.image.url or a.image or '' -%}{%- elif a.imageUrl %}{%- set aimg = a.imageUrl -%}{%- endif -%}
+  {#- the article's own page is /articles/<handle>; a platform `url` can point at the category -#}
+  {%- set ahandle = a.handle or a.slug -%}
+  {%- set aurl = ('/articles/' ~ ahandle) if ahandle else (a.url or '') -%}
+  {%- set adate = a.publishedAt or a.createdAt or a.created_at or a.date or '' -%}
+  {%- set ameta = ('<time data-date datetime="' ~ adate ~ '">' ~ ((adate | string).slice(0, 10)) ~ '</time>') if adate else '' -%}
+  {%- set abody = a.excerpt or a.summary or a.description or a.content or '' -%}
+  {%- if items.push({'url': aurl, 'img': aimg, 'title': a.title, 'text': (abody | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</h3>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | striptags | truncate(150)), 'meta': ameta}) -%}{%- endif -%}
+{%- endfor -%}
+{%- for b in blocks -%}
+  {%- set s = b.data or b.settings or {} -%}
+  {%- set bimg = s.image.fileUrl or s.image.url or s.image or '' -%}
+  {%- if items.push({'url': s.url or '', 'img': bimg, 'title': s['title' + L] or s.title, 'text': s['text' + L] or s.text, 'meta': s['meta' + L] or s.meta or ''}) -%}{%- endif -%}
+{%- endfor -%}
+{%- if not items.length and not isPage -%}
+  {%- set items = [
+    {'url': '', 'img': 'article-1-600.webp' | assets, 'srcset': ('article-1-600.webp' | assets) ~ ' 600w, ' ~ ('article-1-1200.webp' | assets) ~ ' 1200w', 'title': t('journal.tip1_title'), 'text': t('journal.tip1_text'), 'meta': ''},
+    {'url': '', 'img': 'article-2-600.webp' | assets, 'srcset': ('article-2-600.webp' | assets) ~ ' 600w, ' ~ ('article-2-1200.webp' | assets) ~ ' 1200w', 'title': t('journal.tip2_title'), 'text': t('journal.tip2_text'), 'meta': ''},
+    {'url': '', 'img': 'article-3-600.webp' | assets, 'srcset': ('article-3-600.webp' | assets) ~ ' 600w, ' ~ ('article-3-1200.webp' | assets) ~ ' 1200w', 'title': t('journal.tip3_title'), 'text': t('journal.tip3_text'), 'meta': ''}
+  ] -%}
+{%- endif -%}
+
+<section class="dc-journal section {{ surfaceClass }}" aria-labelledby="dc-journal-title">
+  <div class="shell">
+    {%- if isPage %}
+    <nav class="dc-breadcrumb" aria-label="{{ t('a11y.breadcrumb') }}">
+      <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span><span aria-current="page">{{ t('nav.journal') }}</span>
+    </nav>
+    {%- endif %}
+    {%- if items.length or not isPage %}
+    <header class="dc-section-heading">
+      <div>
+        <p class="eyebrow">{{ eyebrow }}</p>
+        {%- if isPage %}
+        <h1 id="dc-journal-title" class="h-display">{{ title }}</h1>
+        {%- else %}
+        <h2 id="dc-journal-title" class="h-section dc-section-heading__title">{{ title }}</h2>
+        {%- endif %}
+        {%- if text %}<p class="dc-section-heading__text">{{ text }}</p>{%- endif %}
+      </div>
+      {%- if not isPage %}<a href="{{ wd.link_url or '/blogs' }}" class="link-arrow dc-section-heading__link">{{ linkText }} {% ui "icon.njk", name="arrow", size=17 %}</a>{%- endif %}
+    </header>
+    {%- endif %}
+
+    {%- if items.length %}
+    <div class="dc-journal-grid">
+      {%- for it in items %}{{ card(it.url, it.img, it.title, it.text, it.meta, it.srcset) }}{% endfor %}
+    </div>
+    {%- else %}
+    <div class="dc-empty-state">
+      <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+      <h2>{{ t('journal.empty') }}</h2>
+      <a href="/" class="btn btn-dark">{{ t('nav.home') }}</a>
+    </div>
+    {%- endif %}
+  </div>
+</section>

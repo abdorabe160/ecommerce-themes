@@ -1,0 +1,111 @@
+{
+  "name": "reviews",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "دع العملاء يتحدثون عنا"
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار ملخص التقييم",
+        "en": "Show rating summary"
+      },
+      "default": true
+    },
+    "average_rating": {
+      "type": "number",
+      "label": {
+        "ar": "متوسط التقييم (اختياري)",
+        "en": "Average rating (optional)"
+      },
+      "min": 0,
+      "max": 5,
+      "step": 0.1
+    },
+    "reviews_count": {
+      "type": "number",
+      "label": {
+        "ar": "إجمالي عدد التقييمات (اختياري)",
+        "en": "Total reviews count (optional)"
+      },
+      "min": 0,
+      "step": 1
+    }
+  },
+  "blocks": {
+    "review": {
+      "name": "تقييم",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المنتج",
+            "en": "Product image"
+          }
+        },
+        "name": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Customer name"
+          },
+          "default": ""
+        },
+        "rating": {
+          "type": "range",
+          "label": {
+            "ar": "التقييم",
+            "en": "Rating"
+          },
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان التقييم",
+            "en": "Review title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "نص التقييم",
+            "en": "Review text"
+          },
+          "default": ""
+        },
+        "product": {
+          "type": "string",
+          "label": {
+            "ar": "اسم المنتج",
+            "en": "Product name"
+          },
+          "default": ""
+        },
+        "verified": {
+          "type": "boolean",
+          "label": {
+            "ar": "مشتري موثّق",
+            "en": "Verified buyer"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "reviews"
+    }
+  ]
+}

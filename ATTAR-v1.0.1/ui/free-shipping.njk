@@ -1,0 +1,9 @@
+{#- Free-shipping progress (theme setting freeShippingThreshold, 0 = hidden). JS twin: CartManager._updateUI -#}
+{%- set _fsGoal = ((settings.freeShippingThreshold or 0) | int) * (localization.market.exchangeRate | default(1, true)) -%}
+{%- if _fsGoal > 0 -%}
+{%- set _fsTotal = cart.totalPrice or 0 -%}
+<div class="attar-fs font-body-ar" data-free-shipping="{{ _fsGoal }}">
+  <p class="attar-fs__text" data-fs-text>{% if _fsTotal >= _fsGoal %}{{ t('cart.free_shipping_reached') }}{% else %}{{ t('cart.free_shipping_left') | replace('{amount}', (_fsGoal - _fsTotal) | money) }}{% endif %}</p>
+  <div class="attar-fs__track" aria-hidden="true"><span class="attar-fs__bar" data-fs-bar style="width: {{ 100 if _fsTotal >= _fsGoal else ((_fsTotal / _fsGoal * 100) | int) }}%;"></span></div>
+</div>
+{%- endif -%}

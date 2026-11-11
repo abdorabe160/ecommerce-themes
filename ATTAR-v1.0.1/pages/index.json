@@ -1,0 +1,252 @@
+{
+  "name": "الرئيسية",
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "title_size": "large",
+        "height": "large",
+        "bottle_side": "end",
+        "text_tone": "light",
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_nav_arrows": false,
+        "show_slide_counter": true
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "slide1",
+          "settings": {
+            "slide_subtitle": "دار عطور شرقية",
+            "slide_title": "عبقٌ <em>يميّزك</em>",
+            "slide_description": "عطور وعود ودهن عود بخلطاتٍ خاصة، تُروى بها حكايتك — عبقٌ يبقى في الذاكرة.",
+            "slide_button_text": "اكتشف عطرك",
+            "slide_button_url": "/collections"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide2",
+          "settings": {
+            "slide_subtitle": "وصل حديثاً",
+            "slide_title": "عودٌ <em>فاخر</em> وبخور",
+            "slide_description": "خامات نادرة وتعتيقٌ مدروس — لحضورٍ شرقيٍّ لا يُنسى.",
+            "slide_button_text": "تسوّق العود",
+            "slide_button_url": "/collections"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide3",
+          "settings": {
+            "slide_subtitle": "بصمتك العطرية",
+            "slide_title": "دهنُ العود <em>الأصيل</em>",
+            "slide_description": "قطراتٌ تكفي — تركيزٌ عالٍ وثباتٌ يمتدّ طوال اليوم.",
+            "slide_button_text": "شاهد المجموعة",
+            "slide_button_url": "/collections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "منتجات من قسم",
+      "widget": "collection-products",
+      "settings": {
+        "eyebrow": "وصل حديثاً",
+        "title": "أحدث الإصدارات",
+        "featuredCollection": [],
+        "limit": 6,
+        "columns_desktop": "3",
+        "view_all_url": "/collections",
+        "card_image_ratio": "square"
+      }
+    },
+    {
+      "name": "شريط المزايا",
+      "widget": "features-bar",
+      "settings": {
+        "background_style": "transparent",
+        "display_layout": "horizontal",
+        "show_dividers": true
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "feature1",
+          "settings": {
+            "icon": "star",
+            "title": "خامات أصيلة",
+            "description": "عود ودهن ومسك منتقى بعناية"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "feature2",
+          "settings": {
+            "icon": "heart",
+            "title": "خلطات خاصة",
+            "description": "تركيبات تحمل بصمة الدار"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "feature3",
+          "settings": {
+            "icon": "clock",
+            "title": "ثباتٌ طويل",
+            "description": "عطور مركّزة تدوم"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "feature4",
+          "settings": {
+            "icon": "gift",
+            "title": "هدية العطر",
+            "description": "اختيار يليق بالمناسبة"
+          }
+        }
+      ]
+    },
+    {
+      "name": "المنتجات المميزة",
+      "widget": "product-grid",
+      "settings": {
+        "title": "توقيعاتٌ مختارة",
+        "subtitle": "خلطاتٌ نعود إليها دائماً — عبقٌ يميّزك ويبقى في الذاكرة.",
+        "featuredCollection": [],
+        "display_mode": "slider",
+        "columns": 4,
+        "rows": 1,
+        "card_image_ratio": "square",
+        "view_all_url": "/collections"
+      }
+    },
+    {
+      "name": "الخطوات",
+      "widget": "steps-section",
+      "settings": {
+        "eyebrow": "طقس العطر",
+        "steps_title": "بصمتك العطرية في أربع خطوات"
+      },
+      "blocks": [
+        {
+          "block": "step",
+          "name": "step1",
+          "settings": {
+            "step_title": "اكتشف العائلة",
+            "step_description": "تصفّح عائلاتنا العطرية — شرقي، خشبي، عنبري — وحدّد ما يناسب مزاجك."
+          }
+        },
+        {
+          "block": "step",
+          "name": "step2",
+          "settings": {
+            "step_title": "تعرّف على النفحات",
+            "step_description": "اقرأ وصف كل عطر ومكوّناته لتعرف ما يناسبك."
+          }
+        },
+        {
+          "block": "step",
+          "name": "step3",
+          "settings": {
+            "step_title": "اختر الحجم",
+            "step_description": "اختر الحجم الأنسب لك من الخيارات المتاحة لكل عطر."
+          }
+        },
+        {
+          "block": "step",
+          "name": "step4",
+          "settings": {
+            "step_title": "اجعله بصمتك",
+            "step_description": "عطرٌ يرافقك كل يوم — عبقٌ يبقى في الذاكرة."
+          }
+        }
+      ]
+    },
+    {
+      "name": "التصنيفات",
+      "widget": "collections-section",
+      "settings": {
+        "eyebrow": "العائلات العطرية",
+        "title": "تسوّق حسب العائلة العطرية",
+        "view_all_url": "/collections",
+        "display_type": "grid",
+        "label_style": "overlay",
+        "columns_desktop": "3",
+        "card_ratio": "portrait"
+      }
+    },
+    {
+      "name": "صورة مع نص",
+      "widget": "image-with-text",
+      "settings": {
+        "eyebrow": "قصّة الدار",
+        "title": "عطّار شرقي، يصنع البصمة",
+        "text": "وُلدت عطّار من شغفٍ بالعطر الشرقي الأصيل. نختار العود والخامات النادرة، ونعتّقها بصبرٍ في خلطاتٍ خاصة — لعطرٍ يميّزك ويبقى في الذاكرة. من العطر إلى دهن العود المركّز، كل قطرة تُروى بها حكايتك.",
+        "button_text": "اكتشف المجموعة",
+        "button_url": "/collections",
+        "signature": "— عطّار",
+        "image_position": "left",
+        "image_ratio": "tall",
+        "background": "sand",
+        "show_stats": true,
+        "stat_1_number": "",
+        "stat_1_label": "خلطة خاصة",
+        "stat_2_number": "",
+        "stat_2_label": "خامات أصيلة",
+        "stat_3_number": "",
+        "stat_3_label": "ثبات يدوم"
+      }
+    },
+    {
+      "name": "بانر ترويجي",
+      "widget": "cta-banner",
+      "settings": {
+        "eyebrow": "مختارات الدار",
+        "title": "العود والدهن",
+        "subtitle": "خلطاتٌ مختارة من العود الفاخر ودهن العود الأصيل.",
+        "background": "charcoal",
+        "show_countdown": false,
+        "countdown_date": "2026-12-31 23:59",
+        "countdown_days_label": "يوم",
+        "countdown_hours_label": "ساعة",
+        "countdown_minutes_label": "دقيقة",
+        "countdown_seconds_label": "ثانية",
+        "hide_on_expire": true,
+        "button_text": "تسوّق المختارات",
+        "button_link": "/collections",
+        "text_alignment": "center",
+        "full_width": true,
+        "height": "large"
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials-reviews",
+      "settings": {
+        "eyebrow": "آراء عملائنا",
+        "title": "بكلماتهم"
+      },
+      "blocks": []
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "eyebrow": "النشرة",
+        "title": "انضمّ إلى عطّار",
+        "subtitle": "كن أول من يعرف عن الخلطات الجديدة، والإصدارات المحدودة، وعروض العود ودهن العود.",
+        "placeholder": "بريدك الإلكتروني",
+        "button_text": "اشتراك",
+        "success_message": "أهلاً بك في عطّار — تحقّق من بريدك.",
+        "background": "charcoal",
+        "show_note": true,
+        "note_text": "نحترم خصوصيتك، ويمكنك إلغاء الاشتراك في أي وقت."
+      }
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "name": "صفحة المنتج",
+  "settings": {
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد الصورة",
+        "en": "Image Ratio"
+      },
+      "default": "3x4",
+      "options": [
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "طولي ممدود",
+            "en": "Tall portrait"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Soft portrait"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        }
+      ]
+    },
+    "show_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند الضغط",
+        "en": "Zoom on click"
+      },
+      "default": true
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مسار التنقّل",
+        "en": "Show breadcrumb"
+      },
+      "default": true
+    },
+    "title_size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم عنوان المنتج",
+        "en": "Product title size"
+      },
+      "default": "md",
+      "options": [
+        {
+          "value": "sm",
+          "label": {
+            "ar": "صغير",
+            "en": "Small"
+          }
+        },
+        {
+          "value": "md",
+          "label": {
+            "ar": "متوسط (افتراضي)",
+            "en": "Medium (default)"
+          }
+        },
+        {
+          "value": "lg",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "xl",
+          "label": {
+            "ar": "ضخم",
+            "en": "Extra large"
+          }
+        }
+      ]
+    },
+    "show_savings": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار قيمة التوفير",
+        "en": "Show how much is saved"
+      },
+      "default": true
+    },
+    "show_stock_status": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار حالة التوفّر",
+        "en": "Show stock status"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "panel": {
+      "name": "قسم قابل للطي",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان القسم",
+            "en": "Panel title"
+          },
+          "default": ""
+        },
+        "source": {
+          "type": "select",
+          "label": {
+            "ar": "مصدر المحتوى — «وصف المنتج» يعرض الوصف المكتوب في المنتج نفسه، ويصلح لبلوك واحد فقط",
+            "en": "Content source — \"product description\" pulls the product's own description; it only makes sense on one panel"
+          },
+          "default": "text",
+          "options": [
+            {
+              "value": "description",
+              "label": {
+                "ar": "وصف المنتج (من لوحة التحكّم)",
+                "en": "Product description (from the dashboard)"
+              }
+            },
+            {
+              "value": "text",
+              "label": {
+                "ar": "نص ثابت مكتوب هنا",
+                "en": "Fixed text written here"
+              }
+            }
+          ]
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص (يقبل HTML — استخدم <table> لجدول المواصفات الكامل)",
+            "en": "Text (HTML allowed — use a <table> for the full spec sheet)"
+          },
+          "default": ""
+        },
+        "open_by_default": {
+          "type": "boolean",
+          "label": {
+            "ar": "مفتوح افتراضياً",
+            "en": "Open by default"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحات",
+      "name": "صفحة المنتج"
+    }
+  ]
+}

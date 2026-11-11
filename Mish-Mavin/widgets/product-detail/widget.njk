@@ -1,0 +1,311 @@
+{# صفحة المنتج — مطابقة لصفحة المنتج في mavin-wear.com:
+   معرض صور (أسهم + عدّاد + نقاط على الموبايل + سحب + تكبير بملء الشاشة) + معلومات: العنوان، السعر، الخيارات، حالة المخزون
+   («متوفر» / «أوشك على النفاد — متبقٍ N فقط» / «نفد من المخزون»)، الكمية، زر الشراء، مشاركة، شريط شراء ثابت على الموبايل،
+   منتجات ذات صلة (توصيات المنصة — من غير المنتج نفسه)، وJSON-LD (Product + BreadcrumbList). #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# قمرة بتبعت بيانات الصفحة جوه context (context.product …) مش كمتغير مباشر زي التوثيق — بنقرا الاتنين #}
+{% set ctx = context or {} %}
+{% set p = product or ctx.product %}
+{% if p and p._id %}
+{% set S = settings or {} %}
+{% set price = (p.pricing.price if (p.pricing and p.pricing.price is defined) else p.price) | default(0, true) %}
+{% set compare = (p.pricing.compareAtPrice if (p.pricing and p.pricing.compareAtPrice is defined) else p.compareAtPrice) | default(0, true) %}
+{% set onSale = compare and compare > price %}
+{% set images = p.images | default([]) %}
+{% set nImg = images | length %}
+{% set options = p.options | default([]) %}
+{% set crumbCol = null %}
+{% for c in p.collections | default([]) %}{% if not crumbCol and c and c.title %}{% set crumbCol = c %}{% endif %}{% endfor %}
+{% set promo = S.promo_badge or '' %}
+{% set isAr = (localization.language | default('ar')) == 'ar' %}
+{% set handle = p.slug or p.handle %}
+{% set siteUrl = (store.url if (store and store.url) else '') %}
+{% set pUrl = siteUrl + '/products/' + handle %}
+{# منتجات ذات صلة: توصيات المنصة، من غير المنتج نفسه، وتختفي لو فاضية (PRD-16) #}
+{% set relSrc = ctx.related_products or p.recommendations or p.relatedProducts or [] %}
+{% set related = [] %}
+{% for rp in relSrc %}{% if rp and rp._id and rp._id != p._id and (related | length) < 4 %}{% set _ = related.push(rp) %}{% endif %}{% endfor %}
+{# JSON-LD — العملة من المتجر، مش مكتوبة في الثيم (REG-09) #}
+{% set curr = (localization.currency.currencyCode if (localization and localization.currency and localization.currency.currencyCode) else ((store.generalSettings.currency.currencyCode) if (store and store.generalSettings and store.generalSettings.currency) else ((store.currency.currencyCode) if (store and store.currency) else ''))) %}
+{% set ldStock = 0 %}
+{% if p.variants and (p.variants | length) %}{% for v in p.variants %}{% set ldStock = ldStock + (v.quantity if (v.quantity is number and v.quantity > 0) else 0) %}{% endfor %}{% else %}{% set ldStock = p.quantity if (p.quantity is number) else 1 %}{% endif %}
+{% set ldIn = S.followProductStock == false or p.allowBackorder or p.trackQuantity == false or ldStock > 0 %}
+{% set ldImgs = [] %}{% for im in images %}{% if im and im.fileUrl %}{% set _ = ldImgs.push(im.fileUrl) %}{% endif %}{% endfor %}
+{% set ld = { '@context': 'https://schema.org', '@type': 'Product', 'name': p.title, 'image': ldImgs, 'description': (p.description or p.title) | replace('</p>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(300), 'sku': p.sku or p._id, 'url': pUrl,
+  'offers': { '@type': 'Offer', 'url': pUrl, 'price': price, 'priceCurrency': curr, 'availability': 'https://schema.org/InStock' if ldIn else 'https://schema.org/OutOfStock', 'itemCondition': 'https://schema.org/NewCondition' } } %}
+<script type="application/ld+json">{{ ld | dump | replace('</', '<\\/') | safe }}</script>
+{% set crumbs = [{ '@type': 'ListItem', 'position': 1, 'name': t('common.home'), 'item': siteUrl + '/' }] %}
+{% if crumbCol %}{% set _ = crumbs.push({ '@type': 'ListItem', 'position': 2, 'name': crumbCol.title, 'item': siteUrl + '/collections/' + (crumbCol.handle or crumbCol.slug) }) %}{% endif %}
+{% set _ = crumbs.push({ '@type': 'ListItem', 'position': (crumbs | length) + 1, 'name': p.title, 'item': pUrl }) %}
+<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': crumbs } | dump | replace('</', '<\\/') | safe }}</script>
+
+<script type="application/json" id="mw-product-json">{{ p | dump | replace('</', '<\\/') | safe }}</script>
+<section class="mw-pdp" x-data="mwProduct(JSON.parse(document.getElementById('mw-product-json').textContent))" data-images="{{ nImg }}">
+  <div class="container">
+    <nav class="mw-pdp__crumbs" aria-label="{{ t('common.breadcrumb') }}">
+      <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+      {% if crumbCol %}<a href="/collections/{{ crumbCol.handle or crumbCol.slug }}">{{ crumbCol.title }}</a><span aria-hidden="true">/</span>{% endif %}
+      <span aria-current="page">{{ p.title }}</span>
+    </nav>
+
+    <div class="mw-pdp__grid">
+      {# ===== Gallery ===== #}
+      <div class="mw-pdp__gallery">
+        <div class="mw-pdp__media" @touchstart.passive="swipeStart($event)" @touchend="swipeEnd($event, {{ nImg }})">
+          {% if nImg %}
+            {% for img in images %}
+              <img src="{{ img.fileUrl }}" alt="{{ p.title }}{% if nImg > 1 %} — {{ loop.index }}{% endif %}" width="900" height="1200" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy" x-cloak{% endif %} x-show="gallery === {{ loop.index0 }}" @click="openZoom()"/>
+            {% endfor %}
+            <button type="button" class="mw-pdp__zoom-btn" @click="openZoom()" aria-label="{{ t('product.zoom') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="m15.5 15.5 5 5M10.5 7.5v6M7.5 10.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+            {% if nImg > 1 %}
+              <button type="button" class="mw-pdp__nav mw-pdp__nav--prev" @click="gallery = (gallery - 1 + {{ nImg }}) % {{ nImg }}" aria-label="{{ t('common.previous') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" class="mw-pdp__nav mw-pdp__nav--next" @click="gallery = (gallery + 1) % {{ nImg }}" aria-label="{{ t('common.next') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span class="mw-pdp__counter" aria-live="polite"><span x-text="gallery + 1">1</span> / {{ nImg }}</span>
+              <span class="mw-pdp__dots" aria-hidden="true">{% for img in images %}<i :class="{ 'is-active': gallery === {{ loop.index0 }} }"{% if loop.first %} class="is-active"{% endif %}></i>{% endfor %}</span>
+            {% endif %}
+          {% else %}
+            <span class="mw-card__placeholder" role="img" aria-label="{{ p.title }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 3.5 4 6l1.5 4H8V20.5h8V10h2.5L20 6l-4.5-2.5c-.6 1.4-1.9 2.3-3.5 2.3S9.1 4.9 8.5 3.5Z" stroke="currentColor" stroke-width=".8" stroke-linejoin="round"/></svg></span>
+          {% endif %}
+        </div>
+        {% if nImg > 1 %}
+          <div class="mw-pdp__thumbs">
+            {% for img in images %}
+              <button type="button" class="mw-pdp__thumb{% if loop.first %} is-active{% endif %}" :class="{ 'is-active': gallery === {{ loop.index0 }} }" @click="gallery = {{ loop.index0 }}" aria-label="{{ p.title }} {{ loop.index }}">
+                <img src="{{ img.fileUrl }}" alt="" loading="lazy" width="120" height="160"/>
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# تكبير بملء الشاشة: ضغطة = تكبير 2× عند مكان المؤشر، Esc يقفل، الأسهم تتنقل #}
+        {% if nImg %}
+        <div class="mw-zoom" x-show="zoom" x-cloak x-transition.opacity role="dialog" aria-modal="true" aria-label="{{ t('product.zoom') }}"
+             @keydown.escape.window="closeZoom()" @keydown.arrow-left.window="zoom && zoomStep(-1, {{ nImg }})" @keydown.arrow-right.window="zoom && zoomStep(1, {{ nImg }})">
+          <button type="button" class="mw-zoom__close" @click="closeZoom()" aria-label="{{ t('common.close') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+          <div class="mw-zoom__stage" @click="toggleScale($event)" @mousemove="zoomMove($event)">
+            {% for img in images %}<img src="{{ img.fileUrl }}" alt="{{ p.title }}" loading="lazy" x-show="gallery === {{ loop.index0 }}" :class="{ 'is-scaled': scaled }" :style="scaled ? ('transform-origin:' + zx + '% ' + zy + '%') : ''"/>{% endfor %}
+          </div>
+          {% if nImg > 1 %}
+            <button type="button" class="mw-zoom__nav mw-zoom__nav--prev" @click="zoomStep(-1, {{ nImg }})" aria-label="{{ t('common.previous') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="mw-zoom__nav mw-zoom__nav--next" @click="zoomStep(1, {{ nImg }})" aria-label="{{ t('common.next') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      {# ===== Info ===== #}
+      <div class="mw-pdp__info">
+        {% if promo %}<span class="mw-pdp__badge">{{ promo }}</span>{% endif %}
+        <h1 class="mw-pdp__title">{{ p.title }}</h1>
+
+        <div class="mw-pdp__meta">
+          <div class="mw-pdp__price">
+            <s x-show="compareAt > price" x-text="$store.mw.money(compareAt)" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ compare | money }}{% endif %}</s>
+            <span :class="{ 'is-sale': compareAt > price }" class="{% if onSale %}is-sale{% endif %}" x-text="price > 0 ? $store.mw.money(price) : $store.mw.freeText()">{% if price > 0 %}{{ price | money }}{% else %}{{ t('product.free') }}{% endif %}</span>
+            <span class="mw-badge mw-badge--discount" x-show="discount > 0" x-text="$store.mw.discountText(discount)" {% if not onSale %}x-cloak{% endif %}></span>
+          </div>
+          {% if p.reviewsCount and p.reviewsCount > 0 %}
+            <span class="mw-pdp__sep" aria-hidden="true"></span>
+            <div class="mw-rating" aria-label="{{ p.averageRating | round(1) }} / 5">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8L12 2.5Z"/></svg>
+              <span class="mw-rating__value">{{ p.averageRating | round(1) }}</span>
+              <span class="mw-rating__count">({{ p.reviewsCount }})</span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if p.description %}
+        <div class="mw-pdp__desc" x-data="{ more: false }">
+          <div class="mw-pdp__desc-text mw-rte" dir="auto" :class="{ 'is-open': more }">{{ p.description | safe }}</div>
+          <button type="button" class="mw-pdp__more" @click="more = !more" :aria-expanded="more.toString()"><span x-show="!more">{{ t('product.learn_more') }}</span><span x-show="more" x-cloak>{{ t('product.show_less') }}</span></button>
+        </div>
+        {% endif %}
+
+        {# الخيارات (لون/مقاس): الاختيار غير المتوافق أو اللي خلص مخزونه بيتعطّل تلقائياً #}
+        {% set colorMap = {
+          'أسود': '#111111', 'اسود': '#111111', 'black': '#111111',
+          'أبيض': '#ffffff', 'ابيض': '#ffffff', 'white': '#ffffff',
+          'أوف وايت': '#f4f4f4', 'اوف وايت': '#f4f4f4', 'أوفوايت': '#f4f4f4', 'اوفوايت': '#f4f4f4', 'offwhite': '#f4f4f4', 'off white': '#f4f4f4',
+          'بيج': '#e8dcc8', 'beige': '#e8dcc8',
+          'بني': '#6b4b2a', 'brown': '#6b4b2a', 'كافيه': '#4b3621', 'coffee': '#4b3621',
+          'رمادي': '#9aa0a6', 'رمادى': '#9aa0a6', 'grey': '#9aa0a6', 'gray': '#9aa0a6', 'grey marl': '#8f9398', 'tan': '#c8ad8d',
+          'رصاصي': '#555555', 'رصاصى': '#555555', 'charcoal': '#4a4a4a', 'فحمي': '#4a4a4a',
+          'كحلي': '#1f2a5a', 'navy': '#2b3f8f',
+          'أزرق': '#2f6fed', 'ازرق': '#2f6fed', 'blue': '#2f6fed',
+          'لبني': '#7f9fbf', 'سماوي': '#7f9fbf', 'lightblue': '#7f9fbf', 'light blue': '#7f9fbf',
+          'تركواز': '#3fb6c4', 'turquoise': '#3fb6c4',
+          'أخضر': '#1f7a3a', 'اخضر': '#1f7a3a', 'green': '#1f7a3a',
+          'زيتي': '#4c7a34', 'olive': '#4c7a34',
+          'أحمر': '#c0392b', 'احمر': '#c0392b', 'red': '#c0392b',
+          'نبيتي': '#6e1423', 'بورجوندي': '#6e1423', 'burgundy': '#6e1423', 'maroon': '#6e1423',
+          'بينك': '#f2a7c3', 'وردي': '#f2a7c3', 'pink': '#f2a7c3', 'فوشيا': '#d63384', 'fuchsia': '#d63384',
+          'موف': '#6b4b8a', 'بنفسجي': '#6b4b8a', 'purple': '#6b4b8a',
+          'أصفر': '#f5c518', 'اصفر': '#f5c518', 'yellow': '#f5c518',
+          'برتقالي': '#e67e22', 'برتقالى': '#e67e22', 'orange': '#e67e22',
+          'ذهبي': '#c9a227', 'gold': '#c9a227', 'فضي': '#c0c0c0', 'silver': '#c0c0c0'
+        } %}
+        {% set opts = [] %}
+        {% for o in options %}{% if o.values and (o.values | length) %}{% set opts = opts.concat([o]) %}{% endif %}{% endfor %}
+        {% for opt in opts %}
+          {% set oi = loop.index0 %}
+          {% set isColor = (opt.name | default('') | lower) in ['color', 'colour', 'اللون', 'لون', 'الالوان', 'الألوان'] %}
+          {% if not isColor or (opt.values | length) > 1 %}
+          <fieldset class="mw-pdp__option" data-option-index="{{ oi }}" :class="{ 'has-error': optionError && selected[{{ oi }}] == null }">
+            <legend class="mw-pdp__label">
+              <span>{{ opt.name | default(t('product.option')) }}</span>
+              <span class="mw-pdp__label-value" x-text="selectedLabel({{ oi }})"></span>
+              {% if not isColor and wd.size_chart_url and loop.last %}<a href="{{ wd.size_chart_url }}" class="mw-pdp__label-link">{{ t('product.size_chart') }}</a>{% endif %}
+            </legend>
+            <div class="{{ 'mw-pdp__swatches' if isColor else 'mw-pdp__sizes' }}">
+              {% for v in opt.values %}
+                {% set vLabel = v.label or v.value or v %}
+                {% set vKey = (vLabel | string | lower) %}
+                {% set swRaw = v.color or v.hex or v.swatch or '' %}
+                {% set sw = swRaw if swRaw else (colorMap[vKey] or vKey) %}
+                <button type="button" class="{{ 'mw-pdp__swatch' if isColor else 'mw-pdp__size' }}"
+                        :class="{ 'is-active': isSelected({{ oi }}, {{ loop.index0 }}), 'is-unavailable': !isAvailable({{ oi }}, {{ loop.index0 }}) }"
+                        :aria-pressed="isSelected({{ oi }}, {{ loop.index0 }}).toString()"
+                        :disabled="!isAvailable({{ oi }}, {{ loop.index0 }})"
+                        @click="choose({{ oi }}, {{ loop.index0 }})" title="{{ vLabel }}" aria-label="{{ vLabel }}">
+                  {% if isColor %}
+                    {% if v.image and v.image.fileUrl %}<img src="{{ v.image.fileUrl }}" alt="" loading="lazy" width="92" height="112"/>{% else %}<span style="--sw: {{ sw }}"></span>{% endif %}
+                  {% else %}
+                    {{ vLabel }}
+                  {% endif %}
+                </button>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endif %}
+        {% endfor %}
+        <p class="mw-pdp__opt-error" x-show="optionError" x-text="optionError" x-cloak role="alert"></p>
+
+        {# حالة المخزون (PRD-22…28): «متوفر» / «أوشك على النفاد — متبقٍ N فقط» / «نفد من المخزون» — بالنص مش باللون بس #}
+        <p class="mw-stockmsg" :class="'mw-stockmsg--' + stockMessage.kind" x-show="stockMessage.text" x-text="stockMessage.text" x-cloak role="status"></p>
+        <p class="mw-stockmsg mw-stockmsg--note" x-show="inCart > 0 && available > 0" x-text="inCartText" x-cloak></p>
+
+        {# الكمية (1…المخزون المتاح) + زرين #}
+        <div class="mw-pdp__buy">
+          <div class="mw-pdp__qty-row">
+            <div class="mw-qty mw-pdp__qty" :class="{ 'is-disabled': soldOut }">
+              <button type="button" @click="dec()" :disabled="soldOut || quantity <= 1" aria-label="{{ t('cart.decrease') }}">−</button>
+              <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" x-model="quantity" @change="clampQty(true)" @blur="clampQty(true)" :disabled="soldOut" value="1" aria-label="{{ t('product.quantity') }}"/>
+              <button type="button" @click="inc()" :disabled="soldOut || atMax" aria-label="{{ t('cart.increase') }}">+</button>
+            </div>
+            <p class="mw-pdp__qty-msg" x-show="qtyMsg" x-text="qtyMsg" x-cloak role="status"></p>
+          </div>
+          <div class="mw-pdp__buttons" x-ref="buyButtons">
+            <button type="button" class="mw-pdp__btn mw-pdp__btn--add" @click="submit(false)" :disabled="soldOut || available <= 0 || resolving || $store.mw.isBusy('add:' + product._id)">
+              <span x-show="!soldOut">{{ t('product.add_to_cart') }}</span>
+              <span x-show="soldOut" x-cloak>{{ t('product.sold_out') }}</span>
+            </button>
+            <button type="button" class="mw-pdp__btn mw-pdp__btn--buy" @click="submit(true)" :disabled="soldOut || resolving || $store.mw.isBusy('add:' + product._id)">{{ t('product.buy_now') }}</button>
+          </div>
+          {% set dNote = (S.deliveryNote_en if (not isAr and S.deliveryNote_en) else S.deliveryNote) %}
+          {% if dNote %}<p class="mw-pdp__note">{{ dNote }}</p>{% endif %}
+        </div>
+
+        <div class="mw-pdp__actions-row">
+          {% if S.showWishlist == true %}
+          <button type="button" class="mw-pdp__wish" :class="{ 'is-on': $store.mw.isWished(product._id) }" :aria-pressed="$store.mw.isWished(product._id).toString()" @click="$store.mw.toggleWish(product._id)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4 7.4 4c2 0 3.6 1.1 4.6 2.7C13 5.1 14.6 4 16.6 4c3.5 0 5.8 3.6 4.6 7.1-1.7 4.8-9.2 9.4-9.2 9.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            <span>{{ t('wishlist.toggle') }}</span>
+          </button>
+          {% endif %}
+          {% if wd.show_share != false %}
+          <div class="mw-share" role="group" aria-label="{{ t('product.share') }}">
+            <span class="mw-share__label">{{ t('product.share') }}</span>
+            <a class="mw-share__btn" href="https://wa.me/?text={{ (p.title + ' ' + pUrl) | urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2Zm4.52 11.99c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.43-.06-.13-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74 1.47.64 2.06.69 2.8.58.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.29Z"/></svg></a>
+            <a class="mw-share__btn" href="https://www.facebook.com/sharer/sharer.php?u={{ pUrl | urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3Z"/></svg></a>
+            <button type="button" class="mw-share__btn" @click="$store.mw.copyLink()" aria-label="{{ t('product.copy_link') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+            <button type="button" class="mw-share__btn" x-show="$store.mw.canShare" x-cloak @click="$store.mw.nativeShare({{ p.title | dump | escape }})" aria-label="{{ t('product.share') }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if wd.show_payments == true %}
+        <div class="mw-pdp__payments" aria-label="{{ t('footer.payments') }}">
+          <span>valU</span><span>Apple Pay</span><span>meeza</span><span>AMEX</span><span>Mastercard</span><span>VISA</span>
+        </div>
+        {% endif %}
+
+        {% if wd.show_delivery == true %}
+        <div class="mw-pdp__ship" x-data="mwDeliveryDates({{ wd.dispatch_days | default(1) }}, {{ wd.delivery_min | default(2) }}, {{ wd.delivery_max | default(5) }})">
+          <p class="mw-pdp__ship-title">{{ wd.delivery_title or t('product.standard_shipping') }}</p>
+          <div class="mw-pdp__ship-steps">
+            <div><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h1.5A1.5 1.5 0 0 1 20 11.5v9A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5v-9A1.5 1.5 0 0 1 5.5 10H7Zm2 0h6V7a3 3 0 0 0-6 0v3Z"/></svg><strong>{{ t('product.order_placed') }}</strong><span x-text="placed"></span></div>
+            <div><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 6h12v9h-1.2a2.8 2.8 0 0 0-5.6 0H2V6Zm13 3h3.5L22 12.5V15h-1.2a2.8 2.8 0 0 0-5.6 0H15V9ZM10 15a1.8 1.8 0 1 1 0 .01ZM18 15a1.8 1.8 0 1 1 0 .01Z"/></svg><strong>{{ t('product.dispatched') }}</strong><span x-text="dispatched"></span></div>
+            <div><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 1 7 7c0 5.2-7 13-7 13S5 14.2 5 9a7 7 0 0 1 7-7Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><strong>{{ t('product.delivered') }}</strong><span x-text="delivered"></span></div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if wd.show_trust == true %}
+        <ul class="mw-pdp__trust">
+          <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 0 1-13.7 5.6L4 15M4 20v-5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ t('product.trust_returns') }}</li>
+          <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>{{ t('product.trust_cod') }}</li>
+          <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5a6.5 6.5 0 0 1 6.5 6.5c0 4.8-6.5 12.5-6.5 12.5S5.5 13.8 5.5 9A6.5 6.5 0 0 1 12 2.5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9" r="2.2" stroke="currentColor" stroke-width="1.5"/></svg>{{ t('product.trust_track') }}</li>
+          <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.6 7.5 10 4.3-1.4 7.5-5.4 7.5-10v-6L12 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m8.5 12 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ t('product.trust_secure') }}</li>
+        </ul>
+        {% endif %}
+
+        <div class="mw-pdp__acc" x-data="{ open: null }">
+          {% set accs = [
+            { k: 'desc', title: t('product.description'), body: p.description },
+            { k: 'size', title: t('product.size_fit'), body: wd.size_fit_text },
+            { k: 'material', title: t('product.material'), body: wd.material_text },
+            { k: 'ship', title: t('product.shipping_returns'), body: wd.shipping_text or t('product.shipping_text') }
+          ] %}
+          {% for a in accs %}{% if a.body %}
+            <div class="mw-pdp__acc-item" :class="{ 'is-open': open === '{{ a.k }}' }">
+              <button type="button" class="mw-pdp__acc-q" @click="open = open === '{{ a.k }}' ? null : '{{ a.k }}'" :aria-expanded="(open === '{{ a.k }}').toString()">
+                <span>{{ a.title }}</span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+              <div class="mw-faq__a"><div><div class="mw-pdp__acc-a mw-rte" dir="auto">{{ a.body | safe }}</div></div></div>
+            </div>
+          {% endif %}{% endfor %}
+        </div>
+
+        <p class="mw-pdp__sku" x-show="sku" {% if not p.sku %}x-cloak{% endif %}>SKU: <span x-text="sku">{{ p.sku }}</span></p>
+      </div>
+    </div>
+
+    {# منتجات ذات صلة: توصيات المنصة؛ لو فاضية بنجيب من نفس التصنيف (بدون المنتج نفسه)، ولو مفيش بيختفي القسم #}
+    {% if wd.show_related != false %}
+      {% if (related | length) > 1 %}
+      <div class="mw-pdp__look">
+        <h2 class="mw-pdp__look-title">{{ wd.related_title or t('product.related') }}</h2>
+        <div class="mw-pdp__look-grid">
+          {% for rp in related %}{% ui "product-card.njk", product=rp %}{% endfor %}
+        </div>
+      </div>
+      {% elif crumbCol and crumbCol._id %}
+      <div class="mw-pdp__look" x-data="mwRelated({{ { collectionId: crumbCol._id, exclude: p._id, limit: 4 } | dump | escape }})" x-show="html" x-cloak>
+        <h2 class="mw-pdp__look-title">{{ wd.related_title or t('product.related') }}</h2>
+        <div class="mw-pdp__look-grid" x-html="html"></div>
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {# شريط شراء ثابت على الموبايل/التابلت — بيظهر لما زرار الشراء الأصلي يخرج من الشاشة #}
+  <div class="mw-buybar" x-show="buybar" x-cloak x-transition.opacity aria-label="{{ t('product.add_to_cart') }}">
+    <div class="mw-buybar__info">
+      <span class="mw-buybar__title">{{ p.title }}</span>
+      <span class="mw-buybar__price" x-text="price > 0 ? $store.mw.money(price) : $store.mw.freeText()"></span>
+    </div>
+    <button type="button" class="mw-pdp__btn mw-pdp__btn--buy mw-buybar__btn" @click="buyBarAdd()" :disabled="soldOut || resolving || $store.mw.isBusy('add:' + product._id)">
+      <span x-show="!soldOut">{{ t('product.add_to_cart') }}</span><span x-show="soldOut" x-cloak>{{ t('product.sold_out') }}</span>
+    </button>
+  </div>
+</section>
+{% else %}
+<section class="mw-page mw-notfound">
+  <div class="container">
+    <h1 class="mw-collection-hero__title">{{ t('product.not_found') }}</h1>
+    <p class="mw-notfound__text">{{ t('notfound.text') }}</p>
+    <div class="mw-notfound__actions"><a href="/" class="mw-btn mw-btn--filled">{{ t('notfound.home') }}</a><a href="/shop" class="mw-btn mw-btn--outlined">{{ t('notfound.shop') }}</a></div>
+  </div>
+</section>
+{% endif %}

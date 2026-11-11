@@ -1,0 +1,131 @@
+{
+  "name": "معرض الوسائط",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد العناصر في الصف — كمبيوتر",
+        "en": "Items per row — desktop"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 5,
+      "step": 1
+    },
+    "ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل العنصر",
+        "en": "Item shape"
+      },
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "عرضي",
+            "en": "Landscape"
+          }
+        }
+      ]
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "blocks": {
+    "item": {
+      "name": "صورة أو فيديو",
+      "settings": {
+        "media": {
+          "type": "media",
+          "label": {
+            "ar": "صورة أو فيديو (mp4/webm) — الفيديو يعمل تلقائيًا بدون صوت",
+            "en": "Image or video (mp4/webm) — videos play muted automatically"
+          }
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط (اختياري)",
+            "en": "Link (optional)"
+          },
+          "default": ""
+        },
+        "caption": {
+          "type": "string",
+          "label": {
+            "ar": "تعليق صغير (اختياري)",
+            "en": "Small caption (optional)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "معرض الوسائط"
+    }
+  ]
+}

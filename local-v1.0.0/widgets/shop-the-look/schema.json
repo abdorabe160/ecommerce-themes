@@ -1,0 +1,265 @@
+{
+  "name": "تسوّق الإطلالة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم",
+        "en": "Section heading"
+      },
+      "default": "مختارات من المتجر"
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ صورة الخلفية — تملأ اللوحة كلها؛ اجعل جانب المنتجات هادئًا",
+        "en": "▸ Background image — fills the whole panel; keep the products side calm"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الجوال (اختيارية)",
+        "en": "Mobile image (optional)"
+      }
+    },
+    "bg_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون اللوحة (يظهر بدون صورة أو قبل تحميلها)",
+        "en": "Panel colour (without an image or before it loads)"
+      },
+      "default": ""
+    },
+    "slider_side": {
+      "type": "select",
+      "label": {
+        "ar": "مكان المنتجات",
+        "en": "Products side"
+      },
+      "default": "end",
+      "options": [
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية السطر",
+            "en": "End"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "min_height": {
+      "type": "range",
+      "label": {
+        "ar": "أقل ارتفاع للوحة",
+        "en": "Panel minimum height"
+      },
+      "min": 380,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "default": 560
+    },
+    "products": {
+      "type": "products",
+      "label": {
+        "ar": "▸ المنتجات — اتركها فارغة لعرض منتجات تلقائية حسب الترتيب أدناه",
+        "en": "▸ Products — leave empty to show products automatically, ordered as below"
+      }
+    },
+    "auto_sort": {
+      "type": "select",
+      "label": {
+        "ar": "الترتيب التلقائي (عند ترك المنتجات فارغة)",
+        "en": "Automatic order (when no products are picked)"
+      },
+      "default": "created-desc",
+      "options": [
+        {
+          "value": "created-desc",
+          "label": {
+            "ar": "الأحدث",
+            "en": "Newest"
+          }
+        },
+        {
+          "value": "rating-desc",
+          "label": {
+            "ar": "الأعلى تقييماً",
+            "en": "Highest rated"
+          }
+        },
+        {
+          "value": "price-asc",
+          "label": {
+            "ar": "الأقل سعراً",
+            "en": "Lowest price"
+          }
+        }
+      ]
+    },
+    "auto_limit": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات التلقائية",
+        "en": "Number of automatic products"
+      },
+      "min": 4,
+      "max": 16,
+      "step": 1,
+      "default": 6
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "المنتجات الظاهرة داخل اللوحة — كمبيوتر",
+        "en": "Visible products in the panel — desktop"
+      },
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    "button_action": {
+      "type": "select",
+      "label": {
+        "ar": "زر البطاقة",
+        "en": "Card button"
+      },
+      "default": "add",
+      "options": [
+        {
+          "value": "add",
+          "label": {
+            "ar": "أضف للسلة",
+            "en": "Add to cart"
+          }
+        },
+        {
+          "value": "buy",
+          "label": {
+            "ar": "اشتري الآن — يذهب للدفع مباشرة",
+            "en": "Buy now — straight to checkout"
+          }
+        }
+      ]
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التقييم (للمنتجات التي لها مراجعات فقط)",
+        "en": "Show the rating (only for products that have reviews)"
+      },
+      "default": true
+    },
+    "show_badges": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شارات «تخفيض» و«جديد» — «جديد» يظهر للمنتجات الموسومة بـ new",
+        "en": "Show “Sale” and “New” badges — “New” shows on products tagged new"
+      },
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر العرض السريع (العين) على صورة المنتج",
+        "en": "Show the quick-view (eye) button on the product image"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية البطاقة",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان وأسماء المنتجات",
+        "en": "Heading and product names"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص الثانوي",
+        "en": "Secondary text"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون الزر",
+        "en": "Button colour"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الإطار",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "تسوّق الإطلالة"
+    }
+  ]
+}

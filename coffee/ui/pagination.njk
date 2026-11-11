@@ -1,0 +1,32 @@
+{#-
+  {% ui "pagination.njk", pagination=pg %}  — pagination: { currentPage|page, totalPages|pages }
+  href works without JS; :href keeps the current sort / filters (dcPageUrl).
+-#}
+{%- set pg = data.pagination or {} -%}
+{%- set current = (pg.currentPage | default(pg.page) | default(1)) | int -%}
+{%- set total = (pg.totalPages | default(pg.pages) | default(1)) | int -%}
+{%- if total > 1 -%}
+<nav class="mt-14 flex items-center justify-center gap-1.5" aria-label="{{ t('common.pagination') }}">
+  {%- if current > 1 %}
+  <a href="?page={{ current - 1 }}" :href="dcPageUrl({{ current - 1 }})" rel="prev" class="icon-btn border border-espresso/15" aria-label="{{ t('common.previous') }}">
+    <span class="rotate-180 inline-flex">{% ui "icon.njk", name="chevron", size=18 %}</span>
+  </a>
+  {%- endif %}
+  {%- for i in range(1, total + 1) %}
+    {%- if i == 1 or i == total or (i >= current - 1 and i <= current + 1) %}
+      {%- if i == current %}
+      <span aria-current="page" class="grid h-11 min-w-11 place-items-center rounded-full bg-espresso px-3 text-sm font-medium text-cream">{{ i }}</span>
+      {%- else %}
+      <a href="?page={{ i }}" :href="dcPageUrl({{ i }})" class="grid h-11 min-w-11 place-items-center rounded-full px-3 text-sm transition-colors hover:bg-espresso/5">{{ i }}</a>
+      {%- endif %}
+    {%- elif i == current - 2 or i == current + 2 %}
+      <span class="px-1 text-muted-ink" aria-hidden="true">…</span>
+    {%- endif %}
+  {%- endfor %}
+  {%- if current < total %}
+  <a href="?page={{ current + 1 }}" :href="dcPageUrl({{ current + 1 }})" rel="next" class="icon-btn border border-espresso/15" aria-label="{{ t('common.next') }}">
+    {% ui "icon.njk", name="chevron", size=18 %}
+  </a>
+  {%- endif %}
+</nav>
+{%- endif -%}

@@ -1,0 +1,121 @@
+{
+  "name": "شبكة المناسبات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق العنوان — اتركه فارغاً لإخفائه",
+        "en": "Small line above the title — leave empty to hide"
+      },
+      "default": "المناسبات"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اتركه فارغاً لإخفائه",
+        "en": "Title — leave empty to hide"
+      },
+      "default": "لكل لحظة، هديتها"
+    },
+    "more_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط «الكل» — اتركه فارغاً لإخفائه",
+        "en": "\"See all\" text — leave empty to hide"
+      },
+      "default": "كل المناسبات"
+    },
+    "more_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط «الكل»",
+        "en": "\"See all\" link"
+      },
+      "default": "/collections"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز",
+        "en": "Accent"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "tile": {
+      "name": "كارت",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الاسم",
+            "en": "Name"
+          },
+          "default": ""
+        },
+        "sub": {
+          "type": "string",
+          "label": {
+            "ar": "سطر تحت الاسم — اتركه فارغاً لإخفائه",
+            "en": "Line under the name — leave empty to hide"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط — صفحة التصنيف، مثلاً /shop/wedding",
+            "en": "Link — the collection page"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة — من غيرها بتظهر صورة من صور الثيم",
+            "en": "Picture — a theme photo shows without one"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "شبكة المناسبات"
+    }
+  ]
+}

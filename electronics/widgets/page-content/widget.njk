@@ -1,0 +1,16 @@
+{# بيانات الصفحة تصل للويدجت داخل context — المحتوى من context.page (أو page كما في التوثيق) #}
+{% set ctx = context or {} %}
+{% set pg = page if (page and (page.content or page.body)) else (ctx.page or page or {}) %}
+{% set body = pg.content or pg.body or pg.description %}
+<section class="lg-section !pt-6">
+  <div class="lg-container max-w-3xl">
+    {% if pg and (pg.title or body) %}
+      <article class="glass p-5 md:p-10 space-y-4">
+        <h1 class="text-2xl md:text-3xl font-bold">{{ pg.title }}</h1>
+        {% if body %}<div class="lg-prose">{{ body | safe }}</div>{% endif %}
+      </article>
+    {% else %}
+      {% ui "empty.njk", icon="alert", title=t('not_found.title'), text=t('not_found.text'), url="/", button=t('not_found.back_home') %}
+    {% endif %}
+  </div>
+</section>

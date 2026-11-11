@@ -1,0 +1,71 @@
+{#
+  FAQ LIST · أسئلة وأجوبة — MUHARRIK: a hairline accordion in one or two
+  columns. Each row: a mono index number, the question in the display face
+  and a mono "+" that turns into "×" when open. Blocks; with none, six
+  store-wide demo questions in the visitor's language.
+  Styles: assets/sections.css → "FAQ LIST", re-voiced in assets/mh-content.css.
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set qs = [] %}
+{% for block in widget.blocks | default([], true) %}
+  {% set b = block.data | default(block.settings, true) | default({}, true) %}
+  {% if b.q %}{% set _ = qs.push({ q: b.q, a: b.a | default('', true) }) %}{% endif %}
+{% endfor %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+{#- The sample answers are this store's policy (original parts, delivery
+    days) — editor-only until the merchant writes the real ones. -#}
+{% set demoFaq = (qs | length) == 0 %}
+{% if demoFaq %}
+  {# demo questions a car-parts shopper actually asks, bilingual in the
+     template; the merchant's blocks replace them #}
+  {% set demoQs = [
+    { q: 'هل القطعة تناسب عربيتي؟', a: 'استخدم «اختار عربيتك» أعلى الصفحة، أو ابعت لنا رقم الشاسيه (VIN) ونأكد لك التوافق قبل الشراء.' },
+    { q: 'هل القطع أصلية؟', a: 'نعم، كل القطع أصلية أو من مصنّعين معتمدين (OEM) ومعها ضمان رسمي ورقم تعريف.' },
+    { q: 'كم يستغرق التوصيل؟', a: 'من 2 إلى 5 أيام عمل حسب المحافظة، مع رقم تتبع يصلك بمجرد شحن الطلب.' },
+    { q: 'هل يمكنني الدفع عند الاستلام؟', a: 'نعم، الدفع عند الاستلام متاح بالإضافة للدفع بالبطاقة والمحافظ الإلكترونية.' },
+    { q: 'ماذا لو القطعة لم تركب؟', a: 'استبدال أو استرجاع مجاني خلال 14 يومًا من الاستلام طالما القطعة بحالتها الأصلية.' },
+    { q: 'هل توفرون التركيب؟', a: 'نرشّح لك ورشة معتمدة قريبة منك، وكل قطعة معها دليل تركيب ودعم فني على الواتساب.' }
+  ] if isAr else [
+    { q: 'Will this part fit my car?', a: 'Use “Select your car” at the top of the page, or send us your VIN and we confirm fitment before you buy.' },
+    { q: 'Are the parts genuine?', a: 'Yes. Every part is genuine or from an approved OEM maker, with an official warranty and part number.' },
+    { q: 'How long does delivery take?', a: '2 to 5 working days depending on your city, with a tracking number sent as soon as it ships.' },
+    { q: 'Can I pay on delivery?', a: 'Yes, cash on delivery is available alongside card payment and e-wallets.' },
+    { q: 'What if the part doesn’t fit?', a: 'Free exchange or return within 14 days of delivery, as long as the part is in its original condition.' },
+    { q: 'Do you offer fitting?', a: 'We point you to a certified workshop near you, and every part ships with a fitting guide and WhatsApp support.' }
+  ] %}
+  {% for x in demoQs %}{% set _ = qs.push(x) %}{% endfor %}
+{% endif %}
+{% set n = qs | length %}
+{% set nPad = ('0' ~ n) if n < 10 else (n ~ '') %}
+{% set title = (d.title or t('extra.faq')) if d.show_title != false else '' %}
+{# kicker: the merchant's, else the generic FAQ label when the title is custom, else just the count #}
+{% set kicker = d.kicker | default('', true) | trim %}
+{% if not kicker %}{% set kicker = t('extra.faq') if (d.title | default('', true) | trim | length) > 0 else nPad %}{% endif %}
+
+<section id="hx-fq-{{ id }}"{% if demoFaq %} data-hy-empty{% endif %} class="hx-fq is-c{{ d.columns | default('2', true) }}"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-sec-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if title %}
+      <div class="mh-head">
+        <div class="mh-head-main">
+          <span class="mh-kicker">{{ kicker | safe }}</span>
+          <h2 class="mh-h">{{ title | safe }}</h2>
+        </div>
+        {% if kicker != nPad %}<span class="mh-sub hx-fq-count"><bdi>{{ nPad }}</bdi></span>{% endif %}
+      </div>
+    {% endif %}
+    <div class="hx-fq-grid">
+      {% for x in qs %}
+        <div class="hx-fq-item" x-data="{ o: {{ 'true' if (loop.first and d.first_open) else 'false' }} }" :class="{ 'is-open': o }">
+          <button type="button" class="hx-fq-q" @click="o = !o" :aria-expanded="o">
+            <span class="hx-fq-num mh-mono" aria-hidden="true">{{ ('0' ~ loop.index) if loop.index < 10 else loop.index }}</span>
+            <span class="hx-fq-qt">{{ x.q | safe }}</span>
+            <span class="hx-fq-ico mh-mono" aria-hidden="true">+</span>
+          </button>
+          <div class="hx-fq-a" x-show="o" x-collapse x-cloak><div class="hx-rte mh-prose">{{ x.a | safe }}</div></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

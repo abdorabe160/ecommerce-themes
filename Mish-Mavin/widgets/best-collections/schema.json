@@ -1,0 +1,78 @@
+{
+  "name": "best-collections",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "Shop by category"
+    },
+    "heading_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Heading alignment"
+      },
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "يسار / Left"
+        },
+        {
+          "value": "start",
+          "label": "بداية السطر / Start"
+        },
+        {
+          "value": "center",
+          "label": "وسط / Center"
+        }
+      ]
+    },
+    "collections": {
+      "type": "collections",
+      "label": {
+        "ar": "التصنيفات (عند عدم إضافة بطاقات)",
+        "en": "Collections (used when no tiles are added)"
+      }
+    }
+  },
+  "blocks": {
+    "tile": {
+      "name": "بطاقة فئة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Label"
+          },
+          "default": "Tops"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "Link"
+          },
+          "default": "/collections"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "best-collections"
+    }
+  ]
+}

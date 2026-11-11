@@ -1,0 +1,500 @@
+{
+  "name": "البانر الرئيسي",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "شكل البانر",
+        "en": "Layout"
+      },
+      "default": "full",
+      "options": [
+        {
+          "value": "full",
+          "label": {
+            "ar": "ملء الشاشة — فيديو خلفي (موصى به)",
+            "en": "Full-bleed — video background (recommended)"
+          }
+        },
+        {
+          "value": "boxed",
+          "label": {
+            "ar": "داخل حدود المحتوى",
+            "en": "Inside the content container"
+          }
+        },
+        {
+          "value": "split",
+          "label": {
+            "ar": "نص بجانب صورة — بدون فيديو",
+            "en": "Text beside image — no video"
+          }
+        }
+      ]
+    },
+    "height": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر — سطح المكتب",
+        "en": "Desktop Height"
+      },
+      "default": "full",
+      "options": [
+        {
+          "value": "full",
+          "label": {
+            "ar": "ملء الشاشة (موصى به)",
+            "en": "Full screen (recommended)"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        }
+      ]
+    },
+    "height_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر — الجوال",
+        "en": "Mobile Height"
+      },
+      "default": "large",
+      "options": [
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير (موصى به)",
+            "en": "Large (recommended)"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "ملء الشاشة",
+            "en": "Full screen"
+          }
+        },
+        {
+          "value": "auto",
+          "label": {
+            "ar": "حسب المحتوى",
+            "en": "Fit content"
+          }
+        }
+      ]
+    },
+    "text_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text Alignment"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "من البداية — أسفل البانر (موصى به)",
+            "en": "Start — bottom of the stage (recommended)"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "في المنتصف",
+            "en": "Centred"
+          }
+        }
+      ]
+    },
+    "scrim": {
+      "type": "select",
+      "label": {
+        "ar": "تعتيم الفيديو خلف النص",
+        "en": "Scrim Over the Video"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "light",
+          "label": {
+            "ar": "خفيف",
+            "en": "Light"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط (موصى به)",
+            "en": "Medium (recommended)"
+          }
+        },
+        {
+          "value": "heavy",
+          "label": {
+            "ar": "قوي — للفيديوهات الفاتحة",
+            "en": "Heavy — for bright footage"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "show_speed_motif": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار خطوط السرعة المائلة",
+        "en": "Show Diagonal Speed Lines"
+      },
+      "default": true
+    },
+    "video_on_mobile": {
+      "type": "boolean",
+      "label": {
+        "ar": "تشغيل الفيديو على الجوال (يستهلك بيانات أكثر بكثير)",
+        "en": "Play Video on Mobile (much heavier on data)"
+      },
+      "default": false
+    },
+    "show_stats": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط الأرقام أسفل البانر",
+        "en": "Show the Stat Strip"
+      },
+      "default": true
+    },
+    "stat1_number": {
+      "type": "string",
+      "label": {
+        "ar": "الرقم ١",
+        "en": "Stat 1 — Number"
+      },
+      "default": ""
+    },
+    "stat1_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الرقم ١",
+        "en": "Stat 1 — Label"
+      },
+      "default": ""
+    },
+    "stat2_number": {
+      "type": "string",
+      "label": {
+        "ar": "الرقم ٢",
+        "en": "Stat 2 — Number"
+      },
+      "default": ""
+    },
+    "stat2_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الرقم ٢",
+        "en": "Stat 2 — Label"
+      },
+      "default": ""
+    },
+    "stat3_number": {
+      "type": "string",
+      "label": {
+        "ar": "الرقم ٣",
+        "en": "Stat 3 — Number"
+      },
+      "default": ""
+    },
+    "stat3_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف الرقم ٣",
+        "en": "Stat 3 — Label"
+      },
+      "default": ""
+    },
+    "section_background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section Background"
+      },
+      "default": "void",
+      "options": [
+        {
+          "value": "void",
+          "label": {
+            "ar": "أسود صافٍ (موصى به)",
+            "en": "True black (recommended)"
+          }
+        },
+        {
+          "value": "canvas",
+          "label": {
+            "ar": "خلفية الموقع",
+            "en": "Page background"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "شفافة",
+            "en": "Transparent"
+          }
+        }
+      ]
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "تبديل السلايدات تلقائياً",
+        "en": "Auto-advance Slides"
+      },
+      "default": true
+    },
+    "autoplay_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدّة عرض السلايد",
+        "en": "Seconds per Slide"
+      },
+      "default": 7,
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s"
+    },
+    "show_dots": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار نقاط التنقّل",
+        "en": "Show Pagination Dots"
+      },
+      "default": true
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقّل",
+        "en": "Show Arrows"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأرقام",
+        "en": "Accent — highlighted word & stat numbers"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر الرئيسي",
+        "en": "Primary button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر الرئيسي",
+        "en": "Primary button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "سلايد",
+      "settings": {
+        "slide_poster": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة الثابتة — تظهر قبل الفيديو وعلى الجوال ومع تقليل الحركة (مطلوبة)",
+            "en": "Poster image — shown before the video, on mobile, and under reduced motion (required)"
+          }
+        },
+        "slide_video": {
+          "type": "media",
+          "label": {
+            "ar": "ملف الفيديو (mp4 — يُفضّل أقل من ٥ ميجا وبدون صوت)",
+            "en": "Video file (mp4 — keep it under ~5MB and silent)"
+          }
+        },
+        "slide_video_url": {
+          "type": "string",
+          "label": {
+            "ar": "أو رابط فيديو خارجي (يُستخدم فقط لو لم تُرفع ملف)",
+            "en": "Or an external video URL (used only when no file is uploaded)"
+          },
+          "default": ""
+        },
+        "slide_focal": {
+          "type": "select",
+          "label": {
+            "ar": "تركيز الصورة/الفيديو عند القص",
+            "en": "Focal Point When Cropped"
+          },
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": {
+                "ar": "المنتصف",
+                "en": "Centre"
+              }
+            },
+            {
+              "value": "top",
+              "label": {
+                "ar": "الأعلى — للوجوه",
+                "en": "Top — for faces"
+              }
+            },
+            {
+              "value": "bottom",
+              "label": {
+                "ar": "الأسفل",
+                "en": "Bottom"
+              }
+            }
+          ]
+        },
+        "slide_eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "النص التمهيدي",
+            "en": "Eyebrow"
+          },
+          "default": "RIYADA"
+        },
+        "slide_badge": {
+          "type": "string",
+          "label": {
+            "ar": "الوسم (اختياري)",
+            "en": "Badge (optional)"
+          },
+          "default": ""
+        },
+        "slide_title": {
+          "type": "text",
+          "label": {
+            "ar": "العنوان — ضع <em>كلمة</em> لتلوينها بالبرتقالي",
+            "en": "Title — wrap a word in <em> to set it in flame"
+          },
+          "default": ""
+        },
+        "slide_description": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        },
+        "slide_button_text": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الأول — النص",
+            "en": "Button 1 — Text"
+          },
+          "default": ""
+        },
+        "slide_button_url": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الأول — الرابط",
+            "en": "Button 1 — URL"
+          },
+          "default": "/shop"
+        },
+        "slide_button2_text": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الثاني — النص (اتركه فارغاً لإخفائه)",
+            "en": "Button 2 — Text (leave empty to hide)"
+          },
+          "default": ""
+        },
+        "slide_button2_url": {
+          "type": "string",
+          "label": {
+            "ar": "الزر الثاني — الرابط",
+            "en": "Button 2 — URL"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانر",
+      "name": "البانر الرئيسي"
+    }
+  ]
+}

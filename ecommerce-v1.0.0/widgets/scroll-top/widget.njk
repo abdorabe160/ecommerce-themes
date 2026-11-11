@@ -1,0 +1,8 @@
+{# Back to top — appears after one screen of scrolling (HxTop in assets/hx.js), in
+   the corner opposite the WhatsApp button. #}
+{% set d = widget.data %}
+{% if d.enabled != false %}
+<button type="button" class="hx-fab hx-fab--top" data-hx-top hidden aria-label="{{ t('common.back_to_top') }}">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+</button>
+{% endif %}

@@ -1,0 +1,155 @@
+{# ===== ATTAR PRODUCT CARD — Fragrance boutique · square bottle on dark ===== #}
+{% set product = data.product %}
+{% set pricing = product.pricing %}
+{% set hasDiscount = pricing and pricing.compareAtPrice and pricing.compareAtPrice > pricing.price %}
+{# floored, never rounded up: 37.5% off shows 37% — matches Utils.calcDiscount #}
+{% set discount = ((pricing.compareAtPrice - pricing.price) / pricing.compareAtPrice * 100) | int if hasDiscount else 0 %}
+{% set imageUrl = product.images[0].fileUrl if product.images and product.images | length > 0 else '' %}
+{% set secondImage = product.images[1].fileUrl if product.images and product.images | length > 1 else '' %}
+{% set hasVariants = (product.variantsCount and product.variantsCount > 0) or (product.variants and (product.variants | length) > 0) or (product.options and (product.options | length) > 0) %}
+{# Listings send variant products with quantity 0 and no variant stock — the variant
+   list (when present) decides; without it the card stays buyable and the product page tells #}
+{% set _vs = [] %}
+{% for v in (product.variants or []) %}{% if v.quantity > 0 or v.allowBackorder %}{% set _ = _vs.push(1) %}{% endif %}{% endfor %}
+{% set variantInStock = _vs | length > 0 %}
+{# Listings often send no variant data at all (no variantsCount/variants/options): such a
+   card can't tell a simple product from one with options, so it checks before adding.
+   Quantity 0 with no such data is unknown, not sold out: the card opens the product. #}
+{% set variantsKnown = product.variants or product.options or product.variantsCount == 0 or product.variantsCount > 0 %}
+{% set viewOnly = false %}
+{% if hasVariants %}
+  {% set canPurchase = product.allowBackorder or variantInStock or not (product.variants and product.variants | length) %}
+{% elif product.allowBackorder or product.quantity > 0 %}
+  {% set canPurchase = true %}
+{% elif variantsKnown and product.trackQuantity %}
+  {% set canPurchase = false %}
+{% else %}
+  {% set canPurchase = true %}
+  {% set viewOnly = true %}
+{% endif %}
+{% set lowStock = canPurchase and not hasVariants and product.trackQuantity and not product.allowBackorder and product.quantity > 0 and product.quantity <= (settings.lowStockThreshold | default(3, true) | int) %}
+{# /products/<slug> — never the _id (/products/<_id> is a 500) #}
+{% set pSlug = product.slug or product.handle or '' %}
+{% set pUrl = ('/products/' ~ pSlug) if pSlug else '/shop' %}
+
+{# Optional scent-note tags — degrades to nothing if the product carries none #}
+{% set scentTags = product.tags | default([]) %}
+
+{# Optional editorial index (1-based), passed by the parent grid #}
+{% set idx = data.index | default(0) %}
+{% set idxLabel = ('0' ~ idx) if (idx > 0 and idx < 10) else idx %}
+
+{# Image aspect ratio: square (1/1) | portrait (3/4) | landscape (4/3) — fragrance default square #}
+{% set _ratio = data.image_ratio | default('square') %}
+{% if _ratio == 'square' %}{% set _aspectClass = 'aspect-[1/1]' %}
+{% elif _ratio == 'landscape' %}{% set _aspectClass = 'aspect-[4/3]' %}
+{% else %}{% set _aspectClass = 'aspect-[3/4]' %}{% endif %}
+
+<article class="group flex flex-col h-full" x-data="productCard('{{ product._id }}')"{% if not variantsKnown %} data-check-variants{% endif %}>
+
+  {# ——— Media ——— #}
+  <a href="{{ pUrl }}" class="block">
+    <div class="relative {{ _aspectClass }} w-full overflow-hidden attar-pcard-media"
+         style="background: radial-gradient(120% 120% at 50% 18%, color-mix(in srgb, var(--color-accent) 10%, transparent) 0%, var(--color-bg-secondary) 46%, var(--color-bg-primary) 100%); border: 1px solid var(--color-border);">
+      {% if imageUrl %}
+        <img
+          src="{{ imageUrl }}"
+          alt="{{ product.title }}"
+          class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1100ms] ease-out {% if secondImage %}group-hover:opacity-0{% else %}group-hover:scale-[1.04]{% endif %}"
+          style="filter: saturate(1.03) contrast(1.02);"
+          loading="lazy"
+        />
+        {% if secondImage %}
+          <img
+            src="{{ secondImage }}"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-[1100ms] ease-out"
+            style="filter: saturate(1.03) contrast(1.02);"
+            loading="lazy"
+          />
+        {% endif %}
+      {% else %}
+        <div class="attar-mark" aria-hidden="true"></div>
+      {% endif %}
+
+      {% if hasDiscount %}
+        <span class="absolute top-3 start-3 z-10 inline-flex items-center px-2.5 py-1 text-[10px] font-medium tracking-[0.12em]"
+              style="background: var(--color-sale); color: var(--color-on-sale);">
+          <bdi dir="ltr">−{{ discount }}%</bdi>
+        </span>
+      {% endif %}
+      {% if lowStock %}
+        <span class="attar-low-badge absolute bottom-3 start-3 z-10 font-body-ar">{{ t('pages.product.almost_gone') }}</span>
+      {% endif %}
+
+      {% if not canPurchase %}
+        <div class="absolute inset-0 flex items-center justify-center z-20" style="background: color-mix(in srgb, var(--color-bg-primary) 68%, transparent); backdrop-filter: blur(1px);">
+          <span class="px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] uppercase"
+                style="background: var(--color-surface); color: var(--color-text-secondary); border: 1px solid var(--color-border);">
+            {{t('pages.product.out_of_stock') | default('نفذت الكمية')}}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+  </a>
+
+  {# ——— Editorial caption ——— #}
+  <div class="flex flex-col flex-1 mt-5">
+    <span class="editorial-rule"></span>
+    <div class="flex items-start gap-4 pt-4">
+      {% if idx > 0 %}
+        <span class="text-[13px] leading-none pt-1 tabular-nums shrink-0" style="color: var(--color-accent); letter-spacing: 0.05em;">{{ idxLabel }}</span>
+      {% endif %}
+      <div class="flex flex-col flex-1 min-w-0 gap-2">
+        <a href="{{ pUrl }}"
+           class="anaqa-pcard-name attar-pcard-name font-heading-ar text-[17px] leading-snug line-clamp-2">
+          {{ product.title }}
+        </a>
+        {% if scentTags and (scentTags | length) > 0 %}
+          <div class="flex flex-wrap gap-1.5">
+            {% for tag in scentTags %}
+              {% if loop.index <= 3 %}
+                {% if tag is string %}{% set tagText = tag %}
+                {% elif tag %}{% set tagText = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}
+                {% else %}{% set tagText = '' %}{% endif %}
+                {% if tagText %}<span class="attar-note-tag">{{ tagText }}</span>{% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="flex items-baseline gap-2.5">
+          {% if pricing and pricing.price > 0 %}
+            <span class="text-[14px] font-light tracking-wide" style="color: {{ 'var(--color-sale-text, var(--color-text-primary))' if hasDiscount else 'var(--color-text-primary)' }};">{{ pricing.price | money }}</span>
+          {% elif pricing %}
+            <span class="text-[14px] font-light tracking-wide" style="color: var(--color-text-primary);">{{ t('pages.product.free') }}</span>
+          {% endif %}
+          {% if hasDiscount %}
+            <span class="text-[12px] font-light line-through" style="color: var(--color-text-tertiary);">{{ pricing.compareAtPrice | money }}</span>
+          {% endif %}
+        </div>
+
+        {# Add to Cart — editorial CTA #}
+        {% if canPurchase %}
+          {% if viewOnly %}
+            <a href="{{ pUrl }}" class="anaqa-add-btn font-body-ar">{{ t('pages.product.view_product') }}</a>
+          {% elif hasVariants %}
+            <a href="{{ pUrl }}" class="anaqa-add-btn font-body-ar">
+              {{t('pages.product.choose_options') | default('اختاري المقاس')}}
+            </a>
+          {% else %}
+            <button @click.prevent="addToCart()" :disabled="cartLoading || cartSuccess" type="button" class="anaqa-add-btn font-body-ar">
+              <span x-show="cartLoading" class="inline-flex">
+                <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              </span>
+              <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                {{t('pages.product.added') | default('تمت الإضافة')}}
+              </span>
+              <span x-show="!cartLoading && !cartSuccess">{{t('pages.product.add_to_cart') | default('أضيفي للسلة')}}</span>
+            </button>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>

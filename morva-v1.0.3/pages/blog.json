@@ -1,0 +1,16 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المدونة",
+      "widget": "blog-page",
+      "settings": {
+        "kicker": "اليوميات",
+        "show_cover": true
+      }
+    }
+  ]
+}

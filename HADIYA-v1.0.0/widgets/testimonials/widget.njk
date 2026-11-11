@@ -1,0 +1,359 @@
+{#
+  ============================================================================
+  HYPER · TESTIMONIALS  ·  آراء العملاء
+  ----------------------------------------------------------------------------
+    ┌──────────────────────────────────────────────────────────┐
+    │                 ·  ما يقوله عملاؤنا                       │
+    │                أكثر من ٥٠٠ رأي سعيد                       │
+    │                                                          │
+    │      ”                                                   │
+    │      الخامة قطن حقيقي وناعمة جدًا على جلد بنتي…            │
+    │                                                          │
+    │                     ★★★★★                                │
+    │                     منى ع.                                │
+    │                  أطقم قطن ناعمة                           │
+    │                                                          │
+    │         ◯   ◯   ◯   ◉   ◯   ◯   ◯   ◯   ◯                │
+    │                   ↑ the nav IS the people                │
+    └──────────────────────────────────────────────────────────┘
+
+  Styled in assets/style.css → "15.13.4 TESTIMONIALS".
+
+  ── Why the faces are the controls ──
+  Arrows and dots are furniture: they say "there is more" without saying
+  anything about what. Here the strip below the quote is the customers
+  themselves, so the control carries the content — you pick a person, not slide
+  number 4. It also lets the section show nine people at a glance while asking
+  the shopper to read only one quote. The nine-card grid this replaced asked
+  for nine readings and got none.
+
+  ── It is a TAB pattern, so it uses the tab roles ──
+  One strip of controls, one panel that swaps: that is `tablist` / `tab` /
+  `tabpanel` exactly. Using the real roles buys the arrow-key contract and the
+  "selected" announcement for free; hand-rolled next/prev buttons would have to
+  reinvent both, worse.
+
+  ── It degrades ──
+  Every quote is in the HTML. The inactive ones carry a server-rendered
+  `display: none` — the same thing ui/cart.njk does for its footer — so with
+  Alpine broken or slow the section is one readable testimonial rather than a
+  flash of nine stacked on top of each other.
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title   = d.title | default('', true) %}
+{% set sub     = d.subtitle | default('', true) %}
+{% set quotes  = widget.blocks | default([], true) %}
+{% set count   = quotes | length %}
+{% set starCol = d.star_color | default('var(--color-accent)', true) %}
+
+{# Seconds in the editor, milliseconds in the component. 0 means "do not
+   advance on its own", which is also what a single quote gets. #}
+{% set autoSec = d.autoplay | default(6) %}
+{% set autoMs  = (autoSec * 1000) if (autoSec > 0 and count > 1) else 0 %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro star(on) %}<svg class="{{ '' if on else 'is-off' }}" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>{% endmacro %}
+
+{# ── The score is computed, never typed ──
+   A headline number a merchant types by hand drifts away from the quotes under
+   it the first time one is edited. These are the ratings actually entered, so
+   the pill cannot lie. Ratings of 0 mean "hide the stars for this one" and are
+   left out of the average rather than counted as zero.
+
+   The push-into-an-array pattern is deliberate: a plain `{% set total = total
+   + r %}` inside a for-loop does NOT survive the loop in Nunjucks — the value
+   is scoped to the iteration and reads back as its pre-loop value. #}
+{% set rates = [] %}
+{% for q in quotes %}
+  {% set r = q.data.rating | default(5) %}
+  {% if r > 0 %}{% set _ = rates.push(r) %}{% endif %}
+{% endfor %}
+{% set rated = rates | length %}
+{% set avg = ((rates | sum) / rated) | round(1) if rated > 0 else 0 %}
+
+<section id="hy-tp-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %} class="hy-tp"
+         {% if count > 0 %}x-data="hyQuotes({{ count }}, {{ autoMs }})"{% endif %}>
+  <div class="hy-tp-inner">
+
+    {% if eyebrow or title or sub %}
+      <div class="hy-tp-head">
+        {% if eyebrow %}<p class="hy-tp-eyebrow">{{ eyebrow }}</p>{% endif %}
+        {% if title %}<h2 class="hy-tp-title">{{ title }}</h2>{% endif %}
+        {% if sub %}<p class="hy-tp-sub">{{ sub }}</p>{% endif %}
+
+        {% if rated > 0 %}
+          <div class="hy-tp-score">
+            <span class="hy-tp-score-stars" role="img" aria-label="{{ avg }}/5">
+              {% for i in range(1, 6) %}{{ star(i <= (avg | round)) }}{% endfor %}
+            </span>
+            <span class="hy-tp-score-val">{{ avg }}</span>
+            <span class="hy-tp-score-sep" aria-hidden="true"></span>
+            {# `| replace`, not a vars dict: Qalab's t() does not substitute `{count}`
+               from `t(key, { count })` — the live page printed "{count} رأي".
+               Every other call site in the theme substitutes this way. #}
+            <span class="hy-tp-score-count">{{ t('common.reviews_count') | replace('{count}', rated) }}</span>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if count > 0 %}
+      {# Hovering or focusing anywhere in the stage holds the autoplay. A quote
+         that slides away mid-sentence is the most irritating thing a
+         testimonial carousel can do. #}
+      <div class="hy-tp-stage"
+           @mouseenter="hold = true"
+           @mouseleave="hold = false"
+           @focusin="hold = true"
+           @focusout="hold = false"
+           @pointerdown="down($event)"
+           @pointerup="up($event)">
+
+        <span class="hy-tp-mark" aria-hidden="true">&rdquo;</span>
+
+        {% for q in quotes %}
+          {% set b = q.data %}
+          {% set who = b.author | default('', true) %}
+          {% set rate = b.rating | default(5) %}
+          {% set n = loop.index0 %}
+
+          {# NOT `x-show`. `display: none` takes the panel out of the grid cell,
+             so the stage would be only as tall as the CURRENT quote and the
+             face strip below it would jump on every change — measured at 249px
+             on one quote and 151px on another. `visibility` keeps every panel
+             in the cell, so the row is sized by the LONGEST quote once and
+             never moves again; it also drops the hidden ones out of the
+             accessibility tree, which `opacity` alone would not.
+
+             The class is server-rendered as well as bound, so with Alpine
+             broken the section is one readable quote rather than nine stacked
+             on top of each other. `:class` uses the object form on purpose —
+             the string form would wipe the class that is already there. #}
+          <div class="hy-tp-panel{% if n != 0 %} is-hidden{% endif %}"
+               id="hy-tpPanel-{{ id }}-{{ n }}"
+               role="tabpanel"
+               aria-labelledby="hy-tpTab-{{ id }}-{{ n }}"
+               :class="{ 'is-hidden': i !== {{ n }} }">
+
+            {% if b.quote %}<p class="hy-tp-quote">{{ b.quote }}</p>{% endif %}
+
+            {% if rate > 0 %}
+              {# `aria-label` carries the score; the five shapes are decoration
+                 and are hidden, or a screen reader reads "star" five times. #}
+              <div class="hy-tp-stars" role="img" aria-label="{{ rate }}/5">
+                {% for i in range(1, 6) %}{{ star(i <= rate) }}{% endfor %}
+              </div>
+            {% endif %}
+
+            {% if who %}<p class="hy-tp-name">{{ who }}</p>{% endif %}
+            {% if b.note %}<p class="hy-tp-note">{{ b.note }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {# ── the faces ──
+         Hidden entirely for a single quote: a strip of one is a control that
+         controls nothing. #}
+      {% if count > 1 %}
+        <div class="hy-tp-faces"
+             role="tablist"
+             @keydown="key($event)"
+             x-ref="faces">
+          {% for q in quotes %}
+            {% set b = q.data %}
+            {% set who = b.author | default('', true) %}
+            {% set pic = mediaUrl(b.avatar) | trim %}
+            {% set n = loop.index0 %}
+
+            <button type="button"
+                    class="hy-tp-face"
+                    id="hy-tpTab-{{ id }}-{{ n }}"
+                    role="tab"
+                    :class="i === {{ n }} && 'is-on'"
+                    :aria-selected="i === {{ n }} ? 'true' : 'false'"
+                    {# Only the active tab stays in the tab order; the arrow
+                       keys move between the rest. That is the roving tabindex
+                       the tab role expects, and it keeps nine avatars from
+                       costing a keyboard user nine presses to get past. #}
+                    :tabindex="i === {{ n }} ? 0 : -1"
+                    aria-controls="hy-tpPanel-{{ id }}-{{ n }}"
+                    @click="go({{ n }})">
+              <span class="hy-tp-face-shape" aria-hidden="true">
+                {% if (pic | length) > 0 %}
+                  <img src="{{ pic }}" alt="" loading="lazy"/>
+                {% else %}
+                  {{ (who | string).slice(0, 1) }}
+                {% endif %}
+              </span>
+              <span class="hy-tp-face-name">{{ who }}</span>
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      {# The real stage at its real size, in grey. Inert and aria-hidden like
+         every skeleton in this theme (15.29.1). #}
+      <div class="hy-tp-stage" data-hy-placeholder aria-hidden="true">
+        <div class="hy-tp-panel">
+          <span class="hy-ph-line" style="--ph-line-w: 82%; --ph-line-h: 19px;"></span>
+          <span class="hy-ph-line" style="--ph-line-w: 92%; --ph-line-h: 19px; margin-block-start: 14px;"></span>
+          <span class="hy-ph-line" style="--ph-line-w: 54%; --ph-line-h: 19px; margin-block-start: 14px;"></span>
+          <span class="hy-ph-line" style="--ph-line-w: 104px; --ph-line-h: 14px; margin-block-start: 30px;"></span>
+        </div>
+      </div>
+      <div class="hy-tp-faces" data-hy-placeholder aria-hidden="true">
+        {% for i in range(0, 5) %}<span class="hy-tp-face"><span class="hy-tp-face-shape"></span></span>{% endfor %}
+      </div>
+
+      <div class="hy-tp-hint">
+        <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+          </svg>
+          {{ t('common.placeholder_add') }}
+        </span>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<style>
+  #hy-tp-{{ id }} {
+    {# No `-set` suffix on this one: it is a colour, and no breakpoint
+       overrides it. It lives on the SECTION rather than on each panel because
+       the score pill in the head has to tint from it too — while it was a
+       per-card inline style the pill silently kept the default gold no matter
+       what the merchant picked. #}
+    {% if starCol %}--hy-tp-star: {{ starCol }};{% endif %}
+  }
+</style>
+
+{% if count > 0 %}
+<script>
+  /* Registered on `alpine:init` like every other component in this theme, and
+     guarded so a second copy of the section on one page does not re-register
+     it. Same guard the header and the bundle use. */
+  document.addEventListener('alpine:init', function () {
+    if (window.__hyTpReady) return;
+    window.__hyTpReady = true;
+
+    Alpine.data('hyQuotes', function (n, autoMs) {
+      return {
+        i: 0,
+        hold: false,
+        _t: null,
+        _x: 0,
+
+        init: function () {
+          /* Someone who asked the system to stop moving things did not ask for
+             a quote to change under them either. */
+          var still = document.documentElement.classList.contains('hy-no-motion') || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          this._still = still;
+          /* Autoplay only while the section is actually on screen. A carousel
+             advancing behind the fold is work nobody sees, and it is what made
+             the scroll bug fire while the shopper was nowhere near it. */
+          this._seen = true;
+          if (window.IntersectionObserver) {
+            this._io = new IntersectionObserver(function (es) {
+              this._seen = es[0].isIntersecting;
+            }.bind(this), { threshold: 0.2 });
+            this._io.observe(this.$el);
+          }
+
+          /* On a phone the strip is wider than the screen, so the face that is
+             now active can sit off the edge — selected, and invisible. Keep it
+             in view whenever the index moves, including when autoplay is what
+             moved it. */
+          this.$watch('i', function () { this.reveal(); }.bind(this));
+
+          if (autoMs > 0 && !still) {
+            this._t = setInterval(function () {
+              if (!this.hold && !document.hidden && this._seen) this.i = (this.i + 1) % n;
+            }.bind(this), autoMs);
+          }
+        },
+        destroy: function () {
+          if (this._t) clearInterval(this._t);
+          if (this._io) this._io.disconnect();
+        },
+
+        go: function (k) { this.i = ((k % n) + n) % n; },
+
+        /* Brings the active face into view INSIDE the strip. Skipped entirely
+           while the strip fits, so nothing moves when there is nothing to
+           scroll. */
+        reveal: function () {
+          var strip = this.$refs.faces;
+          if (!strip || strip.scrollWidth <= strip.clientWidth + 1) return;
+          var b = strip.querySelectorAll('[role="tab"]')[this.i];
+          if (!b) return;
+
+          /* Scroll the STRIP, never the page.
+             This was `b.scrollIntoView({block: 'nearest'})`, on the belief that
+             `nearest` means "do not scroll the page". It does not — it means
+             "scroll the LEAST amount needed", and with the section below the
+             fold that is the whole way down: measured scrollY 0 → 1513 on one
+             call. Autoplay then did it every 6s, so the page yanked itself to
+             the testimonials over and over while you were working further up.
+
+             `getBoundingClientRect` is physical in both directions, so this
+             delta needs no RTL sign handling — which is the only reason
+             `scrollIntoView` looked attractive in the first place. */
+          var sr = strip.getBoundingClientRect(), br = b.getBoundingClientRect();
+          strip.scrollBy({
+            left: (br.left + br.width / 2) - (sr.left + sr.width / 2),
+            behavior: this._still ? 'auto' : 'smooth'
+          });
+        },
+        next: function () { this.go(this.i + 1); },
+        prev: function () { this.go(this.i - 1); },
+
+        /* ── Arrow keys ──
+           The tab role's contract is about which key points where ON SCREEN,
+           not which index comes next: in Arabic the strip runs right-to-left,
+           so ArrowRight has to mean PREVIOUS or focus jumps the wrong way. */
+        key: function (e) {
+          var rtl = document.documentElement.dir === 'rtl';
+          var k = e.key, hit = true;
+          if (k === 'ArrowRight') this[rtl ? 'prev' : 'next']();
+          else if (k === 'ArrowLeft') this[rtl ? 'next' : 'prev']();
+          else if (k === 'Home') this.go(0);
+          else if (k === 'End') this.go(n - 1);
+          else hit = false;
+          if (!hit) return;
+          e.preventDefault();
+          /* Moving the selection has to move focus with it, or the next arrow
+             press starts from the old button again. */
+          this.$nextTick(function () {
+            var b = this.$refs.faces && this.$refs.faces.querySelectorAll('[role="tab"]')[this.i];
+            if (b) b.focus();
+          }.bind(this));
+        },
+
+        /* Swipe. Pointer events cover touch, pen and mouse-drag in one path,
+           and 40px is far enough that a tap on a face is never read as one. */
+        down: function (e) { this._x = e.clientX; },
+        up: function (e) {
+          var dx = e.clientX - this._x;
+          if (Math.abs(dx) < 40) return;
+          var rtl = document.documentElement.dir === 'rtl';
+          if (dx < 0) this[rtl ? 'prev' : 'next']();
+          else this[rtl ? 'next' : 'prev']();
+        }
+      };
+    });
+  });
+</script>
+{% endif %}
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay last — see the partial's header for why. #}
+{% ui "section-colors.njk", scope='#hy-tp-' ~ id, c=d %}

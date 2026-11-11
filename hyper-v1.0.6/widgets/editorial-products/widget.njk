@@ -1,0 +1,238 @@
+{# ============================================================================
+   HYPER · علامات تبويب المجموعة  (collection tabs)
+   ----------------------------------------------------------------------------
+     المجموعات المميّزة              ┌───────────────────────────┐
+     تراث المعيشة                    │                           │
+     ‾‾‾‾‾‾‾‾‾‾‾‾                    │      صورة المجموعة        │
+     مجموعة الملاذ                   │        النشطة             │
+     سلسلة السكينة                   │                           │
+     [▫][▫][▫][▫]                    │                           │
+     سطر من الوصف.                   │                           │
+     ( تسوّق المجموعة )              └───────────────────────────┘
+
+   The collection NAMES are the tabs — there is no separate tab strip. Picking
+   one swaps the photograph, the thumbnails, the copy and the button together.
+
+   ── Every panel is rendered server-side and toggled with x-show ──
+   The sets are already in the page JSON, so fetching on click would be a
+   round-trip to redisplay data the browser is holding. It also means the images
+   for every tab are in the markup: the first is eager, the rest lazy, so
+   switching a tab does not stall on a download.
+
+   ── The thumbnails are four `media` fields, NOT a products picker ──
+   They are the collection's shape at a glance, not a shopping surface: no
+   price, no badge, no add-to-cart. Rendering ui/product-card.njk at 90px would
+   put a button and a price into a tile too small to read either.
+
+   ⚠️  They started as a `products` picker inside the block, and the Theme
+   Editor would not render the block's settings at all with one there. No
+   original widget in this theme puts `products` inside a `blocks` entry —
+   `menu` and `media` are the only pickers that appear in one — so the type is
+   not supported at block level, only at widget level. Do not put `products` or
+   `collections` back inside a block. Each thumbnail links to the tab's own
+   `cta_url`, since a plain image carries no product of its own.
+
+   ── RTL ──
+   `media_position` is start/end rather than left/right, and the CSS aligns the
+   copy to the container's content edge with logical padding — so the
+   photograph lands on the correct side in both directions with nothing to
+   configure. See the note in assets/style.css → "15.10 COLLECTION TABS".
+
+   Styling lives in assets/style.css → "15.10 COLLECTION TABS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set tabs = widget.blocks | default([]) %}
+{% set tabCount = tabs | length %}
+
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set mediaPos = d.media_position | default('end') %}
+{% set showThumbs = d.show_thumbs | default(true) %}
+
+{# The empty state. A preset cannot seed blocks, so a freshly added section
+   arrives with none — see the note in style.css → "15.29.1". #}
+{% macro phHint() %}
+  <span class="hy-ph-hint" data-hy-placeholder aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    {{ t('common.placeholder_add') }}
+  </span>
+{% endmacro %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+<section id="hy-ct-{{ id }}"{% if tabCount == 0 %} data-hy-empty{% endif %}
+         class="hy-ctabs hy-ctabs--media-{{ mediaPos }}"
+         style="background: var(--hy-sec-bg, var(--color-surface));"
+         x-data="{ tab: 0 }"
+         {# If the merchant leaves the FIRST block unnamed it renders no button,
+            and `tab: 0` would open a panel nothing can switch away from. This
+            reads the rendered buttons instead of computing an index in the
+            template — Nunjucks scopes `{% set %}` to the block it runs in, so a
+            "first titled block" search inside `{% for %}` cannot return a value
+            to the outside. #}
+         x-init="if (!$el.querySelector('.hy-ctabs-tab[data-i=\'' + tab + '\']')) {
+                   const first = $el.querySelector('.hy-ctabs-tab');
+                   if (first) tab = Number(first.dataset.i);
+                 }">
+
+  {# ═══════════════════ copy half ═══════════════════ #}
+  <div class="hy-ctabs-body">
+
+    {% if eyebrow %}
+      <p class="hy-ctabs-eyebrow">{{ eyebrow }}</p>
+    {% endif %}
+
+    {% set namedCount = 0 %}
+    {% for block in tabs %}{% if block.data.tab_title %}{% set namedCount = 1 %}{% endif %}{% endfor %}
+
+    <div class="hy-ctabs-list" role="tablist">
+      {# ⚠️  A tab with no name is not rendered at all — the same rule the header
+         applies to a nav item with no label.
+
+         There is deliberately NO fallback label here. The first attempt used
+         `t('...') ~ ' ' ~ loop.index`, and that printed the raw key
+         `common.untitled_collection 1` on the storefront: nothing else in this
+         theme calls `t()` inside a concatenation, and Qalab does not resolve it
+         there — only `{{ t('key') }}` and `{{ t('key') | filter }}` work. A
+         shared fallback string was also wrong on its own terms, since every
+         unnamed tab then read identically.
+
+         `loop.index0` still counts the skipped blocks, so the indices here stay
+         in step with the panels and the media panes below. #}
+      {% for block in tabs %}
+        {% set b = block.data %}
+        {% if b.tab_title %}
+          <button type="button"
+                  role="tab"
+                  data-i="{{ loop.index0 }}"
+                  class="hy-ctabs-tab"
+                  :class="tab === {{ loop.index0 }} && 'is-active'"
+                  :aria-selected="tab === {{ loop.index0 }} ? 'true' : 'false'"
+                  @click="tab = {{ loop.index0 }}">
+            {{ b.tab_title }}
+          </button>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# Skeleton for a section with no NAMED tab. Which one is showing is decided
+       in CSS by `:has()` on the rendered buttons, not by a count here —
+       Nunjucks scopes `{% set %}` to the block it runs in, so a "did any tab
+       render" flag cannot escape the loop above. #}
+    <div class="hy-ctabs-ph" data-hy-placeholder aria-hidden="true">
+      <div class="hy-ph-stack" style="max-width: 16ch;">
+        <span class="hy-ph-line hy-ph-line--lg"></span>
+        <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 72%;"></span>
+        <span class="hy-ph-line hy-ph-line--lg" style="--ph-line-w: 58%;"></span>
+      </div>
+      <div class="hy-ctabs-thumbs">
+        {% for i in range(0, 4) %}
+          <span class="hy-ctabs-thumb hy-ctabs-thumb--ph"></span>
+        {% endfor %}
+      </div>
+      {{ phHint() }}
+    </div>
+
+    {# One panel per tab, all in the DOM. #}
+    {% for block in tabs %}
+      {% set b = block.data %}
+      {% if b.tab_title %}
+      <template x-if="tab === {{ loop.index0 }}">
+        <div class="hy-ctabs-panel">
+          {% if showThumbs %}
+            {# The four slots are listed explicitly rather than looped: Nunjucks
+               cannot build `b['thumb_' ~ i]` from a loop variable in this
+               engine, and four lines are cheaper than the workaround. An empty
+               slot falls through to a dashed tile, so the row keeps its shape
+               whether the merchant filled one or all four. #}
+            {% set thumbs = [b.thumb_1, b.thumb_2, b.thumb_3, b.thumb_4] %}
+            <div class="hy-ctabs-thumbs">
+              {% for th in thumbs %}
+                {% set thUrl = mediaUrl(th) | trim %}
+                {# no photo yet → bundled demo photo (CC0, docs/demo-images.md),
+                   shown in the editor only — a shopper never sees stock chairs
+                   in someone else's store. #}
+                {% set isDemoThumb = not (thUrl | length) %}
+                {% if isDemoThumb %}{% set thUrl = ['demo-thumb-1.jpg', 'demo-thumb-2.jpg', 'demo-thumb-3.jpg', 'demo-thumb-4.jpg'][loop.index0 % 4] | assets %}{% endif %}
+                {% if (thUrl | length) > 0 %}
+                  <a href="{{ b.cta_url | default('/shop') }}" class="hy-ctabs-thumb"{% if isDemoThumb %} data-hy-placeholder aria-hidden="true" tabindex="-1"{% endif %}>
+                    <img src="{{ thUrl }}" alt="" loading="lazy"/>
+                  </a>
+                {% else %}
+                  {# Unfilled slot. Shown at the real size so the merchant sees
+                     the row they are about to fill instead of a gap that reads
+                     as a broken section. Inert and hidden from assistive tech,
+                     like every other placeholder in the theme. #}
+                  <span class="hy-ctabs-thumb hy-ctabs-thumb--ph"
+                        data-hy-placeholder aria-hidden="true"></span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if b.tab_text %}
+            {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+                 (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes the
+                 outer one and the content becomes a SIBLING, so every style on this
+                 class stops reaching the text. The inner margins are reset in the CSS. #}
+            <div class="hy-ctabs-text">{{ b.tab_text | safe }}</div>
+          {% endif %}
+
+          {% if b.cta_text %}
+            <a href="{{ b.cta_url | default('/shop') }}"
+               class="hy-btn hy-btn--lg hy-btn--pill hy-btn--solid">{{ b.cta_text }}</a>
+          {% endif %}
+        </div>
+      </template>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {# ═══════════════════ media half ═══════════════════ #}
+  <div class="hy-ctabs-media">
+    <div class="hy-ctabs-pane hy-ctabs-pane--ph" data-hy-placeholder aria-hidden="true"></div>
+
+    {% for block in tabs %}
+      {% set b = block.data %}
+      {% set img = mediaUrl(b.tab_image) | trim %}
+      {# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+      {% if not (img | length) %}{% set img = ['demo-room-1.jpg', 'demo-room-2.jpg', 'demo-room-3.jpg'][loop.index0 % 3] | assets %}{% endif %}
+      {# `| length`, not truthiness — a macro returns a SafeString OBJECT, and an
+         object is truthy even when it holds an empty string. #}
+      {% set hasImg = (img | length) > 0 %}
+
+      {% if b.tab_title %}
+      <div class="hy-ctabs-pane"
+           x-show="tab === {{ loop.index0 }}"
+           {% if not loop.first %}x-cloak{% endif %}
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100">
+        {% if hasImg %}
+          <img src="{{ img }}"
+               alt="{{ b.tab_title | default('', true) }}"
+               {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        {% else %}
+          <span class="hy-ctabs-noimg">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.75" cy="9" r="1.5"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+</section>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. #}
+{% ui "section-colors.njk", scope='#hy-ct-' ~ id, c=d %}

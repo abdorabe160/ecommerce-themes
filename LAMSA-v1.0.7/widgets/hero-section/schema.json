@@ -1,0 +1,471 @@
+{
+  "name": "البانر الرئيسي",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "تقسيم البانر",
+        "en": "Hero Layout"
+      },
+      "default": "split",
+      "options": [
+        {
+          "value": "split",
+          "label": {
+            "ar": "نص + صورة قريبة (الافتراضي)",
+            "en": "Text + close-up image"
+          }
+        },
+        {
+          "value": "split-reverse",
+          "label": {
+            "ar": "صورة + نص (معكوس)",
+            "en": "Image + text (reversed)"
+          }
+        },
+        {
+          "value": "centered",
+          "label": {
+            "ar": "نص في الوسط فوق صورة كاملة",
+            "en": "Centered over full image"
+          }
+        }
+      ]
+    },
+    "height": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر (كمبيوتر)",
+        "en": "Height (Desktop)"
+      },
+      "default": "large",
+      "options": [
+        {
+          "value": "compact",
+          "label": {
+            "ar": "مدمج",
+            "en": "Compact"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "ملء الشاشة",
+            "en": "Full screen"
+          }
+        }
+      ]
+    },
+    "height_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر (موبايل)",
+        "en": "Height (Mobile)"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "compact",
+          "label": {
+            "ar": "مدمج",
+            "en": "Compact"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "auto",
+          "label": {
+            "ar": "حسب المحتوى",
+            "en": "Fit content"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية البانر",
+        "en": "Background"
+      },
+      "default": "blush",
+      "options": [
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        }
+      ]
+    },
+    "show_glow": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الوهج الناعم خلف الصورة",
+        "en": "Soft glow behind the image"
+      },
+      "default": true
+    },
+    "image_shape": {
+      "type": "select",
+      "label": {
+        "ar": "شكل إطار الصورة",
+        "en": "Image Frame Shape"
+      },
+      "default": "arch",
+      "options": [
+        {
+          "value": "soft",
+          "label": {
+            "ar": "مستطيل ناعم",
+            "en": "Soft rectangle"
+          }
+        },
+        {
+          "value": "arch",
+          "label": {
+            "ar": "قوس (مقوّس من أعلى)",
+            "en": "Arch"
+          }
+        },
+        {
+          "value": "circle",
+          "label": {
+            "ar": "دائرة",
+            "en": "Circle"
+          }
+        },
+        {
+          "value": "bare",
+          "label": {
+            "ar": "بدون إطار (صورة مقطوعة PNG)",
+            "en": "No frame (cut-out PNG)"
+          }
+        }
+      ]
+    },
+    "title_size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم العنوان",
+        "en": "Title Size"
+      },
+      "default": "large",
+      "options": [
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "xlarge",
+          "label": {
+            "ar": "ضخم",
+            "en": "Extra large"
+          }
+        }
+      ]
+    },
+    "text_tone": {
+      "type": "select",
+      "label": {
+        "ar": "لون النص (لتقسيم «الوسط فوق صورة»)",
+        "en": "Text Tone (for the centered layout)"
+      },
+      "default": "light",
+      "options": [
+        {
+          "value": "light",
+          "label": {
+            "ar": "فاتح (لصور داكنة)",
+            "en": "Light (dark photos)"
+          }
+        },
+        {
+          "value": "dark",
+          "label": {
+            "ar": "داكن (لصور فاتحة)",
+            "en": "Dark (light photos)"
+          }
+        }
+      ]
+    },
+    "scrim": {
+      "type": "select",
+      "label": {
+        "ar": "تعتيم الصورة (للوسط فوق صورة)",
+        "en": "Image Scrim (centered layout)"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "soft",
+          "label": {
+            "ar": "خفيف",
+            "en": "Soft"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "strong",
+          "label": {
+            "ar": "قوي",
+            "en": "Strong"
+          }
+        }
+      ]
+    },
+    "show_rating_card": {
+      "type": "boolean",
+      "label": {
+        "ar": "بطاقة التقييم العائمة",
+        "en": "Floating Rating Card"
+      },
+      "default": true
+    },
+    "rating_value": {
+      "type": "string",
+      "label": {
+        "ar": "قيمة التقييم",
+        "en": "Rating Value"
+      },
+      "default": ""
+    },
+    "rating_label": {
+      "type": "string",
+      "label": {
+        "ar": "نص التقييم",
+        "en": "Rating Label"
+      },
+      "default": ""
+    },
+    "show_note_card": {
+      "type": "boolean",
+      "label": {
+        "ar": "بطاقة المكوّن الفعّال العائمة",
+        "en": "Floating Key-Ingredient Card"
+      },
+      "default": true
+    },
+    "note_title": {
+      "type": "string",
+      "label": {
+        "ar": "المكوّن الفعّال",
+        "en": "Key Ingredient"
+      },
+      "default": "المكوّن الأساسي"
+    },
+    "note_label": {
+      "type": "string",
+      "label": {
+        "ar": "وصف المكوّن",
+        "en": "Ingredient Caption"
+      },
+      "default": "لتوحيد اللون ولمعة صحية"
+    },
+    "show_scroll_hint": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مؤشّر التمرير",
+        "en": "Show Scroll Hint"
+      },
+      "default": true
+    },
+    "scroll_hint_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص مؤشّر التمرير",
+        "en": "Scroll Hint Text"
+      },
+      "default": "اكتشفي الروتين"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "تشغيل تلقائي",
+        "en": "Autoplay"
+      },
+      "default": true
+    },
+    "autoplay_speed": {
+      "type": "number",
+      "label": {
+        "ar": "مدة السلايد (بالثانية)",
+        "en": "Slide Duration (seconds)"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 15,
+      "step": 1
+    },
+    "show_dots": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مؤشرات السلايدات",
+        "en": "Show Slide Dots"
+      },
+      "default": true
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show Navigation Arrows"
+      },
+      "default": false
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "سلايد",
+      "settings": {
+        "slide_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المنتج القريبة",
+            "en": "Close-up Product Image"
+          }
+        },
+        "slide_image_mobile": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الموبايل (اختياري)",
+            "en": "Mobile Image (optional)"
+          }
+        },
+        "slide_eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "النص التمهيدي",
+            "en": "Eyebrow"
+          },
+          "default": ""
+        },
+        "slide_title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+            "en": "Title — wrap a word in <em> to accent it"
+          },
+          "default": ""
+        },
+        "slide_description": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف",
+            "en": "Description"
+          },
+          "default": ""
+        },
+        "slide_button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر الرئيسي",
+            "en": "Primary Button Text"
+          },
+          "default": "تسوّقي الآن"
+        },
+        "slide_button_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر الرئيسي",
+            "en": "Primary Button URL"
+          },
+          "default": "/shop"
+        },
+        "slide_button2_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر الثانوي (اتركيه فارغاً لإخفائه)",
+            "en": "Secondary Button Text (leave empty to hide)"
+          },
+          "default": ""
+        },
+        "slide_button2_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر الثانوي",
+            "en": "Secondary Button URL"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانر",
+      "name": "البانر الرئيسي"
+    }
+  ]
+}

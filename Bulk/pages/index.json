@@ -1,0 +1,42 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "hero",
+      "widget": "hero"
+    },
+    {
+      "name": "Categories Strip",
+      "widget": "categories-strip"
+    },
+    {
+      "name": "وصل حديثاً",
+      "widget": "featured-products-slider",
+      "settings": {
+        "title": "وصل حديثاً",
+        "badge_text": "لسه نازل",
+        "tabs_list": "الكل, ملابس, أحذية"
+      }
+    },
+    {
+      "name": "Featured Products",
+      "widget": "featured-products"
+    },
+    {
+      "name": "Collection Showcase",
+      "widget": "collection-showcase"
+    },
+    {
+      "name": "Promo Banner",
+      "widget": "promo-banner"
+    },
+    {
+      "name": "Testimonials",
+      "widget": "testimonials"
+    },
+    {
+      "name": "Newsletter",
+      "widget": "newsletter"
+    }
+  ]
+}

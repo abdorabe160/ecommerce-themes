@@ -1,0 +1,213 @@
+{#
+  ============================================================================
+  MORVA · HERO GRID
+  ----------------------------------------------------------------------------
+     ┌──────────┬────────────────────┬───────────────────┐
+     │ FEATURED │  banner image      │ — 01 / FEATURED   │
+     │ product  ├────────────────────┤ ▢ ▢ ▢ slider     │
+     │ card     │  video (16:9)      │ ▬ ▬ ▬     ← →     │
+     ├──────────┴────────────────────┴───────────────────┤
+     │  MOVE FAST  MOVE FAST  MOVE FAST  (kinetic strip) │
+     └───────────────────────────────────────────────────┘
+  Mobile order: banner → video → strip → featured card → slider.
+  Layout lives in style.css → "12. HERO GRID".
+
+  Products:
+    · `products` feeds the slider, `featured_product` the left card.
+    · An empty `featured_product` borrows the slider's first product.
+    · An empty `products` (with auto-fill on) is filled from the store's
+      newest products by main.js (mvHeroRail → HayatAuto) — a fresh store
+      looks stocked instead of empty.
+  NOTE: The card markup here has a TWIN: MorvaHero.card() in main.js renders
+  the same cards for the auto-filled slider. Keep the two in step.
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set picked = d.products | default([]) %}
+{% set featPick = d.featured_product | default([]) %}
+{% set featured = featPick[0] if (featPick | length) > 0 else (picked[0] if (picked | length) > 0 else null) %}
+{% set autoFill = d.auto_fill | default(true) %}
+{% set n = picked | length %}
+
+{% set bannerImg = d.banner_image.fileUrl if d.banner_image and d.banner_image.fileUrl else '' %}
+{% set bannerImgM = d.banner_image_mobile.fileUrl if d.banner_image_mobile and d.banner_image_mobile.fileUrl else bannerImg %}
+{% set videoSrc = d.video_file.fileUrl if d.video_file and d.video_file.fileUrl else (d.video_url | default('')) %}
+{% set poster = d.video_poster.fileUrl if d.video_poster and d.video_poster.fileUrl else '' %}
+
+{# ---- Demo content ----------------------------------------------------------
+   Anything the merchant has not filled in yet shows a bundled demo instead
+   of an empty box: the banner, the video poster, the featured card and the
+   slider. The slider and featured card are still upgraded by main.js to the
+   store's real newest products when there are any.
+   NOTE: TWIN LIST: ui/product-card.njk holds the same eight demo pieces. #}
+{% set showDemo = settings.demoContent | default(true) %}
+{% set featuredReal = featured %}
+{% set slides = picked %}
+{% if showDemo %}
+  {% if not bannerImg %}{% set bannerImg = 'demo-banner.jpg' | assets %}{% set bannerImgM = bannerImg %}{% endif %}
+  {% if not videoSrc and not poster %}{% set poster = 'demo-video.jpg' | assets %}{% endif %}
+  {% set DEMO = [
+    { t: 'هودي الضوء الأحمر', img: 'demo-p1.jpg', price: 1690, was: 0 },
+    { t: 'هودي الجمجمة', img: 'demo-p2.jpg', price: 1890, was: 2490 },
+    { t: 'هودي أودير', img: 'demo-p3.jpg', price: 1590, was: 0 },
+    { t: 'طقم الإصدار ٠٣', img: 'demo-p4.jpg', price: 990, was: 0 },
+    { t: 'هودي الغبار', img: 'demo-p5.jpg', price: 1490, was: 0 },
+    { t: 'جاكيت وسط البلد', img: 'demo-p6.jpg', price: 2890, was: 3490 },
+    { t: 'هودي الحي', img: 'demo-p7.jpg', price: 1390, was: 0 },
+    { t: 'هودي الليل', img: 'demo-p8.jpg', price: 1590, was: 0 }
+  ] %}
+  {% set demoProducts = [] %}
+  {% for dd in DEMO %}
+    {% set _ = demoProducts.push({ _id: 'demo', demo: true, title: dd.t, images: [{ fileUrl: dd.img | assets }],
+                                   pricing: { price: dd.price, compareAtPrice: dd.was }, trackQuantity: false }) %}
+  {% endfor %}
+  {% if n == 0 %}{% set slides = demoProducts %}{% endif %}
+  {% if not featured %}{% set featured = demoProducts[0] %}{% endif %}
+{% endif %}
+{% set slideCount = slides | length %}
+
+{% macro card(p, i, n, kind) %}
+  {% set isDemo = p.demo %}
+  {% set slug = p.slug | default(p.handle) | default(p._id) %}
+  {% set url = '/shop' if isDemo else ('/products/' ~ slug) %}
+  {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 and p.images[0].fileUrl else '' %}
+  {% set price = (p.pricing.price | default(0)) if p.pricing else 0 %}
+  {% set was = (p.pricing.compareAtPrice | default(0)) if p.pricing else 0 %}
+  {% set onSale = was and was > price %}
+  {#- Listing payloads carry no options, variants or variantsCount, and a parent
+      quantity of 0 says nothing about its variants. Only a product known to
+      be simple can be called sold out here; anything else is unknown, and the
+      buttons resolve it from /ajax/product on click. Twin: HayatCard.facts(). -#}
+  {% set vKnown = (p.options | default([], true) | length) + (p.variants | default([], true) | length) %}
+  {% set isSimple = p.variantsCount == 0 or (vKnown == 0 and p.options is defined and p.variants is defined) %}
+  {% set inStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 or (not isSimple) %}
+  {% set stockUnknown = (not p.allowBackorder) and (p.quantity | default(0, true)) <= 0 and (not isSimple) %}
+  {% set pct = (((was - price) / was) * 100) | round(0, 'floor') if onSale else 0 %}
+  {% set isHp = kind == 'hp' %}
+  {#- A demo piece is preview furniture: shown in the Theme Editor, removed on
+      the live store (layout.njk · mv-live), never sold to a shopper. -#}
+  <{{ 'article' if isHp else 'div' }} class="{{ 'mv-hp-card' if isHp else 'mv-hcard' }}"{% if isDemo %} data-mv-live-hide{% endif %}{% if not isDemo %} x-data="productCard('{{ p._id }}', '{{ url }}')"{% endif %}>
+    <a href="{{ url }}" class="{{ 'mv-hp-img' if isHp else 'mv-hcard-img' }}" aria-label="{{ p.title }}">
+      {% if img %}<img class="mv-fill" src="{{ img }}" alt="{{ p.title }}" {% if i == 0 %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+      {% else %}<span class="mv-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/><path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/></svg></span>{% endif %}
+      {% if isHp %}
+        {% if onSale %}<span class="mv-tag mv-tag--sale">{{ ('−' ~ pct ~ '%') if pct > 0 else t('common.on_sale') }}</span>{% endif %}
+        <span class="mv-hp-frame">{{ ('0' ~ (i + 1)) if (i + 1) < 10 else (i + 1) }} / {{ ('0' ~ n) if n < 10 else n }}</span>
+      {% endif %}
+    </a>
+    <div class="mv-hcard-row">
+      <div class="mv-hcard-info">
+        <a href="{{ url }}" class="mv-hcard-name">{{ p.title }}</a>
+        <span class="mv-price">
+          {% if onSale %}<s class="mv-was">{{ was | money }}</s>{% endif %}
+          <span>{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+        </span>
+      </div>
+      <div class="mv-hcard-actions">
+        {% if isDemo %}
+          <a href="/shop" class="mv-hcard-buy" style="display: inline-flex; align-items: center;">{{ t('morva.buy') }}</a>
+          <a href="/shop" class="mv-addsq" aria-label="{{ t('morva.add_to_bag') }}: {{ p.title }}">+</a>
+        {% elif inStock %}
+          {% if stockUnknown %}
+            <a href="{{ url }}" class="mv-hcard-buy" style="display: inline-flex; align-items: center;">{{ t('morva.view_product') }}</a>
+          {% else %}
+            <button type="button" class="mv-hcard-buy" @click="buyNow()" :disabled="cartLoading">{{ t('morva.buy') }}</button>
+          {% endif %}
+          <button type="button" class="mv-addsq" :class="cartSuccess && 'is-done'" @click="addToCart()" :disabled="cartLoading"
+                  aria-label="{{ t('morva.add_to_bag') }}: {{ p.title }}"><span x-show="!cartSuccess">+</span><span x-show="cartSuccess" x-cloak>✓</span></button>
+        {% else %}
+          <a href="{{ url }}" class="mv-hcard-buy" style="background: transparent; color: var(--warn); border: 1px solid rgba(240,160,48,.5); display: inline-flex; align-items: center;">{{ t('morva.sold_out') }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </{{ 'article' if isHp else 'div' }}>
+{% endmacro %}
+
+<section id="mv-hero-{{ id }}" class="mv-hero"
+         x-data="mvHeroRail({ auto: {{ 'true' if (autoFill and n == 0) else 'false' }}, needFeature: {{ 'true' if (autoFill and not featuredReal) else 'false' }}, count: {{ d.auto_count | default(8, true) }} })">
+  <div class="mv-hero-grid">
+
+    {# ── Col 1 · featured product ── #}
+    <div class="mv-hero-feature">
+      <div class="mv-hero-label">— {{ d.featured_label | default(t('morva.featured_now'), true) }}</div>
+      <div class="mv-hero-feature-slot" x-ref="feature" style="display: contents;">
+        {% if featured %}
+          {{ card(featured, 0, 1, 'feature') }}
+        {% elif autoFill %}
+          <div class="mv-hcard mv-hcard--ph" aria-hidden="true">
+            <div class="mv-hcard-img mv-skel"></div>
+            <div class="mv-hcard-row"><div class="mv-hcard-info" style="flex:1"><div class="mv-skel" style="height:10px;width:70%;"></div><div class="mv-skel" style="height:8px;width:40%;margin-top:8px;"></div></div></div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Col 2 top · banner ── #}
+    <div class="mv-hero-banner">
+      {% if bannerImg %}
+        {% if d.banner_link %}<a href="{{ d.banner_link }}" aria-label="{{ d.banner_alt | default(store.name) }}">{% endif %}
+        <picture>
+          {% if bannerImgM != bannerImg %}<source media="(max-width: 880px)" srcset="{{ bannerImgM }}"/>{% endif %}
+          <img class="mv-fill" src="{{ bannerImg }}" alt="{{ d.banner_alt | default('') }}" fetchpriority="high"/>
+        </picture>
+        {% if d.banner_link %}</a>{% endif %}
+      {% else %}
+        {% ui "topo.njk" %}
+      {% endif %}
+    </div>
+
+    {# ── Col 2 bottom · video ── #}
+    <div class="mv-hero-video">
+      {% if videoSrc %}
+        <video src="{{ videoSrc }}" {% if poster %}poster="{{ poster }}"{% endif %} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+      {% elif poster %}
+        <img src="{{ poster }}" alt="" loading="lazy"/>
+      {% endif %}
+    </div>
+
+    {# ── Col 3 · product slider ── #}
+    <div class="mv-hero-slider">
+      <div class="mv-hp">
+        <div class="mv-hp-head">
+          <div class="mv-kicker">— {{ d.slider_index | default('01') }} / {{ d.slider_label | default(t('morva.featured_now'), true) }}</div>
+          <div class="mv-hp-count" x-show="n > 0">
+            <span x-text="pad(idx + 1)">01</span><span class="sep">/</span><span class="tot" x-text="pad(n)">{{ ('0' ~ slideCount) if slideCount < 10 else slideCount }}</span>
+          </div>
+        </div>
+
+        <div class="mv-hp-track" x-ref="track">
+          {% for p in slides %}{{ card(p, loop.index0, slideCount, 'hp') }}{% endfor %}
+          {% if slideCount == 0 and autoFill %}
+            {% for i in range(0, 3) %}
+              <div class="mv-hp-card" aria-hidden="true"><div class="mv-hp-img mv-skel"></div><div class="mv-hcard-row"><div class="mv-skel" style="height:10px;width:60%;"></div></div></div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="mv-hp-controls" x-show="n > 1">
+          <div class="mv-hp-dots">
+            <template x-for="i in n" :key="i">
+              <button type="button" class="mv-hp-dot" :class="i - 1 === idx && 'is-active'" @click="go(i - 1)"
+                      :aria-label="{{ t('morva.featured_now') | dump }} + ' ' + i"></button>
+            </template>
+          </div>
+          {# DOM order is always [prev, next]; RTL flex flips them visually so
+             "next" lands on the left in Arabic, and the glyphs follow. #}
+          <div class="mv-hp-nav">
+            <button type="button" class="mv-hp-arrow" @click="go(idx - 1)" :disabled="idx === 0" aria-label="{{ t('common.prev') }}"><span class="mv-arrow">←</span></button>
+            <button type="button" class="mv-hp-arrow" @click="go(idx + 1)" :disabled="idx >= n - 1" aria-label="{{ t('common.next') }}"><span class="mv-arrow">→</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Row 3 · kinetic strip ── #}
+    <div class="mv-hero-strip">
+      {% set stripText = d.strip_text | default(t('morva.move_fast'), true) %}
+      {% set stripSpeed = d.strip_speed | default(28) %}
+      {% ui "kinetic.njk", text=stripText, speed=stripSpeed %}
+    </div>
+  </div>
+</section>

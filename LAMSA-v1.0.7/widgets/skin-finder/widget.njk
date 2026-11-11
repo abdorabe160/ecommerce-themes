@@ -1,0 +1,381 @@
+{# ============================================================================
+   LAMSA SKIN FINDER — "shop by skin type / concern"
+   The homepage entry point into the same taxonomy the header mega menu uses.
+   Three layouts:
+     cards   image + label + description   (needs photos)
+     tiles   tinted icon tile + label      (works with zero photos)
+     pills   compact scrollable chip rail  (great as a strip under the hero)
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([]) %}
+{% set count = items | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('cards') %}
+{% set isTiles = layout == 'tiles' %}
+{% set isPills = layout == 'pills' %}
+{% set isCards = layout == 'cards' %}
+
+{% set shape = d.card_shape | default('arch') %}
+{% set bg = d.background | default('white') %}
+{% set cols = d.columns | default('4') %}
+{% set headerAlign = d.header_align | default('center') %}
+{% set isCenter = headerAlign == 'center' %}
+{% set showDesc = d.show_descriptions | default(true) %}
+
+{% set viewAllUrl = d.view_all_url | default('') %}
+{% set viewAllText = d.view_all_text | default(t('common.view_all'), true) %}
+
+{% if bg == 'blush' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'rose' %}{% set bgVal = 'var(--color-accent-light)' %}
+{% elif bg == 'sage' %}{% set bgVal = 'var(--color-sage-light)' %}
+{% else %}{% set bgVal = 'var(--color-surface)' %}{% endif %}
+
+{# Tablet columns follow the card count: four cards in three columns left one
+   alone on the second row. Even counts go two-up, odd counts three-up. #}
+{% set colsMid = 3 if (cols | int) > 3 else (cols | int) %}
+{% if count > colsMid and count % 2 == 0 %}{% set colsMid = 2 %}{% endif %}
+
+
+{# ============================ ICONS ============================ #}
+{% macro icon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true">
+  {% if name == 'droplet' %}
+    <path d="M12 21c4 0 7-3 7-7 0-4.5-4-8-7-11C9 6 5 9.5 5 14c0 4 3 7 7 7Z"/>
+    <path d="M12 17.6c1.9 0 3.4-1.5 3.4-3.4"/>
+  {% elif name == 'leaf' %}
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/>
+    <path d="M2 21c0-3 1.9-5.4 3-7"/>
+  {% elif name == 'half' %}
+    <circle cx="12" cy="12" r="8.75"/>
+    <path d="M12 3.25a8.75 8.75 0 0 0 0 17.5z" fill="currentColor" stroke="none"/>
+  {% elif name == 'shield' %}
+    <path d="M12 3l7.5 3v5.6c0 4.5-3.1 7.3-7.5 8.9-4.4-1.6-7.5-4.4-7.5-8.9V6z"/>
+    <path d="M9 12.2l2.2 2.2 4.3-4.4"/>
+  {% elif name == 'dots' %}
+    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/>
+    <circle cx="15.5" cy="7" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="12.5" r="1.7" fill="currentColor" stroke="none"/>
+    <circle cx="7.5" cy="16" r="1.3" fill="currentColor" stroke="none"/>
+    <circle cx="16.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+  {% elif name == 'sun' %}
+    <circle cx="12" cy="12" r="4.2"/>
+    <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>
+  {% elif name == 'moon' %}
+    <path d="M20.5 14.5A9 9 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"/>
+  {% elif name == 'flame' %}
+    <path d="M12 21c3.3 0 6-2.5 6-5.6 0-3.4-2.6-5.2-3.6-8.4-.9 1.6-2 2.3-2 2.3S11 7 9.5 4.5C8.8 8 6 9.9 6 15.4 6 18.5 8.7 21 12 21Z"/>
+    <path d="M12 21c1.7 0 3-1.2 3-2.8 0-1.7-1.5-2.5-1.8-4.2-.7 1.2-2 1.9-2.6 3.1-.3.6-.4 1-.4 1.4C10.2 20 11 21 12 21Z"/>
+  {% elif name == 'sparkle' %}
+    <path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/>
+    <path d="M18.2 16.2l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z"/>
+  {% else %}
+    <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+
+<style>
+  #lamsa-sf-{{ id }} { background: {{ bgVal }}; }
+
+  .lamsa-sf-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.4vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-sf-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-sf-{{ id }}-title { line-height: 1.34; }
+  .lamsa-sf-{{ id }}-title em { font-style: normal; color: var(--color-accent); }
+  .lamsa-sf-{{ id }}-title p { margin: 0; }
+
+  /* ================= grid ================= */
+  {% if not isPills %}
+  .lamsa-sf-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+  @media (min-width: 768px) {
+    .lamsa-sf-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); gap: 28px 20px; }
+  }
+  @media (min-width: 1024px) {
+    .lamsa-sf-{{ id }}-grid { grid-template-columns: repeat({{ cols }}, minmax(0, 1fr)); gap: 32px 24px; }
+  }
+  {% endif %}
+
+  /* ================= card (image layout) ================= */
+  .lamsa-sf-{{ id }}-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .lamsa-sf-{{ id }}-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+    {% if shape == 'arch' %}
+    aspect-ratio: 4 / 5;
+    border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
+    {% elif shape == 'circle' %}
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    {% else %}
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    {% endif %}
+  }
+  .lamsa-sf-{{ id }}-card:hover .lamsa-sf-{{ id }}-media {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+  .lamsa-sf-{{ id }}-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+  }
+  .lamsa-sf-{{ id }}-card:hover .lamsa-sf-{{ id }}-media img { transform: scale(1.05); }
+
+  /* icon shown inside the media when the block has no photo */
+  .lamsa-sf-{{ id }}-mediaicon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ================= tile (icon layout) ================= */
+  .lamsa-sf-{{ id }}-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 30px 18px;
+    border-radius: var(--radius-lg);
+    transition: box-shadow var(--t-base) var(--ease-soft), transform var(--t-base) var(--ease-out);
+  }
+  .lamsa-sf-{{ id }}-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  @media (max-width: 640px) { .lamsa-sf-{{ id }}-tile { padding: 22px 14px; } }
+
+  .lamsa-sf-{{ id }}-tileicon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-xs);
+  }
+
+  /* ================= text ================= */
+  .lamsa-sf-{{ id }}-label {
+    font-family: var(--font-display-ar);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  html[dir="ltr"] .lamsa-sf-{{ id }}-label { font-family: var(--font-display-en); }
+  a:hover > * > .lamsa-sf-{{ id }}-label,
+  a:hover .lamsa-sf-{{ id }}-label { color: var(--color-accent); }
+
+  .lamsa-sf-{{ id }}-desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  @media (max-width: 640px) {
+    .lamsa-sf-{{ id }}-label { font-size: 0.9375rem; }
+    .lamsa-sf-{{ id }}-desc { font-size: 0.75rem; }
+  }
+
+  /* ================= pills ================= */
+  {% if isPills %}
+  .lamsa-sf-{{ id }}-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 20px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-sf-{{ id }}-pill:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+    color: var(--color-accent-dark);
+  }
+  {% endif %}
+</style>
+
+
+{% if count > 0 %}
+<section id="lamsa-sf-{{ id }}" class="lamsa-section{{ ' lamsa-section--tight' if isPills }}">
+  <div class="lamsa-container">
+
+    {# ═════════════ header ═════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="lamsa-head lamsa-head--center">
+          {% if eyebrow %}
+            <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+          {% endif %}
+          {% if title %}<div class="lamsa-sf-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+          {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+        </div>
+      {% else %}
+        <div class="lamsa-head lamsa-head--split">
+          <div class="min-w-0">
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+            {% endif %}
+            {% if title %}<div class="lamsa-sf-{{ id }}-title lamsa-head-title">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="lamsa-head-desc">{{ desc | safe }}</p>{% endif %}
+          </div>
+          {% if viewAllUrl %}
+            <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm shrink-0 max-sm:hidden">
+              {{ viewAllText }}
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═════════════ PILLS ═════════════ #}
+    {% if isPills %}
+      <div class="lamsa-chip-rail justify-center max-lg:justify-start">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% if c.label %}
+          <a href="{{ c.url | default('/shop') }}" class="lamsa-sf-{{ id }}-pill">
+            {{ icon(c.icon | default('star'), 16) }}
+            <span>{{ c.label }}</span>
+          </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {# ═════════════ TILES ═════════════ #}
+    {% elif isTiles %}
+      <div class="lamsa-sf-{{ id }}-grid reveal reveal-stagger">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% set tint = c.tint | default('rose') %}
+          {% if tint == 'sage' %}{% set tileBg = 'var(--color-sage-light)' %}{% set tileFg = 'var(--color-sage-hover)' %}
+          {% elif tint == 'blush' %}{% set tileBg = 'var(--color-bg-primary)' %}{% set tileFg = 'var(--color-accent)' %}
+          {% elif tint == 'ink' %}{% set tileBg = 'var(--color-bg-tertiary)' %}{% set tileFg = 'var(--color-text-primary)' %}
+          {% else %}{% set tileBg = 'var(--color-accent-light)' %}{% set tileFg = 'var(--color-accent)' %}{% endif %}
+
+          <a href="{{ c.url | default('/shop') }}"
+             class="lamsa-sf-{{ id }}-tile"
+             style="background: {{ tileBg }};">
+            <span class="lamsa-sf-{{ id }}-tileicon" style="color: {{ tileFg }};">
+              {{ icon(c.icon | default('star'), 24) }}
+            </span>
+            <span class="flex flex-col gap-1 min-w-0">
+              {% if c.label %}<span class="lamsa-sf-{{ id }}-label">{{ c.label }}</span>{% endif %}
+              {% if showDesc and c.description %}
+                <p class="lamsa-sf-{{ id }}-desc">{{ c.description }}</p>
+              {% endif %}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+
+    {# ═════════════ CARDS ═════════════ #}
+    {% else %}
+      <div class="lamsa-sf-{{ id }}-grid reveal reveal-stagger">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl else '' %}
+          {% set tint = c.tint | default('rose') %}
+          {% if tint == 'sage' %}{% set wellBg = 'var(--color-sage-light)' %}{% set wellFg = 'var(--color-sage-hover)' %}
+          {% elif tint == 'blush' %}{% set wellBg = 'var(--color-bg-primary)' %}{% set wellFg = 'var(--color-accent)' %}
+          {% elif tint == 'ink' %}{% set wellBg = 'var(--color-bg-tertiary)' %}{% set wellFg = 'var(--color-text-primary)' %}
+          {% else %}{% set wellBg = 'var(--color-accent-light)' %}{% set wellFg = 'var(--color-accent)' %}{% endif %}
+
+          <a href="{{ c.url | default('/shop') }}" class="lamsa-sf-{{ id }}-card">
+            <div class="lamsa-sf-{{ id }}-media" style="background: {{ wellBg }};">
+              {% if img %}
+                <img src="{{ img }}" alt="{{ c.label }}" loading="lazy"/>
+              {% else %}
+                <img src="{{ ['lamsa-ph-hero-3.jpg', 'lamsa-ph-amber.jpg', 'lamsa-ph-bottle.jpg', 'lamsa-ph-routine.jpg'][loop.index0 % 4] | assets }}" alt="{{ c.label }}" loading="lazy"/>
+              {% endif %}
+            </div>
+
+            <span class="flex flex-col gap-1.5 min-w-0">
+              {% if c.label %}<span class="lamsa-sf-{{ id }}-label">{{ c.label }}</span>{% endif %}
+              {% if showDesc and c.description %}
+                <p class="lamsa-sf-{{ id }}-desc">{{ c.description }}</p>
+              {% endif %}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ view all — centered header or mobile ═════════════ #}
+    {% if viewAllUrl and not isPills %}
+      <div class="text-center mt-12 max-sm:mt-8 {{ '' if isCenter else 'sm:hidden' }}">
+        <a href="{{ viewAllUrl }}" class="lamsa-btn lamsa-btn--outline">
+          {{ viewAllText }}
+          <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section id="lamsa-sf-{{ id }}" class="lamsa-section" data-lamsa-empty>
+    <div class="lamsa-container">
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8.75"/>
+            <path d="M12 3.25a8.75 8.75 0 0 0 0 17.5z" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('skin.empty_title') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('skin.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}

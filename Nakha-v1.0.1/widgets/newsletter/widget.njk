@@ -1,0 +1,353 @@
+{# ============================================================================
+   NAKHA NEWSLETTER — drop & restock alerts
+   ----------------------------------------------------------------------------
+   Three layouts: card (inset) · full (edge-to-edge strip) · split (image + form).
+
+   ⚠️  Submission uses a NATIVE form POST, not fetch(): Mailchimp / Klaviyo /
+   Google Forms don't send CORS headers, so a fetch() would always fail
+   silently. Posting to a new tab keeps the shopper on the store and lets us
+   flip an optimistic success state — the usual pattern for hosted lists.
+
+   If `action_url` is empty the form is NOT rendered; the section shows a setup
+   hint instead, so a half-configured block never looks live to a customer.
+
+   The field is the shared .nakha-searchbar primitive — input and submit fused
+   into one control. Two separate pills read as two decisions, and the header
+   search already taught the shopper what this shape does.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set action = d.action_url | default('') %}
+{% set emailField = d.email_field_name | default('EMAIL', true) %}
+{% set newTab = d.open_in_new_tab | default(true) %}
+
+{% set layout = d.layout | default('card', true) %}
+{% set isFull = layout == 'full' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('void', true) %}
+{% set showMotif = d.show_speed_motif | default(true) %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{# Out of the box: a bundled demo photo until the merchant picks one (docs/demo-images.md) #}
+{% if not img %}{% set img = 'demo-newsletter.jpg' | assets %}{% endif %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.stay_updated'), true) %}
+{% set title = d.title | default(t('newsletter.title'), true) %}
+{% set subtitle = d.subtitle | default('') %}
+
+{% set placeholder = d.placeholder | default(t('newsletter.placeholder'), true) %}
+{% set btnRaw = d.button_text | default(t('newsletter.button'), true) %}
+{% if btnRaw %}{% set btnText = btnRaw %}{% else %}{% set btnText = t('common.subscribe') %}{% endif %}
+{% set okRaw = d.success_message | default(t('newsletter.success'), true) %}
+{% if okRaw %}{% set successMsg = okRaw %}{% else %}{% set successMsg = t('newsletter.success') %}{% endif %}
+
+{% set showConsent = d.show_consent | default(false) %}
+{% set showNote = d.show_note | default(false) %}
+{% set noteText = d.note_text | default(t('newsletter.privacy'), true) %}
+
+{% set align = d.text_alignment | default('center', true) %}
+{% set isCenter = align == 'center' and not isSplit %}
+
+{# ---- background ---- #}
+{% set isFlame = bg == 'appetite' %}
+{# `void` and `dark` are the same answer — a charcoal band. Both MUST set
+   isDark, because that is what adds .nakha-invert; a charcoal ground without
+   it is dark text on a dark panel. #}
+{% set isDark = bg == 'dark' or bg == 'void' %}
+{% if isFlame %}{% set bgVal = 'var(--color-appetite-solid)' %}
+{% elif bg == 'canvas' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif isDark %}{% set bgVal = 'var(--color-char)' %}
+{% else %}{% set bgVal = 'var(--color-char)' %}{% endif %}
+
+
+<style>
+  /* ================= panel ================= */
+  .nakha-nl-{{ id }}-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: {{ bgVal }};
+    {% if isSplit %}
+    padding: 0;
+    {% else %}
+    padding-block: 56px;
+    padding-inline: clamp(20px, 4vw, 52px);
+    {% endif %}
+    {% if not isFull %}border-radius: var(--radius-card);{% endif %}
+    {% if not isFlame %}border: 1px solid var(--color-border);{% endif %}
+  }
+  @media (max-width: 767px) {
+    .nakha-nl-{{ id }}-panel { {% if not isSplit %}padding-block: 38px; padding-inline: 20px;{% endif %} }
+  }
+
+  {% if isFlame %}
+  /* Token overrides for the panel, so the shared primitives invert themselves
+     instead of being repainted one by one. */
+  .nakha-nl-{{ id }}-panel {
+    --color-text-primary: var(--color-cream);
+    --color-text-secondary: rgba(255, 247, 239, 0.84);
+    --color-text-tertiary: rgba(255, 247, 239, 0.68);
+    --color-border: rgba(255, 247, 239, 0.28);
+    --color-border-strong: rgba(255, 247, 239, 0.5);
+    /* the APPETITE tokens — every primitive in the panel reads these, so
+       overriding the legacy --color-flame name did nothing at all */
+    --color-appetite: var(--color-cream);
+    --color-appetite-ink: var(--color-cream);
+    --color-appetite-wash: rgba(255, 247, 239, 0.14);
+    --color-appetite-line: rgba(255, 247, 239, 0.34);
+  }
+
+  /* red-on-red: the <em> highlight cannot ride the brand token on the brand
+     band. Same deep cocoa the CTA banner uses — see the note there. */
+  .nakha-nl-{{ id }}-panel .nakha-h2 em,
+  .nakha-nl-{{ id }}-panel .nakha-h2 i { font-style: normal; color: #241410; }
+  {% endif %}
+
+  {% if showMotif and (isFlame or bg == 'void') %}
+  /* speed lines — the brand motif, on the dark and flame panels only */
+  .nakha-nl-{{ id }}-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      115deg, rgba(255, 247, 239, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  html[dir="rtl"] .nakha-nl-{{ id }}-panel::before {
+    background-image: repeating-linear-gradient(
+      65deg, rgba(255, 247, 239, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  {% endif %}
+
+  /* ================= split row ================= */
+  .nakha-nl-{{ id }}-row {
+    display: grid;
+    align-items: center;
+    {% if isSplit %}grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); gap: 0;{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+    {% if isFull %}
+    /* the panel runs edge to edge, so the CONTENT is what gets constrained —
+       nesting a second .nakha-container inside would double the side padding */
+    max-width: var(--container-max);
+    margin-inline: auto;
+    {% endif %}
+  }
+  @media (max-width: 1023px) {
+    .nakha-nl-{{ id }}-row { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .nakha-nl-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--color-media);
+  }
+  .nakha-nl-{{ id }}-media img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 1023px) {
+    .nakha-nl-{{ id }}-media { aspect-ratio: 16 / 9; }
+  }
+
+  {% if isSplit %}
+  .nakha-nl-{{ id }}-content { padding: 44px; }
+  @media (max-width: 767px) {
+    .nakha-nl-{{ id }}-content { padding: 30px 20px; }
+  }
+  {% endif %}
+
+  /* ================= content ================= */
+  .nakha-nl-{{ id }}-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    {% if isCenter %}align-items: center; text-align: center;{% else %}align-items: flex-start;{% endif %}
+  }
+
+  .nakha-nl-{{ id }}-sub {
+    margin: 0;
+    max-width: 52ch;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+  }
+
+  /* ================= form ================= */
+  .nakha-nl-{{ id }}-form {
+    position: relative;
+    width: 100%;
+    max-width: 470px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+  }
+
+  /* The shared searchbar sits on the page's well colour; inside a dark or flame
+     panel that disappears, so the field gets the raised surface instead. */
+  .nakha-nl-{{ id }}-form .nakha-searchbar {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border-strong);
+  }
+  {% if isFlame %}
+  /* Red-on-red would erase the button, so the field inverts to the char.
+     NOT --color-media: that token was true black in the theme this came from
+     and is WHITE here (it is the plate colour behind food photos), which made
+     the input text white on a cream field and the submit white-on-cream —
+     both invisible. The dark end of this palette is --color-char. */
+  .nakha-nl-{{ id }}-form .nakha-searchbar { background: rgba(255, 247, 239, 0.94); border-color: transparent; }
+  .nakha-nl-{{ id }}-form .nakha-searchbar-input { color: var(--color-char); }
+  .nakha-nl-{{ id }}-form .nakha-searchbar-input::placeholder { color: rgba(44, 42, 40, 0.55); }
+  .nakha-nl-{{ id }}-form .nakha-searchbar-submit { background: var(--color-char); color: var(--color-cream); }
+  .nakha-nl-{{ id }}-form .nakha-searchbar-submit:hover { background: var(--color-char-soft); }
+  {% endif %}
+
+  .nakha-nl-{{ id }}-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+  }
+  .nakha-nl-{{ id }}-consent input { margin-top: 2px; accent-color: var(--color-appetite); flex: none; }
+
+  .nakha-nl-{{ id }}-note {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .nakha-nl-{{ id }}-ok {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 18px;
+    border: 1px solid var(--color-basil);
+    border-radius: var(--radius-input);
+    background: var(--color-basil-wash);
+    color: var(--color-basil);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  {% if isFlame %}
+  .nakha-nl-{{ id }}-ok {
+    border-color: rgba(255, 247, 239, 0.4);
+    background: rgba(255, 247, 239, 0.16);
+    color: #FFFFFF;
+  }
+  {% endif %}
+
+  .nakha-nl-{{ id }}-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: var(--radius-input);
+    border: 1px dashed var(--color-border-strong);
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+  }
+</style>
+
+
+<section id="nakha-nl-{{ id }}"{% if not action %} data-nakha-demo{% endif %} class="{{ 'nakha-section' if not isFull }} {{ 'nakha-invert' if isDark }}">
+  <div class="{{ 'nakha-container' if not isFull }}">
+    <div class="nakha-nl-{{ id }}-panel">
+      <div class="nakha-nl-{{ id }}-row">
+
+        {# ═══════════════ image (split only) ═══════════════ #}
+        {% if isSplit %}
+          <div class="nakha-nl-{{ id }}-media">
+            {% if img %}
+              <img src="{{ img }}" alt="{{ title | default('', true) | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# ═══════════════ content ═══════════════ #}
+        <div class="nakha-nl-{{ id }}-content" x-data="{ sent: false }">
+
+            {% if eyebrow %}
+              <span class="nakha-eyebrow {{ 'nakha-eyebrow--light' if isFlame }}">{{ eyebrow }}</span>
+            {% endif %}
+
+            {% if title %}<div class="nakha-h2">{{ title | safe }}</div>{% endif %}
+            {% if subtitle %}<p class="nakha-nl-{{ id }}-sub">{{ subtitle | safe }}</p>{% endif %}
+
+            {% if action %}
+              {# ---------- success ---------- #}
+              <div class="nakha-nl-{{ id }}-ok" x-show="sent" x-cloak
+                   x-transition:enter="transition ease-out duration-200"
+                   x-transition:enter-start="opacity-0 scale-95"
+                   x-transition:enter-end="opacity-100 scale-100">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12.5 9.5 18 20 6.5"/>
+                </svg>
+                <span>{{ successMsg }}</span>
+              </div>
+
+              {# ---------- form ---------- #}
+              <form class="nakha-nl-{{ id }}-form"
+                    action="{{ action }}"
+                    method="post"
+                    {% if newTab %}target="_blank" rel="noopener"{% endif %}
+                    x-show="!sent"
+                    @submit="{% if newTab %}sent = true{% endif %}">
+
+                <div class="nakha-searchbar">
+                  <input type="email"
+                         class="nakha-searchbar-input"
+                         name="{{ emailField }}"
+                         required
+                         autocomplete="email"
+                         placeholder="{{ placeholder }}"
+                         aria-label="{{ t('common.email') }}"/>
+                  <button type="submit" class="nakha-searchbar-submit">{{ btnText }}</button>
+                </div>
+
+                {# bots fill hidden fields; humans never see this one #}
+                <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                  <label>
+                    <span>Leave this field empty</span>
+                    <input type="text" name="nakha_hp" tabindex="-1" autocomplete="off"/>
+                  </label>
+                </div>
+
+                {% if showConsent %}
+                  <label class="nakha-nl-{{ id }}-consent">
+                    <input type="checkbox" name="consent" value="yes" required/>
+                    <span>{{ t('newsletter.consent') }}</span>
+                  </label>
+                {% endif %}
+              </form>
+            {% else %}
+              {# ---------- not configured yet — editor only ---------- #}
+              <span class="nakha-nl-{{ id }}-hint">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 8.2v4.4M12 15.9h.01"/>
+                </svg>
+                {{ t('newsletter.setup_hint') }}
+              </span>
+            {% endif %}
+
+            {% if showNote and noteText %}
+              <span class="nakha-nl-{{ id }}-note">{{ noteText }}</span>
+            {% endif %}
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-nl-' ~ id, c=d %}

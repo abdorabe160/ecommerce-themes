@@ -1,0 +1,78 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+<section class="lg-section !pt-6">
+  <div class="lg-container">
+    <h1 class="lg-title !text-2xl md:!text-3xl mb-5">
+      {{t('cart.title')}} <span class="text-base font-medium text-muted" x-show="cartCount > 0" x-text="'(' + cartCount + ')'"></span>
+    </h1>
+
+    {# فارغة — بدون زر إتمام الطلب (CART-02) #}
+    <div x-show="!cartItems.length" {% if cart.items and cart.items | length %}x-cloak{% endif %}>
+      {% ui "empty.njk", icon="cart", title=t('cart.empty'), text=t('cart.empty_message'), url="/", button=t('cart.shop_now') %}
+    </div>
+
+    <div x-show="cartItems.length" {% if not (cart.items and cart.items | length) %}x-cloak{% endif %} class="grid gap-6 lg:grid-cols-[1fr_360px] items-start">
+      {# العناصر — كروت على كل المقاسات (RSP-02) #}
+      <ul class="space-y-3">
+        <template x-for="item in cartItems" :key="item._id">
+          <li class="glass p-3 md:p-4 flex gap-3 md:gap-4" :class="isBusy('item:' + item._id) && 'is-loading'">
+            <a :href="itemUrl(item)" class="shrink-0 w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-white/60 grid place-items-center overflow-hidden">
+              <img x-show="itemImage(item)" :src="itemImage(item)" :alt="itemTitle(item)" class="w-full h-full object-contain p-2" width="112" height="112" loading="lazy">
+            </a>
+            <div class="flex-1 min-w-0 flex flex-col gap-1">
+              <div class="flex items-start justify-between gap-2">
+                <a :href="itemUrl(item)" class="font-semibold leading-snug line-clamp-2 min-h-[44px] hover:text-primary" x-text="itemTitle(item)"></a>
+                <button type="button" class="shrink-0 w-11 h-11 -mt-2 -me-2 grid place-items-center rounded-full text-muted hover:text-[color:var(--color-danger)]" @click="removeItem(item)" :aria-label="{{ t('cart.remove') | dump | escape }} + ': ' + itemTitle(item)">
+                  {% ui "icon.njk", name="trash", cls="w-[18px] h-[18px]" %}
+                </button>
+              </div>
+              <p class="text-xs text-muted" x-show="itemOptions(item)" x-text="itemOptions(item)"></p>
+              <p class="text-sm">
+                <span x-text="formatMoney(item.price)"></span>
+                <span class="lg-price--old ms-1" x-show="item.compareAtPrice > item.price" x-text="formatMoney(item.compareAtPrice)"></span>
+              </p>
+              <p class="lg-alert !py-1.5 !text-xs" x-show="itemUnavailable(item)" x-cloak>{{t('product.out_of_stock')}}</p>
+              <p class="lg-alert !py-1.5 !text-xs" x-show="itemOver(item)" x-cloak x-text="itemOverText(item)"></p>
+              <div class="flex flex-wrap items-center justify-between gap-2 mt-auto pt-1">
+                <div class="lg-qty lg-qty--sm">
+                  <button type="button" @click="updateItem(item, item.quantity - 1)" aria-label="{{t('common.decrease_quantity')}}">{% ui "icon.njk", name="minus", cls="w-3.5 h-3.5" %}</button>
+                  <span x-text="item.quantity" aria-live="polite"></span>
+                  <button type="button" @click="updateItem(item, item.quantity + 1)" :disabled="item.quantity >= itemMax(item)" aria-label="{{t('common.increase_quantity')}}">{% ui "icon.njk", name="plus", cls="w-3.5 h-3.5" %}</button>
+                </div>
+                <span class="font-bold" x-text="formatMoney(item.totalPrice != null ? item.totalPrice : item.price * item.quantity)"></span>
+              </div>
+            </div>
+          </li>
+        </template>
+      </ul>
+
+      {# الملخص (CART-09) #}
+      <aside class="glass p-5 space-y-3 lg:sticky lg:top-[calc(var(--header-h)+24px)]" aria-label="{{t('cart.order_summary')}}">
+        <h2 class="font-semibold text-lg">{{t('cart.order_summary')}}</h2>
+        <div class="flex justify-between text-sm">
+          <span class="text-muted">{{t('cart.subtotal')}}</span>
+          <span x-text="formatMoney(cartSubtotal)"></span>
+        </div>
+        <div class="flex justify-between text-sm" x-show="cart.couponApplied && cart.couponDiscount > 0" x-cloak>
+          <span class="text-muted">{{t('cart.discount')}}</span>
+          <span class="lg-save" x-text="'- ' + formatMoney(cart.couponDiscount)"></span>
+        </div>
+        <div class="lg-divider"></div>
+        <div class="flex justify-between items-baseline">
+          <span class="font-semibold">{{t('cart.total')}}</span>
+          <span class="text-xl font-bold" x-text="formatMoney(Math.max(0, cart.totalPrice || 0))"></span>
+        </div>
+        {% ui "ship-meter.njk" %}
+        <p class="text-xs text-muted">{{t('cart.shipping_note')}}</p>
+        <button type="button" class="btn btn-primary btn-block !min-h-[52px]" @click="checkout()" :disabled="cartBlocked || isBusy('checkout')">
+          <span x-show="!isBusy('checkout')">{% ui "icon.njk", name="lock", cls="w-4 h-4 inline" %} {{t('cart.checkout')}}</span>
+          <span x-show="isBusy('checkout')" x-cloak class="lg-spinner"></span>
+        </button>
+        <a href="/" class="btn btn-glass btn-block">{{t('cart.continue_shopping')}}</a>
+        {% if (wd['note' + L] or wd.note) %}<div class="text-xs text-muted lg-prose">{{ (wd['note' + L] or wd.note) | safe }}</div>{% endif %}
+      </aside>
+    </div>
+  </div>
+</section>

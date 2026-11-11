@@ -1,0 +1,103 @@
+{
+    "title": "Header Group",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "الهيدر الرئيسي",
+            "widget": "header",
+            "settings": {
+                "topbar_enabled": true,
+                "topbar_message": "",
+                "topbar_message_url": "",
+                "topbar_menu": "header-menu",
+                "topbar_show_locale": true,
+                "topbar_bg": "",
+                "topbar_text": "",
+                "social_facebook": "",
+                "social_instagram": "",
+                "social_x": "",
+                "social_tiktok": "",
+                "social_youtube": "",
+                "social_whatsapp": "",
+                "logo_height": 30,
+                "wordmark_weight": "800",
+                "sticky": true,
+                "sticky_mode": "compact",
+                "show_search": true,
+                "search_scope_enabled": true,
+                "search_live": true,
+                "show_cart": true,
+                "cart_style": "circle",
+                "nav_enabled": true,
+                "nav_align": "start",
+                "nav_extra_menu": "",
+                "colors_enabled": false
+            },
+            "blocks": [
+                {
+                    "block": "nav_item",
+                    "name": "تسوّق حسب التصنيف",
+                    "settings": {
+                        "nav_label": "تسوّق حسب التصنيف",
+                        "nav_url": "/collections",
+                        "nav_menu": "header-menu",
+                        "nav_columns": "2"
+                    }
+                },
+                {
+                    "block": "nav_item",
+                    "name": "تسوّق حسب الغرفة",
+                    "settings": {
+                        "nav_label": "تسوّق حسب الغرفة",
+                        "nav_url": "/shop",
+                        "nav_menu": "header-menu",
+                        "nav_columns": "2"
+                    }
+                },
+                {
+                    "block": "nav_item",
+                    "name": "الطاولات والمكاتب",
+                    "settings": {
+                        "nav_label": "الطاولات والمكاتب",
+                        "nav_url": "/shop",
+                        "nav_menu": "header-menu",
+                        "nav_columns": "1"
+                    }
+                },
+                {
+                    "block": "nav_item",
+                    "name": "الكراسي",
+                    "settings": {
+                        "nav_label": "الكراسي",
+                        "nav_url": "/shop",
+                        "nav_menu": "header-menu",
+                        "nav_columns": "1"
+                    }
+                },
+                {
+                    "block": "nav_item",
+                    "name": "المدونة",
+                    "settings": {
+                        "nav_label": "المدونة",
+                        "nav_url": "/blogs",
+                        "nav_menu": "",
+                        "nav_columns": "1"
+                    }
+                },
+                {
+                    "block": "nav_item",
+                    "name": "التخفيضات",
+                    "settings": {
+                        "nav_label": "التخفيضات",
+                        "nav_url": "/shop",
+                        "nav_menu": "",
+                        "nav_columns": "1",
+                        "nav_highlight": true
+                    }
+                }
+            ]
+        }
+    ]
+}

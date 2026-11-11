@@ -1,0 +1,28 @@
+{# ويدجت صورة (صفحة المنتج أو أي صفحة): صورة يرفعها التاجر من البيلدر، مع صورة اختيارية للموبايل ورابط اختياري.
+   بدون صورة: القسم مخفي للعملاء، وتلميح للتاجر في المعاينة فقط #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set img = wd.image.fileUrl if (wd.image and wd.image.fileUrl) else '' %}
+{% set imgM = wd.image_mobile.fileUrl if (wd.image_mobile and wd.image_mobile.fileUrl) else '' %}
+{% set src = img or imgM %}
+{% set full = wd.width == 'full' %}
+{% set rounded = wd.rounded != false and not full %}
+{% set alt = (wd['alt' + L] or wd.alt) | default('') %}
+{% set media = wd.image if img else wd.image_mobile %}
+{% if src %}
+<section class="lg-section">
+  <div class="{{ 'lg-image-full' if full else 'lg-container' }}">
+    {% set Tag = 'a' if wd.url else 'div' %}
+    <{{ Tag }} {% if wd.url %}href="{{ wd.url }}"{% endif %} class="lg-image-banner{% if rounded %} is-rounded{% endif %}">
+      <picture>
+        {% if img and imgM and imgM != img %}<source media="(max-width: 767px)" srcset="{{ imgM }}">{% endif %}
+        <img src="{{ src }}" alt="{{ alt }}" loading="lazy" decoding="async"{% if media.width and media.height %} width="{{ media.width }}" height="{{ media.height }}"{% endif %}>
+      </picture>
+    </{{ Tag }}>
+  </div>
+</section>
+{% else %}
+<section class="lg-section" x-data="{ hint: !!(window.LiquidGlass && LiquidGlass.isPreview && LiquidGlass.isPreview()) }" x-show="hint" x-cloak>
+  <div class="lg-container"><p class="lg-editor-hint">{{ t('preview.pick_image') }}</p></div>
+</section>
+{% endif %}

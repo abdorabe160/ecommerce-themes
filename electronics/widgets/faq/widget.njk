@@ -1,0 +1,28 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set blocks = widget.blocks | default([]) %}
+{% if blocks | length %}
+<section class="lg-section">
+  <div class="lg-container grid gap-6 lg:grid-cols-[1fr_2fr]">
+    <div class="space-y-2">
+      {% if (wd['title' + L] or wd.title) %}<h2 class="lg-title">{{ (wd['title' + L] or wd.title) }}</h2>{% endif %}
+      {% if (wd['text' + L] or wd.text) %}<p class="text-muted">{{ (wd['text' + L] or wd.text) | safe }}</p>{% endif %}
+    </div>
+    <div class="space-y-3">
+      {% for block in blocks %}
+        <details class="lg-acc glass" {% if loop.first %}open{% endif %}>
+          <summary class="flex items-center justify-between gap-4 p-5 font-semibold">
+            <span>{{ (block.settings['question' + L] or block.settings.question) }}</span>
+            <span class="lg-acc__icon shrink-0 w-8 h-8 rounded-full grid place-items-center bg-white/60 text-primary">
+              {% ui "icon.njk", name="plus", cls="w-4 h-4" %}
+            </span>
+          </summary>
+          <div class="px-5 pb-5 lg-prose">{{ (block.settings['answer' + L] or block.settings.answer) | safe }}</div>
+        </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,31 @@
+{
+  "name": "صفحة المجموعة",
+  "settings": {
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "أعمدة المنتجات على الشاشات الكبيرة",
+        "en": "Product columns on desktop"
+      },
+      "default": "4",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ]
+    },
+    "show_price_filter": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار تصفية السعر",
+        "en": "Show price filter"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "المتجر",
+      "name": "شبكة المنتجات والتصفية"
+    }
+  ]
+}

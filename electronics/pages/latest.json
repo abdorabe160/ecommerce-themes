@@ -1,0 +1,17 @@
+{
+  "layout": "layout",
+  "name": "أحدث المنتجات",
+  "title": "أحدث المنتجات",
+  "widgets": [
+    {
+      "name": "أحدث المنتجات",
+      "widget": "collection-products",
+      "settings": {
+        "show_header": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns": "4"
+      }
+    }
+  ]
+}

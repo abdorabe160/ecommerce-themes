@@ -1,0 +1,21 @@
+{% set items = wishlist.products | default([]) %}
+<section class="lg-section !pt-6">
+  <div class="lg-container">
+    <h1 class="lg-title !text-2xl md:!text-3xl mb-5">{{t('wishlist.title')}} {% if items | length %}<span class="text-base text-muted font-medium">({{ items | length }})</span>{% endif %}</h1>
+    {% if items | length %}
+      <div class="lg-grid" data-cols="4">
+        {% for item in items %}
+          {# يختفي الكارت فور إزالته من المفضلة #}
+          <div x-data x-show="isWished('{{ item._id }}')" x-transition.opacity>
+            {% ui "product-card.njk", product=item %}
+          </div>
+        {% endfor %}
+      </div>
+      <div x-show="wishCount === 0" x-cloak class="mt-6">
+        {% ui "empty.njk", icon="heart", title=t('wishlist.empty'), text=t('wishlist.empty_message'), url="/", button=t('cart.shop_now') %}
+      </div>
+    {% else %}
+      {% ui "empty.njk", icon="heart", title=t('wishlist.empty'), text=t('wishlist.empty_message'), url="/", button=t('cart.shop_now') %}
+    {% endif %}
+  </div>
+</section>

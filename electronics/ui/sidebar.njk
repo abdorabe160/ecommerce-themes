@@ -1,0 +1,127 @@
+{# قائمة الموبايل الجانبية — تُستدعى من widgets/header:
+   {% ui "sidebar.njk", menu=…, cols=…, cats='on'|'off', shop='on'|'off' %}
+   cols = تصنيفات القائمة المختارة؛ بدونها تصنيفات توضيحية في المعاينة فقط (lgAutoCollections).
+   ملاحظة: الوسم ui يُسقط المعاملات التي قيمتها true، لذلك المفاتيح نصوص وليست boolean. #}
+{% set showCats = data.cats == 'on' %}
+{# أسماء الروابط المعروفة بالإنجليزية — قوائم المتجر بلغة واحدة من لوحة التحكم #}
+{% set isEn = localization.language == 'en' %}
+{% set routeNames = { '/': t('common.home'), '/collections': t('header.categories'), '/shop': t('nav.shop'), '/latest': t('nav.latest'), '/cart': t('header.cart'), '/wishlist': t('header.wishlist'), '/search': t('header.search') } %}
+{% set catsInMenu = [] %}
+{% set homeInMenu = [] %}
+{% for item in data.menu | default([]) %}
+  {# رابط /collections موجود في قائمة المتجر (بقائمة فرعية أو بدونها)؟ لا نضيف "التصنيفات" مرة ثانية #}
+  {% if item.url == '/collections' %}{% if catsInMenu.push(item) %}{% endif %}{% endif %}
+  {# رابط الرئيسية موجود في قائمة المتجر؟ لا نضيف رابط الثيم حتى لا يتكرر #}
+  {% if item.url == '/' or item.url == '' %}{% if homeInMenu.push(item) %}{% endif %}{% endif %}
+{% endfor %}
+{% macro catsSide(label, cols) %}
+  {% set demo = not (cols | length) %}
+  <li x-data="{ open: false{% if demo %}, ...lgAutoCollections(){% endif %} }">
+    <button type="button" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-black/5" @click="open = !open" :aria-expanded="open">
+      <span>{{ label }}</span>
+      <span class="transition-transform" :class="open && 'rotate-180'">{% ui "icon.njk", name="chevron-down", cls="w-4 h-4" %}</span>
+    </button>
+    <ul x-show="open" x-transition.opacity class="ps-4 pb-2 space-y-1">
+      <li><a href="/collections" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{t('collection.all_collections')}}</a></li>
+      {% for c in cols %}
+        <li><a href="/collections/{{ c.handle or c.slug }}" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{ c.title }}</a></li>
+      {% else %}
+        <template x-for="c in items" :key="c._id">
+          <li><a :href="collectionUrl(c)" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]" x-text="c.title"></a></li>
+        </template>
+      {% endfor %}
+    </ul>
+  </li>
+{% endmacro %}
+<div x-cloak x-show="isOpen('sidebar')" class="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="{{t('header.menu')}}">
+  <div class="lg-overlay" @click="closeModal()"
+       x-show="isOpen('sidebar')"
+       x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"></div>
+
+  <aside class="lg-drawer lg-drawer--start glass"
+         x-show="isOpen('sidebar')"
+         x-transition:enter="lg-win-enter" x-transition:enter-start="lg-win-from lg-win-from--start" x-transition:enter-end="lg-win-to">
+    <div class="flex items-center justify-between p-5 pb-4">
+      <a href="/" class="font-bold text-lg min-w-0 truncate" style="line-height: 44px">
+        {% if store.logo and store.logo.fileUrl %}
+          <img src="{{ store.logo.fileUrl }}" alt="{{ store.name }}" loading="lazy" decoding="async" class="h-8 w-auto">
+        {% else %}
+          <span class="lg-gradient-text block truncate">{{ store.name }}</span>
+        {% endif %}
+      </a>
+      <button type="button" class="btn btn-glass btn-icon" @click="closeModal()" aria-label="{{t('common.close')}}">
+        {% ui "icon.njk", name="close" %}
+      </button>
+    </div>
+    <div class="lg-divider mx-5"></div>
+
+    <nav class="flex-1 lg-scroll p-4">
+      <ul class="space-y-1">
+        {% if not (homeInMenu | length) %}
+          <li>
+            <a href="/" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-black/5">{{t('common.home')}}</a>
+          </li>
+        {% endif %}
+        {% if data.shop == 'on' %}
+          <li>
+            <a href="/shop" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-black/5">
+              {{t('nav.shop')}}
+              {% ui "icon.njk", name="chevron", cls="w-4 h-4 text-muted lg-flip-rtl" %}
+            </a>
+          </li>
+        {% endif %}
+        {% if showCats and not (catsInMenu | length) %}{{ catsSide(t('header.categories'), data.cols | default([])) }}{% endif %}
+        {% for item in data.menu | default([]) %}
+          {% set children = item.children or item.items or [] %}
+          {% if showCats and item.url == '/collections' and not (children | length) %}
+            {{ catsSide((routeNames[item.url] if (isEn and routeNames[item.url]) else item.title), data.cols | default([])) }}
+          {% else %}
+          <li x-data="{ open: false }">
+            {% if children | length %}
+              <button type="button" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-black/5" @click="open = !open" :aria-expanded="open">
+                <span>{{ (routeNames[item.url] if (isEn and routeNames[item.url]) else item.title) }}</span>
+                <span class="transition-transform" :class="open && 'rotate-180'">{% ui "icon.njk", name="chevron-down", cls="w-4 h-4" %}</span>
+              </button>
+              <ul x-show="open" x-transition.opacity class="ps-4 pb-2 space-y-1">
+                <li><a href="{{ item.url | default('#') }}" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{t('common.view_all')}}</a></li>
+                {% for child in children %}
+                  {% set grand = child.children or child.items or [] %}
+                  {% if grand | length %}
+                    {# المستوى الثالث (GEN-09/GEN-10): أكورديون داخل الأكورديون #}
+                    <li x-data="{ sub: false }">
+                      <button type="button" class="w-full flex items-center justify-between px-4 py-2 min-h-[44px] rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]" @click="sub = !sub" :aria-expanded="sub">
+                        <span>{{ (routeNames[child.url] if (isEn and routeNames[child.url]) else child.title) }}</span>
+                        <span class="transition-transform" :class="sub && 'rotate-180'">{% ui "icon.njk", name="chevron-down", cls="w-3.5 h-3.5" %}</span>
+                      </button>
+                      <ul x-show="sub" x-transition.opacity class="ps-4 pb-1 space-y-1">
+                        <li><a href="{{ child.url | default('#') }}" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{t('common.view_all')}}</a></li>
+                        {% for g in grand %}
+                          <li><a href="{{ g.url | default('#') }}" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{ (routeNames[g.url] if (isEn and routeNames[g.url]) else g.title) }}</a></li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                  {% else %}
+                  <li><a href="{{ child.url | default('#') }}" class="block px-4 py-2 rounded-xl text-sm text-muted hover:text-[color:var(--color-text)]">{{ (routeNames[child.url] if (isEn and routeNames[child.url]) else child.title) }}</a></li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% else %}
+              <a href="{{ item.url | default('#') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-black/5">
+                {{ (routeNames[item.url] if (isEn and routeNames[item.url]) else item.title) }}
+                {% ui "icon.njk", name="chevron", cls="w-4 h-4 text-muted lg-flip-rtl" %}
+              </a>
+            {% endif %}
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+
+    {# مبدّل اللغة + الوضع الداكن (الموبايل) — زر الوضع في الهيدر يظهر من md فقط #}
+    <div class="p-4 border-t border-[color:var(--color-border)] lg:hidden flex gap-2">
+      <div class="flex-1 min-w-0">{% ui "lang-switch.njk", cls="btn btn-glass btn-block" %}</div>
+      {% if data.currency != 'off' %}{% ui "currency-switch.njk", list=data.currencies, cls="lg-currency--side" %}{% endif %}
+      {% ui "scheme-toggle.njk", cls="btn btn-glass btn-icon shrink-0 md:hidden" %}
+    </div>
+  </aside>
+</div>

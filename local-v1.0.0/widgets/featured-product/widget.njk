@@ -1,0 +1,400 @@
+{# ============================================================================
+   LOCAL · FEATURED PRODUCT — منتج مميز
+   ----------------------------------------------------------------------------
+     ┌──────────────────────┐   ٤٫٩٩  ٦٫٠٠
+     │                  ⊕   │   Keto Crunch
+     │       picture        │   ★★★★½ (9)
+     │                      │   description (clamped)…
+     └──────────────────────┘   Style: ( Student Mix ) ( Smart Mix )
+          ‹  ▬▬  •  ›           ٤٫٩٩   ٦٫٠٠ / وفّرت ١٫٠١
+                                ──────────────────────────────────────
+                                (−) 1 (+)  [  Add to cart  ] ( Buy now )
+
+   ── Where the data comes from ──
+   The `product` picker gives the gallery, name, price, rating and (usually)
+   the description — all printed server-side, so the section is complete on
+   first paint. Options and variants are NOT trusted from the picker payload:
+   the full product is fetched from /ajax/product and handed to LocalVariants
+   (assets/main.js), the SAME engine the product page and the quick view run.
+   It refuses to add until every option is chosen, strikes out sold-out
+   values, and caps the quantity against stock minus what is in the cart.
+
+   Until that fetch lands, the component carries stubs that read the picker's
+   own figures, so nothing is undefined and the button already works for a
+   product without options.
+
+   ── Dropped from the reference ──
+   Allergens and Nutri-Score: Qumra has no such fields.
+
+   Styling: assets/style.css → "15.5.6 FEATURED PRODUCT · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{# The picker may hand back the product or a one-item list. #}
+{% set p = d.product %}
+{% set p = p[0] if p and p.length is defined and p.length > 0 and not p.title else p %}
+
+{% set side = d.image_position | default('start') %}
+{% set showTop = d.show_top_price | default(true) %}
+{% set showRating = d.show_rating | default(true) %}
+{% set showDesc = d.show_description | default(true) %}
+{% set descLines = d.description_lines | default(4) %}
+{% set showZoom = d.show_zoom | default(true) %}
+{% set showBuy = d.show_buy_now | default(true) %}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+
+<section id="lc-fprod-{{ id }}"
+         class="lc-fprod lc-fprod--img-{{ side }}"
+         style="padding-block: {{ d.padding_top | default(56) }}px {{ d.padding_bottom | default(56) }}px;">
+  <div class="lc-hwrap">
+
+  {% if p and p._id %}
+    {% set slug = p.slug | default(p.handle) | default(p._id) %}
+    {% set url = '/products/' ~ slug %}
+    {% set images = p.images | default([], true) %}
+    {% set imgCount = images | length %}
+    {% set price = p.pricing.price | default(0, true) %}
+    {% set was = p.pricing.compareAtPrice | default(0, true) %}
+    {% set onSale = was and was > price %}
+    {% set inStock = p.allowBackorder or p.trackQuantity == false or (p.quantity | default(0, true)) > 0 %}
+    {% set rvCount = p.reviewsCount | default(0, true) %}
+    {% set rvPct = (p.averageRating | default(0, true)) / 5 * 100 %}
+    {% if rvPct > 100 %}{% set rvPct = 100 %}{% endif %}
+
+    {# Looked up through `window[...]` because widget ids may carry dashes, which
+       are not valid in a bare identifier. No x-init: Alpine calls init() itself. #}
+    <div class="lc-fprod-grid" x-data="window['lcFeaturedProduct_{{ id }}']()">
+
+      {# ═══════════════ gallery ═══════════════ #}
+      <div class="lc-fprod-media">
+        <div class="lc-fprod-frame">
+          {% if imgCount > 0 %}
+            <div class="swiper" id="lc-fprodSw-{{ id }}">
+              <div class="swiper-wrapper">
+                {% for img in images %}
+                  <div class="swiper-slide lc-fprod-shot">
+                    <img src="{{ img.fileUrl }}" alt="{{ p.title }}" {% if not loop.first %}loading="lazy"{% endif %}/>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% if showZoom %}
+              <button type="button" class="lc-fprod-zoom" aria-label="{{ t('pages.product.zoom') }}" data-lc-zoom>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                  <circle cx="10.5" cy="10.5" r="6.5"/><path stroke-linecap="round" d="m20 20-4.6-4.6M10.5 7.8v5.4M7.8 10.5h5.4"/>
+                </svg>
+              </button>
+            {% endif %}
+          {% else %}
+            <span class="lc-pcard-noimg lc-fprod-noimg"></span>
+          {% endif %}
+        </div>
+
+        {% if imgCount > 1 %}
+          <div class="lc-pager lc-fprod-pager">
+            <button type="button" class="lc-pager-arrow" id="lc-fprodPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+              <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+            </button>
+            <div class="lc-pager-dots" id="lc-fprodDots-{{ id }}"></div>
+            <button type="button" class="lc-pager-arrow" id="lc-fprodNext-{{ id }}" aria-label="{{ t('common.next') }}">
+              <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      {# ═══════════════ info ═══════════════ #}
+      <div class="lc-fprod-info">
+        {% if showTop %}
+          <div class="lc-buy-top">
+            <span x-text="unitText()">{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+            <s x-show="hasDiscount()" x-text="compareText()" {% if not onSale %}x-cloak{% endif %}>{% if onSale %}{{ was | money }}{% endif %}</s>
+          </div>
+        {% endif %}
+
+        <h2 class="lc-buy-title"><a href="{{ url }}">{{ p.title }}</a></h2>
+
+        {% if showRating and rvCount > 0 %}
+          <div class="lc-pcard-rating lc-buy-rating">
+            <span class="lc-stars" aria-hidden="true">
+              <span class="lc-stars-base">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+              <span class="lc-stars-fill" style="width: {{ rvPct }}%;">{% for i in range(5) %}<svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="m10 1.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z"/></svg>{% endfor %}</span>
+            </span>
+            <span class="lc-pcard-rcount">({{ rvCount }})</span>
+          </div>
+        {% endif %}
+
+        {% if showDesc %}
+          {# Printed from the picker when it carries one; the fetch fills it in
+             when it does not. #}
+          <div class="lc-buy-desc" style="--lc-lines: {{ descLines }};"
+               x-show="description" {% if not p.description %}x-cloak{% endif %}
+               x-html="description">{{ p.description | default('', true) | safe }}</div>
+        {% endif %}
+
+        {# ---- options (built from the fetched product) ---- #}
+        <template x-for="g in _groups" :key="g.name">
+          <div class="lc-buy-opt">
+            <p class="lc-buy-opt-name" x-text="g.name"></p>
+            <div class="lc-buy-vals" role="group" :aria-label="g.name">
+              <template x-for="v in g.values" :key="v.id">
+                <button type="button" class="lc-buy-val"
+                        :class="{ 'is-active': selectedOptions[g.name] === v.id, 'is-off': valueDisabled(g.name, v.id), 'has-img': !!v.image }"
+                        :disabled="valueDisabled(g.name, v.id)"
+                        :title="v.label"
+                        @click="selectOption(g.name, v.id, v.label)">
+                  <template x-if="v.image"><img :src="v.image" alt=""/></template>
+                  <span x-text="v.label"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+        <div class="lc-buy-optload" x-show="loading" x-cloak aria-hidden="true">
+          <span class="lc-ph-line" style="width: 20%;"></span>
+          <span class="lc-ph-line lc-ph-line--lg" style="width: 45%;"></span>
+        </div>
+
+        {# ---- big price ---- #}
+        <div class="lc-buy-price">
+          <span class="lc-buy-now" x-text="unitText()">{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}</span>
+          <span class="lc-buy-save" x-show="hasDiscount()" {% if not onSale %}x-cloak{% endif %}>
+            <s x-text="compareText()">{% if onSale %}{{ was | money }}{% endif %}</s>
+            <small x-text="saveText()">{% if onSale %}{{ t('pages.product.you_save') | replace('{amount}', (was - price) | money) }}{% endif %}</small>
+          </span>
+        </div>
+
+        {# ---- quantity + actions ---- #}
+        <div class="lc-buy-actions">
+          <div class="lc-buy-qty">
+            <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+            </button>
+            <span x-text="qty">1</span>
+            <button type="button" @click="incQty()" :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+
+          <button type="button" class="lc-buy-add" @click="addToCart()" :disabled="addDisabled()" {% if not inStock %}disabled{% endif %}>
+            <span x-show="addingToCart" x-cloak class="lc-spinner" style="width:16px;height:16px;"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak>{{ t('pages.product.added') }}</span>
+            <span x-show="!addingToCart && !addedSuccess">
+              <span x-show="!isOutOfStock" {% if not inStock %}x-cloak{% endif %}>{{ t('pages.product.add_to_cart') }}</span>
+              <span x-show="isOutOfStock" {% if inStock %}x-cloak{% endif %}>{{ t('pages.product.out_of_stock') }}</span>
+            </span>
+          </button>
+
+          {% if showBuy %}
+            <button type="button" class="lc-buy-buy" @click="buyNow()" :disabled="addDisabled()" {% if not inStock %}disabled{% endif %}>
+              {{ t('pages.product.buy_now') }}
+            </button>
+          {% endif %}
+        </div>
+
+        <p class="lc-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+      </div>
+    </div>
+
+    <script>
+      window['lcFeaturedProduct_{{ id }}'] = function () {
+        var SLUG = {{ slug | dump | safe }};
+        var fmt = function (v) { return window.formatPrice ? window.formatPrice(v) : ''; };
+        var money = function (v) { return window.formatMoney ? window.formatMoney(v) : ''; };
+        var SAVE = {{ t('pages.product.you_save') | dump | safe }};
+        var STRINGS = {
+          selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+          comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+          maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+          outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+          variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+          addError:           {{ t('common.error') | dump | safe }},
+          listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+        };
+        /* The picker's own figures — what the stubs below read until the
+           engine replaces them. */
+        var BASE = {
+          productId: '{{ p._id }}',
+          price: {{ price | default(0, true) }},
+          compareAtPrice: {{ was | default(0, true) }},
+          quantity: {{ p.quantity | default(0, true) }},
+          trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if p.allowBackorder else 'false' }}
+        };
+
+        return {
+          loading: true,
+          description: {{ (p.description | default('', true)) | dump | safe }},
+          _groups: [],
+          selectedOptions: {},
+          qty: 1,
+          unitPrice: BASE.price,
+          unitComparePrice: BASE.compareAtPrice,
+          isOutOfStock: {{ 'false' if inStock else 'true' }},
+          addingToCart: false,
+          addedSuccess: false,
+          formError: '',
+
+          /* ---- stubs, replaced wholesale by LocalVariants ---- */
+          valueDisabled: function () { return false; },
+          selectOption: function () {},
+          maxQty: function () { return null; },
+          incQty: function () { this.qty++; },
+          decQty: function () { this.qty = Math.max(1, this.qty - 1); },
+          addDisabled: function () { return this.isOutOfStock || this.addingToCart; },
+          addToCart: function () {},
+          buyNow: function () {},
+
+          /* the engine's hook — slide the gallery to the variant's picture */
+          onVariantImage: function (idx) {
+            var el = document.getElementById('lc-fprodSw-{{ id }}');
+            if (el && el.swiper) el.swiper.slideTo(idx);
+          },
+
+          /* ---- unit-price text (the engine's displayPrice() is the LINE total) ---- */
+          hasDiscount: function () { return !!(this.unitComparePrice && this.unitComparePrice > this.unitPrice); },
+          unitText: function () { return fmt(this.unitPrice); },
+          compareText: function () { return this.hasDiscount() ? money(this.unitComparePrice) : ''; },
+          saveText: function () {
+            return this.hasDiscount() ? SAVE.replace('{amount}', money(this.unitComparePrice - this.unitPrice)) : '';
+          },
+
+          init: function () {
+            var self = this;
+
+            var adopt = function (p) {
+              p = p || {};
+              var pr = p.pricing || {};
+              /* gallery index for an image reference (object or id string),
+                 matched on id and then on file URL */
+              var gal = (p.images || []);
+              var idxOf = function (ref) {
+                if (!ref) return -1;
+                var id = String((ref && (ref._id || ref.id)) || (typeof ref === 'string' ? ref : ''));
+                var url = ref && ref.fileUrl;
+                for (var g = 0; g < gal.length; g++) {
+                  if ((id && String(gal[g]._id || gal[g].id) === id) || (url && gal[g].fileUrl === url)) return g;
+                }
+                return -1;
+              };
+              var valueImages = {};
+              (p.options || []).forEach(function (o) {
+                (o.values || []).forEach(function (v) {
+                  var k = idxOf(v.image); if (k >= 0) valueImages[String(v._id)] = k;
+                });
+              });
+              var cfg = {
+                valueImages: valueImages,
+                productId: p._id || BASE.productId,
+                price: pr.price != null ? pr.price : BASE.price,
+                compareAtPrice: pr.compareAtPrice != null ? pr.compareAtPrice : BASE.compareAtPrice,
+                quantity: p.quantity != null ? p.quantity : BASE.quantity,
+                trackQuantity: p.trackQuantity != null ? p.trackQuantity : BASE.trackQuantity,
+                allowBackorder: p.allowBackorder != null ? p.allowBackorder : BASE.allowBackorder,
+                groups: (p.options || []).filter(function (o) { return o && (o.values || []).length; }).map(function (o) {
+                  return {
+                    name: o.name,
+                    values: o.values.map(function (v) {
+                      return { id: String(v._id), label: v.label, image: (v.image && v.image.fileUrl) || '' };
+                    })
+                  };
+                }),
+                /* a variant with an empty `pricing` inherits the product's */
+                variants: (p.variants || []).map(function (v) {
+                  var vp = v.pricing || {};
+                  return {
+                    id: v._id,
+                    imageIndex: idxOf((v.images && v.images[0]) || v.image),
+                    price: vp.price != null ? vp.price : pr.price,
+                    compareAtPrice: vp.compareAtPrice != null ? vp.compareAtPrice : pr.compareAtPrice,
+                    quantity: v.quantity || 0,
+                    available: (v.inventoryLevel && v.inventoryLevel.available != null) ? v.inventoryLevel.available : v.quantity,
+                    trackQuantity: !!v.trackQuantity,
+                    allowBackorder: !!v.allowBackorder,
+                    options: v.options
+                  };
+                }),
+                strings: STRINGS
+              };
+              var engine = window.LocalVariants(cfg);
+              /* keep the unit-price helpers above; take everything else */
+              ['hasDiscount'].forEach(function (k) { delete engine[k]; });
+              Object.keys(engine).forEach(function (k) { self[k] = engine[k]; });
+              self.initVariants();
+              if (p.description && !self.description) self.description = p.description;
+              self.loading = false;
+
+              /* cart-aware quantity cap, same as the product page */
+              Qumra.cart.get()
+                .then(function (data) { self.cartLines = (data && data.items) || []; })
+                .catch(function () { self.cartLines = []; });
+            };
+
+            if (!window.Qumra || !window.LocalVariants) { this.loading = false; return; }
+            Qumra.product.get(SLUG)
+              .then(function (res) {
+                var p = (res && (res.data || res.product)) || res;
+                adopt(p && p._id ? p : null);
+              })
+              .catch(function () { adopt(null); });
+          }
+        };
+      };
+    </script>
+
+  {% else %}
+    {# Nothing picked yet — the layout, inert, so the merchant sees the shape. #}
+    <div class="lc-fprod-grid" aria-hidden="true" data-lc-placeholder>
+      <div class="lc-fprod-media"><div class="lc-fprod-frame"><span class="lc-pcard-noimg lc-fprod-noimg"></span></div></div>
+      <div class="lc-fprod-info">
+        <h2 class="lc-buy-title">{{ t('common.placeholder_product') }}</h2>
+        <span class="lc-ph-line" style="width: 90%;"></span>
+        <span class="lc-ph-line" style="width: 70%;"></span>
+        <div class="lc-buy-price"><span class="lc-buy-now">{{ t('common.placeholder_price') }}</span></div>
+        <p class="lc-icols-empty">{{ t('common.placeholder_add') }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  </div>
+</section>
+
+{% if p and p._id and (p.images | default([], true) | length) > 0 %}
+<script>
+  LocalReady(function () {
+    var root = document.getElementById('lc-fprod-{{ id }}');
+    var el = document.getElementById('lc-fprodSw-{{ id }}');
+    if (!root || !el || typeof Swiper === 'undefined') return;
+    var sw = el.swiper || new Swiper(el, {
+      speed: 500,
+      {% if (p.images | length) > 1 %}
+      navigation: { prevEl: '#lc-fprodPrev-{{ id }}', nextEl: '#lc-fprodNext-{{ id }}', disabledClass: 'is-disabled' },
+      pagination: {
+        el: '#lc-fprodDots-{{ id }}', clickable: true,
+        bulletClass: 'lc-pager-dot', bulletActiveClass: 'is-active',
+        renderBullet: function (i, cls) { return '<button type="button" class="' + cls + '" aria-label="' + (i + 1) + '"><span></span></button>'; }
+      },
+      {% endif %}
+      a11y: { enabled: true }
+    });
+
+    /* Zoom opens the gallery at the current slide. GLightbox is deferred and
+       only needed on click, so it is looked up then; without it the picture
+       opens on its own. */
+    var zoom = root.querySelector('[data-lc-zoom]');
+    if (zoom) zoom.addEventListener('click', function () {
+      var srcs = [].map.call(el.querySelectorAll('.lc-fprod-shot img'), function (i) { return i.currentSrc || i.src; });
+      if (typeof GLightbox !== 'undefined') {
+        var lb = GLightbox({ elements: srcs.map(function (s) { return { href: s, type: 'image' }; }), touchNavigation: true, loop: true });
+        lb.openAt(sw.activeIndex || 0);
+      } else {
+        window.open(srcs[sw.activeIndex || 0], '_blank', 'noopener');
+      }
+    });
+  });
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#lc-fprod-' ~ id, c=d %}

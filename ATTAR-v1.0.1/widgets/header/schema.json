@@ -1,0 +1,87 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "header_logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار المتجر",
+        "en": "Store Logo"
+      }
+    },
+    "header_menu": {
+      "type": "menu",
+      "label": "القائمة الرئيسية",
+      "default": "header-menu"
+    },
+    "overlay_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "هيدر شفاف فوق البانر",
+        "en": "Transparent Header Over Hero"
+      },
+      "default": true
+    },
+    "show_announcement": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الشريط العلوي",
+        "en": "Show Announcement Bar"
+      },
+      "default": true
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشريط العلوي",
+        "en": "Announcement Text"
+      },
+      "default": ""
+    },
+    "closable_announcement": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر إغلاق للشريط العلوي (يبقى مغلقًا طوال الجلسة)",
+        "en": "Close button on the announcement bar (stays closed for the session)"
+      },
+      "default": false
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار البحث",
+        "en": "Show Search"
+      },
+      "default": true
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السلة",
+        "en": "Show Cart"
+      },
+      "default": true
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "تثبيت عند التمرير",
+        "en": "Sticky on Scroll"
+      },
+      "default": true
+    },
+    "show_language_switcher": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار تبديل اللغة",
+        "en": "Show Language Switcher"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الرئيسي"
+    }
+  ]
+}

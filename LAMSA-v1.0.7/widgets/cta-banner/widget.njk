@@ -1,0 +1,425 @@
+{# ============================================================================
+   LAMSA CTA BANNER — promo block with countdown + copyable coupon
+   Layouts: card (inset) · full (edge-to-edge strip) · split (image + text)
+
+   Countdown labels come from the LOCALES (common.days/hours/minutes/seconds),
+   NOT from widget settings — the old version stored them per-widget, so the
+   English storefront rendered Arabic labels. Never move them back.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set layout = d.layout | default('card') %}
+{% set isCard = layout == 'card' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('rose') %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{% set imgSplit = d.image_split.fileUrl if d.image_split and d.image_split.fileUrl else '' %}
+{% set scrim = d.scrim | default('medium') %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set subtitle = d.subtitle | default('') %}
+{% set align = d.text_alignment | default('center') %}
+{% set isCenter = align == 'center' and not isSplit %}
+{% set height = d.height | default('medium') %}
+
+{# A countdown is a promise that the offer ends: off unless the merchant sets
+   a real date — an invented deadline is fake urgency. #}
+{% set cdDate = d.countdown_date | default('') %}
+{% set showCd = (d.show_countdown | default(false)) and cdDate %}
+{% set hideOnExpire = d.hide_on_expire | default(false) %}
+{% set coupon = d.coupon_code | default('') %}
+
+{% set btnText = d.button_text | default('') %}
+{% set btnLink = d.button_link | default('/shop') %}
+{% set btn2Text = d.button2_text | default('') %}
+{% set btn2Link = d.button2_link | default('/shop') %}
+
+{# ---- surface + whether the text sits on something dark ---- #}
+{% if img %}
+  {% set surface = 'var(--color-bg-tertiary)' %}{% set onDark = true %}
+{% elif bg == 'ink' %}
+  {% set surface = 'var(--color-text-primary)' %}{% set onDark = true %}
+{% elif bg == 'sage' %}
+  {% set surface = 'var(--color-sage)' %}{% set onDark = true %}
+{% elif bg == 'blush' %}
+  {% set surface = 'var(--color-bg-primary)' %}{% set onDark = false %}
+{% elif bg == 'white' %}
+  {% set surface = 'var(--color-surface)' %}{% set onDark = false %}
+{% else %}
+  {% set surface = 'var(--color-accent)' %}{% set onDark = true %}
+{% endif %}
+
+{% if height == 'small' %}{% set padY = '48px' %}{% set padYSm = '36px' %}
+{% elif height == 'large' %}{% set padY = '104px' %}{% set padYSm = '60px' %}
+{% else %}{% set padY = '72px' %}{% set padYSm = '48px' %}{% endif %}
+
+{% set fg = '#FFFFFF' if onDark else 'var(--color-text-primary)' %}
+{% set fgSoft = 'rgba(255,255,255,0.86)' if onDark else 'var(--color-text-secondary)' %}
+
+
+<style>
+  .lamsa-cta-{{ id }}-box {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: {{ surface }};
+    {% if isCard %}border-radius: var(--radius-2xl);{% endif %}
+  }
+
+  .lamsa-cta-{{ id }}-bg { position: absolute; inset: 0; z-index: 0; }
+  .lamsa-cta-{{ id }}-bg img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* one grid for all three layouts — split just adds an image column */
+  .lamsa-cta-{{ id }}-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  {% if isSplit %}
+  @media (min-width: 900px) { .lamsa-cta-{{ id }}-grid { grid-template-columns: 1fr 1fr; } }
+  {% endif %}
+
+  .lamsa-cta-{{ id }}-sideimg {
+    position: relative;
+    min-height: 280px;
+    background: var(--color-bg-tertiary);
+  }
+  .lamsa-cta-{{ id }}-sideimg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  @media (min-width: 900px) { .lamsa-cta-{{ id }}-sideimg { min-height: 100%; } }
+
+  .lamsa-cta-{{ id }}-inner {
+    display: flex;
+    align-items: center;
+    padding-block: {{ padY }};
+    padding-inline: 40px;
+  }
+  @media (max-width: 767px) {
+    .lamsa-cta-{{ id }}-inner { padding-block: {{ padYSm }}; padding-inline: 22px; }
+    .lamsa-cta-{{ id }}-sideimg { min-height: 220px; }
+  }
+
+  /* ================= content ================= */
+  .lamsa-cta-{{ id }}-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: {{ '640px' if isCenter else '560px' }};
+    {% if isCenter %}
+    align-items: center;
+    text-align: center;
+    margin-inline: auto;
+    {% else %}
+    align-items: flex-start;
+    text-align: start;
+    {% endif %}
+  }
+
+  .lamsa-cta-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.008em;
+    color: {{ fg }};
+  }
+  html[dir="ltr"] .lamsa-cta-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-cta-{{ id }}-title { line-height: 1.32; letter-spacing: 0; }
+  .lamsa-cta-{{ id }}-title p { margin: 0; }
+  .lamsa-cta-{{ id }}-title em {
+    font-style: normal;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+    {% if onDark %}
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
+    {% endif %}
+  }
+
+  .lamsa-cta-{{ id }}-sub {
+    margin: 0;
+    max-width: 48ch;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: {{ fgSoft }};
+  }
+  @media (max-width: 767px) { .lamsa-cta-{{ id }}-sub { font-size: 0.9375rem; } }
+
+  /* ================= countdown ================= */
+  .lamsa-cta-{{ id }}-cd {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+    {% if isCenter %}justify-content: center;{% endif %}
+  }
+  .lamsa-cta-{{ id }}-cdbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 72px;
+    padding: 13px 12px;
+    border-radius: var(--radius-lg);
+    background: {{ 'rgba(255,255,255,0.16)' if onDark else 'var(--color-surface)' }};
+    {% if not onDark %}box-shadow: var(--shadow-sm);{% endif %}
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .lamsa-cta-{{ id }}-cdnum {
+    font-family: var(--font-display-en);
+    font-size: clamp(1.5rem, 3.4vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+  }
+  .lamsa-cta-{{ id }}-cdlabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: {{ 'rgba(255,255,255,0.78)' if onDark else 'var(--color-text-tertiary)' }};
+  }
+  @media (max-width: 640px) {
+    .lamsa-cta-{{ id }}-cd { gap: 7px; }
+    .lamsa-cta-{{ id }}-cdbox { min-width: 60px; padding: 10px 8px; border-radius: var(--radius-md); }
+  }
+
+  .lamsa-cta-{{ id }}-expired {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.16)' if onDark else 'var(--color-bg-tertiary)' }};
+    color: {{ fg }};
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* ================= coupon ================= */
+  .lamsa-cta-{{ id }}-coupon {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 10px;
+    padding-inline: 18px 10px;
+    border: 1.5px dashed {{ 'rgba(255,255,255,0.5)' if onDark else 'var(--color-accent-soft)' }};
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.12)' if onDark else 'var(--color-surface)' }};
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease-soft);
+  }
+  .lamsa-cta-{{ id }}-coupon:hover { border-style: solid; }
+  .lamsa-cta-{{ id }}-code {
+    font-family: var(--font-display-en);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: {{ fg }};
+  }
+  .lamsa-cta-{{ id }}-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    background: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+    color: {{ 'var(--color-text-primary)' if onDark else '#FFF' }};
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+</style>
+
+
+<section id="lamsa-cta-{{ id }}"
+         class="{{ 'lamsa-section' if isCard }}"
+         x-data="lamsaCta{{ id }}()"
+         x-show="!hidden"
+         {% if hideOnExpire %}x-cloak{% endif %}>
+
+  <div class="{{ 'lamsa-container' if isCard else 'w-full' }}">
+    <div class="lamsa-cta-{{ id }}-box {% if img and scrim != 'none' %}lamsa-scrim lamsa-scrim--{{ scrim }}{% endif %}">
+
+      {# ---- full-bleed background image ---- #}
+      {% if img %}
+        <div class="lamsa-cta-{{ id }}-bg">
+          <img src="{{ img }}" alt="" aria-hidden="true" loading="lazy"/>
+        </div>
+      {% endif %}
+
+      <div class="lamsa-cta-{{ id }}-grid">
+
+        {# ---- side image (split only) ---- #}
+        {% if isSplit %}
+          <div class="lamsa-cta-{{ id }}-sideimg">
+            {% if imgSplit %}
+              <img src="{{ imgSplit }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% else %}
+              <img src="{{ 'lamsa-ph-makeup.jpg' | assets }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# ---- content (single copy, shared by all layouts) ---- #}
+        <div class="lamsa-cta-{{ id }}-inner">
+          <div class="lamsa-cta-{{ id }}-content">
+
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow {{ 'lamsa-eyebrow--light' if onDark }}">
+                <span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}
+              </span>
+            {% endif %}
+
+            {% if title %}<div class="lamsa-cta-{{ id }}-title">{{ title | safe }}</div>{% endif %}
+            {% if subtitle %}<p class="lamsa-cta-{{ id }}-sub">{{ subtitle | safe }}</p>{% endif %}
+
+            {# ---- countdown ---- #}
+            {% if showCd %}
+              <div class="lamsa-cta-{{ id }}-cd" x-show="!expired">
+                <span class="lamsa-cta-{{ id }}-cdbox">
+                  <span class="lamsa-cta-{{ id }}-cdnum" x-text="pad(days)">00</span>
+                  <span class="lamsa-cta-{{ id }}-cdlabel">{{ t('common.days') }}</span>
+                </span>
+                <span class="lamsa-cta-{{ id }}-cdbox">
+                  <span class="lamsa-cta-{{ id }}-cdnum" x-text="pad(hours)">00</span>
+                  <span class="lamsa-cta-{{ id }}-cdlabel">{{ t('common.hours') }}</span>
+                </span>
+                <span class="lamsa-cta-{{ id }}-cdbox">
+                  <span class="lamsa-cta-{{ id }}-cdnum" x-text="pad(minutes)">00</span>
+                  <span class="lamsa-cta-{{ id }}-cdlabel">{{ t('common.minutes') }}</span>
+                </span>
+                <span class="lamsa-cta-{{ id }}-cdbox">
+                  <span class="lamsa-cta-{{ id }}-cdnum" x-text="pad(seconds)">00</span>
+                  <span class="lamsa-cta-{{ id }}-cdlabel">{{ t('common.seconds') }}</span>
+                </span>
+              </div>
+              <span class="lamsa-cta-{{ id }}-expired" x-show="expired" x-cloak>{{ t('cta.expired') }}</span>
+            {% endif %}
+
+            {# ---- coupon ---- #}
+            {% if coupon %}
+              <button type="button" class="lamsa-cta-{{ id }}-coupon" @click="copy()"
+                      :aria-label="copied ? '{{ t('cta.copied') }}' : '{{ t('cta.copy_code') }}'">
+                <span class="lamsa-cta-{{ id }}-code">{{ coupon }}</span>
+                <span class="lamsa-cta-{{ id }}-copy">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" x-show="!copied">
+                    <rect x="9" y="9" width="12" height="12" rx="2.5"/>
+                    <path d="M15 5.5A2.5 2.5 0 0 0 12.5 3h-7A2.5 2.5 0 0 0 3 5.5v7A2.5 2.5 0 0 0 5.5 15"/>
+                  </svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                       stroke-linecap="round" stroke-linejoin="round" x-show="copied" x-cloak>
+                    <path d="M4 12.5 9.5 18 20 6.5"/>
+                  </svg>
+                  <span x-text="copied ? '{{ t('cta.copied') }}' : '{{ t('cta.copy_code') }}'">{{ t('cta.copy_code') }}</span>
+                </span>
+              </button>
+            {% endif %}
+
+            {# ---- buttons ---- #}
+            {% if btnText or btn2Text %}
+              <div class="flex items-center gap-3 flex-wrap {{ 'justify-center' if isCenter }}">
+                {% if btnText %}
+                  <a href="{{ btnLink }}" class="lamsa-btn lamsa-btn--lg {{ 'lamsa-btn--light' if onDark else 'lamsa-btn--primary' }}">
+                    {{ btnText }}
+                  </a>
+                {% endif %}
+                {% if btn2Text %}
+                  <a href="{{ btn2Link }}" class="lamsa-btn lamsa-btn--lg {{ 'lamsa-btn--outline-light' if onDark else 'lamsa-btn--outline' }}">
+                    {{ btn2Text }}
+                  </a>
+                {% endif %}
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('alpine:init', function () {
+    Alpine.data('lamsaCta{{ id }}', function () {
+      return {
+        days: 0, hours: 0, minutes: 0, seconds: 0,
+        expired: false,
+        hidden: false,
+        copied: false,
+        _timer: null,
+
+        pad: function (n) { return String(n).padStart(2, '0'); },
+
+        init() {
+          {% if not showCd %}return;{% endif %}
+
+          /* 'YYYY-MM-DD HH:MM' → 'YYYY-MM-DDTHH:MM' so Safari parses it too.
+             No trailing Z on purpose: the merchant means the VISITOR's local time. */
+          var target = new Date('{{ cdDate }}'.replace(' ', 'T')).getTime();
+          if (isNaN(target)) { this.expired = true; return; }
+
+          var self = this;
+          var tick = function () {
+            var diff = target - Date.now();
+            if (diff <= 0) {
+              self.days = self.hours = self.minutes = self.seconds = 0;
+              self.expired = true;
+              {% if hideOnExpire %}self.hidden = true;{% endif %}
+              clearInterval(self._timer);
+              self._timer = null;
+              return;
+            }
+            self.days    = Math.floor(diff / 86400000);
+            self.hours   = Math.floor((diff % 86400000) / 3600000);
+            self.minutes = Math.floor((diff % 3600000) / 60000);
+            self.seconds = Math.floor((diff % 60000) / 1000);
+          };
+
+          tick();
+          this._timer = setInterval(tick, 1000);
+        },
+
+        /* Alpine calls this when the element is torn down (the Theme Editor
+           re-renders sections constantly) — without it the interval leaks
+           and you end up with several timers fighting over the same state. */
+        destroy() {
+          if (this._timer) { clearInterval(this._timer); this._timer = null; }
+        },
+
+        async copy() {
+          var code = {{ coupon | dump | safe }};
+          if (!code) return;
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch (e) {
+            /* clipboard API needs https + permission — fall back to a temp field */
+            var el = document.createElement('textarea');
+            el.value = code;
+            el.setAttribute('readonly', '');
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
+            document.body.appendChild(el);
+            el.select();
+            try { document.execCommand('copy'); } catch (e2) { /* nothing else to try */ }
+            document.body.removeChild(el);
+          }
+          this.copied = true;
+          if (window.Qumra) Qumra.toast.success({{ t('cta.copied') | dump | safe }});
+          var self = this;
+          setTimeout(function () { self.copied = false; }, 2200);
+        }
+      };
+    });
+  });
+</script>

@@ -1,0 +1,34 @@
+{#-
+  Brand mark used by the header, mobile nav and footer.
+  {% ui "brand-logo.njk", size="md", height=36, cls="…", link="off" %}
+    size    'sm' | 'md' (default) | 'lg'  — wordmark scale
+    height  uploaded-logo height in px (store.logo.fileUrl); default 36
+    link    'off' renders a <span> instead of the home link
+  With no uploaded logo it renders the circular coffee-bean emblem (settings.showBrandSymbol) + the spaced
+  serif wordmark (settings.brandWordmark → store.name → DECAFE). Colour follows currentColor (cream on dark).
+-#}
+{%- set size = data.size | default('md') -%}
+{%- set logo = store.logo.fileUrl if (store and store.logo and store.logo.fileUrl) else '' -%}
+{%- set h = (data.height | default(settings.logoHeight | default(36))) | int -%}
+{%- set h = h if (h >= 16 and h <= 120) else 36 -%}
+{%- set word = settings.brandWordmark or (store.name if store else '') or 'DECAFE' -%}
+{%- set name = (store.name if (store and store.name) else word) -%}
+{%- set emblem = 28 if size == 'sm' else (44 if size == 'lg' else 34) -%}
+{%- set wcls = 'text-[1.05rem]' if size == 'sm' else ('text-[1.6rem]' if size == 'lg' else 'text-[1.3rem] sm:text-[1.4rem]') -%}
+{%- set tag = 'span' if data.link == 'off' else 'a' -%}
+<{{ tag }}{% if tag == 'a' %} href="/" aria-label="{{ name }} — {{ t('nav.home') }}"{% endif %} class="inline-flex min-w-0 max-w-full shrink-0 items-center gap-3 leading-none {{ data.cls }}">
+  {%- if logo %}
+  <img src="{{ logo }}" alt="{{ name }}" height="{{ h }}" style="height:{{ h }}px;width:auto" class="block max-w-[180px] object-contain" decoding="async">
+  {%- else %}
+  {%- if settings.showBrandSymbol != false %}
+  <svg width="{{ emblem }}" height="{{ emblem }}" viewBox="0 0 40 40" fill="none" stroke="currentColor" aria-hidden="true" focusable="false" class="shrink-0 text-caramel">
+    <circle cx="20" cy="20" r="18.6" stroke-width="1.2"/>
+    <ellipse cx="20" cy="20" rx="6.6" ry="10.2" transform="rotate(-32 20 20)" stroke-width="1.5"/>
+    <path d="M16.9 11.6c3.2 3 .4 6.6 1.9 9.6 1.2 2.5 4.1 3.4 5 6.9" stroke-width="1.4" stroke-linecap="round"/>
+  </svg>
+  {%- endif %}
+  {#- dir=auto: a Latin wordmark stays LTR, an Arabic store name truncates from its end (GEN-20) -#}
+  {%- set caseless = (word | upper) == (word | lower) -%}
+  <span dir="auto" class="brand-word {{ 'brand-word--plain' if caseless else '-me-[0.32em]' }} {{ wcls }} whitespace-nowrap">{{ word }}</span>
+  {%- endif %}
+</{{ tag }}>

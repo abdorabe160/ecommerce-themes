@@ -1,0 +1,96 @@
+{
+  "name": "المنتج",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "image_ratio": "1x1",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "title_size": "md",
+        "show_savings": true,
+        "show_stock_status": true,
+        "colors_enabled": false
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "الوصف",
+          "settings": {
+            "title": "الوصف",
+            "source": "description",
+            "open_by_default": true,
+            "text": ""
+          }
+        },
+        {
+          "block": "panel",
+          "name": "الحفظ والتخزين",
+          "settings": {
+            "title": "الحفظ والتخزين",
+            "source": "text",
+            "open_by_default": false,
+            "text": "<p>يُحفظ في مكان بارد وجاف بعيدًا عن الشمس، ويُغلق جيدًا بعد الفتح. المنتجات الطازجة تُحفظ في الثلاجة وتُستهلك خلال أيام.</p>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "قد يعجبك أيضاً",
+      "widget": "featured-products",
+      "settings": {
+        "title": "قد يعجبك أيضاً",
+        "view_all_text": "عرض كل المنتجات",
+        "view_all_url": "/shop",
+        "auto_sort": "rating-desc",
+        "auto_limit": 8,
+        "columns": 4,
+        "columns_mobile": "1.5",
+        "image_ratio": "1x1",
+        "button_action": "add",
+        "show_rating": true,
+        "show_badges": true,
+        "show_quick_view": true,
+        "show_arrows": true,
+        "show_dots": true,
+        "padding_top": 56,
+        "padding_bottom": 56,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "products": []
+      }
+    },
+    {
+      "name": "شهادات العملاء",
+      "widget": "testimonials",
+      "settings": {
+        "eyebrow": "",
+        "title": "",
+        "quote_style": "serif",
+        "show_rating": false,
+        "star_color": "#E8A33D",
+        "autoplay": 7,
+        "card_style": "bordered",
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_border": ""
+      },
+      "blocks": []
+    }
+  ]
+}

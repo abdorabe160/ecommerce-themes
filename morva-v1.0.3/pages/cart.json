@@ -1,0 +1,20 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة الحقيبة",
+      "widget": "cart-page",
+      "settings": {
+        "kicker": "الحقيبة",
+        "title": "حقيبتك",
+        "confirm_remove": true,
+        "checkout_url": "/checkout",
+        "continue_url": "/shop",
+        "note_text": "الشحن والضرائب تُحسب عند الدفع."
+      }
+    }
+  ]
+}

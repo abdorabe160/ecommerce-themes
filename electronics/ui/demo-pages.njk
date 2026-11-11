@@ -1,0 +1,9 @@
+{# الصفحات التوضيحية — المعاينة فقط (qumra theme dev / المحرر)، ولا تظهر على المتجر الحي إطلاقاً.
+   تُفتح بـ /?demo_product=<id> و /?demo_collection=<id> لأن روابط المنتجات/التصنيفات غير الموجودة ترجع 500 من السيرفر.
+   الكتالوج هنا مرة واحدة ويقرأه main.js (readDemo مع kind) لهذه الصفحات وللقوائم في الهيدر. #}
+<div id="lg-demo-catalog" hidden>
+  {% ui "demo-data.njk", kind="all" %}
+  {% ui "demo-data.njk", kind="collections" %}
+</div>
+{% ui "demo-product.njk" %}
+{% ui "demo-collection.njk" %}

@@ -1,0 +1,176 @@
+{# ============================================================================
+   HYPER · قائمة المجموعات — circular category tiles in a ruled grid
+   ----------------------------------------------------------------------------
+     تسوّق حسب التصنيف                              كل المنتجات ›
+     ┌────────┬────────┬────────┬────────┬────────┬────────┐
+     │  ( ● ) │  ( ○ ) │  ( ○ ) │  ( ○ ) │  ( ○ ) │  ( ○ ) │
+     │ تخفيضات│ طاولات │ إضاءة  │  كنب   │ تخزين  │ كراسي  │
+     └────────┴────────┴────────┴────────┴────────┴────────┘
+
+   ── Data ──
+   The merchant's picked `collections`, falling back to `context.collections`
+   where the page provides it (the collections and shop pages do; the home page
+   does not). There is NO AJAX fallback: Qumra exposes no public collections
+   endpoint, so with nothing picked the section draws placeholder tiles rather
+   than fetching. Each entry carries `_id`, `title`, `handle` and
+   `image.fileUrl` — that is the whole payload, so there is nothing else to
+   show on a tile and the design does not ask for anything else.
+
+   ── The highlight tile ──
+   A solid coloured disc carrying a word instead of a photograph, pinned to the
+   start of the grid. It is a section setting rather than a collection, because
+   "Sale" is rarely a real collection in the dashboard and hard-coding a slug
+   here would ship a 404 to every store that names it differently.
+
+   ── RTL ──
+   The grid flows with the document, so the highlight tile leads on the correct
+   side in both directions with nothing to configure. The rules between cells
+   are the grid's own `gap`, not borders on the cells, so there is no physical
+   side property to get wrong — see the note in the CSS.
+
+   Styling lives in assets/style.css → "15.11.1 CATEGORY GRID".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set picked = d.collections | default([]) %}
+{% set cols = [] %}
+{% for c in (picked if (picked | length) > 0 else (context.collections or [])) %}{% if c.title and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}{% endfor %}
+{% set count = cols | length %}
+
+{% set title = d.title | default('', true) %}
+{% set viewAllText = d.view_all_text | default('', true) %}
+{% set viewAllUrl = d.view_all_url | default('/collections') %}
+
+{% set colsD = d.columns_desktop | default('6', true) %}
+{% set colsMd = d.columns_tablet | default('4', true) %}
+{% set colsM = d.columns_mobile | default('3', true) %}
+{# ---- Disc size and frame radius ----
+   These were two Theme Editor controls and are now fixed at the values the
+   grid was drawn for. They stay as CSS custom properties rather than moving
+   into style.css so the two rules that read them — `max-width` on the disc and
+   `border-radius` on the frame — keep their single source here. #}
+{% set discSize = 156 %}
+{% set radius = 10 %}
+{% set showRules = d.show_rules | default(true) %}
+{% set showCount = d.show_count | default(false) %}
+{% set bg = d.background | default('white') %}
+
+{% set promoOn = d.promo_enabled | default(false) %}
+{% set promoText = d.promo_text | default('', true) %}
+{% set promoLabel = d.promo_label | default('', true) %}
+{% set promoUrl = d.promo_url | default('/shop') %}
+{% set promoColor = d.promo_color | default('var(--color-deal)', true) %}
+
+
+{# The root background is INLINE, so it beats every stylesheet rule — which is
+   why it reads `var(--hy-sec-bg, …)`. The section-colours picker overrides the
+   custom property, not the declaration. Do not collapse it back. #}
+{# Columns are balanced to the number of tiles so no row ends with a lone
+   tile: 7 tiles on a 6-column setting become 4 + 3, not 6 + 1. The setting is
+   the MAXIMUM per row. #}
+{% set total = count + (1 if (promoOn and promoText) else 0) %}
+{% macro balanced(n, maxCols) %}{% set m = maxCols | int %}{% if n > m %}{% set rows = (n / m) | round(0, 'ceil') %}{{ (n / rows) | round(0, 'ceil') | int }}{% else %}{{ m }}{% endif %}{% endmacro %}
+<section id="hy-cg-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-cgrid"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <style>
+    #hy-cg-{{ id }} {
+      --hy-cg-radius: {{ radius }}px;
+      --cg-disc: {{ discSize }}px;
+      --cg-cols: {{ balanced(total, colsD) | trim }};
+      --cg-cols-md: {{ balanced(total, colsMd) | trim }};
+      --cg-cols-sm: {{ balanced(total, colsM) | trim }};
+      --cg-solid: {{ promoColor }};
+    }
+  </style>
+
+  <div class="hy-container">
+
+    {% if title or viewAllText %}
+      <div class="hy-cgrid-head">
+        {% if title %}<h2 class="hy-cgrid-title">{{ title }}</h2>{% endif %}
+        {% if viewAllText %}
+          <a href="{{ viewAllUrl }}" class="hy-cgrid-all">
+            <span>{{ viewAllText }}</span>
+            <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# Still nothing (nothing picked, no collections on this page) → demo categories
+       with real photos (CC0, assets/demo-collection-*.jpg, docs/demo-images.md) so
+       the section never ships as grey discs. They link to /shop; no counts — a
+       made-up number reads as a real one. Exactly one row's worth. #}
+    {% if count == 0 %}
+      {% set en = (localization.language | default('ar')) == 'en' %}
+      {% set demoCols = [
+        { title: 'Chairs' if en else 'كراسي', handle: '', image: { fileUrl: 'demo-collection-1.jpg' | assets } },
+        { title: 'Sofas' if en else 'كنب', handle: '', image: { fileUrl: 'demo-collection-2.jpg' | assets } },
+        { title: 'Tables' if en else 'طاولات', handle: '', image: { fileUrl: 'demo-collection-3.jpg' | assets } },
+        { title: 'Lighting' if en else 'إضاءة', handle: '', image: { fileUrl: 'demo-collection-4.jpg' | assets } },
+        { title: 'Bedroom' if en else 'غرف النوم', handle: '', image: { fileUrl: 'demo-collection-5.jpg' | assets } },
+        { title: 'Decor' if en else 'ديكور', handle: '', image: { fileUrl: 'demo-collection-6.jpg' | assets } }
+      ] %}
+      {% set demoN = (colsD | int) - 1 if (promoOn and promoText) else (colsD | int) %}
+      {% set cols = demoCols.slice(0, demoN if demoN > 0 else 6) %}
+      {% set count = cols | length %}
+    {% endif %}
+
+    <div class="hy-cgrid-frame {{ 'hy-cgrid-frame--plain' if not showRules }}">
+
+      {% if promoOn and promoText %}
+        <a href="{{ promoUrl }}" class="hy-cgrid-cell">
+          <span class="hy-cgrid-disc hy-cgrid-disc--solid">
+            <span class="hy-cgrid-disc-text">{{ promoText }}</span>
+          </span>
+          <span class="hy-cgrid-label">{{ promoLabel | default(promoText) }}</span>
+        </a>
+      {% endif %}
+
+      {% for c in cols %}
+        {# `handle` for the URL, `_id` for anything that talks to the API — the
+           two are not interchangeable. #}
+        <a href="{{ ('/shop/' ~ (c.handle or c.slug)) if (c.handle or c.slug) else '/shop' }}" class="hy-cgrid-cell">
+          <span class="hy-cgrid-disc">
+            {% if c.image and c.image.fileUrl and not c.image.notFound %}
+              <img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy"/>
+            {% else %}
+              <span class="hy-cgrid-noimg">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.1" aria-hidden="true"><path stroke-linejoin="round" d="M6.5 4.5h11l-1 8h-9z"/><path stroke-linecap="round" d="M5.5 12.5h13M8 12.5 7 20M16 12.5l1 7.5"/></svg>
+              </span>
+            {% endif %}
+          </span>
+          <span class="hy-cgrid-label">{{ c.title }}</span>
+          {% if showCount and c.productsCount %}
+            <span class="hy-cgrid-count">{{ c.productsCount }}</span>
+          {% endif %}
+        </a>
+      {% endfor %}
+
+      {% if count == 0 %}
+        {# Nothing picked yet. The tiles are drawn at their real size so the
+           merchant is looking at the true layout while they work — there is no
+           endpoint to fetch from, so this is the section's only empty state.
+
+           The highlight tile is a cell like any other, so it has to come out
+           of the budget: a full `colsD` of placeholders NEXT to it made
+           colsD+1 tiles and spilled one onto a second row. #}
+        {% set phCount = (colsD | int) - 1 if (promoOn and promoText) else (colsD | int) %}
+        {% ui "placeholder.njk", kind='collection_disc', count=phCount %}
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-cg-' ~ id, c=d %}

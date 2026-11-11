@@ -1,0 +1,50 @@
+{
+  "name": "صفحة المدونات",
+  "icon": "library",
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "textarea",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة",
+        "en": "Columns"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "Blog",
+      "name": "صفحة المدونات"
+    }
+  ]
+}

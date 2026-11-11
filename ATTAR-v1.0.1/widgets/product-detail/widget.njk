@@ -1,0 +1,746 @@
+{# ===== ATTAR PRODUCT DETAIL — Fragrance PDP ===== #}
+
+{% set p = context.product %}
+{% set showSku = widget.data.show_sku %}
+{% set showReviews = widget.data.show_reviews %}
+{% set _rel = context.related_products | default(widget.data.featuredCollection) | default([]) %}
+{% set relatedProducts = [] %}
+{% for rp in _rel %}{% if rp and rp._id != p._id and relatedProducts | length < 4 %}{% set _ = relatedProducts.push(rp) %}{% endif %}{% endfor %}
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{# floored — 37.5% off shows 37%, never a bigger promise (Utils.calcDiscount does the same) #}
+{% set discount = ((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice * 100) | int if hasDiscount else 0 %}
+{% set baseSku = p.sku or (p.identification and p.identification.sku) or '' %}
+{% set gallery = p.images | default([]) %}
+{% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+
+{# ——— Custom Title & Price Styles ——— #}
+{% set useDefaultPdStyles = widget.data.use_default_pd_styles if widget.data.use_default_pd_styles is defined else true %}
+{% if useDefaultPdStyles %}
+  {% set titleColor = 'var(--color-text-primary)' %}
+  {% set titleSize = '32' %}
+  {% set priceColor = 'var(--color-text-primary)' %}
+  {% set priceSize = '20' %}
+  {% set comparePriceColor = 'var(--color-text-tertiary)' %}
+  {% set comparePriceSize = '15' %}
+  {% set descColor = 'var(--color-text-secondary)' %}
+  {% set descSize = '15' %}
+  {% set savingsColor = 'var(--color-accent)' %}
+  {% set savingsSize = '13' %}
+{% else %}
+  {% set titleColor = widget.data.title_color | default('var(--color-text-primary)', true) %}
+  {% set titleSize = widget.data.title_size | default(26, true) %}
+  {% set priceColor = widget.data.price_color | default('var(--color-text-primary)', true) %}
+  {% set priceSize = widget.data.price_size | default(26, true) %}
+  {% set comparePriceColor = widget.data.compare_price_color | default('var(--color-text-tertiary)', true) %}
+  {% set comparePriceSize = widget.data.compare_price_size | default(15, true) %}
+  {% set descColor = widget.data.desc_color | default('var(--color-text-secondary)', true) %}
+  {% set descSize = widget.data.desc_size | default(15, true) %}
+  {% set savingsColor = widget.data.savings_color | default('var(--color-accent)', true) %}
+  {% set savingsSize = widget.data.savings_size | default(13, true) %}
+{% endif %}
+{% set showSavings = widget.data.show_savings if widget.data.show_savings is defined else true %}
+{% set showStockStatus = widget.data.show_stock_status if widget.data.show_stock_status is defined else true %}
+
+{% if p and p._id %}
+<style>
+  /* ===== ANAQA Product Detail — Editorial ===== */
+
+  /* Vertical gallery (desktop) / swipe (mobile) */
+  .anaqa-pd-gallery {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .anaqa-pd-gallery::-webkit-scrollbar { display: none; }
+  .anaqa-pd-slide {
+    position: relative;
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+  }
+  .anaqa-pd-slide img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.03) contrast(1.02); }
+  @media (min-width: 1024px) {
+    .anaqa-pd-gallery { flex-direction: column; gap: 16px; overflow: visible; }
+    .anaqa-pd-slide { flex: none; }
+  }
+
+  .anaqa-pd-badge {
+    position: absolute;
+    top: 16px; inset-inline-start: 16px;
+    padding: 5px 12px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    z-index: 10;
+    background: var(--color-sale);
+    color: var(--color-on-sale);
+  }
+
+  /* Color swatch */
+  .anaqa-pd-swatch {
+    width: 36px; height: 36px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    box-shadow: inset 0 0 0 2px var(--color-bg-secondary);
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+  }
+  .anaqa-pd-swatch.active { box-shadow: 0 0 0 1.5px var(--color-accent), inset 0 0 0 2px var(--color-bg-secondary); }
+
+  /* Option button — editorial rectangle */
+  .anaqa-pd-opt {
+    padding: 11px 22px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .anaqa-pd-opt:not(.active):hover { border-color: var(--color-accent); color: var(--color-text-primary); }
+  .anaqa-pd-opt.active { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-bg-primary); }
+
+  /* Quantity stepper */
+  .anaqa-pd-qty { display: flex; align-items: center; border: 1px solid var(--color-border); }
+  .anaqa-pd-qty button {
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+  }
+  .anaqa-pd-qty button:hover:not(:disabled) { color: var(--color-text-primary); }
+  .anaqa-pd-qty button:disabled { opacity: 0.3; }
+  .anaqa-pd-qty span {
+    width: 54px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 500;
+    border-inline: 1px solid var(--color-border);
+  }
+
+  /* Action buttons */
+  .anaqa-pd-add, .anaqa-pd-buy {
+    width: 100%; height: 56px;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  html[dir="rtl"] .anaqa-pd-add, html[dir="rtl"] .anaqa-pd-buy { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-pd-add:disabled { opacity: 0.5; cursor: not-allowed; }
+  .anaqa-pd-buy {
+    border: 1px solid var(--color-text-primary);
+    color: var(--color-text-primary);
+    background: transparent;
+  }
+  .anaqa-pd-buy:not(:disabled):hover { background: var(--color-text-primary); color: var(--color-bg-primary); }
+  .anaqa-pd-buy:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Review row */
+  .anaqa-pd-review { padding: 24px 0; border-top: 1px solid var(--color-border); }
+
+  @media (max-width: 639px) {
+    .anaqa-pd-add, .anaqa-pd-buy { height: 52px; }
+  }
+</style>
+
+<section id="product-{{ widget.id }}" class="py-16 max-sm:py-8" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4">
+
+    {# ===== BREADCRUMB ===== #}
+    <nav class="mb-6 max-sm:mb-4" aria-label="breadcrumb">
+      <ol class="flex items-center gap-1.5 flex-wrap text-[13px] font-body-ar" style="color: var(--color-text-tertiary);">
+        <li><a href="/" class="hover:text-accent transition-colors">{{t('common.home')}}</a></li>
+        <li><svg class="w-3 h-3 {% if localization.language != 'en' %}rotate-180{% endif %} inline" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></li>
+        {% if p.collections and p.collections | length %}
+          <li><a href="{{ ('/shop/' ~ (p.collections[0].slug or p.collections[0].handle)) if (p.collections[0].slug or p.collections[0].handle) else '/shop' }}" class="hover:text-accent transition-colors">{{ p.collections[0].title or t('common.products') }}</a></li>
+        {% else %}
+          <li><a href="/shop" class="hover:text-accent transition-colors">{{t('common.products')}}</a></li>
+        {% endif %}
+        <li><svg class="w-3 h-3 {% if localization.language != 'en' %}rotate-180{% endif %} inline" style="opacity: 0.4;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></li>
+        <li class="font-medium truncate max-w-[200px]" style="color: var(--color-text-primary);">{{ p.title }}</li>
+      </ol>
+    </nav>
+
+    {# ===== MAIN PRODUCT GRID ===== #}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 max-lg:gap-8 lg:items-start"
+         x-data="productPage_{{ widget.id }}()"
+         x-init="init()">
+
+      {# ——— Left: Vertical Gallery ——— #}
+      <div>
+        {% if p.images and p.images | length > 0 %}
+          <div class="anaqa-pd-gallery" @scroll.debounce.60ms="activeImageIndex = Math.round(Math.abs($el.scrollLeft) / ($el.clientWidth + 10))">
+            {% for image in p.images %}
+              <div class="anaqa-pd-slide">
+                <a href="{{ image.fileUrl }}" class="attar-pd-zoom glightbox-{{ widget.id }} absolute inset-0 z-[1]" data-gallery="pd-{{ widget.id }}" aria-label="{{ p.title }} — {{ loop.index }}"></a>
+                <img src="{{ image.fileUrl }}" alt="{{ p.title }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}"/>
+                {# the chosen variant's own photo, when it is not one of the gallery's #}
+                {% if loop.first %}<img x-show="variantImageUrl" x-cloak :src="variantImageUrl" alt="{{ p.title }}" class="absolute inset-0"/>{% endif %}
+                {% if hasDiscount and loop.first %}<span class="anaqa-pd-badge font-body-ar"><bdi dir="ltr">−{{ discount }}%</bdi></span>{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          {% if p.images | length > 1 %}
+            <div class="attar-pd-dots lg:hidden" aria-hidden="true">
+              {% for image in p.images %}<span :class="activeImageIndex === {{ loop.index0 }} ? 'is-on' : ''" class="{{ 'is-on' if loop.first }}"></span>{% endfor %}
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="anaqa-pd-slide"><div class="attar-mark" aria-hidden="true"></div></div>
+        {% endif %}
+      </div>
+
+      {# ——— Right: Product Info (sticky) ——— #}
+      <div class="flex flex-col gap-6 max-sm:gap-5 lg:sticky lg:top-28 lg:self-start" data-sticky-fit>
+
+        {# Title + Rating + SKU #}
+        <div class="flex flex-col gap-3">
+          <h1 class="font-heading-ar leading-tight" style="color: {{ titleColor }}; font-size: {{ titleSize }}px; font-weight: 500;">
+            {{ p.title }}
+          </h1>
+
+          {% if p.totalReviews > 0 %}
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-0.5">
+                {% for i in range(5) %}
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"
+                       style="color: {% if i < p.averageRating %}var(--color-accent){% else %}var(--color-border){% endif %};">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                {% endfor %}
+              </div>
+              <span class="text-[13px] font-body-ar" style="color: var(--color-text-tertiary);">({{ p.totalReviews }})</span>
+            </div>
+          {% endif %}
+
+          {% if showSku %}
+            {# follows the chosen variant; falls back to the product's own code #}
+            <span x-show="currentSku" {% if not baseSku %}x-cloak{% endif %} class="text-[12px] uppercase tracking-wider font-body-ar" style="color: var(--color-text-tertiary);">SKU: <span x-text="currentSku">{{ baseSku }}</span></span>
+          {% endif %}
+        </div>
+
+        {# Price #}
+        <div class="flex flex-col gap-2">
+          <div class="flex items-baseline gap-3 flex-wrap">
+            <span class="font-bold font-body-ar" style="color: {{ priceColor }}; font-size: {{ priceSize }}px;" :style="hasDiscount() && { color: 'var(--color-sale-text, {{ priceColor }})' }" x-text="displayPrice()">
+              {{ p.pricing.price | money }}
+            </span>
+            <span class="line-through font-body-ar" style="color: {{ comparePriceColor }}; font-size: {{ comparePriceSize }}px;"
+                  x-show="hasDiscount()" x-text="displayComparePrice()">
+              {% if hasDiscount %}{{ p.pricing.compareAtPrice | money }}{% endif %}
+            </span>
+            <span class="px-2.5 py-1 text-[11px] font-medium tracking-wide font-body-ar"
+                  style="background: var(--color-sale); color: var(--color-on-sale);"
+                  x-show="hasDiscount()" x-text="'−' + discountPercent + '%'">
+              {% if hasDiscount %}−{{ discount }}%{% endif %}
+            </span>
+          </div>
+          <span class="text-[13px] font-body-ar" style="color: var(--color-text-secondary);"
+                x-show="qty > 1" x-text="displayUnitPrice() + ' × ' + qty"></span>
+
+          {# Savings #}
+          {% if showSavings %}
+          <div x-show="hasDiscount()" x-cloak
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 w-fit font-medium font-body-ar"
+               style="background: var(--color-accent-light); color: {{ savingsColor }}; font-size: {{ savingsSize }}px;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{t('pages.cart.savings') | default('وفّرت')}} <span x-text="displaySavings()"></span></span>
+          </div>
+          {% endif %}
+        </div>
+
+        {# Divider #}
+        <hr class="border-0 h-px" style="background: var(--color-border);"/>
+
+        {# Variant Options #}
+        {% if p.options and p.options | length > 0 %}
+          <div class="flex flex-col gap-5">
+            {% for option in p.options %}
+              <div class="flex flex-col gap-3">
+                <span class="editorial-label font-body-ar" style="color: var(--color-text-secondary);">
+                  {{ option.name }}
+                </span>
+
+                {% if option.type == 'color' %}
+                  <div class="flex flex-wrap gap-2.5">
+                    {% for value in option.values %}
+                      <button @click="selectOption({{ option.name | dump }}, {{ value._id | dump }}, {{ (value.label or value.name or '') | dump }})"
+                              class="anaqa-pd-swatch"
+                              :class="selectedOptions[{{ option.name | dump }}] === {{ value._id | dump }} ? 'active' : ''"
+                              style="background: {% ui "color-value.njk", value=(value.value or ''), label=(value.label or value.name or '') %};"
+                              title="{{ value.label or value.name }}" aria-label="{{ value.label or value.name }}"></button>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="flex flex-wrap gap-2.5">
+                    {% for value in option.values %}
+                      <button @click="selectOption({{ option.name | dump }}, {{ value._id | dump }}, {{ (value.label or value.name or '') | dump }})"
+                              class="anaqa-pd-opt font-body-ar"
+                              :class="selectedOptions[{{ option.name | dump }}] === {{ value._id | dump }} ? 'active' : ''">
+                        {{ value.label or value.name }}
+                      </button>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <hr class="border-0 h-px" style="background: var(--color-border);"/>
+        {% endif %}
+
+        {# Stock Status — one line, four states (Qumra.stock.cap → stockState):
+           soldout · incart (all of it is already in your cart) · low (1…threshold) · instock #}
+        {% if showStockStatus %}
+        <div class="flex items-center gap-1.5 mb-2"
+             :style="'color: ' + ({ soldout: 'var(--color-error, #E53935)', incart: 'var(--color-error, #E53935)', low: 'var(--color-warning, #D97706)', instock: 'var(--color-instock, var(--color-accent))' })[stockState()]">
+          <span class="w-2 h-2 rounded-full" style="background: currentColor;"></span>
+          <span class="text-[13px] font-medium font-body-ar" x-text="stockLine()">{{t('pages.product.in_stock') if canPurchase else t('pages.product.out_of_stock')}}</span>
+        </div>
+        {% endif %}
+
+        {# Quantity + Actions #}
+        <div class="flex flex-col gap-5 max-sm:gap-4 max-sm:p-5 max-sm:bg-[var(--color-surface)] max-sm:border max-sm:border-[color:var(--color-border)]">
+
+          {# Quantity Row #}
+          <div class="flex items-center gap-4">
+            <span class="editorial-label font-body-ar" style="color: var(--color-text-secondary);">{{ t('pages.product.quantity') | default('الكمية') }}</span>
+            <div class="anaqa-pd-qty">
+              <button type="button" @click="qty > 1 && qty--" :disabled="qty <= 1"
+                      style="color: var(--color-text-secondary);">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+              </button>
+              <span style="color: var(--color-text-primary);" x-text="qty">1</span>
+              <button type="button" @click="qty < maxQty() && qty++" :disabled="qty >= maxQty()"
+                      style="color: var(--color-text-secondary);">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              </button>
+            </div>
+          </div>
+
+          {# Buttons #}
+          <div class="flex flex-col gap-3">
+            {# Add to Cart #}
+            <button type="button" @click="addToCart()" :disabled="!canBuy() || addingToCart" x-ref="mainAdd"
+                    class="anaqa-pd-add font-body-ar"
+                    :style="addedSuccess ? 'background: var(--color-success); color: #fff;' : 'background: var(--color-accent); color: var(--color-bg-primary);'">
+              <template x-if="addingToCart">
+                <span class="flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  {{ t('common.loading') }}
+                </span>
+              </template>
+              <template x-if="addedSuccess && !addingToCart">
+                <span class="flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  {{ t('pages.product.added') }}
+                </span>
+              </template>
+              <template x-if="!addingToCart && !addedSuccess">
+                <span class="flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                  {{ t('pages.product.add_to_cart') }}
+                </span>
+              </template>
+            </button>
+
+            {# Buy Now #}
+            <button type="button" @click="buyNow()" :disabled="!canBuy() || addingToCart"
+                    class="anaqa-pd-buy font-body-ar">
+              <span class="flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                {{ t('pages.product.buy_now') | default('إتمام الشراء') }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {# Sticky mobile buy bar — shows once the main button has scrolled away #}
+        <div class="attar-pd-bar lg:hidden" :class="showBar ? 'is-on' : ''" aria-hidden="true" :aria-hidden="showBar ? 'false' : 'true'">
+          <div class="min-w-0 flex-1">
+            <p class="text-[13px] font-body-ar truncate" style="color: var(--color-text-primary); margin: 0;">{{ p.title }}</p>
+            <p class="text-[14px] font-bold font-body-ar" style="color: var(--color-text-primary); margin: 0;" x-text="displayPrice()">{{ p.pricing.price | money if p.pricing else '' }}</p>
+          </div>
+          <button type="button" @click="addToCart()" :disabled="!canBuy() || addingToCart" :tabindex="showBar ? 0 : -1"
+                  class="attar-pd-bar__btn font-body-ar" x-text="canBuy() ? {{ t('pages.product.add_to_cart') | dump }} : {{ t('pages.product.out_of_stock') | dump }}">{{ t('pages.product.add_to_cart') }}</button>
+        </div>
+
+        {# Description — after the buy box, so a long text never pushes «add to cart» away #}
+        {% if p.description %}
+          <div class="flex flex-col gap-3">
+            <h3 class="text-[14px] font-semibold uppercase tracking-[0.06em] font-body-ar" style="color: var(--color-text-secondary);">
+              {{ t('pages.product.description') | default('الوصف') }}
+            </h3>
+            <div class="attar-prose leading-[1.8] font-body-ar" style="color: {{ descColor }}; font-size: {{ descSize }}px;">
+              {{ p.description | safe }}
+            </div>
+          </div>
+        {% endif %}
+
+        {# Scent notes — renders product tags as note chips, hidden if none #}
+        {% set scentTags = p.tags | default([]) %}
+        {% if scentTags and (scentTags | length) > 0 %}
+          <div class="flex flex-col gap-3">
+            <h3 class="text-[14px] font-semibold uppercase tracking-[0.06em] font-body-ar" style="color: var(--color-text-secondary);">
+              {{ t('pages.product.notes') | default('النوتات العطرية') }}
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              {% for tag in scentTags %}
+                {% if tag is string %}{% set tagText = tag %}
+                {% elif tag %}{% set tagText = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}
+                {% else %}{% set tagText = '' %}{% endif %}
+                {% if tagText %}<span class="attar-note-tag" style="font-size: 12px; padding: 5px 13px;">{{ tagText }}</span>{% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          <hr class="border-0 h-px" style="background: var(--color-border);"/>
+        {% endif %}
+
+      </div>
+    </div>
+
+    {# ——— Reviews Section ——— #}
+    {% if showReviews %}
+      <div class="mt-20 max-sm:mt-14">
+
+        {# Section Header #}
+        <div class="flex flex-col items-center mb-12 max-sm:mb-8">
+          <span class="block w-14 mx-auto mb-6" style="height:1px; background: var(--color-border);"></span>
+          <h2 class="text-[28px] max-sm:text-[22px] font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">
+            {{ t('pages.product.reviews') | default('تقييمات العملاء') }}
+            {% if p.totalReviews > 0 %}
+              <span class="font-normal text-[16px]" style="color: var(--color-text-tertiary);">({{ p.totalReviews }})</span>
+            {% endif %}
+          </h2>
+        </div>
+
+        {% if p.totalReviews > 0 and p.ratings %}
+          <div class="max-w-2xl mx-auto">
+
+            {# Summary Card #}
+            <div class="flex items-start gap-8 max-sm:flex-col max-sm:gap-5 p-8 max-sm:p-6 mb-4"
+                 style="background: var(--color-bg-secondary); border: 1px solid var(--color-border);">
+              <div class="flex flex-col items-center gap-2 min-w-[100px]">
+                <span class="text-[48px] max-sm:text-[40px] font-bold leading-none" style="color: var(--color-text-primary);">{{ p.averageRating }}</span>
+                <div class="flex items-center gap-0.5">
+                  {% for i in range(5) %}
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                         style="color: {% if i < p.averageRating %}var(--color-accent){% else %}var(--color-border){% endif %};">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  {% endfor %}
+                </div>
+                <span class="text-[13px] font-body-ar" style="color: var(--color-text-tertiary);">
+                  {{ p.totalReviews }} {{ t('pages.product.reviews_count') | default('تقييم') }}
+                </span>
+              </div>
+
+              {# Rating Bars #}
+              <div class="flex-1 flex flex-col gap-2.5 w-full">
+                {% for star in [5, 4, 3, 2, 1] %}
+                  {% set count = p.ratings[star | string] | default(0) %}
+                  {% set percent = (count / p.totalReviews * 100) | round if p.totalReviews > 0 else 0 %}
+                  <div class="flex items-center gap-2.5">
+                    <div class="flex items-center gap-1 w-10 justify-end shrink-0">
+                      <span class="text-[13px] font-medium" style="color: var(--color-text-secondary);">{{ star }}</span>
+                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" style="color: var(--color-accent);">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    </div>
+                    <div class="flex-1 h-2.5 rounded-full overflow-hidden" style="background: var(--color-border);">
+                      <div class="h-full rounded-full transition-all duration-700"
+                           style="width: {{ percent }}%; background: var(--color-accent);"></div>
+                    </div>
+                    <span class="text-[12px] w-8 text-end tabular-nums" style="color: var(--color-text-tertiary);">{{ count }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            {# Individual Reviews #}
+            {% if p.reviews and p.reviews | length > 0 %}
+              <div>
+                {% for review in p.reviews %}
+                  <div class="anaqa-pd-review">
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 flex items-center justify-center text-[14px] font-bold shrink-0"
+                             style="background: var(--color-accent-light); color: var(--color-accent);">
+                          {{ review.customerName[0] | upper if review.customerName else '?' }}
+                        </div>
+                        <div>
+                          <p class="text-[14px] font-semibold font-body-ar" style="color: var(--color-text-primary);">{{ review.customerName | default('Customer') }}</p>
+                          {% if review.createdAt %}
+                            <p class="text-[12px] font-body-ar" style="color: var(--color-text-tertiary);">{{ review.createdAt | date('yyyy-MM-dd') }}</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-0.5 shrink-0">
+                        {% for i in range(5) %}
+                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"
+                               style="color: {% if i < review.rating %}var(--color-accent){% else %}var(--color-border){% endif %};">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% if review.comment %}
+                      <p class="text-[14px] leading-[1.8] font-body-ar" style="color: var(--color-text-secondary);">{{ review.comment }}</p>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+        {% else %}
+          {# No Reviews #}
+          <div class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="w-16 h-16 flex items-center justify-center mb-4"
+                 style="background: var(--color-accent-light);">
+              <svg class="w-7 h-7" fill="none" stroke="var(--color-accent)" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+              </svg>
+            </div>
+            <p class="text-[14px] font-body-ar" style="color: var(--color-text-tertiary);">{{ t('pages.product.no_reviews') | default('لا توجد تقييمات بعد') }}</p>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ——— Related Products ——— #}
+    {% if relatedProducts and relatedProducts | length > 0 %}
+      <div class="mt-20 max-sm:mt-14">
+        <div class="flex flex-col items-center mb-12 max-sm:mb-8">
+          <span class="block w-14 mx-auto mb-6" style="height:1px; background: var(--color-border);"></span>
+          <h2 class="text-[28px] max-sm:text-[22px] font-heading-ar" style="color: var(--color-text-primary); font-weight: 500;">
+            {{ t('pages.product.related_products') | default('قد يعجبك أيضاً') }}
+          </h2>
+        </div>
+        {# columns follow the count: the open product is left out, so 4 can become 3 or 1 #}
+        {% set _relN = relatedProducts | length %}
+        <div class="grid gap-6 max-sm:gap-4 {% if _relN == 1 %}grid-cols-1 max-w-[320px] mx-auto{% elif _relN == 2 %}grid-cols-2 max-w-3xl mx-auto{% elif _relN == 3 %}grid-cols-2 md:grid-cols-3 attar-fit-span-sm attar-lone-sm2{% else %}grid-cols-2 lg:grid-cols-4 attar-fit-4 attar-fit-span attar-fit-span-sm{% endif %}">
+          {% for rp in relatedProducts %}
+            <div class="reveal">
+              {% ui "product-card.njk", product=rp %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  {# ===== JAVASCRIPT ===== #}
+  <script>
+    (function() {
+      var wid = '{{ widget.id }}';
+      var container = null;
+
+      window['productPage_' + wid] = function() {
+        /* Stock lives in Qumra.stock.cap (main.js): availableNow = store cap − what this
+           shopper already holds; maxQty caps the stepper; stockState/stockLine drive
+           the one status line; canBuy gates both buttons. */
+        return Object.assign(Qumra.stock.cap('{{ p._id }}', {
+          quantity: {{ p.quantity | default(0, true) }},
+          trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if p.allowBackorder else 'false' }}
+        }, {{ (p.slug or p.handle or '') | dump | safe }}), {
+          qty: 1,
+          baseSku: {{ baseSku | dump | safe }},
+          currentSku: {{ baseSku | dump | safe }},
+          activeImageIndex: 0,
+          variantImageUrl: null,
+          addingToCart: false,
+          addedSuccess: false,
+          showBar: false,
+          variantSelected: false,
+          selectedOptions: {},
+          selectedLabels: {},
+          zooming: false,
+          zoomX: 50,
+          zoomY: 50,
+          currentVariantId: null,
+          currentVariantQuantity: {{ p.quantity | default(0, true) }},
+          unitPrice: {{ p.pricing.price | default(0, true) }},
+          unitComparePrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+          discountPercent: {{ (discount if hasDiscount else 0) | int }},
+
+          displayPrice() {
+            return window.formatMoney ? window.formatMoney(this.unitPrice * this.qty) : '';
+          },
+          displayUnitPrice() {
+            return window.formatMoney ? window.formatMoney(this.unitPrice) : '';
+          },
+          displayComparePrice() {
+            if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+            return window.formatMoney ? window.formatMoney(this.unitComparePrice * this.qty) : '';
+          },
+          displaySavings() {
+            if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+            return window.formatMoney ? window.formatMoney((this.unitComparePrice - this.unitPrice) * this.qty) : '';
+          },
+          hasDiscount() {
+            return this.unitComparePrice && this.unitComparePrice > this.unitPrice;
+          },
+
+          {# A variant with no pricing of its own inherits the product's (measured: the
+             platform sends `pricing: {}` or nothing). `variant.images` are raw ids —
+             matched against the gallery to find which photo to show. #}
+          variants: [
+            {% for variant in p.variants %}
+            {% if variant.pricing and variant.pricing.price %}{% set vp = variant.pricing %}
+            {% elif variant.price %}{% set vp = { price: variant.price, compareAtPrice: variant.compareAtPrice } %}
+            {% else %}{% set vp = p.pricing %}{% endif %}
+            {% set vImg = variant.images[0] if (variant.images and variant.images | length) else null %}
+            {% set idx = [] %}
+            {% set vid = ((vImg._id if vImg._id else vImg) | string) if vImg else '' %}
+            {% if vid %}{% for g in gallery %}{% if (g._id | string) == vid %}{% set _ = idx.push(loop.index0) %}{% endif %}{% endfor %}{% endif %}
+            { id: '{{ variant._id }}', isVariant: true, sku: {{ (variant.sku or (variant.identification and variant.identification.sku) or '') | dump | safe }}, price: {{ vp.price | default(0, true) }}, compareAtPrice: {{ vp.compareAtPrice | default(0, true) }}, quantity: {{ variant.quantity | default(0, true) }}, trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }}, allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }}, imageIndex: {{ idx[0] if idx | length else -1 }}, options: {{ (variant.options or []) | dump | safe }} }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ],
+
+          init() {
+            container = document.getElementById('product-' + wid);
+            {% for option in p.options %}
+              {% if option.values | length > 0 %}
+                this.selectedOptions[{{ option.name | dump | safe }}] = '{{ option.values[0]._id }}';
+                this.selectedLabels[{{ option.name | dump | safe }}] = {{ (option.values[0].label or option.values[0].name or '') | dump | safe }};
+              {% endif %}
+            {% endfor %}
+            {% if p.options | length > 0 %}
+              this.variantSelected = true;
+              {# a sold-out first combination: open on the first one that can be bought #}
+              var byValue = { {% for option in p.options %}{% for value in option.values %}{{ (value._id | string) | dump | safe }}: [{{ option.name | dump | safe }}, {{ (value.label or value.name or '') | dump | safe }}],{% endfor %}{% endfor %} };
+              Qumra.stock.openOnBuyable(this, byValue);
+              this.matchVariant();
+            {% endif %}
+            /* What is already in the cart is read for the CAP, never to pre-fill the
+               stepper — /ajax/cart/add ADDS, so pre-filling 3 then adding makes 6. */
+            this._watchCart();
+            if (window.GLightbox) GLightbox({ selector: '.glightbox-' + wid });
+            var self = this;
+            /* a scroll check, not an IntersectionObserver: a jump past the button
+               (anchor, fast fling) never crosses it, so an observer would miss it */
+            var btn = this.$refs.mainAdd, ticking = false;
+            function syncBar() {
+              ticking = false;
+              var on = btn.getBoundingClientRect().bottom < 0;
+              if (on !== self.showBar) { self.showBar = on; document.documentElement.classList.toggle('has-buy-bar', on); }
+            }
+            if (btn) {
+              window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(syncBar); } }, { passive: true });
+              syncBar();
+            }
+          },
+
+          setImage(idx) {
+            this.activeImageIndex = idx;
+            this.variantImageUrl = null;
+          },
+
+          selectOption(name, valueId, label) {
+            this.selectedOptions[name] = valueId;
+            this.selectedLabels[name] = label;
+            this.variantSelected = true;
+            this.matchVariant();
+            /* The gallery follows the chosen variant: its own photo if it is in the
+               gallery (scrolled into view), otherwise fetched and shown on top. */
+            var v = this.variants.find(function(x) { return x.id === this.currentVariantId; }, this);
+            if (!v) return;
+            if (v.imageIndex >= 0) {
+              this.setImage(v.imageIndex);
+              this._showSlide(v.imageIndex);
+              return;
+            }
+            var self = this, id = v.id;
+            Qumra.stock.variantImage({{ (p.slug or p.handle or '') | dump | safe }}, id).then(function(url) {
+              if (url && self.currentVariantId === id) { self.variantImageUrl = url; self._showSlide(0); }
+            });
+          },
+
+          /* Brings a gallery photo into view: a horizontal swipe on mobile, a vertical
+             scroll on desktop — `nearest` does nothing when it is already visible. */
+          _showSlide(i) {
+            var slide = container && container.querySelectorAll('.anaqa-pd-slide')[i];
+            if (slide) slide.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          },
+
+          matchVariant() {
+            var selectedIds = Object.values(this.selectedOptions);
+            var matched = this.variants.find(function(v) {
+              if (!v.options || !v.options.length) return false;
+              if (v.options.length !== selectedIds.length) return false;
+              for (var i = 0; i < selectedIds.length; i++) { if (v.options.indexOf(selectedIds[i]) === -1) return false; }
+              return true;
+            });
+            if (matched) {
+              this.currentVariantId = matched.id;
+              this.unitPrice = matched.price;
+              this.currentVariantQuantity = matched.quantity;
+              this.currentSku = matched.sku || this.baseSku;
+              this.stockEntity = matched;
+              this._clampQty();
+              if (matched.compareAtPrice && matched.compareAtPrice > matched.price) {
+                this.unitComparePrice = matched.compareAtPrice;
+                this.discountPercent = Math.floor(((matched.compareAtPrice - matched.price) / matched.compareAtPrice) * 100);
+              } else {
+                this.unitComparePrice = 0;
+                this.discountPercent = 0;
+              }
+            }
+          },
+
+          async addToCart() {
+            if (!this.canBuy() || this.addingToCart) return;
+            this.addingToCart = true;
+            try {
+              var optionIds = Object.values(this.selectedOptions);
+              await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+              this.addedSuccess = true;
+              setTimeout(() => { this.addedSuccess = false; }, 2000);
+            } catch (err) {
+              console.error('Add to cart error:', err);
+            } finally {
+              this.addingToCart = false;
+            }
+          },
+
+          async buyNow() {
+            if (!this.canBuy() || this.addingToCart) return;
+            this.addingToCart = true;
+            try {
+              var optionIds = Object.values(this.selectedOptions);
+              await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+              window.location.href = '/cart';
+            } catch (err) {
+              console.error('Buy now error:', err);
+              this.addingToCart = false;
+            }
+          },
+
+          copyLink() {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(window.location.href);
+            }
+          }
+        });
+      };
+    })();
+  </script>
+</section>
+{% else %}
+{# The product is gone (deleted / unpublished) — say so instead of an empty page #}
+<section class="py-24 max-sm:py-16" style="background: var(--color-bg-primary);">
+  <div class="container mx-auto px-6 max-sm:px-4 text-center flex flex-col items-center">
+    <h1 class="font-heading-ar mb-4" style="font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 500;">{{ t('pages.product.not_found') }}</h1>
+    <a href="/shop" class="anaqa-btn font-body-ar mt-4">{{ t('cart.continue_shopping') }}</a>
+  </div>
+</section>
+{% endif %}

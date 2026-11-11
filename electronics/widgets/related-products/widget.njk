@@ -1,0 +1,36 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# بيانات الصفحة تصل للويدجت داخل context (context.product / context.related_products) — راجع product-detail #}
+{% set ctx = context or {} %}
+{% set cur = product or ctx.product %}
+{% set source = (cur and (cur.relatedProducts or cur.related)) or relatedProducts or related_products or ctx.related_products or wd.products or [] %}
+{% set currentId = cur._id if cur else '' %}
+{% set limit = wd.limit | default(8) | int %}
+{% set items = [] %}
+{% for item in source %}
+  {# لا نعرض المنتج الحالي نفسه (PRD-16) #}
+  {% if item and item._id != currentId and (items | length) < limit %}{% if items.push(item) %}{% endif %}{% endif %}
+{% endfor %}
+{# المنتج المفتوح بيتشال، فممكن يفضل كارت واحد: كارت لوحده مايتعرضش، و2 أو 3 في النص (.lg-rail[data-n]) #}
+{% if (items | length) > 1 %}
+<section class="lg-section" data-lg-slider-scope>
+  <div class="lg-container">
+    <div class="lg-section-head">
+      <h2 class="lg-title">{{ (wd['title' + L] or wd.title) | default(t('product.related_products')) }}</h2>
+      {% if items | length > 4 %}
+        <div class="lg-slider-nav">
+          <button type="button" class="btn btn-glass btn-icon" data-lg-rail-prev aria-label="{{t('common.previous')}}">{% ui "icon.njk", name="prev", cls="w-4 h-4 lg-flip-rtl" %}</button>
+          <button type="button" class="btn btn-glass btn-icon" data-lg-rail-next aria-label="{{t('common.next')}}">{% ui "icon.njk", name="chevron", cls="w-4 h-4 lg-flip-rtl" %}</button>
+        </div>
+      {% endif %}
+    </div>
+    <div class="lg-rail" data-n="{{ items | length }}">
+      {% for item in items %}
+        <div>{% ui "product-card.njk", product=item %}</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

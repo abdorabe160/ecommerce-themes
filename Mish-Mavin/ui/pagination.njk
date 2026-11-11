@@ -1,0 +1,16 @@
+{# ترقيم الصفحات — يظهر فقط عند وجود أكثر من صفحة. main.js بيحافظ على الفلاتر والترتيب في الرابط (data-page) #}
+{% set ctx = context or {} %}
+{% set pg = (collection.pagination if (collection and collection.pagination) else (ctx.pagination or ((ctx.shop.pagination) if (ctx.shop and ctx.shop.pagination) else {}))) %}
+{% set current = pg.currentPage | default(1) %}
+{% set total = pg.totalPages | default(1) %}
+{% if total > 1 %}
+<nav class="mw-pagination" aria-label="{{ t('common.pagination') }}">
+  {% if current > 1 %}<a href="?page={{ current - 1 }}" data-page="{{ current - 1 }}" rel="prev" aria-label="{{ t('common.previous') }}"><span aria-hidden="true" class="mw-pagination__arrow">‹</span></a>{% endif %}
+  {% for n in range(1, total + 1) %}
+    {% if n == current %}<span class="is-current" aria-current="page">{{ n }}</span>
+    {% elif n == 1 or n == total or (n >= current - 1 and n <= current + 1) %}<a href="?page={{ n }}" data-page="{{ n }}">{{ n }}</a>
+    {% elif n == current - 2 or n == current + 2 %}<span class="mw-pagination__gap" aria-hidden="true">…</span>{% endif %}
+  {% endfor %}
+  {% if current < total %}<a href="?page={{ current + 1 }}" data-page="{{ current + 1 }}" rel="next" aria-label="{{ t('common.next') }}"><span aria-hidden="true" class="mw-pagination__arrow">›</span></a>{% endif %}
+</nav>
+{% endif %}

@@ -1,0 +1,125 @@
+{
+  "name": "الهيدر",
+  "settings": {
+    "header_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الرئيسية",
+        "en": "Main menu"
+      },
+      "default": "header-menu"
+    },
+    "show_categories_menu": {
+      "type": "boolean",
+      "label": {
+        "ar": "قائمة منسدلة بالتصنيفات في الهيدر",
+        "en": "Categories dropdown in the header"
+      },
+      "default": true
+    },
+    "show_shop_link": {
+      "type": "boolean",
+      "label": {
+        "ar": "رابط \"المتجر\" (كل المنتجات) في الهيدر والقائمة الجانبية",
+        "en": "\"Shop\" link (all products) in the header and side menu"
+      },
+      "default": true
+    },
+    "menu_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "تصنيفات القائمة المنسدلة",
+        "en": "Dropdown categories"
+      }
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "هيدر ثابت أثناء التمرير",
+        "en": "Sticky header"
+      },
+      "default": true
+    },
+    "hide_on_scroll": {
+      "type": "boolean",
+      "label": {
+        "ar": "إخفاء الهيدر عند النزول وإظهاره عند الصعود",
+        "en": "Hide on scroll down, show on scroll up"
+      },
+      "default": true
+    },
+    "show_announcement": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط الإعلان",
+        "en": "Show announcement bar"
+      },
+      "default": false
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان",
+        "en": "Announcement text"
+      },
+      "default": ""
+    },
+    "announcement_text_en": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان (إنجليزي)",
+        "en": "Announcement text (English)"
+      }
+    },
+    "announcement_link": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الإعلان",
+        "en": "Announcement link"
+      },
+      "default": ""
+    },
+    "logo_height": {
+      "type": "number",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo height"
+      },
+      "default": 34,
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px"
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار البحث",
+        "en": "Show search"
+      },
+      "default": true
+    },
+    "show_currency": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مبدّل العملة (يظهر فقط عند توفر عملتين فأكثر)",
+        "en": "Show currency switcher (only appears with 2+ currencies)"
+      },
+      "default": true
+    },
+    "currencies": {
+      "type": "string",
+      "label": {
+        "ar": "العملات المتاحة — كودات ISO مفصولة بفواصل (مثال: EGP,SAR,USD). فارغ = عملات قمرة فقط",
+        "en": "Available currencies — ISO codes, comma separated (e.g. EGP,SAR,USD). Empty = Qumra currencies only"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الزجاجي"
+    }
+  ]
+}

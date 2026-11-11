@@ -1,0 +1,269 @@
+{# ============================================================================
+   HYPER · QUICK VIEW
+   ----------------------------------------------------------------------------
+   Fetched by main.js as: /products/{slug}?widgetKey=quick-view-product
+   Injected into #quick-view-content-dynamic in layouts/layout.njk, after which
+   Alpine.initTree() runs over it.
+
+   ⚠️  JS CONTRACT — do not rename:
+     · reads `context.product`
+     · exposes window.quickViewProduct(), called by the x-data below
+     · matches variants client-side against `variant.options` (option-VALUE ids)
+     · adds via Qumra.cart.add(id, qty, optionIds)
+
+   A DELIBERATELY reduced PDP: gallery, name, price, stock, options, quantity,
+   add. No breadcrumb, no panels, no related row — the modal exists to settle a
+   decision in a few seconds, and the full page is one click away.
+
+   Styling reuses the PDP's own classes (.hy-pdp-brand / -price / -opt /
+   -swatch / -stock, .hy-qty, .hy-btn) so the modal and the page can never
+   drift apart. Only the layout around them is quick-view specific (.hy-qv-*).
+   ========================================================================= #}
+
+{% set p = context.product %}
+
+{% if p %}
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{# `| int` truncates — it is the Nunjucks equivalent of the Math.floor()
+   the JS mirrors use. `| round` here advertised 38% for a 37.5% cut. #}
+{% set discount = ((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice * 100) | int if hasDiscount else 0 %}
+{% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+{% set images = p.images | default([], true) %}
+{% set imgCount = images | length %}
+{% set url = '/products/' ~ (p.slug | default(p.handle, true) | default(p._id, true)) %}
+{% set brand = p.brand | default(p.vendor, true) | default('', true) %}
+{# widgets do not inherit the layout's `set` locals — resolve it here #}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+<div class="hy-qv" x-data="quickViewProduct()" x-init="init()">
+
+  {# ═══════════════ gallery ═══════════════
+     Portrait stage with the thumbs UNDER it, not beside it. The modal is
+     width-constrained and height-capped at 90dvh — a vertical strip like the
+     PDP's would eat the stage's width and shorten the garment shot, which is
+     the one thing the shopper opened the modal to see. #}
+  <div class="hy-qv-media">
+    <div class="hy-qv-stage">
+      {% if imgCount > 0 %}
+        {% for img in images %}
+          {# The first shot carries a plain x-show with no x-cloak so the modal
+             is never blank in the frame before Alpine boots. #}
+          <div class="hy-qv-shot"
+               x-show="activeImage === {{ loop.index0 }}"
+               {% if not loop.first %}x-cloak{% endif %}>
+            <img src="{{ img.fileUrl }}" alt="{{ p.title }}"
+                 {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="hy-qv-shot">
+          <span class="hy-pdp-noimg">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18"/><circle cx="8.75" cy="9" r="1.5"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+            </svg>
+          </span>
+        </div>
+      {% endif %}
+
+      <span class="hy-qv-badge" x-show="hasDiscount()" x-cloak
+            x-text="'−' + discountPercent + '%'"></span>
+    </div>
+
+    {% if imgCount > 1 %}
+      <div class="hy-qv-thumbs" role="group" aria-label="{{ p.title }}">
+        {% for img in images %}
+          <button type="button" class="hy-qv-thumb"
+                  :class="activeImage === {{ loop.index0 }} && 'is-active'"
+                  :aria-pressed="activeImage === {{ loop.index0 }}"
+                  @click="activeImage = {{ loop.index0 }}"
+                  aria-label="{{ loop.index }}">
+            <img src="{{ img.fileUrl }}" alt="" loading="lazy"/>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# ═══════════════ info ═══════════════ #}
+  <div class="hy-qv-info">
+
+    {% if brand %}<span class="hy-pdp-brand">{{ brand }}</span>{% endif %}
+
+    <a href="{{ url }}" class="hy-qv-title">{{ p.title }}</a>
+
+    {# ---- price ----
+       The headline figure is the LINE TOTAL (unit × qty) so the stepper has a
+       visible effect; the unit price returns as a subtitle the moment qty > 1
+       so "2,000ج.م" on a 1,000ج.م product is never a mystery. #}
+    <div class="hy-pdp-prices hy-qv-prices">
+      <span class="hy-pdp-price" :class="hasDiscount() && 'hy-pdp-price--sale'"
+            x-text="displayPrice()">{% if not (p.pricing and (p.pricing.price or p.pricing.price == 0)) %}{% elif p.pricing.price == 0 %}{{t('common.free')}}{% else %}{{ p.pricing.price | default(0, true) | money }}{% endif %}</span>
+      <span class="hy-pdp-was" x-show="hasDiscount()" x-cloak x-text="displayComparePrice()"></span>
+    </div>
+
+    <p class="hy-qv-unit" x-show="qty > 1" x-cloak>
+      <bdi x-text="displayUnitPrice()"></bdi>
+      <span aria-hidden="true">×</span>
+      <bdi x-text="qty"></bdi>
+    </p>
+
+    {# ---- stock ---- #}
+    <div class="hy-qv-stock">
+      <span class="hy-pdp-stock hy-pdp-stock--in" x-show="!isOutOfStock">
+        <i></i>{{t('pages.product.in_stock')}}
+      </span>
+      <span class="hy-pdp-stock hy-pdp-stock--out" x-show="isOutOfStock" x-cloak>
+        <i></i>{{t('pages.product.out_of_stock')}}
+      </span>
+    </div>
+
+    {# ---- options ----
+       data- attributes rather than interpolating the label into the handler:
+       a label containing a quote would close the attribute and kill Alpine on
+       the whole injected tree. Same pattern as the PDP. #}
+    {% for option in p.options %}
+      {% if (option.values | length) > 0 %}
+        <div class="hy-pdp-opt">
+          <div class="hy-pdp-opt-head">
+            <span class="hy-pdp-opt-name">{{ option.name }}:</span>
+            {# nothing is pre-selected, so the head doubles as the prompt #}
+            <span class="hy-pdp-opt-value" data-opt="{{ option.name }}"
+                  data-prompt="{{ t('pages.product.select_option') | replace('{{option}}', (option.name or '')) }}"
+                  :class="!selectedOptions[$el.dataset.opt] && 'is-empty'"
+                  x-text="selectedLabels[$el.dataset.opt] || $el.dataset.prompt"></span>
+          </div>
+          <div class="hy-pdp-swatches" role="group" aria-label="{{ option.name }}">
+            {% for v in option.values %}
+              {% set vImg = v.image.fileUrl if v.image and v.image.fileUrl else '' %}
+              <button type="button" class="hy-pdp-swatch {{ 'hy-pdp-swatch--img' if vImg }}"
+                      data-opt="{{ option.name }}"
+                      data-val="{{ v._id }}"
+                      data-label="{{ v.label or v.title or v.name or '' }}"
+                      :aria-pressed="selectedOptions[$el.dataset.opt] === $el.dataset.val ? 'true' : 'false'"
+                      :class="{
+                        'is-active': selectedOptions[$el.dataset.opt] === $el.dataset.val,
+                        'is-unavailable': valueDisabled($el.dataset.opt, $el.dataset.val)
+                      }"
+                      :disabled="valueDisabled($el.dataset.opt, $el.dataset.val)"
+                      :title="valueDisabled($el.dataset.opt, $el.dataset.val)
+                        ? _strings.variantSoldOut : $el.dataset.label"
+                      @click="selectOption($el.dataset.opt, $el.dataset.val, $el.dataset.label)"
+                      {% if vImg %}title="{{ v.label or v.title or v.name or '' }}" aria-label="{{ v.label or v.title or v.name or '' }}"{% endif %}>
+                {% if vImg %}<img src="{{ vImg }}" alt="" loading="lazy"/>{% else %}{{ v.label or v.title or v.name or '' }}{% endif %}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    {# ---- qty + add ---- #}
+    <div class="hy-qv-actions">
+      <div class="hy-qty">
+        <button type="button" @click="decQty()" :disabled="qty <= 1" aria-label="−">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M5 12h14"/></svg>
+        </button>
+        <span x-text="qty">1</span>
+        <button type="button" @click="incQty()"
+                :disabled="maxQty() !== null && qty >= maxQty()" aria-label="+">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+      {# enabled while the selection is incomplete on purpose — see the engine #}
+      <button type="button" class="hy-btn hy-btn--solid"
+              @click="addToCart()" :disabled="addDisabled()">
+        <span x-show="addingToCart" class="hy-spinner" style="width:15px;height:15px;"></span>
+        <span x-show="addedSuccess && !addingToCart" x-cloak>{{t('pages.product.added')}}</span>
+        <span x-show="!addingToCart && !addedSuccess">
+          <span x-show="!isOutOfStock">{{t('pages.product.add_to_cart')}}</span>
+          <span x-show="isOutOfStock" x-cloak>{{t('pages.product.out_of_stock')}}</span>
+        </span>
+      </button>
+    </div>
+
+    <p class="hy-form-error" x-show="formError" x-cloak x-text="formError" role="alert"></p>
+
+    <a href="{{ url }}" class="hy-qv-full">
+      {{t('pages.product.view_full_details')}}
+      <svg class="rtl-flip" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+    </a>
+
+  </div>
+</div>
+
+<script>
+  window.quickViewProduct = function () {
+    /* Same shared engine as the product page (assets/main.js → HayatVariants),
+       so the modal cannot develop its own idea of what is addable. Only the
+       gallery state is local to the quick view. */
+    return Object.assign(window.HayatVariants({
+      productId: '{{ p._id }}',
+      sku: {{ (p.sku | default('', true)) | dump | safe }},
+      price: {{ p.pricing.price | default(0, true) }},
+      noPrice: {{ 'false' if (p.pricing and (p.pricing.price or p.pricing.price == 0)) else 'true' }},
+      compareAtPrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+      quantity: {{ p.quantity | default(0, true) }},
+      trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+      allowBackorder: {{ 'true' if p.allowBackorder else 'false' }},
+
+      groups: [
+        {% for option in p.options %}{% if (option.values | length) > 0 %}
+        { name: {{ (option.name | default('', true)) | dump | safe }},
+          values: [{% for v in option.values %}{ id: '{{ v._id }}', label: {{ (v.label or v.title or v.name or '') | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}] }{% if not loop.last %},{% endif %}
+        {% endif %}{% endfor %}
+      ],
+
+      {# a variant with an empty `pricing` inherits the product's price #}
+      variants: [
+        {% for variant in p.variants %}
+        {
+          id: '{{ variant._id }}',
+          price: {{ variant.pricing.price | default(p.pricing.price, true) | default(0, true) }},
+          compareAtPrice: {{ variant.pricing.compareAtPrice | default(p.pricing.compareAtPrice, true) | default(0, true) }},
+          sku: {{ (variant.sku | default('', true)) | dump | safe }},
+          quantity: {{ variant.quantity | default(0, true) }},
+          {# what the server actually counts — see the note in HayatVariants #}
+          available: {{ variant.inventoryLevel.available | default(variant.quantity, true) | default(0, true) }},
+          trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+          allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+          options: {{ (variant.options | default([], true)) | dump | safe }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+
+      strings: {
+        selectOptionsFirst: {{ t('pages.product.select_options_first') | dump | safe }},
+        comboUnavailable:   {{ t('pages.product.combo_unavailable') | dump | safe }},
+        maxQty:             {{ t('pages.product.max_qty') | dump | safe }},
+        outOfStock:         {{ t('pages.product.out_of_stock') | dump | safe }},
+        variantSoldOut:     {{ t('pages.product.variant_sold_out') | dump | safe }},
+        addError:           {{ t('common.error') | dump | safe }},
+        listSeparator:      {{ ('، ' if isAr else ', ') | dump | safe }}
+      }
+    }), {
+      activeImage: 0,
+      init() {
+        this.initVariants();
+
+        /* Same cart-aware ceiling the product page uses — maxQty() subtracts
+           what is already in the cart, and it can only do that if something
+           fills `cartLines`. Without this the modal would cap at the store's
+           stock while the page behind it capped at what is left for the
+           shopper, and the two would disagree on the same product.
+
+           No `cart:updated` listener here: the modal is short-lived and closes
+           on an add, so it re-reads on its next open rather than holding a
+           subscription that outlives the markup. */
+        var self = this;
+        Qumra.cart.get()
+          .then(function (data) { self.cartLines = (data && data.items) || []; })
+          .catch(function () { self.cartLines = []; });
+      }
+    });
+  };
+</script>
+{% endif %}

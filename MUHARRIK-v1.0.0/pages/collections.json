@@ -1,0 +1,32 @@
+{
+  "name": "التصنيفات",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "شبكة التصنيفات",
+      "widget": "collections-grid",
+      "settings": {
+        "show_banner": true,
+        "banner_title": "",
+        "banner_text": "",
+        "banner_url": "/shop",
+        "show_breadcrumb": true,
+        "show_heading": true,
+        "title": "",
+        "description": "",
+        "show_toolbar": true,
+        "columns_desktop": 5,
+        "columns_mobile": "2",
+        "image_ratio": "square",
+        "image_fit": "cover",
+        "show_count": true,
+        "hover_zoom": true,
+        "padding_top": 8,
+        "padding_bottom": 48
+      }
+    }
+  ]
+}

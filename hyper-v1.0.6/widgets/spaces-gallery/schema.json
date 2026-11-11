@@ -1,0 +1,221 @@
+{
+  "name": "شريط تمرير كتالوج الصور",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم",
+        "en": "Section title"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر الوصف تحت العنوان",
+        "en": "Supporting line under the title"
+      },
+      "default": ""
+    },
+    "tile_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الصور — سطح المكتب",
+        "en": "Tile height — desktop"
+      },
+      "default": 560,
+      "min": 320,
+      "max": 760,
+      "step": 20,
+      "unit": "px"
+    },
+    "tile_height_mobile": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الصور — الموبايل",
+        "en": "Tile height — mobile"
+      },
+      "default": 340,
+      "min": 220,
+      "max": 480,
+      "step": 20,
+      "unit": "px"
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "رمادي فاتح",
+            "en": "Soft grey"
+          }
+        }
+      ]
+    },
+    "show_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شارة عدد المنتجات على الصورة",
+        "en": "Show the tagged-product badge on each image"
+      },
+      "default": true
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "show_progress": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شريط التقدّم",
+        "en": "Show the progress rail"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الصور",
+        "en": "Tile surface"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "space": {
+      "name": "صورة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة",
+            "en": "Image"
+          }
+        },
+        "ratio": {
+          "type": "select",
+          "label": {
+            "ar": "نسبة الصورة (تحدّد عرضها في الصف)",
+            "en": "Image ratio (this sets its width in the row)"
+          },
+          "default": "3x4",
+          "options": [
+            {
+              "value": "2x3",
+              "label": {
+                "ar": "طولي ضيّق ٢:٣",
+                "en": "Tall 2:3"
+              }
+            },
+            {
+              "value": "3x4",
+              "label": {
+                "ar": "طولي ٣:٤",
+                "en": "Portrait 3:4"
+              }
+            },
+            {
+              "value": "1x1",
+              "label": {
+                "ar": "مربّع",
+                "en": "Square"
+              }
+            },
+            {
+              "value": "4x3",
+              "label": {
+                "ar": "عرضي ٤:٣",
+                "en": "Landscape 4:3"
+              }
+            },
+            {
+              "value": "16x9",
+              "label": {
+                "ar": "عريض ١٦:٩",
+                "en": "Wide 16:9"
+              }
+            }
+          ]
+        },
+        "alt": {
+          "type": "string",
+          "label": {
+            "ar": "وصف الصورة (لقارئ الشاشة)",
+            "en": "Image description (for screen readers)"
+          },
+          "default": ""
+        },
+        "products": {
+          "type": "products",
+          "label": {
+            "ar": "المنتجات الظاهرة في الصورة (العدد يظهر في الشارة)",
+            "en": "Products shown in this image (the count appears in the badge)"
+          }
+        },
+        "link_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الصورة · الصفحات المتاحة: / · /shop · /collections · /blogs",
+            "en": "Image URL · available routes: / · /shop · /collections · /blogs"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "شريط تمرير كتالوج الصور"
+    }
+  ]
+}

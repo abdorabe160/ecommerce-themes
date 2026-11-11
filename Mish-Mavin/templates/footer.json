@@ -1,0 +1,49 @@
+{
+    "title": "Footer",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "footer",
+            "widget": "footer",
+            "settings": {
+                "tagline": "",
+                "show_social": true,
+                "show_payments": false
+            },
+            "blocks": [
+                {
+                    "name": "Shop by Category",
+                    "block": "column",
+                    "settings": {
+                        "title": "Shop by Category",
+                        "menu": "header-menu"
+                    }
+                },
+                {
+                    "name": "Help Center",
+                    "block": "column",
+                    "settings": {
+                        "title": "Help Center",
+                        "menu": "footer-menu"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "زر واتساب العائم",
+            "widget": "whatsapp-float",
+            "settings": {
+                "phone_number": "",
+                "message": "",
+                "color": ""
+            }
+        },
+        {
+            "name": "زر العودة للأعلى",
+            "widget": "scroll-top",
+            "settings": {}
+        }
+    ]
+}

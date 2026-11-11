@@ -1,0 +1,127 @@
+{# ============================================================================
+   HYPER PAGE CONTENT — the custom/static page body
+   ----------------------------------------------------------------------------
+   Renders /pages/{slug} — about, contact, terms, privacy, shipping policy…
+
+   ⚠️  UNVERIFIED FIELD NAME. `docs/qalab/variables.md` documents `page.title`,
+   `page.type` and `page.url` — and nothing else. It never says where a custom
+   page's BODY lives, and there is no example in this theme to copy. So instead
+   of betting on one name, this reads the plausible ones in order:
+
+       context.page.content → .body → .description → .html
+       page.content         → .body → .description
+       the widget's own fallback_text setting
+
+   The first non-empty one wins. If every one of them is empty the widget shows
+   a setup hint rather than an empty page — a silently blank /pages/terms is
+   exactly the kind of thing nobody notices until a customer does. Once the real
+   field is confirmed, collapse this to that single lookup and delete the rest.
+
+   The measure is narrow by default: a policy page set to the shop's full
+   1440px runs ~200 characters a line and stops being readable.
+   Styling: style.css → "15.28 STATIC PAGE".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('') %}
+{% set width = d.width | default('narrow') %}
+{% set bg = d.background | default('white') %}
+{% set fallbackText = d.fallback_text | default('') %}
+{% set showUpdated = d.show_updated | default(false) %}
+
+{# ---- the page record: context.page if the runtime provides one, else the global ---- #}
+{% set cp = context.page | default({}) %}
+
+{# ---- title: setting wins, then the page record, then the global ---- #}
+{% set pageTitle = d.title_override | default('') %}
+{% if not pageTitle %}{% set pageTitle = cp.title | default('') %}{% endif %}
+{% if not pageTitle %}{% set pageTitle = page.title | default('') %}{% endif %}
+
+{# ---- body: first non-empty source wins ---- #}
+{% set body = cp.content | default('') %}
+{% if not body %}{% set body = cp.body | default('') %}{% endif %}
+{% if not body %}{% set body = cp.description | default('') %}{% endif %}
+{% if not body %}{% set body = cp.html | default('') %}{% endif %}
+{% if not body %}{% set body = page.content | default('') %}{% endif %}
+{% if not body %}{% set body = page.body | default('') %}{% endif %}
+{% if not body %}{% set body = page.description | default('') %}{% endif %}
+
+{% set updated = cp.updatedAt | default(cp.createdAt) | default('') %}
+
+
+{% set showSide = d.show_sidebar != false %}
+<section id="hy-pg-{{ id }}" class="hy-pg hx-pgp {{ 'is-side' if showSide }}">
+  <div class="hx-pgp-band">
+    <div class="hx-pgp-wrap">
+      {% if showBreadcrumb %}
+        <nav class="hx-crumbs" aria-label="breadcrumb">
+          <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+          <span aria-current="page">{{ pageTitle | default(t('common.home'), true) }}</span>
+        </nav>
+      {% endif %}
+      {% if showTitle and pageTitle %}
+        {% if eyebrow %}<p class="hx-pgp-eyebrow">{{ eyebrow }}</p>{% endif %}
+        <h1 class="hx-pgp-title">{{ pageTitle }}</h1>
+        {% if showUpdated and updated %}
+          <p class="hx-pgp-updated">{{ t('pages.about.last_updated') }} <time datetime="{{ updated }}" data-hy-date>{{ (updated | string).slice(0, 10) }}</time></p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="hx-pgp-wrap hx-pgp-grid {{ 'is-narrow' if width == 'narrow' }}">
+    <div class="hx-pgp-card">
+      {% if body %}
+        {# `.taqa-prose` is the shared typography for authored HTML #}
+        <div class="taqa-prose hy-pg-body hx-pgp-body" dir="auto">{{ body | safe }}</div>
+      {% else %}
+        <div class="hx-pgp-empty">
+          <span class="hx-pgp-empty-ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span>
+          <p class="hx-pgp-empty-t">{{ t('pages.page.empty_title') }}</p>
+          <div class="hx-pgp-empty-d">{{ (fallbackText | replace('<', ' <') | striptags | trim) or t('pages.page.empty_desc') }}</div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if showSide %}
+      <aside class="hx-pgp-side">
+        {# Fixed /pages/… links were dead on any store without those pages: each is a setting now, hidden while empty. #}
+        {% if d.link_privacy or d.link_terms or d.link_shipping %}
+        <nav class="hx-pgp-box" aria-label="{{ t('pgx.links') }}">
+          <p class="hx-pgp-bt">{{ t('pgx.links') }}</p>
+          <ul class="hx-pgp-links" role="list">
+            {% for l in [[d.link_privacy, t('pgx.privacy'), 'lock'], [d.link_terms, t('pgx.terms'), 'doc'], [d.link_shipping, t('pgx.shipping'), 'truck']] %}{% if l[0] %}
+              <li><a href="{{ l[0] }}" data-hx-pgp-link>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{% if l[2] == 'lock' %}<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>{% elif l[2] == 'doc' %}<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>{% else %}<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>{% endif %}</svg>
+                <span>{{ l[1] }}</span>
+                <svg class="rtl-flip hx-pgp-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>
+              </a></li>
+            {% endif %}{% endfor %}
+          </ul>
+        </nav>
+        {% endif %}
+        <div class="hx-pgp-box is-promo">
+          <p class="hx-pgp-bt">{{ (d.side_title or t('pgx.help_title')) | safe }}</p>
+          <p class="hx-pgp-bx">{{ (d.side_text or t('pgx.help_text')) | safe }}</p>
+          <a href="{{ d.side_url | default('/shop') }}" class="hx-pgp-btn">{{ (d.side_button or t('pgx.help_btn')) | safe }}</a>
+        </div>
+      </aside>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var here = decodeURIComponent(location.pathname).replace(/^\/[a-z]{2}(?=\/)/, '').replace(/\/$/, '');
+    document.querySelectorAll('#hy-pg-{{ id }} [data-hx-pgp-link]').forEach(function (a) {
+      if (a.getAttribute('href') === here) { a.classList.add('is-on'); a.setAttribute('aria-current', 'page'); }
+    });
+  })();
+</script>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-pg-' ~ id, c=d %}

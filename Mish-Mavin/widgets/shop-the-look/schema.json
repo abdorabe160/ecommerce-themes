@@ -1,0 +1,64 @@
+{
+  "name": "shop-the-look",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "Shop the look"
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الإطلالة",
+        "en": "Look image"
+      }
+    }
+  },
+  "blocks": {
+    "product": {
+      "name": "منتج",
+      "settings": {
+        "product": {
+          "type": "products",
+          "label": {
+            "ar": "المنتج",
+            "en": "Product"
+          }
+        },
+        "x": {
+          "type": "range",
+          "label": {
+            "ar": "موضع النقطة أفقياً",
+            "en": "Hotspot X"
+          },
+          "default": 50,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%"
+        },
+        "y": {
+          "type": "range",
+          "label": {
+            "ar": "موضع النقطة رأسياً",
+            "en": "Hotspot Y"
+          },
+          "default": 40,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "home",
+      "name": "shop-the-look"
+    }
+  ]
+}

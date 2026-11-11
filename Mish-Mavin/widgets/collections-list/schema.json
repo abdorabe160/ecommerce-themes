@@ -1,0 +1,17 @@
+{
+  "name": "collections-list",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": ""
+    },
+    "collections": {
+      "type": "collections",
+      "label": { "ar": "التصنيفات (اتركها فارغة لعرض الكل)", "en": "Collections (empty = all)" }
+    }
+  },
+  "presets": [
+    { "category": "collections", "name": "collections-list" }
+  ]
+}

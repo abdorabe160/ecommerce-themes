@@ -1,0 +1,6 @@
+<div class="dc-quick-shell" x-show="isOpen('quick')" x-cloak x-transition.opacity @click.self="closeQuick()">
+  <aside class="dc-quick-panel drawer" data-modal="quick" @keydown="trapFocus($event)" role="dialog" aria-modal="true" aria-label="{{ t('product.choose_options') }}">
+    <div class="drawer__head"><p class="font-display font-medium">{{ t('product.choose_options') }}</p><button type="button" class="icon-btn" @click="closeQuick()" aria-label="{{ t('common.close') }}">{% ui "icon.njk", name="close", size=20 %}</button></div>
+    <div class="drawer__body" data-quick-host></div>
+  </aside>
+</div>

@@ -1,0 +1,318 @@
+{
+  "name": "صفحة المنتج",
+  "settings": {
+    "gallery_layout": {
+      "type": "select",
+      "label": {
+        "ar": "تقسيم معرض الصور",
+        "en": "Gallery Layout"
+      },
+      "default": "thumbs-side",
+      "options": [
+        {
+          "value": "thumbs-side",
+          "label": {
+            "ar": "مصغّرات على الجانب",
+            "en": "Thumbnails beside"
+          }
+        },
+        {
+          "value": "thumbs-below",
+          "label": {
+            "ar": "مصغّرات في الأسفل",
+            "en": "Thumbnails below"
+          }
+        },
+        {
+          "value": "stacked",
+          "label": {
+            "ar": "الصور فوق بعضها (بدون مصغّرات)",
+            "en": "Stacked (no thumbnails)"
+          }
+        }
+      ]
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد الصورة",
+        "en": "Image Ratio"
+      },
+      "default": "1/1",
+      "options": [
+        {
+          "value": "1/1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4/5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Portrait 4:5"
+          }
+        },
+        {
+          "value": "3/4",
+          "label": {
+            "ar": "طولي",
+            "en": "Tall 3:4"
+          }
+        }
+      ]
+    },
+    "show_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة بالضغط",
+        "en": "Click to zoom"
+      },
+      "default": true
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مسار التصفّح",
+        "en": "Show breadcrumb"
+      },
+      "default": true
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار التقييم",
+        "en": "Show rating"
+      },
+      "default": true
+    },
+    "show_shade_labels": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار اسم الدرجة مع السواتش",
+        "en": "Show the shade name next to swatches"
+      },
+      "default": true
+    },
+    "show_savings": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مبلغ التوفير",
+        "en": "Show the amount saved"
+      },
+      "default": true
+    },
+    "show_stock_status": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار حالة المخزون",
+        "en": "Show stock status"
+      },
+      "default": true
+    },
+    "show_short_description": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الوصف القصير أسفل السعر — من علامة [وصف قصير] في وصف المنتج",
+        "en": "Show short description under the price — from the [short] marker in the product description"
+      },
+      "default": true
+    },
+    "show_size": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الحجم — من علامة [الحجم] في وصف المنتج",
+        "en": "Show size — from the [size] marker in the product description"
+      },
+      "default": true
+    },
+    "show_qty": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار محدّد الكمية",
+        "en": "Show quantity stepper"
+      },
+      "default": true
+    },
+    "show_buy_now": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر «اشتري الآن»",
+        "en": "Show \"Buy now\" button"
+      },
+      "default": true
+    },
+    "show_sku": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار رمز المنتج (SKU)",
+        "en": "Show SKU"
+      },
+      "default": false
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر المشاركة",
+        "en": "Show share button"
+      },
+      "default": true
+    },
+    "show_sticky_bar": {
+      "type": "boolean",
+      "label": {
+        "ar": "شريط شراء لاصق أسفل الشاشة (موبايل)",
+        "en": "Sticky buy bar on mobile"
+      },
+      "default": true
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار «أكملي روتينك»",
+        "en": "Show \"complete your routine\""
+      },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان قسم المنتجات المقترحة",
+        "en": "Related section title"
+      },
+      "default": "أكملي روتينك"
+    },
+    "related_limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات المقترحة",
+        "en": "Related products limit"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    }
+  },
+  "blocks": {
+    "panel": {
+      "name": "قسم تفاصيل",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان القسم",
+            "en": "Panel Title"
+          },
+          "default": "الوصف والمكوّنات"
+        },
+        "source": {
+          "type": "select",
+          "label": {
+            "ar": "مصدر المحتوى",
+            "en": "Content source"
+          },
+          "default": "description",
+          "options": [
+            {
+              "value": "description",
+              "label": {
+                "ar": "وصف المنتج (يختلف لكل منتج)",
+                "en": "Product description (per product)"
+              }
+            },
+            {
+              "value": "text",
+              "label": {
+                "ar": "نص ثابت (نفسه في كل المنتجات)",
+                "en": "Fixed text (same on every product)"
+              }
+            }
+          ]
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص الثابت (يقبل HTML) — يُستخدم مع «نص ثابت» فقط",
+            "en": "Fixed text (HTML allowed) — used with \"Fixed text\" only"
+          },
+          "default": ""
+        },
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "flask",
+          "options": [
+            {
+              "value": "flask",
+              "label": {
+                "ar": "المكوّنات / مُختبر",
+                "en": "Ingredients / tested"
+              }
+            },
+            {
+              "value": "droplet",
+              "label": {
+                "ar": "طريقة الاستخدام",
+                "en": "How to use"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "مكوّنات طبيعية",
+                "en": "Natural"
+              }
+            },
+            {
+              "value": "shipping",
+              "label": {
+                "ar": "الشحن",
+                "en": "Shipping"
+              }
+            },
+            {
+              "value": "returns",
+              "label": {
+                "ar": "الإرجاع",
+                "en": "Returns"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "الأمان",
+                "en": "Safety"
+              }
+            },
+            {
+              "value": "info",
+              "label": {
+                "ar": "معلومات",
+                "en": "Info"
+              }
+            }
+          ]
+        },
+        "open_by_default": {
+          "type": "boolean",
+          "label": {
+            "ar": "مفتوح عند فتح الصفحة",
+            "en": "Open on page load"
+          },
+          "default": false
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المنتج",
+      "name": "صفحة المنتج"
+    }
+  ]
+}

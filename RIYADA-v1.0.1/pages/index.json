@@ -1,0 +1,588 @@
+{
+  "name": "الصفحة الرئيسية",
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "البانر الرئيسي",
+      "widget": "hero-section",
+      "settings": {
+        "layout": "full",
+        "height": "full",
+        "height_mobile": "large",
+        "text_align": "start",
+        "scrim": "medium",
+        "show_speed_motif": true,
+        "video_on_mobile": false,
+        "show_stats": true,
+        "stat1_number": "",
+        "stat1_label": "قسم",
+        "stat2_number": "",
+        "stat2_label": "منتج",
+        "stat3_number": "",
+        "stat3_label": "ماركة",
+        "section_background": "void",
+        "autoplay": true,
+        "autoplay_speed": 7,
+        "show_dots": true,
+        "show_arrows": true
+      },
+      "blocks": [
+        {
+          "block": "slide",
+          "name": "slide1",
+          "settings": {
+            "slide_focal": "center",
+            "slide_video_url": "",
+            "slide_eyebrow": "",
+            "slide_badge": "",
+            "slide_title": "جسمك <em>مسؤوليتك</em>",
+            "slide_description": "ملابس ومعدّات ومكمّلات لكل رياضة — اختار حسب هدفك.",
+            "slide_button_text": "تسوّق حسب الهدف",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "الجديد",
+            "slide_button2_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide2",
+          "settings": {
+            "slide_focal": "top",
+            "slide_video_url": "",
+            "slide_eyebrow": "معدّات",
+            "slide_badge": "",
+            "slide_title": "جهّز <em>جيمك</em> في البيت",
+            "slide_description": "أوزان ومقاومة وكارديو — كل اللي تحتاجه لتمرين البيت.",
+            "slide_button_text": "شوف المعدّات",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "",
+            "slide_button2_url": "/shop"
+          }
+        },
+        {
+          "block": "slide",
+          "name": "slide3",
+          "settings": {
+            "slide_focal": "center",
+            "slide_video_url": "",
+            "slide_eyebrow": "مكمّلات",
+            "slide_badge": "",
+            "slide_title": "الوقود اللي <em>يكمّل</em> التمرين",
+            "slide_description": "بروتين وطاقة وفيتامينات — اختار اللي يناسب تمرينك.",
+            "slide_button_text": "تصفّح المكمّلات",
+            "slide_button_url": "/shop",
+            "slide_button2_text": "",
+            "slide_button2_url": "/shop"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأكثر مبيعاً",
+      "widget": "collection-products",
+      "settings": {
+        "eyebrow": "الأكثر مبيعاً",
+        "title": "الأكثر <em>طلباً</em> هذا الشهر",
+        "description": "",
+        "featuredCollection": [],
+        "layout": "slider",
+        "header_align": "split",
+        "background": "canvas",
+        "card_surface": true,
+        "limit": 10,
+        "columns_desktop": "4",
+        "columns_mobile": "2",
+        "card_image_ratio": "4x5",
+        "view_all_url": "/shop",
+        "view_all_text": "شوف الكل",
+        "show_arrows": true,
+        "show_progress": true
+      }
+    },
+    {
+      "name": "شريط الخدمات",
+      "widget": "features-bar",
+      "settings": {
+        "style": "trust",
+        "background": "alt",
+        "icon_tone": "flame",
+        "icon_shape": "square",
+        "columns": "4",
+        "align": "start",
+        "show_dividers": true,
+        "boxed": false,
+        "border_top": true,
+        "border_bottom": true,
+        "compact": false
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "f1",
+          "settings": {
+            "icon": "shipping",
+            "title": "الشحن حسب منطقتك",
+            "description": "التكلفة بتظهر قبل تأكيد الطلب"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "f2",
+          "settings": {
+            "icon": "ruler",
+            "title": "اختار مقاسك صح",
+            "description": "راجع تفاصيل المقاس قبل الطلب"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "f3",
+          "settings": {
+            "icon": "support",
+            "title": "اسأل قبل ما تطلب",
+            "description": "تواصل معنا لو عندك سؤال"
+          }
+        },
+        {
+          "block": "feature",
+          "name": "f4",
+          "settings": {
+            "icon": "card",
+            "title": "طرق الدفع",
+            "description": "بتظهر كلها في صفحة الدفع"
+          }
+        }
+      ]
+    },
+    {
+      "name": "شريط متحرّك",
+      "widget": "features-bar",
+      "settings": {
+        "style": "marquee",
+        "background": "void",
+        "icon_tone": "flame",
+        "border_top": false,
+        "border_bottom": true,
+        "compact": true,
+        "marquee_speed": 26
+      },
+      "blocks": [
+        {
+          "block": "feature",
+          "name": "c1",
+          "settings": {
+            "icon": "dumbbell",
+            "title": "أوزان ومقاومة",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "c2",
+          "settings": {
+            "icon": "shoe",
+            "title": "أحذية جري وتمرين",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "c3",
+          "settings": {
+            "icon": "bottle",
+            "title": "مكمّلات وتغذية",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "c4",
+          "settings": {
+            "icon": "bolt",
+            "title": "كارديو ولياقة",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "c5",
+          "settings": {
+            "icon": "medal",
+            "title": "كرة قدم وكروسفت",
+            "description": ""
+          }
+        },
+        {
+          "block": "feature",
+          "name": "c6",
+          "settings": {
+            "icon": "support",
+            "title": "اسأل قبل ما تطلب",
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "الطقم الكامل",
+      "widget": "bundle-builder",
+      "settings": {
+        "eyebrow": "يُشترى معاً",
+        "title": "ابدأ صح بـ<em>طقم كامل</em>",
+        "description": "قطع مختارة تكمّل بعض — ضيفها للسلة مرة واحدة.",
+        "layout": "row",
+        "background": "canvas",
+        "show_prices": true,
+        "show_notes": true,
+        "show_bundle_bar": true,
+        "bundle_price": 0,
+        "bundle_note": "",
+        "cta_text": "أضف الطقم كامل"
+      },
+      "blocks": [
+        {
+          "block": "item",
+          "name": "b1",
+          "settings": {
+            "product": [],
+            "role_label": "البروتين",
+            "note": "واي بروتين للتعافي بعد التمرين — الأساس اللي كل حاجة تانية بتكمّله.",
+            "tag": "essential"
+          }
+        },
+        {
+          "block": "item",
+          "name": "b2",
+          "settings": {
+            "product": [],
+            "role_label": "الشيكر",
+            "note": "لخلط البودرة مع المية أو اللبن بعد التمرين.",
+            "tag": "recommended"
+          }
+        },
+        {
+          "block": "item",
+          "name": "b3",
+          "settings": {
+            "product": [],
+            "role_label": "الكرياتين",
+            "note": "مكمّل شائع في برامج القوة — التزم بالجرعة المكتوبة على العبوة.",
+            "tag": "recommended"
+          }
+        },
+        {
+          "block": "item",
+          "name": "b4",
+          "settings": {
+            "product": [],
+            "role_label": "حقيبة الجيم",
+            "note": "لملابس التمرين والشيكر والحذاء.",
+            "tag": "optional"
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب الهدف",
+      "widget": "use-case-finder",
+      "settings": {
+        "eyebrow": "ابدأ من هنا",
+        "title": "هتتمرّن <em>ليه؟</em>",
+        "description": "اختر هدفك، ونعرض لك العدّة اللي توصّلك له — بدون ما تقارن مواصفات لوحدك.",
+        "layout": "goals",
+        "card_ratio": "4x5",
+        "background": "canvas",
+        "columns": "4",
+        "header_align": "split",
+        "show_descriptions": true,
+        "view_all_url": "/shop",
+        "view_all_text": "تصفّح كل المنتجات"
+      },
+      "blocks": [
+        {
+          "block": "usecase",
+          "name": "g1",
+          "settings": {
+            "label": "بناء عضل",
+            "description": "أوزان حرة وأجهزة مقاومة وبروتين",
+            "url": "/shop",
+            "icon": "muscle",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g2",
+          "settings": {
+            "label": "حرق دهون",
+            "description": "كارديو وملابس خفيفة ومكمّلات",
+            "url": "/shop",
+            "icon": "burn",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g3",
+          "settings": {
+            "label": "جري",
+            "description": "أحذية وساعات وملابس تتنفّس",
+            "url": "/shop",
+            "icon": "run",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g4",
+          "settings": {
+            "label": "كروسفت",
+            "description": "كيتل بيل وحبال وقفازات",
+            "url": "/shop",
+            "icon": "crossfit",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g5",
+          "settings": {
+            "label": "يوجا ومرونة",
+            "description": "مراتب وأحزمة وملابس مريحة",
+            "url": "/shop",
+            "icon": "yoga",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g6",
+          "settings": {
+            "label": "جيم البيت",
+            "description": "طقم متكامل يشتغل في أوضة",
+            "url": "/shop",
+            "icon": "homegym",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g7",
+          "settings": {
+            "label": "استشفاء",
+            "description": "فوم رولر ومسدّس عضلات ورباطات",
+            "url": "/shop",
+            "icon": "recovery",
+            "tint": "flame"
+          }
+        },
+        {
+          "block": "usecase",
+          "name": "g8",
+          "settings": {
+            "label": "كرة قدم",
+            "description": "أحذية وقمصان وواقيات",
+            "url": "/shop",
+            "icon": "football",
+            "tint": "flame"
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأقسام",
+      "widget": "collections-section",
+      "settings": {
+        "eyebrow": "الأقسام",
+        "title": "تسوّق حسب <em>القسم</em>",
+        "description": "",
+        "collections": [],
+        "layout": "grid",
+        "label_style": "below",
+        "image_fit": "cover",
+        "card_ratio": "1x1",
+        "background": "alt",
+        "columns_desktop": "5",
+        "columns_mobile": "2",
+        "header_align": "split",
+        "show_count": false,
+        "view_all_url": "/collections",
+        "view_all_text": "كل الأقسام",
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 5
+      }
+    },
+    {
+      "name": "ليه رياضة؟",
+      "widget": "image-with-text",
+      "settings": {
+        "layout": "split",
+        "image_position": "start",
+        "image_ratio": "4x5",
+        "image_fit": "cover",
+        "eyebrow": "عن المتجر",
+        "title": "عدّة لكل <em>هدف</em>",
+        "text": "<p>اختار عدّتك حسب رياضتك وهدفك، مش حسب الإعلان.</p><p>اقرأ وصف كل منتج وتفاصيل مقاسه قبل ما تطلب، ولو عندك سؤال كلّمنا.</p>",
+        "signature": "",
+        "button_text": "",
+        "button_url": "",
+        "button2_text": "",
+        "button2_url": "",
+        "blocks_style": "checklist",
+        "background": "canvas"
+      },
+      "blocks": [
+        {
+          "block": "point",
+          "name": "p1",
+          "settings": {
+            "number": "",
+            "label": "ملابس وأحذية ومعدّات ومكمّلات في مكان واحد"
+          }
+        },
+        {
+          "block": "point",
+          "name": "p2",
+          "settings": {
+            "number": "",
+            "label": "تسوّق حسب الهدف أو حسب الرياضة"
+          }
+        },
+        {
+          "block": "point",
+          "name": "p3",
+          "settings": {
+            "number": "",
+            "label": "راجع تفاصيل المقاس قبل الطلب"
+          }
+        },
+        {
+          "block": "point",
+          "name": "p4",
+          "settings": {
+            "number": "",
+            "label": "تواصل معنا لو عندك سؤال"
+          }
+        }
+      ]
+    },
+    {
+      "name": "بانر عرض",
+      "widget": "cta-banner",
+      "settings": {
+        "layout": "card",
+        "background": "flame",
+        "scrim": "medium",
+        "eyebrow": "أحذية",
+        "title": "أحذية <em>الجري والتمرين</em>",
+        "subtitle": "اختار الحذاء المناسب لرياضتك.",
+        "text_alignment": "center",
+        "height": "medium",
+        "show_speed_motif": true,
+        "show_countdown": false,
+        "countdown_date": "",
+        "countdown_time": "23:59",
+        "hide_on_expire": false,
+        "coupon_code": "",
+        "button_text": "شوف الأحذية",
+        "button_link": "/shop",
+        "button2_text": "",
+        "button2_link": ""
+      }
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "testimonials-reviews",
+      "settings": {
+        "eyebrow": "آراء العملاء",
+        "title": "آراء <em>عملائنا</em>",
+        "description": "",
+        "layout": "slider",
+        "background": "canvas",
+        "columns": "3",
+        "show_summary": true,
+        "summary_rating": "",
+        "summary_count": "",
+        "show_distribution": true,
+        "dist_5": 74,
+        "dist_4": 18,
+        "dist_3": 5,
+        "dist_2": 2,
+        "dist_1": 1,
+        "show_arrows": true,
+        "autoplay": false,
+        "autoplay_speed": 6
+      },
+      "blocks": [
+        {
+          "block": "review",
+          "name": "r1",
+          "settings": {
+            "sample": true,
+            "headline": "المقاس ضبط من أول مرة",
+            "review_text": "كنت خايف أطلب حذاء جري أونلاين لأن مقاسي بيختلف من ماركة للتانية. جدول المقاسات هنا كان بتاع الماركة نفسها مش جدول عام، وجه مظبوط بالضبط.",
+            "reviewer_name": "عبدالله القحطاني",
+            "reviewer_role": "الرياض",
+            "rating": 5,
+            "verified": false,
+            "duration": "بعد ٤ شهور جري",
+            "product": []
+          }
+        },
+        {
+          "block": "review",
+          "name": "r2",
+          "settings": {
+            "sample": true,
+            "headline": "صمدت بعد سنة استخدام يومي",
+            "review_text": "الأوزان بتاعتي عليها استخدام يومي تقريباً، وللحد دلوقتي مفيش خدش ولا صوت. اشتريت طقم تاني لأخويا على أساسها.",
+            "reviewer_name": "منى الشمري",
+            "reviewer_role": "الدمام",
+            "rating": 5,
+            "verified": false,
+            "duration": "بعد سنة استخدام",
+            "product": []
+          }
+        },
+        {
+          "block": "review",
+          "name": "r3",
+          "settings": {
+            "sample": true,
+            "headline": "الاستبدال اتم من غير أي تعقيد",
+            "review_text": "طلبت تيشيرت مقاس أكبر من اللازم. كلّمت الدعم، بعتوا مندوب ياخده ورجّعوا المقاس الصح خلال يومين وبدون رسوم. النجمة الناقصة عشان اللون كان أغمق شوية من الصورة.",
+            "reviewer_name": "فيصل العنزي",
+            "reviewer_role": "جدة",
+            "rating": 4,
+            "verified": false,
+            "duration": "",
+            "product": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "النشرة البريدية",
+      "widget": "newsletter",
+      "settings": {
+        "action_url": "",
+        "email_field_name": "EMAIL",
+        "open_in_new_tab": true,
+        "layout": "card",
+        "background": "void",
+        "show_speed_motif": true,
+        "eyebrow": "تنبيهات",
+        "title": "اعرف بالنزول <em>قبل ما يخلص</em>",
+        "subtitle": "التخفيضات، ورجوع المقاسات اللي نفدت، والوصل حديثاً.",
+        "placeholder": "بريدك الإلكتروني",
+        "button_text": "اشترك",
+        "success_message": "تم — تحقّق من بريدك لتأكيد الاشتراك.",
+        "show_consent": false,
+        "show_note": true,
+        "note_text": "",
+        "text_alignment": "center"
+      }
+    }
+  ]
+}

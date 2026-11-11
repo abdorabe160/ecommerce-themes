@@ -1,0 +1,19 @@
+{
+    "title": "Header Group",
+    "allowAdd": true,
+    "allowRemove": true,
+    "allowReorder": true,
+    "widgets": [
+        {
+            "name": "الهيدر الرئيسي",
+            "widget": "header",
+            "settings": {
+                "header_menu": "header-menu",
+                "show_search": true,
+                "show_cart": true,
+                "sticky": true,
+                "show_language_switcher": true
+            }
+        }
+    ]
+}

@@ -1,0 +1,538 @@
+{
+  "name": "قائمة الشعارات",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العنوان",
+        "en": "Show the title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "logo_size": {
+      "type": "range",
+      "label": {
+        "ar": "حجم دائرة الشعار",
+        "en": "Logo circle size"
+      },
+      "default": 100,
+      "min": 60,
+      "max": 140,
+      "step": 4,
+      "unit": "px"
+    },
+    "logo_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية دائرة الشعار",
+        "en": "Logo circle background"
+      },
+      "default": ""
+    },
+    "brand1_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 1 — إظهار",
+        "en": "▸ Brand 1 — show"
+      },
+      "default": true
+    },
+    "brand1_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 1 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 1 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand1_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 1 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 1 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand1_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 1 — المنتجات",
+        "en": "Brand 1 — products"
+      }
+    },
+    "brand1_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 1 — أو تصنيف الماركة",
+        "en": "Brand 1 — or the brand's collection"
+      }
+    },
+    "brand2_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 2 — إظهار",
+        "en": "▸ Brand 2 — show"
+      },
+      "default": true
+    },
+    "brand2_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 2 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 2 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand2_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 2 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 2 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand2_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 2 — المنتجات",
+        "en": "Brand 2 — products"
+      }
+    },
+    "brand2_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 2 — أو تصنيف الماركة",
+        "en": "Brand 2 — or the brand's collection"
+      }
+    },
+    "brand3_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 3 — إظهار",
+        "en": "▸ Brand 3 — show"
+      },
+      "default": true
+    },
+    "brand3_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 3 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 3 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand3_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 3 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 3 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand3_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 3 — المنتجات",
+        "en": "Brand 3 — products"
+      }
+    },
+    "brand3_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 3 — أو تصنيف الماركة",
+        "en": "Brand 3 — or the brand's collection"
+      }
+    },
+    "brand4_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 4 — إظهار",
+        "en": "▸ Brand 4 — show"
+      },
+      "default": true
+    },
+    "brand4_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 4 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 4 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand4_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 4 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 4 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand4_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 4 — المنتجات",
+        "en": "Brand 4 — products"
+      }
+    },
+    "brand4_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 4 — أو تصنيف الماركة",
+        "en": "Brand 4 — or the brand's collection"
+      }
+    },
+    "brand5_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 5 — إظهار",
+        "en": "▸ Brand 5 — show"
+      },
+      "default": true
+    },
+    "brand5_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 5 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 5 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand5_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 5 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 5 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand5_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 5 — المنتجات",
+        "en": "Brand 5 — products"
+      }
+    },
+    "brand5_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 5 — أو تصنيف الماركة",
+        "en": "Brand 5 — or the brand's collection"
+      }
+    },
+    "brand6_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الماركة 6 — إظهار",
+        "en": "▸ Brand 6 — show"
+      },
+      "default": false
+    },
+    "brand6_logo": {
+      "type": "media",
+      "label": {
+        "ar": "الماركة 6 — الشعار (فارغ = شعار تجريبي من الثيم)",
+        "en": "Brand 6 — logo (empty = a demo mark from the theme)"
+      }
+    },
+    "brand6_name": {
+      "type": "string",
+      "label": {
+        "ar": "الماركة 6 — الاسم (للقراءة وللرابط)",
+        "en": "Brand 6 — name (for screen readers and the link)"
+      },
+      "default": ""
+    },
+    "brand6_products": {
+      "type": "products",
+      "label": {
+        "ar": "الماركة 6 — المنتجات",
+        "en": "Brand 6 — products"
+      }
+    },
+    "brand6_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "الماركة 6 — أو تصنيف الماركة",
+        "en": "Brand 6 — or the brand's collection"
+      }
+    },
+    "limit": {
+      "type": "range",
+      "label": {
+        "ar": "أقصى عدد منتجات من التصنيف أو الأحدث",
+        "en": "Max products from a collection / newest"
+      },
+      "default": 12,
+      "min": 4,
+      "max": 24,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات في الصف — كمبيوتر",
+        "en": "Products per row — desktop"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 6,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد المنتجات في الصف — موبايل",
+        "en": "Products per row — mobile"
+      },
+      "default": "2.2",
+      "options": [
+        {
+          "value": "1.3",
+          "label": {
+            "ar": "1 مع جزء من التالي",
+            "en": "1 and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        },
+        {
+          "value": "2.2",
+          "label": {
+            "ar": "2 مع جزء من التالي",
+            "en": "2 and a peek"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل",
+        "en": "Arrows"
+      },
+      "default": true
+    },
+    "animate": {
+      "type": "boolean",
+      "label": {
+        "ar": "ظهور المنتجات بالتتابع عند تغيير التبويب",
+        "en": "Cards cascade in when the tab changes"
+      },
+      "default": true
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة عرض صورة المنتج",
+        "en": "Product image fit"
+      },
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة داخل الإطار",
+            "en": "Whole, inside the frame"
+          }
+        },
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ الإطار",
+            "en": "Fill the frame"
+          }
+        }
+      ]
+    },
+    "image_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية إطار الصورة",
+        "en": "Image frame background"
+      },
+      "default": ""
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "التقييم بالنجوم",
+        "en": "Star rating"
+      },
+      "default": true
+    },
+    "show_thumbs": {
+      "type": "boolean",
+      "label": {
+        "ar": "صور مصغّرة تحت السعر",
+        "en": "Thumbnails under the price"
+      },
+      "default": true
+    },
+    "hover_images": {
+      "type": "boolean",
+      "label": {
+        "ar": "تبديل الصور عند تحريك الماوس",
+        "en": "Switch images on mouse move"
+      },
+      "default": true
+    },
+    "show_stock": {
+      "type": "boolean",
+      "label": {
+        "ar": "حالة المخزون",
+        "en": "Stock status"
+      },
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر العرض السريع",
+        "en": "Quick view button"
+      },
+      "default": true
+    },
+    "show_atc": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر الإضافة للسلة",
+        "en": "Add to cart button"
+      },
+      "default": true
+    },
+    "show_sale_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة المنتجات المخفّضة",
+        "en": "▸ Discounted-product badge"
+      },
+      "default": true
+    },
+    "sale_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشارة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Badge text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_low_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة الكمية المحدودة",
+        "en": "▸ Low-stock badge"
+      },
+      "default": true
+    },
+    "low_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشارة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Badge text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ملاحظة أسفل المنتجات المخفّضة",
+        "en": "▸ Note under discounted products"
+      },
+      "default": false
+    },
+    "card_note": {
+      "type": "string",
+      "label": {
+        "ar": "نص الملاحظة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Note text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز (المخزون)",
+        "en": "Accent (stock)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "قائمة الشعارات"
+    }
+  ]
+}

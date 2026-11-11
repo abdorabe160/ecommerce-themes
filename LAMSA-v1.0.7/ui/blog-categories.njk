@@ -1,0 +1,91 @@
+{# ============================================================================
+   LAMSA BLOG CATEGORIES — chip rail: «جميع المقالات» + every blog category
+   ----------------------------------------------------------------------------
+   In Qumra a "blog" IS a blog category (BlogCategory): /blogs lists them,
+   /blogs/<handle> lists one category's articles and /blogs/all lists every
+   article. Only the /blogs page context carries the category list, so:
+     · on /blogs           → rendered server-side from context.blogs, and the
+                             list is also emitted as JSON for the other pages
+     · on /blogs/<handle>  → the rail fetches /blogs (and its next pages) once,
+                             reads that JSON and caches it per session
+   Usage (no tag braces, so no parser sees them here):
+     ui "blog-categories.njk", active='all'        — on /blogs/all
+     ui "blog-categories.njk", active=blog.handle, active_title=blog.title
+   ========================================================================= #}
+
+{% set cats = context.blogs | default([], true) %}
+{% set active = data.active | default('') %}
+{% set activeTitle = data.active_title | default('') %}
+{% set ssr = (cats | length) > 0 %}
+
+<nav class="lamsa-chip-rail lamsa-blogcats" aria-label="{{ t('pages.blog.categories') }}"
+     x-data="lamsaBlogCats({{ 'true' if ssr else 'false' }})" data-active="{{ active }}"
+     x-show="ssr || cats.length > 1"{% if not ssr %} x-cloak{% endif %}>
+
+  <a href="/blogs/all" class="lamsa-chip{{ ' is-active' if active == 'all' }}"
+     {% if active == 'all' %}aria-current="page"{% endif %}>{{ t('pages.blog.all_articles') }}</a>
+
+  {% if ssr %}
+    {% for c in cats %}
+      {% set h = c.handle | default(c.slug) | default(c._id) %}
+      <a href="/blogs/{{ h }}" class="lamsa-chip{{ ' is-active' if h == active }}"
+         {% if h == active %}aria-current="page"{% endif %}>{{ c.title }}</a>
+    {% endfor %}
+  {% else %}
+    {# until the fetch lands, show the category the visitor is in #}
+    {% if active and active != 'all' and activeTitle %}
+      <a href="/blogs/{{ active }}" class="lamsa-chip is-active" aria-current="page" x-show="!cats.length">{{ activeTitle }}</a>
+    {% endif %}
+    <template x-for="c in cats" :key="c.h">
+      <a :href="'/blogs/' + c.h" class="lamsa-chip" :class="c.h === active && 'is-active'"
+         :aria-current="c.h === active ? 'page' : null" x-text="c.t"></a>
+    </template>
+  {% endif %}
+</nav>
+
+{% if ssr %}
+  {# read by the rail on the other blog pages — keep the attribute name #}
+  <script type="application/json" data-lamsa-blog-cats>{
+    "cats": [{% for c in cats %}{ "h": {{ (c.handle | default(c.slug) | default(c._id)) | dump | safe }}, "t": {{ c.title | dump | safe }} }{% if not loop.last %},{% endif %}{% endfor %}],
+    "next": {{ 'true' if context.pagination and context.pagination.hasNextPage else 'false' }}
+  }</script>
+{% endif %}
+
+<script>
+  /* Defined once per page; the x-data above resolves it when Alpine boots. */
+  window.lamsaBlogCats = window.lamsaBlogCats || function (ssr) {
+    var KEY = 'lamsa:blog-cats';
+    return {
+      ssr: ssr,
+      cats: [],
+      active: '',
+      async init() {
+        /* read from data-active: a JSON-dumped string inside x-data="…" would
+           close the attribute on its own double quotes */
+        this.active = this.$el.dataset.active || '';
+        if (ssr) return;
+        try {
+          var cached = sessionStorage.getItem(KEY);
+          if (cached) { this.cats = JSON.parse(cached); return; }
+        } catch (e) { /* storage blocked — just fetch */ }
+
+        var all = [];
+        try {
+          for (var page = 1; page <= 5; page++) {
+            var res = await fetch('/blogs' + (page > 1 ? '?page=' + page : ''), { credentials: 'same-origin' });
+            if (!res.ok) break;
+            var doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+            var node = doc.querySelector('script[data-lamsa-blog-cats]');
+            if (!node) break;
+            var data = JSON.parse(node.textContent);
+            all = all.concat(data.cats || []);
+            if (!data.next) break;
+          }
+        } catch (e) { /* offline / blocked — the rail keeps «all» + current */ }
+
+        this.cats = all;
+        try { if (all.length) sessionStorage.setItem(KEY, JSON.stringify(all)); } catch (e) {}
+      }
+    };
+  };
+</script>

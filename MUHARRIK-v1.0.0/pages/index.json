@@ -1,0 +1,992 @@
+{
+  "name": "الصفحة الرئيسية",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "واجهة سينمائية",
+      "widget": "hero-drive",
+      "settings": {
+        "height": "full",
+        "image": "",
+        "image_mobile": "",
+        "image_position": "center",
+        "overlay": 72,
+        "kicker": "",
+        "title": "",
+        "title_hl": "",
+        "title_tail": "",
+        "text": "",
+        "button_text": "",
+        "button_url": "/shop",
+        "button2_text": "",
+        "button2_url": "/collections",
+        "show_hud": true,
+        "show_dash": true,
+        "show_scroll_cue": true,
+        "dash_lift": 72,
+        "show_sweep": true,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "اختار عربيتك",
+      "widget": "vehicle-finder",
+      "settings": {
+        "mode": "selects",
+        "overlap": 56,
+        "kicker": "",
+        "title": "",
+        "text": "",
+        "button_text": "",
+        "fallback_url": "/shop",
+        "show_note": true,
+        "show_hud": true,
+        "padding_top": 0,
+        "padding_bottom": 40,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": [
+        {
+          "name": "Toyota",
+          "block": "make",
+          "settings": {
+            "name": "Toyota",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Toyota Corolla",
+          "block": "model",
+          "settings": {
+            "make": "Toyota",
+            "name": "Corolla",
+            "years": "2014-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Toyota Camry",
+          "block": "model",
+          "settings": {
+            "make": "Toyota",
+            "name": "Camry",
+            "years": "2012-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Toyota Land Cruiser",
+          "block": "model",
+          "settings": {
+            "make": "Toyota",
+            "name": "Land Cruiser",
+            "years": "2008-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Hyundai",
+          "block": "make",
+          "settings": {
+            "name": "Hyundai",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Hyundai Elantra",
+          "block": "model",
+          "settings": {
+            "make": "Hyundai",
+            "name": "Elantra",
+            "years": "2016-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Hyundai Accent",
+          "block": "model",
+          "settings": {
+            "make": "Hyundai",
+            "name": "Accent",
+            "years": "2012-2024",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Hyundai Tucson",
+          "block": "model",
+          "settings": {
+            "make": "Hyundai",
+            "name": "Tucson",
+            "years": "2016-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Nissan",
+          "block": "make",
+          "settings": {
+            "name": "Nissan",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Nissan Sunny",
+          "block": "model",
+          "settings": {
+            "make": "Nissan",
+            "name": "Sunny",
+            "years": "2012-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Nissan Sentra",
+          "block": "model",
+          "settings": {
+            "make": "Nissan",
+            "name": "Sentra",
+            "years": "2013-2024",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Nissan Patrol",
+          "block": "model",
+          "settings": {
+            "make": "Nissan",
+            "name": "Patrol",
+            "years": "2010-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Kia",
+          "block": "make",
+          "settings": {
+            "name": "Kia",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Kia Cerato",
+          "block": "model",
+          "settings": {
+            "make": "Kia",
+            "name": "Cerato",
+            "years": "2014-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Kia Sportage",
+          "block": "model",
+          "settings": {
+            "make": "Kia",
+            "name": "Sportage",
+            "years": "2016-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Kia Picanto",
+          "block": "model",
+          "settings": {
+            "make": "Kia",
+            "name": "Picanto",
+            "years": "2012-2024",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mercedes-Benz",
+          "block": "make",
+          "settings": {
+            "name": "Mercedes-Benz",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mercedes-Benz C-Class",
+          "block": "model",
+          "settings": {
+            "make": "Mercedes-Benz",
+            "name": "C-Class",
+            "years": "2015-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mercedes-Benz E-Class",
+          "block": "model",
+          "settings": {
+            "make": "Mercedes-Benz",
+            "name": "E-Class",
+            "years": "2016-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mercedes-Benz GLC",
+          "block": "model",
+          "settings": {
+            "make": "Mercedes-Benz",
+            "name": "GLC",
+            "years": "2016-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "BMW",
+          "block": "make",
+          "settings": {
+            "name": "BMW",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "BMW 3 Series",
+          "block": "model",
+          "settings": {
+            "make": "BMW",
+            "name": "3 Series",
+            "years": "2012-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "BMW 5 Series",
+          "block": "model",
+          "settings": {
+            "make": "BMW",
+            "name": "5 Series",
+            "years": "2017-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "BMW X5",
+          "block": "model",
+          "settings": {
+            "make": "BMW",
+            "name": "X5",
+            "years": "2014-2025",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Chevrolet",
+          "block": "make",
+          "settings": {
+            "name": "Chevrolet",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Chevrolet Optra",
+          "block": "model",
+          "settings": {
+            "make": "Chevrolet",
+            "name": "Optra",
+            "years": "2008-2020",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Chevrolet Cruze",
+          "block": "model",
+          "settings": {
+            "make": "Chevrolet",
+            "name": "Cruze",
+            "years": "2010-2019",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Chevrolet Captiva",
+          "block": "model",
+          "settings": {
+            "make": "Chevrolet",
+            "name": "Captiva",
+            "years": "2012-2024",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mitsubishi",
+          "block": "make",
+          "settings": {
+            "name": "Mitsubishi",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mitsubishi Lancer",
+          "block": "model",
+          "settings": {
+            "make": "Mitsubishi",
+            "name": "Lancer",
+            "years": "2008-2017",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mitsubishi Pajero",
+          "block": "model",
+          "settings": {
+            "make": "Mitsubishi",
+            "name": "Pajero",
+            "years": "2008-2021",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mitsubishi Xpander",
+          "block": "model",
+          "settings": {
+            "make": "Mitsubishi",
+            "name": "Xpander",
+            "years": "2020-2025",
+            "collection": [],
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب الماركة — شريط الماركات",
+      "widget": "make-marquee",
+      "settings": {
+        "show_label": true,
+        "label": "",
+        "speed": 36,
+        "size": "large",
+        "show_rules": true,
+        "padding_top": 24,
+        "padding_bottom": 24,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "name": "Toyota",
+          "block": "make",
+          "settings": {
+            "name": "Toyota",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Hyundai",
+          "block": "make",
+          "settings": {
+            "name": "Hyundai",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Kia",
+          "block": "make",
+          "settings": {
+            "name": "Kia",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Nissan",
+          "block": "make",
+          "settings": {
+            "name": "Nissan",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Chevrolet",
+          "block": "make",
+          "settings": {
+            "name": "Chevrolet",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "BMW",
+          "block": "make",
+          "settings": {
+            "name": "BMW",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Mercedes",
+          "block": "make",
+          "settings": {
+            "name": "Mercedes",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Honda",
+          "block": "make",
+          "settings": {
+            "name": "Honda",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "MG",
+          "block": "make",
+          "settings": {
+            "name": "MG",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Geely",
+          "block": "make",
+          "settings": {
+            "name": "Geely",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Ford",
+          "block": "make",
+          "settings": {
+            "name": "Ford",
+            "collection": [],
+            "url": ""
+          }
+        },
+        {
+          "name": "Jeep",
+          "block": "make",
+          "settings": {
+            "name": "Jeep",
+            "collection": [],
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "تسوّق حسب جزء العربية",
+      "widget": "car-zones",
+      "settings": {
+        "kicker": "",
+        "title": "",
+        "text": "",
+        "cta_text": "",
+        "show_index": true,
+        "spin_wheels": true,
+        "padding_top": 72,
+        "padding_bottom": 72,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_card": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "name": "الإضاءة",
+          "block": "zone",
+          "settings": {
+            "zone": "lighting",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "الخارجية",
+          "block": "zone",
+          "settings": {
+            "zone": "exterior",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "الإطارات والجنوط",
+          "block": "zone",
+          "settings": {
+            "zone": "tyres",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "الداخلية",
+          "block": "zone",
+          "settings": {
+            "zone": "interior",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "الإلكترونيات",
+          "block": "zone",
+          "settings": {
+            "zone": "electronics",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "العناية",
+          "block": "zone",
+          "settings": {
+            "zone": "care",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        },
+        {
+          "name": "الصيانة",
+          "block": "zone",
+          "settings": {
+            "zone": "engine",
+            "label": "",
+            "text": "",
+            "x": 0,
+            "y": 0,
+            "collection": [],
+            "url": "",
+            "image": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "الأكثر طلبًا — حارة الصيانة",
+      "widget": "pit-lane",
+      "settings": {
+        "kicker": "",
+        "title": "",
+        "text": "",
+        "show_view_all": true,
+        "view_all_text": "",
+        "view_all_url": "/shop",
+        "show_readout": true,
+        "show_numbers": true,
+        "products": [],
+        "collection": [],
+        "use_demo": "auto",
+        "limit": 12,
+        "card_width": "medium",
+        "image_fit": "cover",
+        "show_rating": true,
+        "show_stock": true,
+        "show_quick_view": true,
+        "show_atc": true,
+        "show_sale_badge": true,
+        "sale_badge": "",
+        "show_low_badge": true,
+        "low_badge": "",
+        "padding_top": 48,
+        "padding_bottom": 48,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "الفرق واضح",
+      "widget": "before-after",
+      "settings": {
+        "image_before": "",
+        "image_after": "",
+        "label_before": "",
+        "label_after": "",
+        "start": 50,
+        "layout": "side",
+        "kicker": "",
+        "title": "",
+        "title_hl": "",
+        "text": "",
+        "cta_text": "",
+        "cta_url": "/shop",
+        "show_hud": true,
+        "padding_top": 72,
+        "padding_bottom": 72,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "3 خطوات للمعان",
+      "widget": "process-story",
+      "settings": {
+        "kicker": "",
+        "title": "",
+        "title_hl": "",
+        "media_side": "start",
+        "show_hud": true,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "صفقة اليوم — بقعة الضوء",
+      "widget": "deal-spotlight",
+      "settings": {
+        "kicker": "",
+        "product": [],
+        "use_demo": true,
+        "image": "",
+        "headline": "",
+        "text": "",
+        "countdown_enabled": false,
+        "countdown_label": "",
+        "countdown_mode": "daily",
+        "countdown_end": "2026-12-31 23:59",
+        "stock_mode": "manual",
+        "stock_left": 7,
+        "stock_total": 20,
+        "stock_text": "",
+        "show_buy_now": true,
+        "show_qty": true,
+        "note": "",
+        "image_side": "start",
+        "float": true,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "جهّز عربيتك — الأطقم",
+      "widget": "kit-bundles",
+      "settings": {
+        "kicker": "",
+        "title": "",
+        "text": "",
+        "featured_badge": "",
+        "inside_label": "",
+        "cta_text": "",
+        "tilt": true,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "color_card": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "عربيات عملائنا — المعرض",
+      "widget": "builds-gallery",
+      "settings": {
+        "kicker": "",
+        "title": "",
+        "count_number": 2400,
+        "count_text": "",
+        "show_counter": false,
+        "share_text": "",
+        "share_url": "",
+        "lightbox": true,
+        "parallax": true,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "name": "بناء 1",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 2",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 3",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 4",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 5",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 6",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 7",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        },
+        {
+          "name": "بناء 8",
+          "block": "build",
+          "settings": {
+            "image": "",
+            "car": "",
+            "spec": "",
+            "url": "",
+            "link_text": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "آراء العملاء",
+      "widget": "customer-reviews",
+      "settings": {
+        "full_width": true,
+        "show_title": true,
+        "title": "",
+        "columns_desktop": 5,
+        "columns_mobile": "1.2",
+        "show_arrows": true,
+        "show_stars": false,
+        "band_bg": "",
+        "dividers": true,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": ""
+      },
+      "blocks": []
+    },
+    {
+      "name": "مقالات المدونة",
+      "widget": "blog-posts",
+      "settings": {
+        "full_width": true,
+        "show_title": true,
+        "title": "",
+        "blog_handle": "",
+        "limit": 4,
+        "columns_desktop": 4,
+        "image_ratio": "wide",
+        "show_date": true,
+        "show_excerpt": true,
+        "show_read_more": true,
+        "read_more_text": "",
+        "hover_zoom": true,
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": ""
+      }
+    },
+    {
+      "name": "نادي محرّك",
+      "widget": "garage-club",
+      "settings": {
+        "image": "",
+        "overlay": 72,
+        "kicker": "",
+        "title": "",
+        "title_hl": "",
+        "text": "",
+        "nl_action": "",
+        "nl_field": "EMAIL",
+        "nl_placeholder": "",
+        "nl_button": "",
+        "show_perks": true,
+        "fine_print": "",
+        "padding_top": 112,
+        "padding_bottom": 112,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": "",
+        "color_btn_bg": "",
+        "color_btn_text": ""
+      },
+      "blocks": []
+    }
+  ]
+}

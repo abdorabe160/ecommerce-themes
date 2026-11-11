@@ -1,0 +1,362 @@
+<!-- =========================================================
+     QMRA THEME (NUNJUCKS) - TESTIMONIALS WIDGET
+     آراء العملاء في شريطين متحركين + تقييم إجمالي بعدّاد
+     ========================================================= -->
+{% set s = widget.data or widget.settings or {} %}
+
+{% set items = [] %}
+{% for block in widget.blocks %}
+  {% set b = block.data or block.settings or {} %}
+  {% if b.text %}{% if items.push(b) %}{% endif %}{% endif %}
+{% endfor %}
+
+{# آراء تجريبية للمعاينة لحد ما تضيف بلوكات من المحرر (بلغة الصفحة) #}
+{% set isDemo = (items | length) == 0 %}
+{% if isDemo %}
+  {% set items = [
+    { name: t('demo.person_ahmed_mahmoud'), meta: t('demo.tm_meta_cairo'), rating: "5", text: t('demo.tm_text_1'), product: t('demo.prod_pro_fit_compression_tee'), verified: true },
+    { name: t('demo.person_menna_sami'), meta: t('demo.tm_meta_alexandria'), rating: "5", text: t('demo.tm_text_2'), verified: true },
+    { name: t('demo.person_karim_adel'), meta: t('demo.tm_meta_fitness_coach'), rating: "5", text: t('demo.tm_text_3'), product: t('demo.prod_heavy_duty_training_shoe'), verified: true },
+    { name: t('demo.person_youssef_tarek'), meta: t('demo.tm_meta_mansoura'), rating: "4", text: t('demo.tm_text_4'), verified: true },
+    { name: t('demo.person_sara_ibrahim'), meta: t('demo.tm_meta_giza'), rating: "5", text: t('demo.tm_text_5'), product: t('demo.prod_flex_jogger_pants'), verified: true },
+    { name: t('demo.person_mohamed_hassan'), meta: t('demo.tm_meta_tanta'), rating: "5", text: t('demo.tm_text_6'), verified: false }
+  ] %}
+{% endif %}
+
+{% set total = items | length %}
+{% set twoRows = s.two_rows !== false and total >= 4 %}
+{% set half = ((total / 2) | round(0, 'ceil')) | int if twoRows else total %}
+{% set speed = s.speed | default('50') %}
+{#- التقييم الإجمالي وعدد التقييمات بيظهروا بس لو التاجر كتبهم (مفيش أرقام افتراضية) -#}
+{% set ratingValue = s.rating_value or '' %}
+{% set reviewsCount = s.reviews_count or 0 %}
+
+{% macro card(rv) %}
+  {% set stars = (rv.rating | default('5')) | int %}
+  <figure class="blk-tm-card">
+    <svg class="blk-tm-quote" width="42" height="42" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.6 5C5.9 6.5 3.5 9.7 3.5 13.6V19h6.2v-6.2H6.6c0-2.4 1.5-4.5 3.9-5.5L9.6 5zm10.9 0c-3.7 1.5-6.1 4.7-6.1 8.6V19h6.2v-6.2h-3.1c0-2.4 1.5-4.5 3.9-5.5L20.5 5z"/></svg>
+    <div class="blk-tm-stars" aria-label="{{ stars }} {{t('common.out_of_5')}}">
+      {% for i in range(5) %}<span class="{{ 'is-on' if i < stars }}">★</span>{% endfor %}
+    </div>
+    <blockquote class="blk-tm-text">{{ rv.text | safe }}</blockquote>
+    {% if rv.product %}
+      <span class="blk-tm-product">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+        {{ rv.product }}
+      </span>
+    {% endif %}
+    <figcaption class="blk-tm-author">
+      {% set avatarUrl = rv.avatar.fileUrl | default(rv.avatar) if rv.avatar else '' %}
+      {% if avatarUrl %}
+        <img class="blk-tm-avatar" src="{{ avatarUrl }}" alt="{{ rv.name }}" loading="lazy">
+      {% else %}
+        <span class="blk-tm-avatar blk-tm-avatar--initial">{{ (rv.name or t('common.customer_initial'))[0] }}</span>
+      {% endif %}
+      <span class="blk-tm-who">
+        <span class="blk-tm-name">
+          {{ rv.name or t('common.customer') }}
+          {% if rv.verified == true %}
+            <span class="blk-tm-verified" title="{{t('testimonials.verified')}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 9.2 4.1 5.7 4l-1.1 3.3L1.8 9.4 3 12.7l-1.2 3.3 2.8 2.1 1.1 3.3 3.5-.1L12 23.4l2.8-2.1 3.5.1 1.1-3.3 2.8-2.1-1.2-3.3 1.2-3.3-2.8-2.1L18.3 4l-3.5.1L12 2zm-1.4 14.5-3.9-3.9 1.4-1.4 2.5 2.5 5.4-5.4 1.4 1.4-6.8 6.8z"/></svg>
+            </span>
+          {% endif %}
+        </span>
+        {% if rv.meta %}<span class="blk-tm-meta">{{ rv.meta }}</span>{% endif %}
+      </span>
+    </figcaption>
+  </figure>
+{% endmacro %}
+
+{% macro row(list, reverse) %}
+  {% set count = list | length %}
+  {# كل نص في الشريط لازم يكون أعرض من الشاشة عشان الحركة ماتبانش فيها فراغ #}
+  {% set reps = ((5 / count) | round(0, 'ceil')) | int if count < 5 else 1 %}
+  <div class="blk-tm-row{% if reverse %} blk-tm-row--reverse{% endif %}">
+    <div class="blk-tm-track">
+      {% for g in range(2) %}
+        <div class="blk-tm-group"{% if g == 1 %} aria-hidden="true"{% endif %}>
+          {% for r in range(reps) %}
+            {% for rv in list %}{{ card(rv) }}{% endfor %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% set row1 = [] %}
+{% set row2 = [] %}
+{% for rv in items %}
+  {% if loop.index0 < half %}{% if row1.push(rv) %}{% endif %}{% else %}{% if row2.push(rv) %}{% endif %}{% endif %}
+{% endfor %}
+
+{#- الآراء التجريبية للمعاينة بس: العميل مايشوفهاش لحد ما التاجر يضيف آراء حقيقية -#}
+<section class="blk-section blk-tm" id="blkTm-{{ widget.id }}"{% if isDemo %} data-blk-demo-only{% endif %} style="--tm-speed: {{ speed }}s;">
+  <div class="blk-container">
+    <div class="blk-tm-head">
+      <div class="blk-tm-title-wrap">
+        {% if s.badge_text | default('آراء عملائنا') %}
+          <span class="blk-badge-glow blk-tm-reveal" style="--d: 0;">
+            <span class="blk-badge-dot"></span>
+            {% ui "blk-t.njk", text=s.badge_text, key="defaults.tm_badge" %}
+          </span>
+        {% endif %}
+        <h2 class="blk-section-title blk-tm-reveal" style="--d: 1;">{% ui "blk-t.njk", text=s.title, key="defaults.tm_title" %}</h2>
+      </div>
+
+      {% if ratingValue %}
+        <div class="blk-tm-score blk-tm-reveal" style="--d: 2;">
+          <span class="blk-tm-score-num" data-count="{{ ratingValue }}" data-decimals="1">{{ ratingValue }}</span>
+          <span class="blk-tm-score-side">
+            <span class="blk-tm-stars blk-tm-stars--lg"><span class="is-on">★★★★★</span></span>
+            {% if reviewsCount %}
+              <span class="blk-tm-score-count">{{t('testimonials.from')}} <strong data-count="{{ reviewsCount }}">{{ reviewsCount }}</strong>+ {{t('testimonials.reviews')}}</span>
+            {% endif %}
+          </span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="blk-tm-rows blk-tm-reveal" style="--d: 3;">
+    {{ row(row1, false) }}
+    {% if twoRows %}{{ row(row2, true) }}{% endif %}
+  </div>
+</section>
+
+<style>
+  .blk-tm {
+    --tm-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  [dir="ltr"] .blk-tm { --tm-dir: -1; }
+
+  /* ---------- Header ---------- */
+  .blk-tm-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .blk-tm-title-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .blk-tm-score {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    background: var(--blk-bg-alt);
+    border: 1px solid var(--blk-border);
+    border-radius: var(--blk-radius-md);
+  }
+
+  .blk-tm-score-num {
+    font-family: var(--blk-font-display);
+    font-size: 48px;
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 24px color-mix(in srgb, var(--blk-primary) 40%, transparent);
+  }
+
+  .blk-tm-score-side { display: flex; flex-direction: column; gap: 4px; }
+  .blk-tm-score-count { font-size: 13px; color: var(--blk-text-dim); }
+  .blk-tm-score-count strong { color: var(--blk-text); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Rows (marquee) ---------- */
+  .blk-tm-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .blk-tm-row { overflow: hidden; padding-block: 8px; }
+
+  .blk-tm-track {
+    display: flex;
+    width: max-content;
+    animation: blkTmScroll var(--tm-speed, 50s) linear infinite;
+  }
+
+  .blk-tm-row--reverse .blk-tm-track { animation-direction: reverse; }
+  .blk-tm-row:hover .blk-tm-track { animation-play-state: paused; }
+
+  .blk-tm-group { display: flex; }
+
+  /* في RTL المحتوى بيكمل ناحية الشمال، فبنزق يمين بنص العرض */
+  @keyframes blkTmScroll {
+    to { transform: translateX(calc(var(--tm-dir, 1) * 50%)); }
+  }
+
+  /* ---------- Card ---------- */
+  .blk-tm-card {
+    position: relative;
+    width: 360px;
+    margin: 0;
+    margin-inline-end: 20px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: linear-gradient(160deg, var(--blk-bg-elevated), var(--blk-bg-alt));
+    border: 1px solid var(--blk-border);
+    border-radius: var(--blk-radius-md);
+    transition: transform 0.4s var(--tm-ease), border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .blk-tm-card:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--blk-accent) 50%, transparent);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px color-mix(in srgb, var(--blk-accent) 15%, transparent);
+  }
+
+  .blk-tm-quote {
+    position: absolute;
+    top: 18px;
+    inset-inline-end: 20px;
+    color: var(--blk-accent);
+    opacity: 0.18;
+    transition: opacity 0.4s ease, transform 0.4s var(--tm-ease);
+  }
+
+  .blk-tm-card:hover .blk-tm-quote { opacity: 0.5; transform: scale(1.1) rotate(-6deg); }
+
+  .blk-tm-stars { display: flex; gap: 2px; color: var(--blk-text-faint); font-size: 16px; letter-spacing: 1px; }
+  .blk-tm-stars .is-on { color: var(--blk-warning); text-shadow: 0 0 10px color-mix(in srgb, var(--blk-warning) 35%, transparent); }
+  .blk-tm-stars--lg { font-size: 18px; }
+
+  .blk-tm-text {
+    margin: 0;
+    flex: 1;
+    font-family: var(--blk-font-ar);
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--blk-text);
+    white-space: normal;
+  }
+
+  .blk-tm-product {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--blk-text-dim);
+    background: color-mix(in srgb, var(--blk-accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--blk-accent) 25%, transparent);
+    border-radius: var(--blk-radius-full);
+  }
+
+  .blk-tm-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--blk-border);
+  }
+
+  .blk-tm-avatar {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--blk-accent);
+  }
+
+  .blk-tm-avatar--initial {
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--blk-accent), var(--blk-accent-dark));
+  }
+
+  .blk-tm-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .blk-tm-name { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #fff; }
+  .blk-tm-verified { display: inline-flex; color: var(--blk-success); }
+  .blk-tm-meta { font-size: 13px; color: var(--blk-text-faint); }
+
+  /* ---------- Reveal ---------- */
+  .blk-tm.is-armed .blk-tm-reveal { transform: translateY(24px); }
+
+  .blk-tm.is-visible .blk-tm-reveal {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.9s var(--tm-ease), transform 0.9s var(--tm-ease);
+    transition-delay: calc(var(--d, 0) * 0.12s);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 768px) {
+    .blk-tm-head { flex-direction: column; align-items: stretch; margin-bottom: 28px; }
+    .blk-tm-score { align-self: flex-start; }
+    .blk-tm-card { width: 290px; padding: 20px; margin-inline-end: 14px; }
+    .blk-tm-rows { gap: 14px; }
+  }
+
+  /* تقليل الحركة: الشريط بيتسحب باليد بدل ما يتحرك لوحده */
+  @media (prefers-reduced-motion: reduce) {
+    .blk-tm.is-armed .blk-tm-reveal { opacity: 1; transform: none; }
+    .blk-tm-track { animation: none; }
+    .blk-tm-row { overflow-x: auto; }
+    .blk-tm-group[aria-hidden] { display: none; }
+  }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('blkTm-{{ widget.id }}');
+  if (!root || root.hasAttribute('data-tm-ready')) return;
+  root.setAttribute('data-tm-ready', '');
+
+  var counters = root.querySelectorAll('[data-count]');
+
+  function countUp(el) {
+    var target = parseFloat(el.getAttribute('data-count'));
+    if (isNaN(target)) return;
+    var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+    var duration = 1600;
+    var start = null;
+    var format = function (v) {
+      return decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString('en-US');
+    };
+    if (document.documentElement.classList.contains('blk-no-anim')) { el.textContent = format(target); return; }
+    var step = function (ts) {
+      if (start === null) start = ts;
+      var p = Math.min((ts - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - p, 4);
+      el.textContent = format(target * eased);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    el.textContent = format(0);
+    requestAnimationFrame(step);
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+  root.classList.add('is-armed');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var io = new IntersectionObserver(function (entries) {
+    if (!entries.some(function (e) { return e.isIntersecting; })) return;
+    root.classList.add('is-visible');
+    if (!reduce) counters.forEach(countUp);
+    io.disconnect();
+  }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
+  io.observe(root);
+})();
+</script>

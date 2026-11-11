@@ -1,0 +1,191 @@
+{# ============================================================================
+   LAMSA BLOG PAGE — /blogs/<handle> and /blogs/all
+   The article list for one blog category (or every article on /blogs/all —
+   no `blog` in the context there). Cards come from ui/article-card.njk; the
+   category rail from ui/blog-categories.njk.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blog = context.blog | default({}, true) %}
+{% set articles = context.articles | default(blog.articles, true) | default([], true) %}
+{% set count = articles | length %}
+{# /blogs/all sends totalPages/currentPage/totalItems, /blogs/<handle> pages/page/total #}
+{% set pagination = context.pagination %}
+{% set pgTotal = (pagination.totalPages or pagination.pages or 1) if pagination else 1 %}
+{% set pgCurrent = (pagination.currentPage or pagination.page or 1) if pagination else 1 %}
+{% set pgItems = (pagination.totalItems or pagination.total or 0) if pagination else 0 %}
+
+{% set isAll = not blog.title %}
+{% set showCats = d.show_categories | default(true) %}
+{% set showHero = d.show_hero | default(true) %}
+{% set showDate = d.show_date | default(true) %}
+{% set showExcerpt = d.show_excerpt | default(true) %}
+{% set featureFirst = d.feature_first | default(true) %}
+{% set colsD = d.columns | default('3', true) %}
+{% set colsDInt = colsD | int %}
+{# no card alone on a row: the wide first card takes a row of its own #}
+{% set gridN = (count - 1) if featureFirst else count %}
+{% if gridN > colsDInt and gridN % colsDInt == 1 %}
+  {% if colsDInt < 4 and gridN % (colsDInt + 1) != 1 %}{% set colsDInt = colsDInt + 1 %}
+  {% elif colsDInt > 2 and gridN % (colsDInt - 1) != 1 %}{% set colsDInt = colsDInt - 1 %}{% endif %}
+{% endif %}
+{% set colsD = colsDInt %}
+{% set colsMid = 2 if colsDInt > 2 else colsDInt %}
+{# on two columns the wide card only helps an odd count #}
+{% set featMin = 641 if count % 2 == 1 else 1024 %}
+
+{% set heroImg = blog.image.fileUrl if blog.image and blog.image.fileUrl else '' %}
+
+
+<style>
+  .lamsa-bp-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-bp-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-bp-{{ id }}-title { line-height: 1.34; }
+
+  .lamsa-bp-{{ id }}-cats { display: flex; justify-content: center; margin-bottom: 36px; }
+  .lamsa-bp-{{ id }}-cats .lamsa-blogcats { max-width: 100%; }
+
+  .lamsa-bp-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  @media (min-width: 641px) { .lamsa-bp-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .lamsa-bp-{{ id }}-grid { grid-template-columns: repeat({{ colsD }}, minmax(0, 1fr)); gap: 26px; } }
+
+  /* no card alone on a last row */
+  {% if not featureFirst %}
+  {% if colsMid == 2 %}
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .lamsa-bp-{{ id }}-grid > :nth-of-type(2n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(50% - 11px); }
+  }
+  {% endif %}
+  @media (min-width: 1024px) {
+    .lamsa-bp-{{ id }}-grid > :nth-of-type({{ colsD }}n+1):last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(100% / {{ colsD }} - 16px); }
+  }
+  {% elif gridN % colsD == 1 %}
+  @media (min-width: 1024px) {
+    .lamsa-bp-{{ id }}-grid > :last-of-type { grid-column: 1 / -1; flex-direction: row; --lone-w: calc(100% / {{ colsD }} - 16px); }
+  }
+  {% endif %}
+
+  {% if featureFirst %}
+  /* the newest article gets a wide cell */
+  @media (min-width: {{ featMin }}px) {
+    .lamsa-bp-{{ id }}-grid > *:first-child { grid-column: 1 / -1; }
+    .lamsa-bp-{{ id }}-grid > *:first-child.lamsa-acard { flex-direction: row; }
+    .lamsa-bp-{{ id }}-grid > *:first-child .lamsa-acard-media { width: 52%; flex-shrink: 0; aspect-ratio: auto; }
+    .lamsa-bp-{{ id }}-grid > *:first-child .lamsa-acard-body { justify-content: center; padding: 32px; gap: 12px; }
+    .lamsa-bp-{{ id }}-grid > *:first-child .lamsa-acard-title { font-size: 1.5rem; }
+    .lamsa-bp-{{ id }}-grid > *:first-child .lamsa-acard-excerpt { -webkit-line-clamp: 3; }
+  }
+  {% endif %}
+</style>
+
+
+<section id="lamsa-bp-{{ id }}" class="lamsa-section" style="background: var(--color-bg-primary);">
+  <div class="lamsa-container">
+
+    {# ═════════════ breadcrumb ═════════════ #}
+    <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+      <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+      <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <a href="/blogs" class="hover:text-accent transition-colors">{{ t('pages.blog.title') }}</a>
+      <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+      </svg>
+      <span class="line-clamp-1" style="color: var(--color-text-secondary);">{{ blog.title if blog.title else t('pages.blog.all_articles') }}</span>
+    </nav>
+
+    {# ═════════════ hero ═════════════ #}
+    {% if showHero and heroImg %}
+      <div class="lamsa-article-hero mb-8">
+        <img src="{{ heroImg }}" alt="{{ blog.title }}" fetchpriority="high"/>
+      </div>
+    {% endif %}
+
+    {# ═════════════ header ═════════════ #}
+    <div class="lamsa-head lamsa-head--center">
+      <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ t('pages.blog.title') }}</span>
+      <h1 class="lamsa-bp-{{ id }}-title lamsa-head-title">{{ blog.title if blog.title else t('pages.blog.all_articles') }}</h1>
+      {% if blog.description %}
+        <p class="lamsa-head-desc">{{ blog.description | safe }}</p>
+      {% endif %}
+      {% if pgItems %}
+        <p class="lamsa-caption m-0 mt-2 font-num">{% ui "count.njk", n=pgItems, kind='article' %}</p>
+      {% endif %}
+    </div>
+
+    {# ═════════════ category rail ═════════════ #}
+    {% if showCats %}
+      <div class="lamsa-bp-{{ id }}-cats">
+        {% ui "blog-categories.njk", active=('all' if isAll else (blog.handle or blog.slug or blog._id or 'all')), active_title=(blog.title or '') %}
+      </div>
+    {% endif %}
+
+    {# ═════════════ articles ═════════════ #}
+    {% if count > 0 %}
+      <div class="lamsa-bp-{{ id }}-grid reveal reveal-stagger" data-lamsa-blog-pages="{{ pgTotal }}">
+        {% for article in articles %}
+          {% ui "article-card.njk", article=article, show_date=showDate, show_excerpt=showExcerpt %}
+        {% endfor %}
+      </div>
+
+      {% if pgTotal > 1 %}
+        <nav class="flex items-center justify-center gap-2 flex-wrap mt-14 max-sm:mt-10" aria-label="pagination">
+          {% if pgCurrent > 1 %}
+            <a href="?page={{ pgCurrent - 1 }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+               aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+          {% for n in range(1, pgTotal + 1) %}
+            {% if n == pgCurrent %}
+              <span class="lamsa-btn-icon font-num" aria-current="page"
+                    style="background: var(--color-accent); color: #fff;">{{ n }}</span>
+            {% elif n == 1 or n == pgTotal or (n >= pgCurrent - 1 and n <= pgCurrent + 1) %}
+              <a href="?page={{ n }}" class="lamsa-btn-icon lamsa-btn-icon--outline font-num">{{ n }}</a>
+            {% elif n == pgCurrent - 2 or n == pgCurrent + 2 %}
+              <span class="w-5 text-center" style="color: var(--color-text-tertiary);">…</span>
+            {% endif %}
+          {% endfor %}
+          {% if pgCurrent < pgTotal %}
+            <a href="?page={{ pgCurrent + 1 }}" class="lamsa-btn-icon lamsa-btn-icon--outline"
+               aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="lamsa-empty">
+        <span class="lamsa-empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4" width="17" height="16" rx="2.5"/>
+            <path d="M7.5 9h9M7.5 13h9M7.5 17h5"/>
+          </svg>
+        </span>
+        <h3 class="m-0">{{ t('pages.blog.no_articles') }}</h3>
+        <p class="lamsa-text-sm m-0">{{ t('pages.blog.no_articles_desc') }}</p>
+        <a href="/blogs" class="lamsa-btn lamsa-btn--soft lamsa-btn--sm mt-1">{{ t('pages.blog.back_to_blogs') }}</a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

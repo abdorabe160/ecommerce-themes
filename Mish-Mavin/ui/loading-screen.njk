@@ -1,0 +1,93 @@
+<!-- Overlay -->
+<div id="spinner-container"
+     class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+  <!-- Wrapper -->
+  <div class="relative w-28 h-28">
+    <!-- الحلقة الخارجية -->
+    <div class="absolute inset-0 rounded-full spinner-gradient"></div>
+    <!-- النقط الخارجية -->
+    <div class="absolute inset-0 rounded-full spinner-dots"></div>
+    <!-- قلب اللودر -->
+    <div class="absolute inset-[10px] rounded-full bg-white/90 shadow-lg grid place-items-center border border-white/60 spinner-glass">
+      <!-- بوردر داخلي بيلف حوالين الصورة -->
+      <div class="absolute inset-1 rounded-full border-2 border-primary border-t-transparent animate-spin-slow"></div>
+
+      {% if globals.app.logo.fileUrl %}
+        <img src="{{ globals.app.logo.fileUrl }}" alt="{{ globals.app.name }}" class="h-10 w-auto object-contain opacity-95 relative z-10" />
+      {% else %}
+        <span class="text-sm font-bold text-gray-700 relative z-10">{{ globals.app.name | default('Store') }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- نص -->
+  <div class="mt-4 text-gray-600 text-sm font-medium">جارٍ التحميل…</div>
+</div>
+
+<style>
+/* الحلقة الخارجية */
+.spinner-gradient {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(var(--primary-rgb), 0.15) 90deg,
+    rgba(var(--primary-rgb), 0.35) 180deg,
+    rgba(var(--primary-rgb), 0.6) 270deg,
+    rgba(var(--primary-rgb), 0.85) 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+  animation: spin 1.1s linear infinite;
+}
+
+/* النقط */
+.spinner-dots::before,
+.spinner-dots::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  --sz: 6px;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 50%;
+  background: rgb(var(--primary-rgb));
+  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5);
+}
+.spinner-dots::before {
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: orbit 1.1s linear infinite;
+}
+.spinner-dots::after {
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: orbit 1.1s linear infinite reverse;
+}
+
+/* بوردر داخلي بيلف حوالين اللوجو */
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+/* قلب اللودر */
+.spinner-glass {
+  backdrop-filter: blur(2px) saturate(1.1);
+}
+
+/* حركات */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit {
+  0%   { transform: rotate(0deg) translateX(0) translateY(0); transform-origin: 50% 64px; }
+  100% { transform: rotate(360deg) translateX(0) translateY(0); transform-origin: 50% 64px; }
+}
+
+/* وضع الداكن */
+@media (prefers-color-scheme: dark) {
+  #spinner-container { background: rgba(0,0,0,0.6); }
+  .spinner-glass { background: rgba(20,20,20,0.92); border-color: rgba(255,255,255,0.1); }
+}
+</style>

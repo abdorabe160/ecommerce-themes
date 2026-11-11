@@ -1,0 +1,399 @@
+{
+  "name": "صورة مع نص",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف",
+        "en": "Description"
+      },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر (اتركه فارغاً للإخفاء)",
+        "en": "Button label (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر · الصفحات المتاحة: / · /shop · /collections · /blogs",
+        "en": "Button URL · available routes: / · /shop · /collections · /blogs"
+      },
+      "default": "/shop"
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ الصورة",
+        "en": "▸ Image"
+      }
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "جهة الصورة",
+        "en": "Image side"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربية)",
+            "en": "Start (left in English)"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (يسار في العربية)",
+            "en": "End (right in English)"
+          }
+        }
+      ]
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة الصورة",
+        "en": "Image ratio"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤ (طولي)",
+            "en": "3:4 (portrait)"
+          }
+        },
+        {
+          "value": "4x3",
+          "label": {
+            "ar": "٤:٣ (عرضي)",
+            "en": "4:3 (landscape)"
+          }
+        }
+      ]
+    },
+    "seal_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ الختم الدائري على الصورة",
+        "en": "▸ Circular seal on the image"
+      },
+      "default": true
+    },
+    "seal_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الختم (يلتفّ حول الدائرة — كرّر الفاصل ليملأها)",
+        "en": "Seal text (wraps around the circle — repeat a separator to fill it)"
+      },
+      "default": ""
+    },
+    "seal_icon": {
+      "type": "select",
+      "label": {
+        "ar": "أيقونة داخل الختم",
+        "en": "Icon inside the seal"
+      },
+      "default": "chair",
+      "options": [
+        {
+          "value": "pin",
+          "label": {
+            "ar": "دبوس موقع",
+            "en": "Location pin"
+          }
+        },
+        {
+          "value": "smile",
+          "label": {
+            "ar": "وجه مبتسم",
+            "en": "Smiley"
+          }
+        },
+        {
+          "value": "chair",
+          "label": {
+            "ar": "كرسي",
+            "en": "Chair"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "شحن",
+            "en": "Shipping"
+          }
+        },
+        {
+          "value": "star",
+          "label": {
+            "ar": "نجمة",
+            "en": "Star"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "درع",
+            "en": "Shield"
+          }
+        },
+        {
+          "value": "leaf",
+          "label": {
+            "ar": "ورقة",
+            "en": "Leaf"
+          }
+        },
+        {
+          "value": "box",
+          "label": {
+            "ar": "صندوق",
+            "en": "Box"
+          }
+        }
+      ]
+    },
+    "seal_size": {
+      "type": "range",
+      "label": {
+        "ar": "قطر الختم",
+        "en": "Seal diameter"
+      },
+      "default": 150,
+      "min": 96,
+      "max": 220,
+      "step": 6,
+      "unit": "px"
+    },
+    "seal_spin": {
+      "type": "boolean",
+      "label": {
+        "ar": "تدوير النص حول الختم",
+        "en": "Rotate the text around the seal"
+      },
+      "default": true
+    },
+    "seal_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الختم",
+        "en": "Seal colour"
+      },
+      "default": ""
+    },
+    "seal_text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الختم",
+        "en": "Seal text colour"
+      },
+      "default": ""
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "رمادي فاتح",
+            "en": "Soft grey"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "الأسطح",
+        "en": "Surfaces"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "fact": {
+      "name": "سطر مميّز",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "star",
+          "options": [
+            {
+              "value": "pin",
+              "label": {
+                "ar": "دبوس موقع",
+                "en": "Location pin"
+              }
+            },
+            {
+              "value": "smile",
+              "label": {
+                "ar": "وجه مبتسم",
+                "en": "Smiley"
+              }
+            },
+            {
+              "value": "chair",
+              "label": {
+                "ar": "كرسي",
+                "en": "Chair"
+              }
+            },
+            {
+              "value": "truck",
+              "label": {
+                "ar": "شحن",
+                "en": "Shipping"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "درع",
+                "en": "Shield"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة",
+                "en": "Leaf"
+              }
+            },
+            {
+              "value": "box",
+              "label": {
+                "ar": "صندوق",
+                "en": "Box"
+              }
+            }
+          ]
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "صورة مع نص"
+    }
+  ]
+}

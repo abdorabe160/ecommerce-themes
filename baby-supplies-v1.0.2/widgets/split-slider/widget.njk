@@ -1,0 +1,445 @@
+{# ============================================================================
+   PEBBLE SCROLLING CARDS — two product columns and a headline that move together
+   ----------------------------------------------------------------------------
+     ┌──────────┐                                    ┌──────────┐
+     │          │            وصل حديثاً               │          │  ← the second
+     │  product │      ‾‾‾‾ناعمة ومرحة،‾‾‾‾          │          │    column sits
+     │          │        بلون الليلك                 │  product │    125px lower
+     │ ┌──────┐ │      نصّ قصير في سطرين              │          │
+     │ │ chip │ │        ( تسوّقي الآن ▸ )            │ ┌──────┐ │
+     └─┴──────┴─┘                                    └─┴──────┴─┘
+
+   ── One block is one BEAT, not one card ──
+   The two photographs and the headline change together, so they belong to the
+   same block: a line of copy, the phrase inside it that gets a highlight, the
+   colour of that highlight, and the product each column shows. Splitting them
+   into three lists would have made "which card goes with which line" a thing
+   the merchant has to keep in their head.
+
+   Measured off the reference at 1440px: a 1200 container split 347 / 505 / 348,
+   a 3:4 card, a 40px headline on a 46px line, and pastel highlights
+   (#D3C9FD, #B2DFE6) sitting behind the words rather than around them.
+
+   ── The scroll IS the control ──
+   The section is taller than the screen and its contents are `position: sticky`,
+   so it pins while the page moves through it and the scroll distance becomes the
+   timeline. The headline glides CONTINUOUSLY with that distance — it is scrubbed,
+   not stepped — and the cards cross-fade at each halfway point.
+
+   That is what the reference does, and it is not the same thing as a carousel on
+   a timer: the shopper sets the pace, nothing changes while they are reading, and
+   scrolling back takes them back. `advance_on: time` is there for a merchant who
+   wants this mid-page without pinning it.
+
+   ── The headline is a masked column, not a fade ──
+   The lines are stacked and translated; the mask shows a little over two of
+   them, so the tail of the previous beat and the head of the next are visible
+   at the edges. That is what makes it read as one continuous sentence being
+   written rather than as three separate captions.
+
+   ── What the card's button does ──
+   Adds to the cart when the product has no options, and goes to the product
+   page when it does — the same rule the cart's cross-sell uses, for the same
+   reason: a product with a size cannot be added blind, and a button that
+   silently picks one for the shopper is worse than a button that asks.
+
+   All styling lives in assets/style.css → "15.13.5 SCROLLING CARDS".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# ── The cap, and why it is SIX ──
+   This section's height IS its beat count: `--hy-sc-run` is
+   `100vh + (n - 1) × scroll_per_beat`, so every beat a merchant adds is
+   another screenful of scrolling. Measured at the default 70vh/beat:
+
+       4 beats →  3.1 screens        10 beats →  7.3 screens
+       6 beats →  4.5 screens        15 beats → 10.8 screens
+
+   and at the setting's maximum of 140vh/beat those become 5.2, 8.0, 13.6 and
+   20.6. Past six the section stops being a section and becomes a scroll trap
+   the shopper cannot get out of, so the extras are not rendered. #}
+{% set SC_MAX = 6 %}
+{% set beats = (widget.blocks | default([])).slice(0, SC_MAX) %}
+{% set count = beats | length %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set body = d.body | default('') %}
+{% set ctaText = d.cta_text | default('') %}
+{% set ctaUrl = d.cta_url | default('/shop') %}
+
+{% set mode = d.advance_on | default('scroll') %}
+{% set perBeat = d.scroll_per_beat | default(70) %}
+{% set speed = d.autoplay_speed | default(4, true) %}
+
+{% set ratio = d.card_ratio | default('3x4') %}
+{% set offset = d.column_offset | default(125) %}
+{% set showPrice = d.show_price | default(true) %}
+
+{% set ratioMap = { '3x4': '3 / 4', '4x5': '4 / 5', '1x1': '1 / 1' } %}
+
+
+{# ---- one product card ----
+   `products` hands back an ARRAY even when the merchant picked one, so every
+   call site takes the first. A block with nothing picked renders a placeholder
+   tile rather than an empty column. #}
+{% macro card(list, eager) %}
+  {% set p = list[0] if list and (list | length) > 0 else null %}
+  {% if p %}
+    {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+    {% set url = '/products/' ~ (p.slug | default(p.handle) | default(p._id)) %}
+    {% set inStock = p.allowBackorder or (not p.trackQuantity) or p.variantsCount or (p.options | default([], true) | length) > 0 or p.quantity > 0 %}
+    {% set hasVariants = (p.variantsCount and p.variantsCount > 0) or (p.options and (p.options | length) > 0) %}
+
+    <div class="hy-sc-card">
+      <a href="{{ url }}" class="hy-sc-media" aria-label="{{ p.title }}">
+        {% if img %}
+          <img src="{{ img }}" alt="{{ p.title }}"
+               {% if eager %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+        {% endif %}
+      </a>
+
+      {# The chip is a sibling of the media, not a child of the link: it holds
+         its own link and its own button, and an <a> inside an <a> is invalid
+         markup that browsers resolve by closing the outer one early. #}
+      <div class="hy-sc-chip">
+        <a href="{{ url }}" class="hy-sc-thumb" aria-hidden="true" tabindex="-1">
+          {% if img %}<img src="{{ img }}" alt="" loading="lazy"/>{% endif %}
+        </a>
+        <a href="{{ url }}" class="hy-sc-info">
+          <span class="hy-sc-name">{{ p.title }}</span>
+          {% if showPrice %}
+            <span class="hy-sc-price">{{ p.pricing.price | default(0) | money }}</span>
+          {% endif %}
+        </a>
+
+        {% if inStock and not hasVariants %}
+          <button type="button" class="hy-sc-buy"
+                  @click="CartManager.add('{{ p._id }}', 1)">
+            {{ t('products.add') }}
+          </button>
+        {% else %}
+          <a href="{{ url }}" class="hy-sc-buy">
+            {{ t('products.shop') if hasVariants else t('pages.product.out_of_stock') }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="hy-sc-card" data-hy-placeholder aria-hidden="true">
+      <span class="hy-sc-media hy-sc-media--ph"></span>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+
+{# ---- the second line, with its phrase picked out ----
+   `replace` on the exact phrase, because the merchant types the words they want
+   lit rather than wrapping them in markup they would have to get right. An
+   empty or non-matching `highlight` leaves the line untouched, which is the
+   right failure: a typo costs a highlight, never the sentence. #}
+{% macro line2(s) %}
+  {% if s.highlight and s.line_2 and s.line_2.indexOf(s.highlight) > -1 %}
+    {{ s.line_2 | replace(s.highlight, '<mark class="hy-sc-mark">' ~ s.highlight ~ '</mark>') | safe }}
+  {% else %}
+    {{ s.line_2 | default('') }}
+  {% endif %}
+{% endmacro %}
+
+
+<section id="hy-sc-{{ id }}" class="hy-sc hy-sc--{{ mode }}">
+  <style>
+    /* The `-set` suffix is load-bearing: this is an ID selector, so anything it
+       writes outranks every class rule in the stylesheet, responsive ones
+       included. The stylesheet reads these as the DESKTOP values and decides
+       what the narrower breakpoints use. */
+    #hy-sc-{{ id }} {
+      --hy-sc-ratio-set: {{ ratioMap[ratio] | default('3 / 4') }};
+      --hy-sc-offset-set: {{ offset }}px;
+      {% if mode == 'scroll' and count > 1 %}
+      /* The scroll timeline: one screen to read the first beat, then this much
+         again for each one after it. */
+      --hy-sc-run: calc(100vh + {{ (count - 1) * perBeat }}vh);
+      {% endif %}
+    }
+    {# Top-level rules, NOT nested inside the block above: a rule inside a plain
+       declaration block is CSS Nesting, which this theme does not assume. #}
+    {% for b in beats %}
+    #hy-sc-{{ id }} [data-hy-beat="{{ loop.index0 }}"] .hy-sc-mark {
+      --hy-sc-mark: {{ b.data.highlight_color | default('color-mix(in srgb, var(--color-accent) 16%, var(--color-bg-primary))', true) }};
+    }
+    {% endfor %}
+  </style>
+
+  <div class="hy-sc-pin">
+   <div class="hy-container">
+    <div class="hy-sc-grid">
+
+      {# ---- first column ---- #}
+      <div class="hy-sc-col hy-sc-col--start">
+        {% for b in beats %}
+          <div class="hy-sc-slot {{ 'is-active' if loop.first }}" data-hy-slot="{{ loop.index0 }}">
+            {{ card(b.data.product_start, loop.first) }}
+          </div>
+        {% endfor %}
+        {% if count == 0 %}
+          <div class="hy-sc-slot is-active">{{ card(null, true) }}</div>
+        {% endif %}
+      </div>
+
+      {# ---- centre ---- #}
+      <div class="hy-sc-copy">
+        {% if eyebrow %}<p class="hy-sc-eyebrow">{{ eyebrow }}</p>{% endif %}
+
+        {% if count > 0 %}
+          {# The mask. Its height is two lines plus the sliver of the neighbours
+             that makes the movement legible; the track inside it is translated
+             by whole beats. #}
+          <div class="hy-sc-ticker" aria-live="polite">
+            <div class="hy-sc-track" id="hy-scTrack-{{ id }}">
+              {% for b in beats %}
+                <div class="hy-sc-beat" data-hy-beat="{{ loop.index0 }}">
+                  <span class="hy-sc-line">{{ b.data.line_1 | default('') }}</span>
+                  <span class="hy-sc-line">{{ line2(b.data) }}</span>
+                </div>
+              {% endfor %}
+              {# The first beat again, so the wrap from the last to the first is
+                 a continuation rather than a jump backwards through every
+                 line. The script resets to 0 while this clone is on screen. #}
+              {% if count > 1 %}
+                <div class="hy-sc-beat" data-hy-beat="0" aria-hidden="true">
+                  <span class="hy-sc-line">{{ beats[0].data.line_1 | default('') }}</span>
+                  <span class="hy-sc-line">{{ line2(beats[0].data) }}</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if body %}
+          {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML and
+             a <p> cannot contain a <p> — the browser closes the outer one and
+             the copy becomes a SIBLING, out of reach of every style on it. #}
+          <div class="hy-sc-body">{{ body | safe }}</div>
+        {% endif %}
+
+        {% if ctaText %}
+          <a href="{{ ctaUrl }}" class="hy-btn hy-btn--lg hy-btn--pill hy-btn--arrow hy-btn--solid hy-sc-cta">
+            <span>{{ ctaText }}</span>
+            <i class="hy-btn-arrow" aria-hidden="true">
+              <svg class="rtl-flip" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                   stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </i>
+          </a>
+        {% endif %}
+      </div>
+
+      {# ---- second column ---- #}
+      <div class="hy-sc-col hy-sc-col--end">
+        {% for b in beats %}
+          <div class="hy-sc-slot {{ 'is-active' if loop.first }}" data-hy-slot="{{ loop.index0 }}">
+            {{ card(b.data.product_end, loop.first) }}
+          </div>
+        {% endfor %}
+        {% if count == 0 %}
+          <div class="hy-sc-slot is-active">{{ card(null, true) }}</div>
+        {% endif %}
+      </div>
+
+    </div>
+   </div>
+  </div>
+</section>
+
+<script>
+  /* ---- empty slots borrow the store's products ----
+     A beat with nothing picked renders a skeleton card; HayatAuto (main.js)
+     fills each one, in page order, with the next product the store has. The
+     markup below mirrors the `card()` macro above — keep them together.
+
+     The button starts as a link to the product and only becomes "add" once the
+     FULL record confirms there are no options: the list payload carries none,
+     and a product with options added blind lands in the cart with no variant. */
+  (function () {
+    var root = document.getElementById('hy-sc-{{ id }}');
+    if (!root) return;
+    var L = { add: {{ t('products.add') | dump | safe }}, shop: {{ t('products.shop') | dump | safe }}, out: {{ t('pages.product.out_of_stock') | dump | safe }} };
+    var showPrice = {{ 'true' if showPrice else 'false' }};
+
+    function build(p, eager) {
+      var A = window.HayatAuto, esc = HayatCard.esc;
+      var url = A.url(p), img = A.img(p), title = esc(p.title);
+      var pic = img ? '<img src="' + esc(img) + '" alt="' + title + '"' + (eager ? ' fetchpriority="high"' : ' loading="lazy"') + '/>' : '';
+      return '<a href="' + url + '" class="hy-sc-media" aria-label="' + title + '">' + pic + '</a>' +
+        '<div class="hy-sc-chip">' +
+          '<a href="' + url + '" class="hy-sc-thumb" aria-hidden="true" tabindex="-1">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy"/>' : '') + '</a>' +
+          '<a href="' + url + '" class="hy-sc-info"><span class="hy-sc-name">' + title + '</span>' +
+            (showPrice ? '<span class="hy-sc-price">' + esc(window.formatMoney((p.pricing && p.pricing.price) || 0)) + '</span>' : '') +
+          '</a>' +
+          '<a href="' + url + '" class="hy-sc-buy">' + esc(L.shop) + '</a>' +
+        '</div>';
+    }
+
+    function fill() {
+      var slots = root.querySelectorAll('.hy-sc-card[data-hy-placeholder]');
+      if (!slots.length || !window.HayatAuto) return;
+      HayatAuto.take(slots.length).then(function (list) {
+        list.forEach(function (p, i) {
+          var card = slots[i];
+          card.removeAttribute('data-hy-placeholder');
+          card.removeAttribute('aria-hidden');
+          card.innerHTML = build(p, i === 0);
+          HayatAuto.full(p).then(function (full) {
+            var buy = card.querySelector('.hy-sc-buy');
+            if (!buy) return;
+            if (!HayatAuto.inStock(full)) { buy.textContent = L.out; return; }
+            if (HayatAuto.hasOptions(full)) return;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'hy-sc-buy';
+            btn.textContent = L.add;
+            btn.addEventListener('click', function () { CartManager.add(full._id || p._id, 1); });
+            buy.replaceWith(btn);
+          });
+        });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fill);
+    } else {
+      fill();
+    }
+  })();
+</script>
+
+<script>
+  (function () {
+    var root = document.getElementById('hy-sc-{{ id }}');
+    if (!root || {{ count }} < 2) return;
+
+    var track = document.getElementById('hy-scTrack-{{ id }}');
+    var cols = root.querySelectorAll('.hy-sc-col');
+    var total = {{ count | int }};
+    var shown = -1;
+
+    /* The ticker moves by whole BEATS, and a beat is two lines — so the step is
+       measured off a rendered beat rather than computed from a line-height the
+       font may not honour exactly. */
+    function step() {
+      var b = track && track.querySelector('.hy-sc-beat');
+      return b ? b.offsetHeight : 0;
+    }
+
+    /* `t` is a POSITION, not an index: 1.5 means halfway between the second beat
+       and the third. The ticker takes it whole so it glides; the cards round it,
+       so they swap at the halfway point rather than drifting with it. */
+    function render(t) {
+      if (track) track.style.transform = 'translate3d(0,' + (-t * step()).toFixed(1) + 'px,0)';
+      var i = Math.round(t);
+      if (i < 0) i = 0;
+      if (i > total - 1) i = total - 1;
+      if (i === shown) return;
+      shown = i;
+      for (var c = 0; c < cols.length; c++) {
+        var slots = cols[c].querySelectorAll('[data-hy-slot]');
+        for (var s = 0; s < slots.length; s++) slots[s].classList.toggle('is-active', s === i);
+      }
+    }
+
+    {% if mode == 'scroll' %}
+    /* ---- scroll-scrubbed ----
+       The section is taller than the screen and its contents are sticky, so the
+       distance the page travels through it IS the timeline. Progress is measured
+       against the part of the section the pin does NOT occupy, which is exactly
+       the distance available to scrub.
+
+       rAF-gated: `scroll` fires far more often than the screen repaints, and the
+       transform it writes only lands once per frame anyway. */
+    var pin = root.querySelector('.hy-sc-pin');
+    var ticking = false;
+
+    /* The pin is only as tall as its contents, so it sticks at whatever offset
+       centres it on screen. Written on resize only — a scroll never changes it. */
+    var stickTop = 0;
+    function place() {
+      if (!pin) return;
+      stickTop = Math.max(0, Math.round((window.innerHeight - pin.offsetHeight) / 2));
+      root.style.setProperty('--hy-sc-top', stickTop + 'px');
+    }
+
+    function apply() {
+      ticking = false;
+      var runway = root.offsetHeight - (pin ? pin.offsetHeight : 0);
+      if (runway <= 0) { render(0); return; }
+      /* 0 when the pin sticks — the section's top reaching `stickTop` — and 1
+         when it lets go, `runway` later. */
+      var p = (stickTop - root.getBoundingClientRect().top) / runway;
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      render(p * (total - 1));
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(apply);
+    }
+
+    function relayout() { place(); apply(); }
+
+    relayout();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', relayout);
+    /* A reload restores the scroll position AFTER this runs, and bfcache
+       restores it with no scroll event at all. `load` also re-places: the
+       pin's height changes once its images arrive. */
+    window.addEventListener('load', relayout);
+    window.addEventListener('pageshow', apply);
+    {% else %}
+    /* ---- on a timer ----
+       For a merchant who wants this mid-page without pinning it. The step is
+       whole beats, so `render` is called on integers and the ticker snaps
+       between them with its own transition rather than being scrubbed. */
+    render(0);
+    var at = 0;
+    var reduce = document.documentElement.classList.contains('hy-no-motion') || (window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    if (!reduce) {
+      var timer = null;
+      var start = function () {
+        if (timer) return;
+        timer = window.setInterval(function () {
+          at = (at + 1) % total;
+          render(at);
+        }, {{ (speed * 1000) | int }});
+      };
+      var stop = function () { if (timer) { window.clearInterval(timer); timer = null; } };
+
+      /* Only runs while it is on screen. A section rotating in a tab nobody is
+         looking at is work the phone pays for and the shopper never sees. */
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (e) { e[0].isIntersecting ? start() : stop(); },
+                                 { threshold: 0.2 }).observe(root);
+      } else { start(); }
+
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      document.addEventListener('visibilitychange', function () {
+        document.hidden ? stop() : start();
+      });
+    }
+    {% endif %}
+
+    /* The step is measured, so it has to be re-measured when the measurement can
+       change — a web font swapping in moves every line. */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { shown = -1; {% if mode == 'scroll' %}apply(){% else %}render(at){% endif %}; });
+    }
+  })();
+</script>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-sc-' ~ id, c=d %}

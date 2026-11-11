@@ -1,0 +1,265 @@
+{
+  "name": "بطاقات العروض",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم (اختياري)",
+        "en": "Section title (optional)"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر الوصف تحت العنوان",
+        "en": "Supporting line"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد البطاقات في الصف",
+        "en": "Cards per row"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "بطاقتان",
+            "en": "Two"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "ثلاث بطاقات",
+            "en": "Three"
+          }
+        }
+      ]
+    },
+    "card_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع البطاقة",
+        "en": "Card height"
+      },
+      "default": 380,
+      "min": 260,
+      "max": 520,
+      "step": 20,
+      "unit": "px"
+    },
+    "badge_size": {
+      "type": "range",
+      "label": {
+        "ar": "قطر دائرة الخصم",
+        "en": "Discount circle diameter"
+      },
+      "default": 96,
+      "min": 64,
+      "max": 140,
+      "step": 4,
+      "unit": "px"
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "رمادي فاتح",
+            "en": "Soft grey"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "الأسطح",
+        "en": "Surfaces"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز",
+        "en": "Accent"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Borders"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الأزرار",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الأزرار",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "بطاقة",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف (سطران على الأكثر)",
+            "en": "Description (two lines at most)"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المنتج (مقصوصة بخلفية شفافة تعطي أفضل نتيجة)",
+            "en": "Product image (a cut-out on a transparent background works best)"
+          }
+        },
+        "cta_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر (اتركه فارغاً للإخفاء)",
+            "en": "Button label (leave empty to hide)"
+          },
+          "default": ""
+        },
+        "cta_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر · الصفحات المتاحة: / · /shop · /collections · /blogs",
+            "en": "Button URL · available routes: / · /shop · /collections · /blogs"
+          },
+          "default": "/shop"
+        },
+        "card_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون خلفية البطاقة",
+            "en": "Card background"
+          },
+          "default": ""
+        },
+        "text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون نص البطاقة",
+            "en": "Card text colour"
+          },
+          "default": ""
+        },
+        "badge_label": {
+          "type": "string",
+          "label": {
+            "ar": "الدائرة — السطر الصغير",
+            "en": "Circle — small line"
+          },
+          "default": ""
+        },
+        "badge_value": {
+          "type": "string",
+          "label": {
+            "ar": "الدائرة — القيمة (اتركها فارغة لإخفاء الدائرة)",
+            "en": "Circle — value (leave empty to hide the circle)"
+          },
+          "default": ""
+        },
+        "badge_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الدائرة",
+            "en": "Circle colour"
+          },
+          "default": ""
+        },
+        "badge_text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون نص الدائرة",
+            "en": "Circle text colour"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "بطاقات العروض"
+    }
+  ]
+}

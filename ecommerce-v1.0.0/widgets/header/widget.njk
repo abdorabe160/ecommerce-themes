@@ -1,0 +1,845 @@
+{# ============================================================================
+   HEADER — four rows
+   ----------------------------------------------------------------------------
+     ┌ announcement marquee (gradient) ─────────────────────────────────────┐
+     │ [≡ Menu]  LOGO   [ All categories ⌄ | search…        🎤 ⌕ ]   ◐ ⌖ 👤 🛒 │  ← sticks on scroll
+     │            Deals ⌄   Bundle ⌄   Brands   Electronics ⌄   About         │  ← mega menus
+     │ Returns · FAQs · Track order          ✉ mail   ☏ phone   🌐 English (EGP) │
+     └──────────────────────────────────────────────────────────────────────┘
+
+   ── What Qumra gives us, and how this header maps onto it ──
+   · Menus are FLAT lists of { title, url }. A mega menu is therefore built
+     from BLOCKS, in order:
+         nav_item   "All Electronics"     ← a top-level link
+         nav_group  "Smartphones"  + menu ← belongs to the item above it
+         nav_group  "Laptops"      + menu
+         nav_promo  card                  ← also belongs to the item above
+         nav_item   "About us"
+     Every group / promo attaches to the LAST nav_item before it.
+   · No account / store-locator routes → the two icon slots are plain links
+     the merchant points wherever they like; empty = hidden.
+   · Search: /shop is the results page. /shop/<handle>?q= searches inside a
+     collection (collectionFilter() reads the handle from the path and `q`
+     from the query). Live results come from /ajax/search/products, which
+     accepts `collectionId`.
+   · Language is a real `{% form 'lang' %}`. Currency is decided by the
+     market server-side, so it is shown as a label only.
+
+   Contracts with assets/main.js — do not rename:
+     toggleModal('cart') · $store.cart.totalQuantity · $store.modal.current
+     Qumra.search.search · Qumra.utils.formatMoney · HayatMarquee
+   Styles: assets/header.css (prefix .hx-).
+   ========================================================================= #}
+
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+{# Returns a SafeString — an EMPTY one is still truthy, so callers test `| length`. #}
+{% macro mediaUrl(m) %}{% if m %}{{ m if (m | string) == m else (m.fileUrl or m.url or '') }}{% endif %}{% endmacro %}
+
+{% macro caret(cls) %}
+  <svg class="{{ cls | default('hx-caret') }}" width="12" height="12" viewBox="0 0 12 12" fill="none"
+       stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/>
+  </svg>
+{% endmacro %}
+
+{% macro chev(cls) %}
+  <svg class="{{ cls | default('hx-chev') }}" width="14" height="14" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+  </svg>
+{% endmacro %}
+
+{# Announcement glyphs — line icons at the same weight as the bar text. #}
+{% macro annIcon(key) %}
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if key == 'gift' %}
+      <path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13"/><path d="M12 7c-1.6-3.2-5-3.4-5-1.2C7 7 9 7 12 7Zm0 0c1.6-3.2 5-3.4 5-1.2C17 7 15 7 12 7Z"/>
+    {% elif key == 'truck' %}
+      <path d="M2.8 6.5h10.4v10H2.8zM13.2 9.8h4l3 3.2v3.5h-7z"/><circle cx="6.5" cy="17.6" r="1.7"/><circle cx="16.7" cy="17.6" r="1.7"/>
+    {% elif key == 'flame' %}
+      <path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-1.5 2-2 3.5-2 5-1-1-1.6-2-1.7-3.2C8 8.6 6 11.4 6 15a6 6 0 0 0 6 6Z"/><path d="M12 21a2.5 2.5 0 0 1-2.5-2.5c0-1.6 1.2-2.3 2.5-4 1.3 1.7 2.5 2.4 2.5 4A2.5 2.5 0 0 1 12 21Z"/>
+    {% elif key == 'percent' %}
+      <path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.3"/><circle cx="17" cy="17" r="2.3"/>
+    {% elif key == 'star' %}
+      <path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>
+    {% elif key == 'shield' %}
+      <path d="M12 3 5 6v5.5c0 4.3 3 8 7 9.5 4-1.5 7-5.2 7-9.5V6z"/><path d="m9 12 2 2 4-4"/>
+    {% elif key == 'clock' %}
+      <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+    {% elif key == 'box' %}
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/>
+    {% else %}
+      <path d="M12 2.8 14.3 5l3.1-.4.6 3.1 2.8 1.5-1.4 2.8 1.4 2.8-2.8 1.5-.6 3.1-3.1-.4L12 21.2 9.7 19l-3.1.4-.6-3.1-2.8-1.5 1.4-2.8-1.4-2.8L6 7.7l.6-3.1 3.1.4z"/><path d="m8.8 12.2 2.2 2.2 4.2-4.4"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{% macro actionIcon(key) %}
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if key == 'user' %}
+      <circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>
+    {% elif key == 'heart' %}
+      <path d="M12 20.3 4.8 13.4a4.4 4.4 0 0 1 6.2-6.2l1 1 1-1a4.4 4.4 0 0 1 6.2 6.2z"/>
+    {% elif key == 'phone' %}
+      <path d="M5 3.8h3.1l1.6 4-2 1.3a11.4 11.4 0 0 0 5.2 5.2l1.3-2 4 1.6v3.1a1.8 1.8 0 0 1-2 1.8A15.9 15.9 0 0 1 3.2 5.8a1.8 1.8 0 0 1 1.8-2Z"/>
+    {% elif key == 'whatsapp' %}
+      <path d="M3.5 20.5 5 16.8A7.8 7.8 0 1 1 8 19.4z"/><path d="M9 9.4c0 3 2.6 5.6 5.6 5.6"/>
+    {% elif key == 'truck' %}
+      <path d="M2.8 6.5h10.4v10H2.8zM13.2 9.8h4l3 3.2v3.5h-7z"/><circle cx="6.5" cy="17.6" r="1.7"/><circle cx="16.7" cy="17.6" r="1.7"/>
+    {% else %}
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.4"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{% macro menuLinks(menu, cls) %}
+  {% for item in (menu.items if (menu and menu.items) else (menu or [])) %}
+    <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }} class="{{ cls }}">{{ item.title }}</a>
+  {% endfor %}
+{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+
+{# ---- Sort the blocks into announcements and a nav tree ----
+   Arrays are mutated with .push(): a `{% set %}` inside a for-loop does not
+   leak out of it, but a method call on an outer array does.
+   ⚠️  Only ever push onto a TOP-LEVEL array. Nasij cannot call a method
+   reached through a subscript (`navs[i].groups.push(…)` fails with
+   "attempted to call a non-function"). So groups and promos go into one flat
+   `kids` list, each tagged with `o` = the number of nav items pushed so far,
+   which is the loop.index of the item it belongs to. Each item collects its
+   own children into a fresh local array when it renders.
+
+   The block's type is read from the block when Qalab provides it; when it
+   does not, it is inferred from the setting keys, which are prefixed per
+   type (ann_ / item_ / group_ / promo_) exactly so that this works. #}
+{% set anns = [] %}
+{% set navs = [] %}
+{% set kids = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% set kind = block.type | default(block.block) | default('') %}
+  {% if not kind %}
+    {% if b.group_title is defined or b.group_menu is defined %}{% set kind = 'nav_group' %}
+    {% elif b.promo_title is defined or b.promo_image is defined %}{% set kind = 'nav_promo' %}
+    {% elif b.ann_text is defined %}{% set kind = 'announcement' %}
+    {% else %}{% set kind = 'nav_item' %}{% endif %}
+  {% endif %}
+
+  {% if kind == 'announcement' %}
+    {% if b.ann_text %}{% set _ = anns.push(b) %}{% endif %}
+  {% elif kind == 'nav_item' %}
+    {% if b.item_label %}{% set _ = navs.push(b) %}{% endif %}
+  {% elif kind == 'nav_group' and (navs | length) > 0 %}
+    {% if b.group_title or b.group_menu %}{% set _ = kids.push({ "o": navs | length, "t": "g", "b": b }) %}{% endif %}
+  {% elif kind == 'nav_promo' and (navs | length) > 0 %}
+    {% if b.promo_title or b.promo_image %}{% set _ = kids.push({ "o": navs | length, "t": "p", "b": b }) %}{% endif %}
+  {% endif %}
+{% endfor %}
+
+{% set storeName = store.name | default('Store') %}
+{% set logoUrl = mediaUrl(d.header_logo) | trim %}
+{% if (logoUrl | length) == 0 and store.logo and store.logo.fileUrl %}{% set logoUrl = store.logo.fileUrl %}{% endif %}
+{% set logoH = d.logo_height | default(40) %}
+
+{% set fullW = d.full_width | default(true) %}
+{% set isSticky = d.sticky | default(true) %}
+{% set showTop = (d.topbar_enabled | default(true)) and (anns | length) > 0 %}
+{% set showMenuBtn = d.show_menu_button | default(true) %}
+{% set menuLabel = d.menu_button_label | default(t('header.menu'), true) %}
+{% set showSearch = d.show_search | default(true) %}
+{% set placeholder = d.search_placeholder | default(t('header.search_placeholder'), true) %}
+{% set cats = d.search_categories | default([]) %}
+{% set sProducts = d.search_products | default([]) %}
+{% set sCollections = d.search_collections | default([]) %}
+{% set darkOn = (settings.enableDarkMode | default(true)) and (d.show_theme_toggle | default(true)) %}
+{% set showCart = d.show_cart | default(true) %}
+{% set navOn = (d.nav_enabled | default(true)) and (navs | length) > 0 %}
+{% set utilOn = d.utility_enabled | default(true) %}
+{% set uEmail = d.utility_email | default('') | trim %}
+{% set uPhone = d.utility_phone | default('') | trim %}
+{% set uLang = d.utility_language | default(true) %}
+
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = 'en' if rawLang == 'en' else 'ar' %}
+{% set curCode = localization.currency.currencyCode | default('') %}
+{% set curSym = localization.currency.currencySymbol | default('') %}
+
+{# Current path, normalised so '/shop/' and '/shop' compare equal and home is ''. #}
+{% set curFull = page.url | default('/') %}
+{% set curPath = curFull.split('?')[0] %}
+{% set curPath = curPath.slice(0, -1) if (curPath | length) > 1 and curPath.slice(-1) == '/' else curPath %}
+{% set curPath = '' if curPath == '/' else curPath %}
+
+
+<header id="hx-header-{{ id }}" class="hx-header {{ 'is-full' if fullW }}">
+
+  {# ═══════════════════════ 1 · ANNOUNCEMENT MARQUEE ═══════════════════════
+     One group of messages is printed; HayatMarquee clones it as many times as
+     the viewport needs and drives the loop with CSS. #}
+  {% if showTop %}
+    <div class="hx-topbar {{ 'is-pausable' if (d.topbar_pause | default(true)) }}"
+         id="hx-topbar-{{ id }}" role="region" aria-label="{{ t('header.announcements') }}">
+      <div class="hx-topbar-track">
+        <div class="hx-topbar-group">
+          {% for a in anns %}
+            {% set img = mediaUrl(a.ann_image) | trim %}
+            <span class="hx-ann">
+              {% if a.ann_url %}
+                <a href="{{ a.ann_url }}"{{ extAttrs(a.ann_url) }} class="hx-ann-text">{{ a.ann_text }}</a>
+              {% else %}
+                <span class="hx-ann-text">{{ a.ann_text }}</span>
+              {% endif %}
+              {% if (img | length) > 0 %}
+                <img src="{{ img }}" alt="" class="hx-ann-img" loading="lazy"/>
+              {% elif a.ann_icon != 'none' %}
+                <span class="hx-ann-icon">{{ annIcon(a.ann_icon | default('badge')) }}</span>
+              {% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+
+  {# ═══════════════════════ 2 · MAIN ROW ═══════════════════════
+     The placeholder keeps the row's height in the flow while the row itself
+     is lifted to position:fixed — see the sticky script at the bottom. #}
+  {% if isSticky %}<div class="hx-main-ph" id="hx-main-ph-{{ id }}" aria-hidden="true"></div>{% endif %}
+  <div class="hx-main" id="hx-main-{{ id }}">
+    <div class="hx-wrap hx-main-row">
+
+      <div class="hx-main-start">
+        {% if showMenuBtn %}
+          <button type="button" class="hx-menu-btn" onclick="toggleModal('hx-menu')"
+                  aria-label="{{ menuLabel }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" aria-hidden="true">
+              <path stroke-linecap="round" d="M4 7h16M4 12h11M4 17h16"/>
+            </svg>
+            <span class="hx-menu-btn-label">{{ menuLabel }}</span>
+          </button>
+        {% endif %}
+
+        <a href="/" class="hx-brand" aria-label="{{ storeName }}">
+          {% if (logoUrl | length) > 0 %}
+            <img src="{{ logoUrl }}" alt="{{ storeName }}" class="hx-brand-logo" style="--hx-logo-h: {{ logoH }}px;"/>
+          {% else %}
+            <span class="hx-wordmark">{{ storeName }}</span>
+          {% endif %}
+        </a>
+      </div>
+
+      {% if showSearch %}
+        {# ---- Search ----
+           A real GET form: with JS off it still lands on /shop?q=. With JS the
+           submit is rewritten so a chosen category becomes the PATH
+           (/shop/<handle>?q=), which is how the shop page scopes a search. #}
+        {% set catCfg = [] %}
+        {% for c in cats %}{% set _ = catCfg.push({ "h": c.handle | default(c._id), "id": c._id }) %}{% endfor %}
+        {% set searchCfg = { "cats": catCfg, "lang": currentLang, "hasSuggest": ((sProducts | length) + (sCollections | length)) > 0 } %}
+        <div class="hx-search"
+             x-data='hxSearch({{ searchCfg | dump }})'
+             :class="open && 'is-open'"
+             @click.outside="close()"
+             @keydown.escape.window="close()">
+
+          <form class="hx-search-form" role="search" method="get" action="/shop" @submit.prevent="submit()">
+            {% if (cats | length) > 0 %}
+              <label class="hx-search-cat">
+                <span class="hx-sr">{{ t('header.all_categories') }}</span>
+                <select x-model="cat" @change="run()">
+                  <option value="">{{ t('header.all_categories') }}</option>
+                  {% for c in cats %}
+                    <option value="{{ c.handle | default(c._id) }}">{{ c.title }}</option>
+                  {% endfor %}
+                </select>
+                {{ caret('hx-caret hx-search-cat-caret') }}
+              </label>
+            {% endif %}
+
+            <input type="search" name="q" x-ref="field" x-model="q" class="hx-search-input"
+                   autocomplete="off" placeholder="{{ placeholder }}" aria-label="{{ t('header.search') }}"
+                   @focus="open = true" @input.debounce.300ms="run()"/>
+
+            {% if d.search_voice | default(true) %}
+              <button type="button" class="hx-search-icon hx-search-mic" x-show="canVoice" x-cloak
+                      :class="listening && 'is-listening'" @click="listen()"
+                      aria-label="{{ t('header.voice_search') }}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>
+                </svg>
+              </button>
+            {% endif %}
+            <button type="submit" class="hx-search-icon" aria-label="{{ t('header.search') }}">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.6-3.6"/>
+              </svg>
+            </button>
+          </form>
+
+          {# ---- Panel: suggestions while empty, live results while typing ---- #}
+          <div class="hx-spanel" x-show="panel" x-cloak
+               x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+               x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from">
+
+            <div x-show="!typing" class="hx-spanel-grid">
+              {% if (sProducts | length) > 0 %}
+                <div class="hx-spanel-col">
+                  <p class="hx-spanel-head">{{ d.search_products_title | default(t('header.most_searched'), true) }}</p>
+                  <div class="hx-sprod-list">
+                    {% for p in sProducts %}{% if loop.index <= 6 %}
+                      {% set pr = p.pricing or {} %}
+                      <a href="/products/{{ p.slug | default(p.handle) | default(p._id) }}" class="hx-sprod">
+                        <span class="hx-sprod-media">
+                          {% if p.images and p.images[0] %}<img src="{{ p.images[0].fileUrl }}" alt="{{ p.title }}" loading="lazy"/>{% endif %}
+                        </span>
+                        <span class="hx-sprod-info">
+                          <span class="hx-sprod-name">{{ p.title }}</span>
+                          <span class="hx-sprod-money">
+                            <span class="hx-sprod-price {{ 'is-sale' if pr.compareAtPrice > pr.price }}">{{ pr.price | default(0) | money }}</span>
+                            {% if pr.compareAtPrice > pr.price %}<s class="hx-sprod-was">{{ pr.compareAtPrice | money }}</s>{% endif %}
+                          </span>
+                        </span>
+                      </a>
+                    {% endif %}{% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+              {% if (sCollections | length) > 0 %}
+                <div class="hx-spanel-col">
+                  <p class="hx-spanel-head">{{ d.search_collections_title | default(t('header.explore_collections'), true) }}</p>
+                  <div class="hx-scoll-list">
+                    {% for c in sCollections %}{% if loop.index <= 6 %}
+                      <a href="/shop/{{ c.handle | default(c._id) }}" class="hx-scoll">
+                        <span class="hx-scoll-media">
+                          {% if c.image and c.image.fileUrl %}<img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy"/>{% endif %}
+                        </span>
+                        <span class="hx-scoll-name">{{ c.title }}</span>
+                      </a>
+                    {% endif %}{% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+            <div x-show="typing">
+              <div x-show="loading" class="hx-spanel-state"><span class="hy-spinner" style="width:22px;height:22px;"></span></div>
+              <div x-show="!loading && results.length">
+                <p class="hx-spanel-head">{{ t('pages.search.products') }}</p>
+                <div class="hx-sres">
+                  <template x-for="p in results" :key="p._id">
+                    <a class="hx-sprod" :href="productUrl(p)">
+                      <span class="hx-sprod-media">
+                        <template x-if="p.images && p.images.length"><img :src="p.images[0].fileUrl" :alt="p.title" loading="lazy"/></template>
+                      </span>
+                      <span class="hx-sprod-info">
+                        <span class="hx-sprod-name" x-text="p.title"></span>
+                        <span class="hx-sprod-money">
+                          <span class="hx-sprod-price" :class="onSale(p) && 'is-sale'" x-text="money(p.pricing && p.pricing.price)"></span>
+                          <template x-if="onSale(p)"><s class="hx-sprod-was" x-text="money(p.pricing.compareAtPrice)"></s></template>
+                        </span>
+                      </span>
+                    </a>
+                  </template>
+                </div>
+                <a class="hx-spanel-all" :href="allUrl()">{{ t('pages.search.view_all') }} {{ chev('hx-chev hx-rtl-flip') }}</a>
+              </div>
+              <p x-show="!loading && searched && !results.length" class="hx-spanel-state">{{ t('pages.search.no_results') }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="hx-main-end">
+        {% if darkOn %}
+          <button type="button" class="hx-mode" x-data="{ dark: document.documentElement.getAttribute('data-theme') === 'dark' }"
+                  @click="dark = !dark; window.hxSetTheme && window.hxSetTheme(dark ? 'dark' : 'light')"
+                  :aria-pressed="dark ? 'true' : 'false'" aria-label="{{ t('header.dark_mode') }}" title="{{ t('header.dark_mode') }}">
+            <span class="hx-mode-track"><span class="hx-mode-knob"></span>
+              <svg class="hx-mode-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>
+            </svg>
+              <svg class="hx-mode-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/>
+            </svg>
+            </span>
+          </button>
+        {% endif %}
+
+        {% for n in [1, 2] %}
+          {% set aUrl = d['action' ~ n ~ '_url'] | default('') | trim %}
+          {% if aUrl %}
+            <a href="{{ aUrl }}"{{ extAttrs(aUrl) }} class="hx-icon-btn hx-desk"
+               aria-label="{{ d['action' ~ n ~ '_label'] | default(t('header.quick_link'), true) }}">
+              {{ actionIcon(d['action' ~ n ~ '_icon'] | default('pin')) }}
+            </a>
+          {% endif %}
+        {% endfor %}
+
+        {% if showCart %}
+          {% set ssrQty = cart.totalQuantity | default(0) %}
+          <button type="button" class="hx-icon-btn hx-cart-btn" onclick="toggleModal('cart')"
+                  aria-label="{{ t('header.cart') }}" x-data>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 3h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/>
+              <circle cx="9.5" cy="19.8" r="1.3"/><circle cx="17.5" cy="19.8" r="1.3"/>
+            </svg>
+            <span class="hx-count" x-show="$store.cart.totalQuantity > 0" x-text="$store.cart.totalQuantity"
+                  {% if ssrQty == 0 %}x-cloak{% endif %}>{{ ssrQty }}</span>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+
+  {# ═══════════════════════ 3 · NAVIGATION ═══════════════════════ #}
+  {% if navOn %}
+    <nav class="hx-nav hx-desk" aria-label="{{ t('common.menu') }}"
+         x-data="{
+           open: null, _t: null,
+           show(k) { clearTimeout(this._t); this._t = setTimeout(() => { this.open = k }, this.open === null ? 90 : 0) },
+           hide()  { clearTimeout(this._t); this._t = setTimeout(() => { this.open = null }, 180) },
+           close() { clearTimeout(this._t); this.open = null }
+         }"
+         @keydown.escape.window="close()">
+      <div class="hx-wrap hx-nav-row hx-nav-row--{{ d.nav_align | default('center') }}">
+        {% for b in navs %}
+          {% set k = loop.index %}
+          {% set groups = [] %}{% set promos = [] %}
+          {% for c in kids %}{% if c.o == k %}{% if c.t == 'g' %}{% set _ = groups.push(c.b) %}{% else %}{% set _ = promos.push(c.b) %}{% endif %}{% endif %}{% endfor %}
+          {% set links = b.item_menu.items if (b.item_menu and b.item_menu.items) else (b.item_menu or []) %}
+          {% set style = b.item_style | default('auto') %}
+          {% set hasGroups = (groups | length) > 0 or (promos | length) > 0 %}
+          {% if style == 'none' %}{% set kindDrop = '' %}
+          {% elif hasGroups %}{% set kindDrop = 'tabs' if style == 'tabs' else 'columns' %}
+          {% elif (links | length) > 0 %}{% set kindDrop = 'list' %}
+          {% else %}{% set kindDrop = '' %}{% endif %}
+
+          {% set bRaw = b.item_url | default('') %}
+          {% set bUrl = bRaw.split('?')[0] %}
+          {% set bUrl = bUrl.slice(0, -1) if (bUrl | length) > 1 and bUrl.slice(-1) == '/' else bUrl %}
+          {% set bUrl = '' if bUrl == '/' else bUrl %}
+          {% set isActive = (bRaw == curFull) if (bRaw.indexOf('?') > -1) else (bUrl == curPath) %}
+
+          <div class="hx-nav-item {{ 'has-mega' if (kindDrop == 'columns' or kindDrop == 'tabs') }}"
+               {% if kindDrop %}@mouseenter="show({{ k }})" @mouseleave="hide()"{% endif %}>
+            <a href="{{ bRaw or '#' }}"{{ extAttrs(bRaw) }}
+               class="hx-nav-link {{ 'is-active' if isActive }}"
+               :class="open === {{ k }} && 'is-open'"
+               {% if kindDrop %}@focus="show({{ k }})" :aria-expanded="open === {{ k }} ? 'true' : 'false'"{% endif %}>
+              {% if b.item_badge %}
+                <span class="hx-badge" style="--hx-badge-bg: {{ b.item_badge_bg | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 12%, white)', true) }}; --hx-badge-fg: {{ b.item_badge_text | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 85%, black)', true) }};">{{ b.item_badge }}</span>
+              {% endif %}
+              <span>{{ b.item_label }}</span>
+              {% if kindDrop %}{{ caret('hx-caret hx-nav-caret') }}{% endif %}
+            </a>
+
+            {% if kindDrop == 'list' %}
+              <div class="hx-drop" x-show="open === {{ k }}" x-cloak
+                   x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+                   x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from">
+                {{ menuLinks(b.item_menu, 'hx-drop-link') }}
+              </div>
+
+            {% elif kindDrop == 'columns' %}
+              <div class="hx-mega" x-show="open === {{ k }}" x-cloak
+                   x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+                   x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from">
+                <div class="hx-wrap hx-mega-inner {{ 'has-promos' if (promos | length) > 0 }}">
+                  <div class="hx-mega-cols">
+                    {% for g in groups %}
+                      <div class="hx-mega-group">
+                        {% if g.group_title %}
+                          {% if g.group_url %}<a href="{{ g.group_url }}" class="hx-mega-title">{{ g.group_title }}</a>
+                          {% else %}<p class="hx-mega-title">{{ g.group_title }}</p>{% endif %}
+                        {% endif %}
+                        {{ menuLinks(g.group_menu, 'hx-mega-link') }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                  {% if (promos | length) > 0 %}
+                    <div class="hx-mega-promos">
+                      {% for pr in promos %}{% if loop.index <= 2 %}
+                        {% set pImg = mediaUrl(pr.promo_image) | trim %}
+                        <a href="{{ pr.promo_url or '#' }}" class="hx-promo" style="--hx-promo-bg: {{ pr.promo_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 10%, white)', true) }};">
+                          <span class="hx-promo-copy">
+                            {% if pr.promo_title %}<span class="hx-promo-title">{{ pr.promo_title }}</span>{% endif %}
+                            {% if pr.promo_text %}<span class="hx-promo-text">{{ pr.promo_text }}</span>{% endif %}
+                            {% if pr.promo_cta %}<span class="hx-promo-cta">{{ pr.promo_cta }}<svg class="hx-promo-arr" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span>{% endif %}
+                          </span>
+                          {% if (pImg | length) > 0 %}<img src="{{ pImg }}" alt="" class="hx-promo-img" loading="lazy"/>{% endif %}
+                        </a>
+                      {% endif %}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% elif kindDrop == 'tabs' %}
+              <div class="hx-mega" x-show="open === {{ k }}" x-cloak x-data="{ tab: 0 }"
+                   x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+                   x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from">
+                <div class="hx-wrap hx-mega-inner hx-tabs">
+                  <div class="hx-tabs-side">
+                    <div class="hx-tabs-head">
+                      <span class="hx-tabs-heading">{{ b.item_label }}</span>
+                      {% if bRaw %}
+                        <a href="{{ bRaw }}" class="hx-tabs-all">{{ b.item_view_all | default(t('common.view_all'), true) }} {{ chev('hx-chev hx-rtl-flip') }}</a>
+                      {% endif %}
+                    </div>
+                    {% for g in groups %}
+                      {% set gImg = mediaUrl(g.group_image) | trim %}
+                      <a href="{{ g.group_url or '#' }}" class="hx-tab" :class="tab === {{ loop.index0 }} && 'is-active'"
+                         @mouseenter="tab = {{ loop.index0 }}" @focus="tab = {{ loop.index0 }}">
+                        {% if (gImg | length) > 0 %}<img src="{{ gImg }}" alt="" class="hx-tab-thumb" loading="lazy"/>{% endif %}
+                        <span class="hx-tab-name">{{ g.group_title }}</span>
+                        {{ chev('hx-chev hx-rtl-flip') }}
+                      </a>
+                    {% endfor %}
+                  </div>
+
+                  {% for g in groups %}
+                    {% set gImg = mediaUrl(g.group_image) | trim %}
+                    <div class="hx-tab-pane" x-show="tab === {{ loop.index0 }}" {% if not loop.first %}x-cloak{% endif %}>
+                      {% if (gImg | length) > 0 %}<div class="hx-tab-media"><img src="{{ gImg }}" alt="{{ g.group_title }}" loading="lazy"/></div>{% endif %}
+                      <div class="hx-tab-links">
+                        {% if g.group_url %}<a href="{{ g.group_url }}" class="hx-mega-title">{{ g.group_title }}</a>
+                        {% else %}<p class="hx-mega-title">{{ g.group_title }}</p>{% endif %}
+                        {{ menuLinks(g.group_menu, 'hx-mega-link') }}
+                      </div>
+                    </div>
+                  {% endfor %}
+
+                  {% if (promos | length) > 0 %}
+                    <div class="hx-mega-promos">
+                      {% for pr in promos %}{% if loop.index <= 2 %}
+                        {% set pImg = mediaUrl(pr.promo_image) | trim %}
+                        <a href="{{ pr.promo_url or '#' }}" class="hx-promo" style="--hx-promo-bg: {{ pr.promo_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 10%, white)', true) }};">
+                          <span class="hx-promo-copy">
+                            {% if pr.promo_title %}<span class="hx-promo-title">{{ pr.promo_title }}</span>{% endif %}
+                            {% if pr.promo_text %}<span class="hx-promo-text">{{ pr.promo_text }}</span>{% endif %}
+                            {% if pr.promo_cta %}<span class="hx-promo-cta">{{ pr.promo_cta }}<svg class="hx-promo-arr" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></span>{% endif %}
+                          </span>
+                          {% if (pImg | length) > 0 %}<img src="{{ pImg }}" alt="" class="hx-promo-img" loading="lazy"/>{% endif %}
+                        </a>
+                      {% endif %}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </nav>
+  {% endif %}
+
+
+  {# ═══════════════════════ 4 · UTILITY BAR ═══════════════════════ #}
+  {% if utilOn %}
+    <div class="hx-util hx-desk">
+      <div class="hx-wrap hx-util-row">
+        <div class="hx-util-links">{{ menuLinks(d.utility_menu, 'hx-util-link') }}</div>
+        <div class="hx-util-end">
+          {% if uEmail %}
+            <a href="mailto:{{ uEmail }}" class="hx-util-item">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6 8.5 7 8.5-7"/></svg>
+              <span>{{ uEmail }}</span>
+            </a>
+          {% endif %}
+          {% if uPhone %}
+            <a href="tel:{{ uPhone | replace(' ', '') }}" class="hx-util-item">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.8h3.1l1.6 4-2 1.3a11.4 11.4 0 0 0 5.2 5.2l1.3-2 4 1.6v3.1a1.8 1.8 0 0 1-2 1.8A15.9 15.9 0 0 1 3.2 5.8a1.8 1.8 0 0 1 1.8-2Z"/></svg>
+              <span dir="ltr">{{ uPhone }}</span>
+            </a>
+          {% endif %}
+          {% if uLang %}
+            <div class="hx-lang" x-data="{ open: false }" @click.outside="open = false">
+              <button type="button" class="hx-util-item hx-lang-btn" @click="open = !open"
+                      :aria-expanded="open ? 'true' : 'false'" aria-label="{{ t('common.language') }}">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3Z"/></svg>
+                <span>{{ 'English' if currentLang == 'en' else 'العربية' }}{% if curCode %} ({{ curCode }}{% if curSym %} {{ curSym }}{% endif %}){% endif %}</span>
+                {{ caret('hx-caret hx-caret--sm') }}
+              </button>
+              <div class="hx-lang-drop" x-show="open" x-cloak
+                   x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+                   x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from">
+                {% form 'lang' %}
+                  <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>العربية</button>
+                  <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>English</button>
+                {% endform %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</header>
+
+
+{# ═══════════════════════ SEARCH DIMMER ═══════════════════════
+   Outside <header>: the stuck row is position:fixed with a z-index, so a dimmer
+   inside it could never sit underneath it. #}
+{% if showSearch %}
+  <div class="hx-dim" x-data x-show="$store.hxSearch && $store.hxSearch.open" x-cloak
+       x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+       x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from"></div>
+{% endif %}
+
+
+{# ═══════════════════════ SIDE DRAWER (the “Menu” button + mobile) ═══════════════════════
+   Same tree as the nav: an item with groups opens into its groups, a group
+   opens into its links, an item with a plain dropdown opens into that list. #}
+<div class="hx-drawer-root" x-data>
+  <div class="hx-overlay" x-show="$store.modal.current === 'hx-menu'" x-cloak @click="$store.modal.close()"
+       x-transition:enter="hx-fade-enter" x-transition:enter-start="hx-fade-from"
+       x-transition:leave="hx-fade-leave" x-transition:leave-end="hx-fade-from"></div>
+
+  <aside class="hx-drawer" :class="$store.modal.current === 'hx-menu' && 'is-open'"
+         aria-label="{{ t('common.menu') }}" x-data="{ o: null, g: null }">
+    <div class="hx-drawer-head">
+      <a href="/" class="hx-brand">
+        {% if (logoUrl | length) > 0 %}<img src="{{ logoUrl }}" alt="{{ storeName }}" class="hx-brand-logo" style="--hx-logo-h: {{ logoH if logoH < 34 else 34 }}px;"/>
+        {% else %}<span class="hx-wordmark">{{ storeName }}</span>{% endif %}
+      </a>
+      <button type="button" class="hx-icon-btn" @click="$store.modal.close()" aria-label="{{ t('header.menu_close') }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="hx-drawer-body">
+      {% for b in navs %}
+        {% set k = loop.index %}
+        {% set groups = [] %}{% set promos = [] %}
+          {% for c in kids %}{% if c.o == k %}{% if c.t == 'g' %}{% set _ = groups.push(c.b) %}{% else %}{% set _ = promos.push(c.b) %}{% endif %}{% endif %}{% endfor %}
+        {% set links = b.item_menu.items if (b.item_menu and b.item_menu.items) else (b.item_menu or []) %}
+        {% set hasGroups = (groups | length) > 0 %}
+        {% set opens = (b.item_style | default('auto')) != 'none' and (hasGroups or (links | length) > 0) %}
+
+        <div class="hx-dr-item">
+          {% if opens %}
+            <button type="button" class="hx-dr-row" :class="o === {{ k }} && 'is-open'" @click="o = (o === {{ k }} ? null : {{ k }}); g = null"
+                    :aria-expanded="o === {{ k }} ? 'true' : 'false'">
+              <span>{{ b.item_label }}{% if b.item_badge %}<span class="hx-badge hx-badge--inline" style="--hx-badge-bg: {{ b.item_badge_bg | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 12%, white)', true) }}; --hx-badge-fg: {{ b.item_badge_text | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 85%, black)', true) }};">{{ b.item_badge }}</span>{% endif %}</span>
+              <span class="hx-dr-caret" :class="o === {{ k }} && 'is-open'">{{ caret() }}</span>
+            </button>
+            <div x-show="o === {{ k }}" x-collapse x-cloak class="hx-dr-panel">
+              {% if b.item_url %}<a href="{{ b.item_url }}" class="hx-dr-all is-top">{% set lbl = b.item_label | default('') | trim %}{{ b.item_view_all | default(((t('header.dr_shop') if (lbl | lower).indexOf(t('header.dr_all_word') | lower) == 0 else t('header.dr_shop_all')) ~ ' ' ~ lbl), true) }} {{ chev('hx-chev hx-rtl-flip') }}</a>{% endif %}
+              {% if hasGroups %}
+                {% for gr in groups %}
+                  {% set gk = k ~ '-' ~ loop.index %}
+                  <button type="button" class="hx-dr-sub" :class="g === '{{ gk }}' && 'is-open'" @click="g = (g === '{{ gk }}' ? null : '{{ gk }}')">
+                    <span>{{ gr.group_title }}</span>
+                    <span class="hx-dr-caret" :class="g === '{{ gk }}' && 'is-open'">{{ caret() }}</span>
+                  </button>
+                  <div x-show="g === '{{ gk }}'" x-collapse x-cloak class="hx-dr-links">
+                    {{ menuLinks(gr.group_menu, 'hx-dr-link') }}
+                    {% if gr.group_url %}<a href="{{ gr.group_url }}" class="hx-dr-link hx-dr-all">{{ t('header.dr_view_all') }} {{ gr.group_title }} {{ chev('hx-chev hx-rtl-flip') }}</a>{% endif %}
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="hx-dr-links">{{ menuLinks(b.item_menu, 'hx-dr-link') }}</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <a href="{{ b.item_url or '#' }}"{{ extAttrs(b.item_url) }} class="hx-dr-row">
+              <span>{{ b.item_label }}{% if b.item_badge %}<span class="hx-badge hx-badge--inline" style="--hx-badge-bg: {{ b.item_badge_bg | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 12%, white)', true) }}; --hx-badge-fg: {{ b.item_badge_text | default('color-mix(in srgb, var(--hx-deal, var(--color-deal)) 85%, black)', true) }};">{{ b.item_badge }}</span>{% endif %}</span>
+            </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      {% if utilOn %}
+        <div class="hx-dr-util">
+          <p class="hx-dr-util-h">{{ t('header.dr_quick') }}</p>
+          {{ menuLinks(d.utility_menu, 'hx-dr-link') }}
+          {% for n in [1, 2] %}
+            {% set aUrl = d['action' ~ n ~ '_url'] | default('') | trim %}
+            {% if aUrl %}
+              <a href="{{ aUrl }}"{{ extAttrs(aUrl) }} class="hx-dr-link hx-dr-icon-link">
+                {{ actionIcon(d['action' ~ n ~ '_icon'] | default('pin')) }}
+                <span>{{ d['action' ~ n ~ '_label'] | default(t('header.quick_link'), true) }}</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+          {% if uEmail %}<a href="mailto:{{ uEmail }}" class="hx-dr-link">{{ uEmail }}</a>{% endif %}
+          {% if uPhone %}<a href="tel:{{ uPhone | replace(' ', '') }}" class="hx-dr-link"><span dir="ltr">{{ uPhone }}</span></a>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if uLang %}
+      <div class="hx-drawer-foot">
+        {% form 'lang' %}
+          <button type="submit" name="lang" value="ar" class="hx-dr-lang {{ 'is-active' if currentLang == 'ar' }}" {% if currentLang == 'ar' %}disabled{% endif %}>العربية</button>
+          <button type="submit" name="lang" value="en" class="hx-dr-lang {{ 'is-active' if currentLang == 'en' }}" {% if currentLang == 'en' %}disabled{% endif %}>English</button>
+        {% endform %}
+      </div>
+    {% endif %}
+  </aside>
+</div>
+
+
+<script>
+  (function () {
+    var root = document.getElementById('hx-header-{{ id }}');
+    if (!root) return;
+
+    /* ---- Announcement marquee ---- */
+    var strip = document.getElementById('hx-topbar-{{ id }}');
+    if (strip) {
+      var run = function () {
+        if (window.HayatMarquee) window.HayatMarquee(strip, strip.querySelector('.hx-topbar-track'), {{ d.topbar_speed | default(50, true) }});
+      };
+      if (window.HayatMarquee) run(); else document.addEventListener('DOMContentLoaded', run);
+    }
+
+    {% if isSticky %}
+    /* ---- Sticky main row ----
+       The row is lifted to position:fixed once its natural top scrolls past
+       the viewport, and the placeholder takes over its height so nothing
+       jumps. Done this way rather than with position:sticky because Qumra
+       wraps the header template in its own element, and sticky can never
+       outlive its parent. */
+    var row = document.getElementById('hx-main-{{ id }}');
+    var ph = document.getElementById('hx-main-ph-{{ id }}');
+    if (row && ph) {
+      var ticking = false;
+      var apply = function () {
+        ticking = false;
+        var top = ph.getBoundingClientRect().top;
+        var stuck = top < 0;
+        if (stuck !== root.classList.contains('is-stuck')) {
+          ph.style.height = stuck ? row.offsetHeight + 'px' : '0px';
+          root.classList.toggle('is-stuck', stuck);
+        }
+      };
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(apply);
+      }, { passive: true });
+      window.addEventListener('load', apply);
+      window.addEventListener('pageshow', apply);
+      apply();
+    }
+    {% endif %}
+
+    {% if showSearch %}
+    /* ---- Search component ----
+       Registered on alpine:init like every other component in this theme.
+       `$store.hxSearch` exists only so the dimmer, which is a sibling of the
+       field, can see whether the panel is up. */
+    var register = function () {
+      if (window.__hxSearchReady) return;
+      window.__hxSearchReady = true;
+
+      Alpine.store('hxSearch', { open: false });
+
+      Alpine.data('hxSearch', function (cfg) {
+        cfg = cfg || {};
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        return {
+          q: '', cat: '', open: false, loading: false, searched: false, results: [],
+          listening: false, canVoice: !!SR, _req: 0,
+
+          get typing() { return this.q.trim().length >= 2; },
+          get panel() { return this.open && (this.typing || cfg.hasSuggest); },
+
+          init: function () {
+            this.$watch('panel', function (v) { Alpine.store('hxSearch').open = v; });
+          },
+          close: function () { this.open = false; },
+
+          catId: function () {
+            var list = cfg.cats || [];
+            for (var i = 0; i < list.length; i++) if (list[i].h === this.cat) return list[i].id;
+            return '';
+          },
+          allUrl: function () {
+            var q = this.q.trim();
+            return '/shop' + (this.cat ? '/' + encodeURIComponent(this.cat) : '') + (q ? '?q=' + encodeURIComponent(q) : '');
+          },
+          submit: function () { window.location.href = this.allUrl(); },
+
+          productUrl: function (p) { return '/products/' + encodeURIComponent(p.slug || p.handle || p._id); },
+          money: function (v) { return Qumra.utils.formatMoney(v || 0); },
+          onSale: function (p) {
+            var c = p.pricing && p.pricing.compareAtPrice, x = p.pricing && p.pricing.price;
+            return !!(c && c > x);
+          },
+
+          run: function () {
+            var self = this, q = this.q.trim();
+            if (q.length < 2) { this.results = []; this.searched = false; return; }
+            var req = ++this._req;
+            this.loading = true;
+            var filters = { limit: 8 };
+            var id = this.catId();
+            if (id) filters.collectionId = id;
+            Qumra.search.search(q, filters).then(function (d) {
+              if (req !== self._req) return;              /* a newer query won */
+              var list = (d && (d.products || d.data || d.results || d.items)) || d || [];
+              if (!Array.isArray(list) && list.products) list = list.products;
+              self.results = Array.isArray(list) ? list.slice(0, 8) : [];
+            }).catch(function () {
+              if (req === self._req) self.results = [];
+            }).then(function () {
+              if (req !== self._req) return;
+              self.loading = false;
+              self.searched = true;
+            });
+          },
+
+          /* Web Speech API — the button only renders where it exists. */
+          listen: function () {
+            if (!SR || this.listening) return;
+            var self = this, rec = new SR();
+            rec.lang = cfg.lang === 'en' ? 'en-US' : 'ar-EG';
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            rec.onresult = function (e) {
+              self.q = e.results[0][0].transcript || '';
+              self.open = true;
+              self.run();
+            };
+            rec.onend = function () { self.listening = false; };
+            rec.onerror = function () { self.listening = false; };
+            this.listening = true;
+            try { rec.start(); } catch (e) { this.listening = false; }
+          }
+        };
+      });
+    };
+    if (window.Alpine) register(); else document.addEventListener('alpine:init', register);
+    {% endif %}
+  })();
+</script>
+
+{# Cart drawer — shared partial, unchanged. #}
+{# Every argument is defaulted: Qalab's `ui` tag rejects an undefined value and
+   prints an error box instead of the drawer (pickers with no default — upsell
+   products, empty-cart collections — are undefined until the merchant picks).
+   Booleans travel as 'on' / 'off' strings, which cart.njk reads. #}
+{% ui "cart.njk", free_shipping=(d.cart_free_shipping | default(0)), upsell_title=(d.cart_upsell_title | default('')), upsell=(d.cart_upsell_products or []), empty_collections=(d.cart_empty_collections or []), footer_dark=('off' if d.cart_footer_dark === false else 'on'), note=(d.cart_note | default('')), upsell_enabled=('off' if d.cart_upsell_enabled === false else 'on'), payments=(d.cart_payments | default('mada,visa,mastercard,applepay')) %}
+
+<style>
+  #hx-header-{{ id }} {
+    --hx-top-a: {{ d.topbar_bg_start | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 62%, black)', true) }};
+    --hx-top-b: {{ d.topbar_bg_end | default('var(--hx-primary, var(--color-accent))', true) }};
+    --hx-top-fg: {{ d.topbar_text | default('var(--hx-on-primary, white)', true) }};
+    --hx-menu-bg: {{ d.menu_button_bg | default('var(--hx-primary, var(--color-accent))', true) }};
+    --hx-menu-fg: {{ d.menu_button_text | default('var(--hx-on-primary, white)', true) }};
+    --hx-search-bg: {{ d.search_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 5%, white)', true) }};
+  }
+</style>
+{% ui "section-colors.njk", scope='#hx-header-' ~ id, c=d %}

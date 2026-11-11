@@ -1,0 +1,306 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "hero-slider",
+      "widget": "hero-slider",
+      "settings": {
+        "height": 55,
+        "autoplay": true,
+        "interval": 8
+      },
+      "blocks": [
+        {
+          "name": "Training Essentials",
+          "block": "slide",
+          "settings": {
+            "focal": "center",
+            "alt": "Training essentials",
+            "eyebrow": "New season",
+            "heading": "Training Essentials",
+            "show_heading": true,
+            "sub": "Tees, tanks and shorts for every workout",
+            "button_text": "Shop now",
+            "button_url": "/collections",
+            "button_style": "filled"
+          }
+        },
+        {
+          "name": "New Drop — Hoodies",
+          "block": "slide",
+          "settings": {
+            "focal": "center",
+            "alt": "Heavyweight Hoodies",
+            "eyebrow": "New drop",
+            "heading": "Heavyweight Hoodies",
+            "show_heading": true,
+            "sub": "Oversized fit, brushed fleece, three colours",
+            "button_text": "Shop Hoodies",
+            "button_url": "/collections",
+            "button_style": "outlined"
+          }
+        },
+        {
+          "name": "Training Essentials",
+          "block": "slide",
+          "settings": {
+            "focal": "center",
+            "alt": "Built for the Gym",
+            "eyebrow": "Train harder",
+            "heading": "Built for the Gym",
+            "show_heading": true,
+            "sub": "Compression tees, muscle tanks and training shorts",
+            "button_text": "Shop Training",
+            "button_url": "/collections",
+            "button_style": "outlined"
+          }
+        }
+      ]
+    },
+    {
+      "name": "New Arrivals",
+      "widget": "best-products",
+      "settings": {
+        "title": "New Arrivals",
+        "heading_align": "center",
+        "layout": "slider",
+        "limit": 12,
+        "show_rank": false,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "view_all_url": "/collections",
+        "demo_set": "new"
+      }
+    },
+    {
+      "name": "Best Sellers",
+      "widget": "best-products",
+      "settings": {
+        "title": "Best Sellers",
+        "heading_align": "center",
+        "layout": "slider",
+        "limit": 8,
+        "show_rank": true,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "view_all_url": "/collections",
+        "demo_set": "best"
+      }
+    },
+    {
+      "name": "Shop by category",
+      "widget": "best-collections",
+      "settings": {
+        "title": "Shop by category",
+        "heading_align": "left"
+      },
+      "blocks": [
+        {
+          "name": "Tops",
+          "block": "tile",
+          "settings": {
+            "title": "Tops",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Compression",
+          "block": "tile",
+          "settings": {
+            "title": "Compression",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Tanks",
+          "block": "tile",
+          "settings": {
+            "title": "Tanks",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Bottoms",
+          "block": "tile",
+          "settings": {
+            "title": "Bottoms",
+            "url": "/collections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MEN",
+      "widget": "tabbed-products",
+      "settings": {
+        "title": "MEN",
+        "heading_align": "left",
+        "limit": 10,
+        "show_view_all": true,
+        "view_all_text": "View all",
+        "view_all_url": "/collections"
+      },
+      "blocks": [
+        {
+          "name": "Tops",
+          "block": "tab",
+          "settings": {
+            "title": "Tops",
+            "url": "/collections",
+            "demo_set": "tops"
+          }
+        },
+        {
+          "name": "Compressions",
+          "block": "tab",
+          "settings": {
+            "title": "Compressions",
+            "url": "/collections",
+            "demo_set": "compressions"
+          }
+        },
+        {
+          "name": "Tanks",
+          "block": "tab",
+          "settings": {
+            "title": "Tanks",
+            "url": "/collections",
+            "demo_set": "tanks"
+          }
+        },
+        {
+          "name": "Bottoms",
+          "block": "tab",
+          "settings": {
+            "title": "Bottoms",
+            "url": "/collections",
+            "demo_set": "bottoms"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Featured Collections",
+      "widget": "featured-collections",
+      "settings": {
+        "title": "Featured Collections"
+      },
+      "blocks": [
+        {
+          "name": "إصدار جديد",
+          "block": "card",
+          "settings": {
+            "title": "إصدار جديد",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Tshirts",
+          "block": "card",
+          "settings": {
+            "title": "Tshirts",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Compressions",
+          "block": "card",
+          "settings": {
+            "title": "Compressions",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Hoodies",
+          "block": "card",
+          "settings": {
+            "title": "Hoodies",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Tanktop",
+          "block": "card",
+          "settings": {
+            "title": "Tanktop",
+            "url": "/collections"
+          }
+        },
+        {
+          "name": "Shorts",
+          "block": "card",
+          "settings": {
+            "title": "Shorts",
+            "url": "/collections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "widget": "reviews",
+      "settings": {
+        "title": "دع العملاء يتحدثون عنا",
+        "show_rating": true
+      },
+      "blocks": []
+    },
+    {
+      "name": "Shop the look",
+      "widget": "shop-the-look",
+      "settings": {
+        "title": "Shop the look"
+      }
+    },
+    {
+      "name": "FAQ",
+      "widget": "faq",
+      "settings": {
+        "title": "Frequently Asked Questions"
+      },
+      "blocks": [
+        {
+          "name": "Delivery time",
+          "block": "question",
+          "settings": {
+            "question": "How long does it take for new orders to arrive?",
+            "answer": "<p>Delivery options and times depend on your area and are shown at checkout before you pay.</p>"
+          }
+        },
+        {
+          "name": "Returns",
+          "block": "question",
+          "settings": {
+            "question": "What is your return/exchange policy?",
+            "answer": "<p>Exchange and return terms are listed in the store’s policy pages. Please read them before ordering.</p>"
+          }
+        },
+        {
+          "name": "Restocks",
+          "block": "question",
+          "settings": {
+            "question": "The item/size I want is out of stock, when will it restock?",
+            "answer": "<p>Each product page shows whether a size is available. Sold-out sizes are marked and can’t be added to the cart.</p>"
+          }
+        },
+        {
+          "name": "Size chart",
+          "block": "question",
+          "settings": {
+            "question": "Do you have a sizing chart?",
+            "answer": "<p>When a product has size details, you’ll find them on its product page.</p>"
+          }
+        },
+        {
+          "name": "Contact",
+          "block": "question",
+          "settings": {
+            "question": "How can I contact you?",
+            "answer": "<p>Use the contact page or the WhatsApp button and we’ll get back to you.</p>"
+          }
+        }
+      ]
+    }
+  ],
+  "name": "index"
+}

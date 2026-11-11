@@ -1,0 +1,179 @@
+{# ===== ANAQA Search Modal — Editorial ===== #}
+
+<style>
+  .anaqa-search-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 4px 2px;
+    font-size: clamp(20px, 4vw, 32px);
+    color: var(--color-text-primary);
+  }
+  .anaqa-search-input::placeholder { color: var(--color-text-tertiary); }
+
+  .anaqa-search-chip {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    transition: all 0.25s ease;
+  }
+  .anaqa-search-chip:hover {
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+  }
+
+  .anaqa-search-result {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
+    transition: opacity 0.2s ease;
+  }
+  .anaqa-search-result:hover { opacity: 0.7; }
+</style>
+
+<div x-data x-cloak>
+  {# Overlay #}
+  <div x-show="$store.modal.current === 'search'"
+       @click="$store.modal.close()"
+       class="overlay"
+       x-transition:enter="transition ease-out duration-400"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0">
+  </div>
+
+  {# Search Panel #}
+  <div x-show="$store.modal.current === 'search'"
+       x-transition:enter="transition ease-out duration-400"
+       x-transition:enter-start="opacity-0 -translate-y-4"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="opacity-100 translate-y-0"
+       x-transition:leave-end="opacity-0 -translate-y-4"
+       class="fixed top-0 inset-x-0 z-[210] max-h-[85vh] overflow-y-auto"
+       style="background: var(--color-bg-primary); border-bottom: 1px solid var(--color-border);"
+       x-data="{ query: '', products: [], queries: [], searching: false }">
+
+    <div class="container mx-auto px-6 max-sm:px-4 py-8 max-sm:py-6">
+
+      {# Editorial label + close #}
+      <div class="flex items-center justify-between mb-4">
+        <span class="editorial-label font-body-ar">{{ t('pages.search.title') | default('البحث') }}</span>
+        <button type="button" @click="$store.modal.close()"
+                class="w-9 h-9 flex items-center justify-center transition-opacity duration-200 hover:opacity-60"
+                style="color: var(--color-text-primary);"
+                aria-label="{{ t('common.close') | default('إغلاق') }}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      {# Large underlined Search Input #}
+      <form action="/shop" method="get" class="flex items-center gap-4 pb-4" style="border-bottom: 1px solid var(--color-text-primary);">
+        <input type="text"
+               name="q"
+               x-model="query"
+               @input.debounce.300ms="if(query.length >= 2) { searching = true; Qumra.search.suggest(query, (data) => { products = (data.resources && data.resources.products) || data.products || []; queries = (data.resources && data.resources.queries) || []; searching = false; }); } else { products = []; queries = []; searching = false; }"
+               class="anaqa-search-input font-heading-ar"
+               placeholder="{{ t('pages.search.placeholder') }}"
+               autocomplete="off"
+               autofocus>
+        <button type="submit" class="flex-shrink-0 w-6 h-6 flex items-center justify-center" style="color: var(--color-text-primary);" aria-label="{{ t('pages.search.title') | default('البحث') }}">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </button>
+      </form>
+
+      {# Search Suggestions (queries) #}
+      <div x-show="queries.length > 0" class="pt-6 pb-2">
+        <p class="editorial-label mb-4 font-body-ar">{{ t('pages.search.suggestions') | default('اقتراحات البحث') }}</p>
+        <div class="flex flex-wrap gap-2.5">
+          <template x-for="q in queries" :key="q">
+            <a :href="'/shop?q=' + encodeURIComponent(q)"
+               class="anaqa-search-chip font-body-ar"
+               x-text="q"></a>
+          </template>
+        </div>
+      </div>
+
+      {# Product Results #}
+      <div x-show="products.length > 0" class="pt-6">
+        <div class="flex items-center justify-between mb-4">
+          <p class="editorial-label font-body-ar">{{ t('pages.search.products') | default('المنتجات') }}</p>
+          <a :href="'/shop?q=' + encodeURIComponent(query)" class="editorial-link font-body-ar text-[13px]" style="color: var(--color-text-secondary);">
+            {{ t('pages.search.view_all') | default('عرض الكل') }}
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10">
+          <template x-for="item in products" :key="item._id">
+            <a :href="'/products/' + (item.slug || item.handle)" @click="$store.modal.close()"
+               class="anaqa-search-result group">
+
+              {# Product Image #}
+              <div class="w-16 h-20 max-sm:w-14 max-sm:h-[70px] overflow-hidden flex-shrink-0" style="background: var(--color-bg-secondary);">
+                <template x-if="item.images && item.images.length">
+                  <img :src="item.images[0].fileUrl" :alt="item.title"
+                       class="w-full h-full object-cover" style="filter: saturate(1.03) contrast(1.02);">
+                </template>
+                <template x-if="!item.images || !item.images.length">
+                  <div class="w-full h-full flex items-center justify-center">
+                    <svg class="w-7 h-7" fill="none" stroke="var(--color-text-tertiary)" stroke-width="1" viewBox="0 0 24 24" style="opacity: 0.3;">
+                      <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </template>
+              </div>
+
+              {# Product Info #}
+              <div class="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
+                <p class="font-heading-ar text-[15px] leading-snug line-clamp-1"
+                   style="color: var(--color-text-primary);" x-text="item.title"></p>
+
+                <template x-if="item.description">
+                  <p class="text-[12px] line-clamp-1 font-body-ar" style="color: var(--color-text-tertiary);" x-text="item.description.replace(/<[^>]*>/g, '')"></p>
+                </template>
+
+                <div class="flex items-center gap-2.5">
+                  <span class="text-[14px] font-light tracking-wide" style="color: var(--color-text-primary);" x-text="Qumra.utils.formatMoney(item.pricing.price)"></span>
+                  <template x-if="item.pricing.compareAtPrice && item.pricing.compareAtPrice > item.pricing.price">
+                    <span class="text-[12px] font-light line-through" style="color: var(--color-text-tertiary);" x-text="Qumra.utils.formatMoney(item.pricing.compareAtPrice)"></span>
+                  </template>
+                  <template x-if="item.pricing.compareAtPrice && item.pricing.compareAtPrice > item.pricing.price">
+                    <span class="px-2 py-0.5 text-[10px] font-medium tracking-[0.08em]"
+                          style="background: var(--color-accent); color: var(--color-bg-primary);"
+                          x-text="'−' + Math.round(((item.pricing.compareAtPrice - item.pricing.price) / item.pricing.compareAtPrice) * 100) + '%'"></span>
+                  </template>
+                </div>
+              </div>
+            </a>
+          </template>
+        </div>
+      </div>
+
+      {# Loading State #}
+      <div x-show="searching" x-cloak class="py-16 flex items-center justify-center">
+        <svg class="w-7 h-7 animate-spin" style="color: var(--color-text-secondary);" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+      </div>
+
+      {# No Results #}
+      <div x-show="!searching && query.length >= 2 && products.length === 0 && queries.length === 0" class="py-16 text-center flex items-center justify-center flex-col gap-4">
+        <span class="block w-10" style="height:1px; background: var(--color-border);"></span>
+        <p class="font-heading-ar text-[18px]" style="color: var(--color-text-secondary);">{{ t('pages.search.no_results') | default('لا توجد نتائج') }}</p>
+      </div>
+
+    </div>
+  </div>
+</div>

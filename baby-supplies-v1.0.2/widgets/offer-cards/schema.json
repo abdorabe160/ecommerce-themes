@@ -1,0 +1,144 @@
+{
+  "name": "اقتراح منتج: خطوات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": { "ar": "السطر التمهيدي", "en": "Eyebrow" },
+      "default": "كيف تنسّقينها"
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "عنوان القسم", "en": "Section heading" },
+      "default": "أطقم كاملة في ٣ خطوات"
+    },
+    "step1_title": {
+      "type": "string",
+      "label": { "ar": "▸ الخطوة ١ — العنوان", "en": "▸ Step 1 — title" },
+      "default": "اختاري القطعة العلوية"
+    },
+    "step1_products": {
+      "type": "products",
+      "label": {
+        "ar": "الخطوة ١ — المنتجات (اتركيها فارغة لإخفاء الخطوة)",
+        "en": "Step 1 — products (leave empty to hide the step)"
+      }
+    },
+    "step1_chips": {
+      "type": "string",
+      "label": {
+        "ar": "الخطوة ١ — مميّزات مفصولة بفاصلة، مثال: قطن ١٠٠٪، مريح",
+        "en": "Step 1 — features separated by commas, e.g. 100% Cotton, Soft"
+      },
+      "default": "لطيف على البشرة"
+    },
+    "step2_title": {
+      "type": "string",
+      "label": { "ar": "▸ الخطوة ٢ — العنوان", "en": "▸ Step 2 — title" },
+      "default": "نسّقيها مع القطعة السفلية"
+    },
+    "step2_products": {
+      "type": "products",
+      "label": {
+        "ar": "الخطوة ٢ — المنتجات (اتركيها فارغة لإخفاء الخطوة)",
+        "en": "Step 2 — products (leave empty to hide the step)"
+      }
+    },
+    "step2_chips": {
+      "type": "string",
+      "label": {
+        "ar": "الخطوة ٢ — مميّزات مفصولة بفاصلة",
+        "en": "Step 2 — features separated by commas"
+      },
+      "default": "خامة مرنة، سهلة الغسيل"
+    },
+    "step3_title": {
+      "type": "string",
+      "label": { "ar": "▸ الخطوة ٣ — العنوان", "en": "▸ Step 3 — title" },
+      "default": "أضيفي لمسة مرحة"
+    },
+    "step3_products": {
+      "type": "products",
+      "label": {
+        "ar": "الخطوة ٣ — المنتجات (اتركيها فارغة لإخفاء الخطوة)",
+        "en": "Step 3 — products (leave empty to hide the step)"
+      }
+    },
+    "step3_chips": {
+      "type": "string",
+      "label": {
+        "ar": "الخطوة ٣ — مميّزات مفصولة بفاصلة",
+        "en": "Step 3 — features separated by commas"
+      },
+      "default": "ألوان مبهجة، مقاسات مريحة"
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "عدد البطاقات في الصف — سطح المكتب · تقلّ تلقائياً على الشاشات الأصغر",
+        "en": "Cards per row on desktop · it steps down on smaller screens by itself"
+      },
+      "default": 4,
+      "min": 3,
+      "max": 5,
+      "step": 1
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": { "ar": "نسبة صورة المنتج · المرجع ٣:٤", "en": "Product image ratio · the reference is 3:4" },
+      "default": "3x4",
+      "options": [
+        { "value": "3x4", "label": { "ar": "٣:٤", "en": "3:4" } },
+        { "value": "4x5", "label": { "ar": "٤:٥", "en": "4:5" } },
+        { "value": "1x1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "2x3", "label": { "ar": "٢:٣", "en": "2:3" } }
+      ]
+    },
+    "panel_color": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية لوحة الخطوة — اتركيه فارغاً لاستخدام لون الثيم",
+        "en": "Step panel background — leave empty to use the theme colour"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم", "en": "Section background" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العناوين", "en": "Heading colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "اللون المميّز", "en": "Accent colour" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الحدود", "en": "Border colour" },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "اقتراح منتج: خطوات"
+    }
+  ]
+}

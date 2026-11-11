@@ -1,0 +1,22 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة التصنيفات",
+      "widget": "collections-page",
+      "settings": {
+        "show_title": true,
+        "eyebrow": "الأقسام",
+        "title": "كل الأقسام",
+        "description": "تصفّحي أقسام العناية والمكياج، أو ابدئي من نوع بشرتك.",
+        "show_count": true,
+        "card_shape": "soft",
+        "card_ratio": "3/4",
+        "columns_desktop": "3"
+      }
+    }
+  ]
+}

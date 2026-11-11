@@ -1,0 +1,196 @@
+<!-- =========================================================
+     QMRA THEME (NUNJUCKS) - NEW ARRIVALS SLIDER WIDGET
+     سلايدر "وصل حديثاً" (وفي صفحة المنتج بيتستخدم كـ "منتجات قد تعجبك")
+     ========================================================= -->
+{# الإعدادات حسب الدوكس في widget.data، و widget.settings احتياطي #}
+{% set s = widget.data or widget.settings or {} %}
+{% set products = s.products %}
+{% set limit = (s.products_limit | default(8)) | int %}
+{% set showNew = s.show_new_badge !== false %}
+{% set newText = s.new_badge_text if (s.new_badge_text and s.new_badge_text != 'جديد') else t('defaults.slider_new_badge') %}
+{# في صفحة المنتج: منتجات من نفس قسم المنتج دايماً (مش تجريبية)، والسكشن بيختفي لو مفيش #}
+{# صفحة المنتج: المنصة بتبعت المنتج في context.product والمقترحات في context.related_products (أو product.recommendations) #}
+{% set pdpProduct = product if (product and product._id) else (context.product if (context and context.product and context.product._id) else null) %}
+{% set onProductPage = pdpProduct and pdpProduct._id %}
+{% set relatedCat = pdpProduct.category if onProductPage and pdpProduct.category else null %}
+{% if onProductPage and not (products and (products | length) > 0) %}
+  {# PRD-16: مقترحات المنصة من غير المنتج نفسه؛ لو مفيش بنجيب من نفس القسم بالـ JS، ولو مفيش خالص السكشن بيختفي #}
+  {% set recs = [] %}
+  {% set recSource = context.related_products if (context and context.related_products and (context.related_products | length)) else (pdpProduct.recommendations or []) %}
+  {% for r in recSource %}
+    {% if r and r._id and r._id != pdpProduct._id and recs.push(r) %}{% endif %}
+  {% endfor %}
+  {# منتج واحد بس بعد استبعاد المنتج المفتوح = كارت لوحده: نجيب من المتجر، ولو برضه أقل من اتنين السكشن بيختفي (data-min-count) #}
+  {% if (recs | length) > 1 %}{% set products = recs %}{% endif %}
+{% endif %}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المتجر (الأحدث أولاً) مكان التجريبية #}
+{# الافتراضي: المنتجات الافتراضية بتاعة الثيم من غير أي طلب للسيرفر. منتجات المتجر بتتجاب بس لو التاجر فعّل "اعرض منتجات المتجر" (use_store_products؛ الاسم القديم load_store_products اتساب عشان القيمة المحفوظة منه ماترجّعش منتجات المتجر)  في صفحة المنتج (منتجات قد تعجبك) بتفضل من المتجر عشان تبقى من نفس قسم المنتج #}
+{# مفيش منتجات مختارة: pages.js بيجيب منتجات المتجر مكان التجريبية دايمًا. التجريبية بتفضل بس في معاينة البيلدر أو لو التاجر فعّل «منتجات تجريبية» (HOME-11)، وغير كده السكشن بيختفي لو المتجر فاضي #}
+{% set fetchStore = not (products and (products | length) > 0) %}
+
+<section class="blk-section blk-featured-section" id="featured-section-{{ widget.id }}"{% if onProductPage %} data-related{% endif %} data-currency="{{ localization.currency.currencyCode if localization and localization.currency else '' }}">
+  <div class="blk-container">
+
+    <!-- Header: Title, Animated Tabs & Navigation -->
+    <div class="blk-featured-header">
+      <div class="blk-featured-title-wrap">
+        {% if s.badge_text %}
+          <span class="blk-badge-glow">
+            <span class="blk-badge-dot"></span>
+            {% ui "blk-t.njk", text=s.badge_text %}
+          </span>
+        {% endif %}
+        <h2 class="blk-section-title">{% ui "blk-t.njk", text=s.title, key="defaults.slider_title" %}</h2>
+      </div>
+
+      <!-- Interactive Dynamic Tabs -->
+      {% if s.enable_tabs and s.tabs_list %}
+        <div class="blk-tabs-wrapper">
+          <div class="blk-tabs" id="featuredTabs-{{ widget.id }}">
+            {% set tabsList = t('defaults.slider_tabs') if s.tabs_list == 'الكل, ملابس, أحذية' else s.tabs_list %}
+            {% for tab in tabsList.split(',') %}
+              {% set tabName = tab | trim %}
+              {% if tabName %}
+                <button
+                  type="button"
+                  class="blk-tab-btn {% if loop.first %}is-active{% endif %}"
+                  data-tab="{{ 'all' if loop.first else tabName }}">
+                  {{ tabName }}
+                </button>
+              {% endif %}
+            {% endfor %}
+            <div class="blk-tab-indicator"></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Custom Slider Controls -->
+      <div class="blk-slider-nav">
+        <button type="button" class="blk-slider-btn blk-prev" id="featuredPrev-{{ widget.id }}" aria-label="{{t('common.prev')}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button type="button" class="blk-slider-btn blk-next" id="featuredNext-{{ widget.id }}" aria-label="{{t('common.next')}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Products Slider Container -->
+    <div class="blk-slider-wrapper">
+      <div class="blk-slider-track{% if fetchStore %} blk-store-loading{% endif %}" id="featuredSlider-{{ widget.id }}"
+        {% if fetchStore %}
+          data-blk-store-products data-limit="{{ limit }}" data-sort="{{ s.store_sort | default('created-desc') }}"
+          {% if showNew %}data-badge="{{ newText }}"{% endif %}
+          {% if onProductPage %}data-exclude="{{ pdpProduct._id }}" data-hide-if-empty data-min-count="2"{% endif %}
+          {% if relatedCat and relatedCat._id %}data-collection-id="{{ relatedCat._id }}"{% endif %}
+          {% if relatedCat and relatedCat.title %}data-prefer-category="{{ relatedCat.title }}"{% endif %}
+          {% if not s.show_quick_view %}data-hide-quickview{% endif %} {% if not s.show_rating %}data-hide-rating{% endif %}
+          {% if not s.show_stock_urgency %}data-hide-stock{% endif %} {% if not s.show_secondary_image %}data-hide-second-image{% endif %}
+        {% endif %}>
+
+        {% if products and (products | length) > 0 %}
+          {# العرض في حالة اختيار منتجات حقيقية #}
+          {# نفس الكارت المشترك (ui/blk-product-card.njk) عشان حالة المخزون ونص الزرار يبقوا واحد في كل مكان #}
+          {# الـ ui tag بياخد متغيرات بس، فبنحسب القيم الأول #}
+          {% set cardBadge = newText if showNew else '' %}
+          {% set cardHideQuick = not s.show_quick_view %}
+          {% set cardHideRating = not s.show_rating %}
+          {% set cardHideStock = not s.show_stock_urgency %}
+          {% set cardHideSecond = not s.show_secondary_image %}
+          {% for product in products %}
+            {% if loop.index <= limit %}
+              {% ui "blk-product-card.njk", product=product, badge=cardBadge, hide_quick_view=cardHideQuick, hide_rating=cardHideRating, hide_stock=cardHideStock, hide_second_image=cardHideSecond %}
+            {% endif %}
+          {% endfor %}
+
+        {% else %}
+          {# المنتجات الافتراضية (Fallback Products) للعرض والمعاينة في الـ Editor #}
+          {% set dummy_products = [
+            { id: 201, slug: "demo-s3", name: t('demo.prod_ice_blue_high_top_sneaker'), price: "1450", old_price: "", category: t('demo.cat_shoes'), stock: 6, img1: "https://images.pexels.com/photos/16918373/pexels-photo-16918373.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" },
+            { id: 202, slug: "demo-h2", name: t('demo.prod_street_white_oversized_hoodie'), price: "720", old_price: "850", category: t('demo.cat_clothing'), stock: 9, img1: "https://images.pexels.com/photos/16168515/pexels-photo-16168515.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" },
+            { id: 203, slug: "demo-t4", name: t('demo.prod_muscle_fit_tank_top'), price: "290", old_price: "", category: t('demo.cat_clothing'), stock: 4, img1: "https://images.pexels.com/photos/1480530/pexels-photo-1480530.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" },
+            { id: 204, slug: "demo-p3", name: t('demo.prod_sprint_track_pants'), price: "640", old_price: "780", category: t('demo.cat_clothing'), stock: 7, img1: "https://images.pexels.com/photos/11327771/pexels-photo-11327771.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" },
+            { id: 205, slug: "demo-s4", name: t('demo.prod_classic_black_leather_sneaker'), price: "980", old_price: "", category: t('demo.cat_shoes'), stock: 3, img1: "https://images.pexels.com/photos/1383448/pexels-photo-1383448.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" },
+            { id: 206, slug: "demo-t3", name: t('demo.prod_spartan_training_tee'), price: "340", old_price: "", category: t('demo.cat_clothing'), stock: 12, img1: "https://images.pexels.com/photos/802926/pexels-photo-802926.jpeg?auto=compress&cs=tinysrgb&w=600", img2: "" }
+          ] %}
+
+          {% for item in dummy_products %}
+            {% if loop.index <= limit %}
+              <div class="blk-prod-card" data-id="{{ item.id }}" data-category="{{ item.category }}" data-dummy>
+
+                <div class="blk-prod-media">
+                  <div class="blk-prod-badges">
+                    {% if item.old_price %}
+                      <span class="blk-badge-glass blk-badge-discount">{{t('common.special_offer')}}</span>
+                    {% endif %}
+                    {% if showNew %}
+                      <span class="blk-badge-glass blk-badge-new">{{ newText }}</span>
+                    {% endif %}
+                  </div>
+
+                  <a href="/shop?product={{ item.slug }}" class="blk-prod-img-link">
+                    <img src="{{ item.img1 }}" alt="{{ item.name }}" class="blk-prod-img blk-img-primary" loading="lazy" decoding="async" width="600" height="690" />
+                    {% if s.show_secondary_image and item.img2 %}
+                      <img src="{{ item.img2 }}" alt="{{ item.name }} - {{t('common.preview')}}" class="blk-prod-img blk-img-secondary" loading="lazy" decoding="async" width="600" height="690" />
+                    {% endif %}
+                  </a>
+
+                  <div class="blk-prod-actions">
+                    {% if s.show_quick_view %}
+                      <button type="button" class="blk-action-btn blk-btn-quickview" title="{{t('common.quick_view')}}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>{{t('common.preview')}}</span>
+                      </button>
+                    {% endif %}
+
+                    <button type="button" class="blk-action-btn blk-btn-addcart" data-product-id="{{ item.id }}" title="{{t('product.add_to_cart')}}">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                      <span>{{t('product.add_to_cart')}}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="blk-prod-details">
+                  <div class="blk-prod-meta">
+                    <span class="blk-prod-cat">{{ item.category }}</span>
+                    {% if s.show_rating %}
+                      <div class="blk-prod-rating">
+                        <span class="blk-stars">★★★★★</span>
+                        <span class="blk-rating-count">(5.0)</span>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <h3 class="blk-prod-title">
+                    <a href="/shop?product={{ item.slug }}">{{ item.name }}</a>
+                  </h3>
+
+                  {% if s.show_stock_urgency and item.stock > 0 and item.stock <= 3 %}
+                    <div class="blk-stock-urgency">
+                      <div class="blk-stock-bar">
+                        <div class="blk-stock-progress" style="width: {{ item.stock * 10 }}%;"></div>
+                      </div>
+                      <span class="blk-stock-text"><strong>{{t('product.low_stock')}}</strong></span>
+                    </div>
+                  {% endif %}
+
+                  <div class="blk-prod-footer">
+                    <div class="blk-prod-price">
+                      <span class="blk-price-current">{% set demoPrice = item.price | int %}{% ui "blk-price.njk", amount=demoPrice, free="1", major="1" %}</span>
+                      {% if item.old_price %}
+                        <span class="blk-price-old">{% set demoOld = item.old_price | int %}{% ui "blk-price.njk", amount=demoOld, major="1" %}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</section>

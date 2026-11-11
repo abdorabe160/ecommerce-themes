@@ -1,0 +1,27 @@
+{# ===== Back-to-top — appears after one screen, opposite corner to WhatsApp ===== #}
+<button type="button" class="hy-totop" aria-label="{{ t('common.back_to_top') }}" hidden
+        onclick="window.scrollTo({ top: 0, behavior: (document.documentElement.classList.contains('hy-no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' })">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m-6 6 6-6 6 6"/></svg>
+</button>
+<script>
+  (function () {
+    var b = document.currentScript.previousElementSibling;
+    /* A fixed button can land on a section's slider arrow on a phone and take its
+       tap, so it steps aside while the two overlap. */
+    var ARROWS = '.hy-prow-arrow,.hy-coll-arrow,.hy-ct-arrow,.hy-hl-arrow,.hy-hero-arrow';
+    function overArrow() {
+      if (window.innerWidth >= 1024) return false;
+      var r = b.getBoundingClientRect();
+      return [].some.call(document.querySelectorAll(ARROWS), function (a) {
+        var q = a.getBoundingClientRect();
+        return q.width && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top;
+      });
+    }
+    function sync() {
+      b.hidden = window.scrollY < window.innerHeight;
+      b.style.visibility = !b.hidden && overArrow() ? 'hidden' : '';
+    }
+    window.addEventListener('scroll', sync, { passive: true });
+    sync();
+  })();
+</script>

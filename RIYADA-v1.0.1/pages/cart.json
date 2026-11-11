@@ -1,0 +1,28 @@
+{
+  "name": "السلة",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة السلة",
+      "widget": "cart-page",
+      "settings": {
+        "title": "سلة التسوّق",
+        "show_breadcrumb": true,
+        "show_savings": true,
+        "show_discount_row": true,
+        "free_shipping_threshold": 0,
+        "confirm_remove": true,
+        "checkout_url": "/checkout",
+        "continue_shopping_url": "/shop",
+        "show_trust_row": false,
+        "trust1_text": "",
+        "trust2_text": "",
+        "trust3_text": "",
+        "note_text": "الشحن بيتحسب في صفحة الدفع حسب عنوانك."
+      }
+    }
+  ]
+}

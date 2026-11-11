@@ -1,0 +1,184 @@
+{#- DECAFE — root layout.
+    Contract: <body x-data="decafeApp()"> is the single root Alpine scope (cart, wishlist, modals, toasts,
+    money, search). Every widget/ui partial renders inside it and may call its methods directly. -#}
+{%- set lang = localization.language | default('ar') -%}
+{%- set isLtr = lang == 'en' or lang == 'fr' -%}
+{#- bump on every asset change (CDN caches assets for a year). `npm run stamp` rewrites it. -#}
+{%- set assetv = '23296686' -%}
+{%- set fontHead = settings.fontHeading | default('alexandria') -%}
+{%- set fontBody = settings.fontBody | default('ibm-plex') -%}
+{%- set fontMap = {
+  'alexandria': { 'family': 'Alexandria', 'q': 'Alexandria:wght@300;400;500;600' },
+  'ibm-plex': { 'family': 'IBM Plex Sans Arabic', 'q': 'IBM+Plex+Sans+Arabic:wght@300;400;500;600' },
+  'noto-kufi': { 'family': 'Noto Kufi Arabic', 'q': 'Noto+Kufi+Arabic:wght@300;400;500;600' },
+  'tajawal': { 'family': 'Tajawal', 'q': 'Tajawal:wght@300;400;500;700' },
+  'readex': { 'family': 'Readex Pro', 'q': 'Readex+Pro:wght@300;400;500;600' }
+} -%}
+{%- set fh = fontMap[fontHead] or fontMap['alexandria'] -%}
+{%- set fb = fontMap[fontBody] or fontMap['ibm-plex'] -%}
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'ltr' if isLtr else 'rtl' }}" class="no-js">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="{{ settings.colorInk | default('#120D09', true) }}"/>
+  <script>
+    (function (d) {
+      var h = d.documentElement; h.classList.remove('no-js'); h.classList.add('js');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce && 'IntersectionObserver' in window && {{ 'false' if settings.enableAnimations == false else 'true' }}) {
+        h.classList.add('motion-ok');
+        /* never leave content hidden if main.js fails to boot */
+        setTimeout(function () { if (!h.classList.contains('reveal-ready')) h.classList.remove('motion-ok'); }, 2500);
+      }
+    })(document);
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fh.q }}{% if fb.q != fh.q %}&family={{ fb.q }}{% endif %}&family=Cormorant+Garamond:wght@400;500;600&display=swap"/>
+
+  {% seo %}
+  {% qumra_head %}
+
+  {#- QLT-11 structured data: the {% seo %} tag emits meta only, so Organization/WebSite ship here -#}
+  {%- set sdName = store.name | default(settings.brandWordmark or 'DECAFE') -%}
+  {%- set sdUrl = store.url | default('') -%}
+  {%- set sdLogo = (store.logo.fileUrl if (store and store.logo and store.logo.fileUrl) else (settings.favicon.fileUrl if (settings.favicon and settings.favicon.fileUrl) else '')) -%}
+  <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'Organization', 'name': sdName, 'url': sdUrl, 'logo': sdLogo } | dump | replace('</', '<\\/') | safe }}</script>
+  <script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'WebSite', 'name': sdName, 'url': sdUrl, 'potentialAction': { '@type': 'SearchAction', 'target': sdUrl ~ '/search?q={search_string}', 'query-input': 'required name=search_string' } } | dump | replace('</', '<\\/') | safe }}</script>
+
+  {%- if settings.favicon and settings.favicon.fileUrl %}
+  <link rel="icon" href="{{ settings.favicon.fileUrl }}"/>
+  {%- else %}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23120D09'/%3E%3Cellipse cx='16' cy='16' rx='6.5' ry='9.5' transform='rotate(-30 16 16)' fill='none' stroke='%23C08A58' stroke-width='2'/%3E%3Cpath d='M13 8.5c3 2.8.2 6 1.6 8.8 1.1 2.3 3.9 3.2 4.8 6.2' fill='none' stroke='%23C08A58' stroke-width='1.8'/%3E%3C/svg%3E"/>
+  {%- endif %}
+
+  {#- Google Search Console: accepts the whole <meta> tag or just its content value -#}
+  {%- set gsv = (settings.googleVerification or '') | trim -%}
+  {%- if 'content=' in gsv %}{%- set gsv = (gsv.split('content=')[1] | replace('"', '') | replace("'", '') | replace('/>', '') | replace('>', '') | trim).split(' ')[0] -%}{%- endif %}
+  {%- if gsv %}
+  <meta name="google-site-verification" content="{{ gsv }}"/>
+  {%- endif %}
+
+  {#- html:root outranks decafe.css's :root defaults, so the merchant's colours always win (GEN-05) -#}
+  <style>
+    html:root {
+      --c-ink: {{ settings.colorInk | default('#120D09', true) }};
+      --c-espresso: {{ settings.colorEspresso | default('#21160F', true) }};
+      --c-coffee: {{ settings.colorCoffee | default('#56351F', true) }};
+      {#- «اللون العام»: one brand colour overrides the accent everywhere (buttons, links, badges, eyebrows) -#}
+      {%- set accent = settings.brandColor if (settings.brandColor and (settings.brandColor | trim | length)) else (settings.colorCaramel | default('#C08A58', true)) %}
+      --c-caramel: {{ accent }};
+      --c-sale: {{ settings.saleColor | default('#A84A34', true) }};
+      --c-success: {{ settings.successColor | default('#456A43', true) }};
+      --c-warning: {{ settings.warningColor | default('#98601D', true) }};
+      --c-cream: {{ settings.colorCream | default('#F7F1E8', true) }};
+      --c-beige: {{ settings.colorBeige | default('#E6D6C2', true) }};
+      --font-display: '{{ fh.family }}', '{{ fb.family }}', system-ui, sans-serif;
+      --font-body: '{{ fb.family }}', '{{ fh.family }}', system-ui, sans-serif;
+      --radius-card: {{ settings.cornerRadius | default(6) }}px;
+      --radius-media: {{ settings.cornerRadius | default(6) }}px;
+    }
+    {#- any accent but the theme's own, by its luminance (y, worked out here so no browser has to): text on it turns black or white, at least 4.5:1 on any
+        colour, and the button drops its lighter gradient, which white text would fail on. As text it darkens on light surfaces (ink) and lightens on dark ones (lift).
+        Anything but #rrggbb keeps today's colours. Plain relative CSS colours were tried instead: through var() they crashed Chromium's renderer. -#}
+    {%- if accent != '#C08A58' and accent != '#c08a58' and accent is string and accent.length == 7 and accent.slice(0, 1) == '#' %}
+    {%- set hx = { '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'a': 10, 'b': 11, 'c': 12, 'd': 13, 'e': 14, 'f': 15, 'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15 } -%}
+    {%- set cr = ((hx[accent.slice(1, 2)] or 0) * 16 + (hx[accent.slice(2, 3)] or 0)) / 255 -%}
+    {%- set cg = ((hx[accent.slice(3, 4)] or 0) * 16 + (hx[accent.slice(4, 5)] or 0)) / 255 -%}
+    {%- set cb = ((hx[accent.slice(5, 6)] or 0) * 16 + (hx[accent.slice(6, 7)] or 0)) / 255 -%}
+    {%- set y = 0.2126 * cr * (cr * (cr * 0.305306011 + 0.682171111) + 0.012522878) + 0.7152 * cg * (cg * (cg * 0.305306011 + 0.682171111) + 0.012522878) + 0.0722 * cb * (cb * (cb * 0.305306011 + 0.682171111) + 0.012522878) -%}
+    html:root {
+      --c-on-accent: {{ '#fff' if y < 0.179 else '#000' }};
+      --c-caramel-ink: color-mix(in srgb-linear, var(--c-caramel) {{ ((15 / y) | round(1)) if y > 0.15 else 100 }}%, #000);
+      --c-caramel-lift: color-mix(in srgb-linear, var(--c-caramel) {{ (100 - (100 * (0.24 - y) / (1 - y))) | round(1) if y < 0.24 else 100 }}%, #fff);
+      --c-btn-from: var(--c-caramel);
+      --c-btn-hover-from: var(--c-caramel);
+      --c-btn-hover-to: var(--c-caramel);
+    }
+    {%- endif %}
+  </style>
+  <link rel="stylesheet" href="{{ 'decafe.css' | assets }}?v={{ assetv }}"/>
+  <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"/>
+  {%- if settings.customCSS %}
+  <style>{{ settings.customCSS | safe }}</style>
+  {%- endif %}
+</head>
+<body x-data="decafeApp()" @keydown.escape.window="isOpen('quick') ? closeQuick() : closeModal()" class="min-h-screen antialiased">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[100] btn btn-dark btn-sm">{{ t('a11y.skip_to_content') }}</a>
+
+  {% template "header" %}
+
+  <main id="main" class="site-main" tabindex="-1">
+    {% content %}
+  </main>
+  {#- a store whose saved page has no title section (hero removed) still gets one H1. Added only when the page has none, so never a second -#}
+  <script>
+    (function (d) {
+      var m = d.getElementById('main'), n = {{ (store.name or '') | dump | replace('</', '<\\/') | safe }};
+      if (!m || !n || m.querySelector('h1')) return;
+      var h = d.createElement('h1'); h.className = 'sr-only'; h.textContent = n;
+      m.insertBefore(h, m.firstChild);
+    })(document);
+  </script>
+
+  {% template "footer" %}
+
+  {% ui "cart-drawer.njk" %}
+  {% ui "quick-drawer.njk" %}
+  {% ui "search-overlay.njk" %}
+  {% ui "video-modal.njk" %}
+  {% ui "toast.njk" %}
+  {% ui "demo-data.njk" %}
+
+  <script type="application/json" id="dc-initial-cart">{{ cart | dump | replace('</', '<\\/') | safe }}</script>
+  <script type="application/json" id="dc-initial-wishlist">{{ wishlist | dump | replace('</', '<\\/') | safe }}</script>
+  <script>
+    window.__decafe = {
+      language: {{ lang | dump | replace('</', '<\\/') | safe }},
+      languages: {{ localization.availableLanguages | default(['ar', 'en']) | dump | replace('</', '<\\/') | safe }},
+      moneySample: {{ 123456 | money | dump | replace('</', '<\\/') | safe }},
+      currency: {{ (localization.currency.currencyCode if (localization.currency and localization.currency.currencyCode) else '') | dump | safe }},
+      followStock: {{ 'false' if settings.followProductStock == false else 'true' }},
+      lowStock: {{ settings.lowStockThreshold | default(3, true) | int }},
+      cartOpenOnAdd: {{ 'false' if settings.cartOpenOnAdd == false else 'true' }},
+      cardButtons: {{ 'false' if settings.showCardButtons == false else 'true' }},
+      demoProducts: {{ 'true' if settings.demoProducts == true else 'false' }},
+      i18n: {
+        added: {{ t('toast.added_to_cart') | dump | replace('</', '<\\/') | safe }},
+        updated: {{ t('toast.cart_updated') | dump | replace('</', '<\\/') | safe }},
+        removed: {{ t('toast.removed_from_cart') | dump | replace('</', '<\\/') | safe }},
+        wishAdded: {{ t('toast.added_to_wishlist') | dump | replace('</', '<\\/') | safe }},
+        wishRemoved: {{ t('toast.removed_from_wishlist') | dump | replace('</', '<\\/') | safe }},
+        error: {{ t('toast.error') | dump | replace('</', '<\\/') | safe }},
+        outOfStock: {{ t('product.out_of_stock') | dump | replace('</', '<\\/') | safe }},
+        selectOption: {{ t('product.select_option') | dump | replace('</', '<\\/') | safe }},
+        maxQty: {{ t('product.max_quantity') | dump | replace('</', '<\\/') | safe }},
+        lowStock: {{ t('product.low_stock') | dump | replace('</', '<\\/') | safe }},
+        free: {{ t('product.free') | dump | replace('</', '<\\/') | safe }},
+        linkCopied: {{ t('toast.link_copied') | dump | replace('</', '<\\/') | safe }},
+        demoCheckout: {{ t('toast.demo_checkout') | dump | replace('</', '<\\/') | safe }},
+        demoProduct: {{ t('toast.demo_product') | dump | replace('</', '<\\/') | safe }},
+        langFailed: {{ t('toast.language_failed') | dump | replace('</', '<\\/') | safe }},
+        newsletterInvalid: {{ t('newsletter.invalid') | dump | replace('</', '<\\/') | safe }},
+        newsletterSuccess: {{ t('newsletter.success') | dump | replace('</', '<\\/') | safe }},
+        newsletterError: {{ t('newsletter.error') | dump | replace('</', '<\\/') | safe }},
+        contactInvalid: {{ t('contact.invalid') | dump | replace('</', '<\\/') | safe }},
+        currencySwitch: {{ t('currency.switch_to') | dump | replace('</', '<\\/') | safe }},
+        countOne: {{ t('common.count_one') | dump | replace('</', '<\\/') | safe }},
+        countTwo: {{ t('common.count_two') | dump | replace('</', '<\\/') | safe }},
+        countFew: {{ t('common.count_few') | dump | replace('</', '<\\/') | safe }},
+        countMany: {{ t('common.count_many') | dump | replace('</', '<\\/') | safe }}
+      }
+    };
+  </script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  {% qumra_scripts %}
+  <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+  {%- if settings.customJS %}
+  <script>{{ settings.customJS | safe }}</script>
+  {%- endif %}
+</body>
+</html>

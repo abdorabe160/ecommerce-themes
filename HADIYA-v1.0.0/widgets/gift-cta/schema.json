@@ -1,0 +1,202 @@
+{
+  "name": "بانر هدايا الشركات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "سطر صغير فوق العنوان — اتركه فارغاً لإخفائه",
+        "en": "Small line above the title — leave empty to hide"
+      },
+      "default": "للشركات"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": "هدايا لفريقك وعملائك"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف — اتركه فارغاً لإخفائه",
+        "en": "Description — leave empty to hide"
+      },
+      "default": ""
+    },
+    "point_1": {
+      "type": "string",
+      "label": {
+        "ar": "نقطة ١ — اتركها فارغة لإخفائها",
+        "en": "Point 1 — leave empty to hide"
+      },
+      "default": ""
+    },
+    "point_2": {
+      "type": "string",
+      "label": {
+        "ar": "نقطة ٢ — اتركها فارغة لإخفائها",
+        "en": "Point 2 — leave empty to hide"
+      },
+      "default": ""
+    },
+    "point_3": {
+      "type": "string",
+      "label": {
+        "ar": "نقطة ٣ — اتركها فارغة لإخفائها",
+        "en": "Point 3 — leave empty to hide"
+      },
+      "default": ""
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة — من غيرها بيظهر رسم الهدية",
+        "en": "Picture — the gift illustration shows without one"
+      }
+    },
+    "media_position": {
+      "type": "select",
+      "label": {
+        "ar": "مكان الصورة",
+        "en": "Picture side"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "btn1_text": {
+      "type": "string",
+      "label": {
+        "ar": "الزر الأساسي — اتركه فارغاً لإخفائه",
+        "en": "Main button — leave empty to hide"
+      },
+      "default": "تواصل معنا"
+    },
+    "btn1_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الأساسي — #contact بينزل لبيانات التواصل في الفوتر، أو رابط واتساب",
+        "en": "Main button link — #contact jumps to the footer contact details, or a WhatsApp link"
+      },
+      "default": "#contact"
+    },
+    "btn2_text": {
+      "type": "string",
+      "label": {
+        "ar": "الزر التاني — اتركه فارغاً لإخفائه",
+        "en": "Second button — leave empty to hide"
+      },
+      "default": "بوكسات جاهزة"
+    },
+    "btn2_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر التاني",
+        "en": "Second button link"
+      },
+      "default": "/shop"
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "well",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "ورق الهدايا الدافئ",
+            "en": "Warm gift paper"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الروابط والعناصر النشطة",
+        "en": "Accent — links and active elements"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "بانر هدايا الشركات"
+    }
+  ]
+}

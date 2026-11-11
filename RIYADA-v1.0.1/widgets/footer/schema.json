@@ -1,0 +1,260 @@
+{
+  "name": "الفوتر الرئيسي",
+  "settings": {
+    "footer_logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار الفوتر (يفضّل نسخة فاتحة)",
+        "en": "Footer Logo (a light version works best)"
+      }
+    },
+    "footer_logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo Height"
+      },
+      "default": 30,
+      "min": 20,
+      "max": 72,
+      "step": 2,
+      "unit": "px"
+    },
+    "footer_description": {
+      "type": "text",
+      "label": {
+        "ar": "نبذة قصيرة عن المتجر",
+        "en": "Short store blurb"
+      },
+      "default": ""
+    },
+    "contact_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان قسم التواصل",
+        "en": "Contact section heading"
+      },
+      "default": ""
+    },
+    "contact_phone": {
+      "type": "string",
+      "label": {
+        "ar": "رقم الهاتف",
+        "en": "Phone number"
+      },
+      "default": ""
+    },
+    "contact_whatsapp": {
+      "type": "string",
+      "label": {
+        "ar": "رقم واتساب (بصيغة دولية بدون +)",
+        "en": "WhatsApp number (international format, no +)"
+      },
+      "default": ""
+    },
+    "contact_email": {
+      "type": "string",
+      "label": {
+        "ar": "البريد الإلكتروني",
+        "en": "Email address"
+      },
+      "default": ""
+    },
+    "contact_hours": {
+      "type": "string",
+      "label": {
+        "ar": "ساعات العمل",
+        "en": "Working hours"
+      },
+      "default": ""
+    },
+    "social_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان قسم التواصل الاجتماعي",
+        "en": "Social section heading"
+      },
+      "default": ""
+    },
+    "footer_social_instagram": {
+      "type": "string",
+      "label": {
+        "ar": "إنستقرام",
+        "en": "Instagram"
+      },
+      "default": ""
+    },
+    "footer_social_x": {
+      "type": "string",
+      "label": {
+        "ar": "منصة X",
+        "en": "X"
+      },
+      "default": ""
+    },
+    "footer_social_tiktok": {
+      "type": "string",
+      "label": {
+        "ar": "تيك توك",
+        "en": "TikTok"
+      },
+      "default": ""
+    },
+    "footer_social_youtube": {
+      "type": "string",
+      "label": {
+        "ar": "يوتيوب",
+        "en": "YouTube"
+      },
+      "default": ""
+    },
+    "footer_social_snapchat": {
+      "type": "string",
+      "label": {
+        "ar": "سناب شات",
+        "en": "Snapchat"
+      },
+      "default": ""
+    },
+    "footer_social_linkedin": {
+      "type": "string",
+      "label": {
+        "ar": "لينكدإن",
+        "en": "LinkedIn"
+      },
+      "default": ""
+    },
+    "footer_social_facebook": {
+      "type": "string",
+      "label": {
+        "ar": "فيسبوك",
+        "en": "Facebook"
+      },
+      "default": ""
+    },
+    "payment_image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة طرق الدفع",
+        "en": "Payment methods image"
+      }
+    },
+    "payment_heading": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان طرق الدفع",
+        "en": "Payment methods heading"
+      },
+      "default": ""
+    },
+    "bottom_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط الشريط السفلي",
+        "en": "Bottom bar links"
+      },
+      "default": "footer-menu"
+    },
+    "tax_number": {
+      "type": "string",
+      "label": {
+        "ar": "الرقم الضريبي",
+        "en": "VAT number"
+      },
+      "default": ""
+    },
+    "commercial_reg": {
+      "type": "string",
+      "label": {
+        "ar": "السجل التجاري",
+        "en": "Commercial registration"
+      },
+      "default": ""
+    },
+    "show_back_to_top": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار زر «للأعلى»",
+        "en": "Show \"back to top\" button"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "column": {
+      "name": "عمود روابط",
+      "settings": {
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "عنوان العمود",
+            "en": "Column title"
+          },
+          "default": ""
+        },
+        "menu": {
+          "type": "menu",
+          "label": {
+            "ar": "القائمة",
+            "en": "Menu"
+          },
+          "default": "footer-menu"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الفوتر",
+      "name": "الفوتر الرئيسي"
+    }
+  ]
+}

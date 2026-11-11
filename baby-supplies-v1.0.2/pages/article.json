@@ -1,0 +1,21 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المقال",
+      "widget": "article-page",
+      "settings": {
+        "show_hero": true,
+        "show_meta": true,
+        "show_tags": true,
+        "show_share": true,
+        "show_related": true,
+        "related_title": "",
+        "related_limit": 3
+      }
+    }
+  ]
+}

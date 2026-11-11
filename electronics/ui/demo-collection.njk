@@ -1,0 +1,62 @@
+{# صفحة تصنيف توضيحية — المعاينة فقط. تُفتح من التصنيفات التوضيحية بـ /?demo_collection=<id>.
+   نفس تصميم widgets/collection-products، والمنتجات بطاقات card-js (الإضافة للسلة عبر سلة المعاينة). البيانات من ui/demo-pages.njk. #}
+<div class="lg-demo-page" x-data="lgDemoCollection({{ { priceInvalid: t('collection.price_invalid') } | dump | escape }})">
+  <template x-if="current">
+    <section class="lg-section !pt-4">
+      <div class="lg-container">
+
+        <nav aria-label="{{t('common.breadcrumb')}}" class="lg-breadcrumb mb-3 text-sm text-muted">
+          <ol class="flex flex-wrap items-center gap-1.5">
+            <li><a href="/" class="hover:text-primary">{{t('common.home')}}</a></li>
+            <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+            <li><a href="/collections" class="hover:text-primary">{{t('collection.all_collections')}}</a></li>
+            <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+            <li aria-current="page" class="text-[color:var(--color-text)]" x-text="current.title"></li>
+          </ol>
+        </nav>
+
+        <header class="glass overflow-hidden mb-5 grid md:grid-cols-[1.4fr_1fr] items-center">
+          <div class="p-5 md:p-8 space-y-2">
+            <h1 class="lg-title !text-2xl md:!text-3xl" x-text="current.title"></h1>
+            <p class="text-sm text-muted" x-text="countText(shown.length)"></p>
+          </div>
+          <div class="hidden md:grid place-items-center h-full max-h-56 p-4">
+            <img :src="current.image" alt="" class="max-h-48 w-auto object-contain drop-shadow-xl" width="240" height="192">
+          </div>
+        </header>
+
+        {# التنقل بين التصنيفات #}
+        <ul class="flex flex-wrap gap-2 mb-5" aria-label="{{t('collection.all_collections')}}">
+          <template x-for="c in collections" :key="c._id">
+            <li><a :href="collectionUrl(c)" class="lg-chip" :class="c._id === current._id && 'is-active'" :aria-current="c._id === current._id ? 'page' : null" x-text="c.title"></a></li>
+          </template>
+        </ul>
+
+        {# فلتر السعر (في المتصفح فوراً — المنتجات التوضيحية ليست على السيرفر) #}
+        <form class="glass lg-price-bar mb-5" @submit.prevent="applyPrice()" x-show="products.length" aria-label="{{t('collection.price')}}">
+          <span class="lg-price-bar__label">{% ui "icon.njk", name="sliders", cls="w-4 h-4 text-primary" %}{{t('collection.price')}}</span>
+          <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.min" placeholder="{{t('collection.min')}}" aria-label="{{t('collection.min')}}">
+          <input type="number" min="0" inputmode="numeric" class="lg-input" x-model="price.max" placeholder="{{t('collection.max')}}" aria-label="{{t('collection.max')}}">
+          <button type="submit" class="btn btn-soft">{{t('collection.apply')}}</button>
+          <button type="button" class="btn btn-glass" x-show="priceActive" x-cloak @click="clearPrice()">{{t('collection.clear_all')}}</button>
+          <p class="basis-full text-sm text-[color:var(--color-danger)]" x-show="priceError" x-cloak x-text="priceError"></p>
+        </form>
+
+        <div class="lg-grid" data-cols="4" x-show="shown.length">
+          <template x-for="p in visible" :key="p._id">{% ui "card-js.njk" %}</template>
+        </div>
+        {# عرض تدريجي — التصنيف الضخم (1000 منتج) لا يُرسم دفعة واحدة #}
+        <div class="text-center mt-6" x-show="shown.length > visible.length" x-cloak>
+          <button type="button" class="btn btn-glass" @click="more()">{{t('search.load_more')}} <span class="text-muted" x-text="'(' + (shown.length - visible.length) + ')'"></span></button>
+        </div>
+        <div x-show="products.length && !shown.length" x-cloak>
+          {% ui "empty.njk", icon="search", title=t('collection.no_match') %}
+          <div class="text-center mt-4"><button type="button" class="btn btn-primary" @click="clearPrice()">{{t('collection.clear_all')}}</button></div>
+        </div>
+        <div x-show="!products.length">
+          {% ui "empty.njk", icon="grid", title=t('collection.empty'), url="/collections", button=t('collection.all_collections') %}
+        </div>
+      </div>
+    </section>
+  </template>
+</div>

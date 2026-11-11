@@ -1,0 +1,62 @@
+{# =========================================================
+   Dark Blood - صفحة البحث
+   النتائج بتيجي من /ajax/search/products عن طريق pages.js
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+
+<section class="blk-section blk-search-page" id="blkSearch-{{ widget.id }}" data-blk-search-page>
+  <div class="blk-container">
+
+    <form class="blk-search-form blk-anim-fade-up" action="/search" method="get" role="search" data-search-form>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9"/></svg>
+      <input type="search" name="q" class="blk-search-form-input" aria-label="{{t('search.input_aria')}}" placeholder="{% ui "blk-t.njk", text=s.placeholder, key="defaults.search_page_placeholder" %}" autocomplete="off" data-search-input>
+      <button type="submit" class="blk-btn blk-btn-primary">{{t('search.submit')}}</button>
+    </form>
+
+    <div class="blk-plp-toolbar blk-anim-fade-up" style="--anim-delay: 0.1s;">
+      <span class="blk-plp-count" data-search-summary>{{t('search.prompt')}}</span>
+
+      <div class="blk-plp-controls">
+        <label class="blk-select-wrap">
+          <span class="blk-sr-only">{{t('collection.sort_by')}}</span>
+          <select class="blk-select" data-search-sort>
+            <option value="">{{t('collection.sort_relevance')}}</option>
+            <option value="price-asc">{{t('collection.sort_price_asc')}}</option>
+            <option value="price-desc">{{t('collection.sort_price_desc')}}</option>
+            <option value="created-desc">{{t('collection.sort_newest')}}</option>
+            <option value="rating-desc">{{t('collection.sort_rating')}}</option>
+          </select>
+        </label>
+        <div class="blk-price-range">
+          <input type="number" min="0" step="any" inputmode="decimal" class="blk-input" placeholder="{{t('search.min')}}" aria-label="{{t('search.min_aria')}}" data-search-min>
+          <span>—</span>
+          <input type="number" min="0" step="any" inputmode="decimal" class="blk-input" placeholder="{{t('search.max')}}" aria-label="{{t('search.max_aria')}}" data-search-max>
+        </div>
+        {# بيظهر بس لما يكون فيه فلتر أو ترتيب متطبّق، وبيرجّع كل حاجة للوضع الافتراضي (pages.js) #}
+        <button type="button" class="blk-btn blk-btn-outline blk-filters-clear" data-search-clear hidden>{{t('filters.clear')}}</button>
+      </div>
+    </div>
+
+    <div class="blk-search-loading" data-search-loading hidden>
+      <span class="blk-spinner"></span>
+      <span>{{t('search.searching')}}</span>
+    </div>
+
+    <div class="blk-prod-grid" style="--grid-cols: 4;" data-search-results></div>
+
+    <div data-search-empty hidden>
+      {% set emptyTitle = t('search.no_results_title') %}{% set emptyText = t('search.no_results_text') %}{% set emptyBtn = t('search.browse_categories') %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/collections", icon="search" %}
+      {# لو النتيجة فاضية بسبب الفلاتر: زرار يمسحها على طول #}
+      <div class="blk-filters-clear-wrap">
+        <button type="button" class="blk-btn blk-btn-outline blk-filters-clear" data-search-clear hidden>{{t('filters.clear')}}</button>
+      </div>
+    </div>
+
+    {# SRCH-03: البحث مارجّعش نتايج — منتجات رائجة من المتجر (بتظهر بس لو المتجر فيه منتجات) #}
+    <div class="blk-search-popular" data-search-popular hidden>
+      <h2 class="blk-section-title">{{t('search.popular')}}</h2>
+      <div class="blk-prod-grid" style="--grid-cols: 4;" data-blk-store-products data-limit="4" data-sort="rating-desc" data-hide-if-empty data-hide-quickview></div>
+    </div>
+  </div>
+</section>

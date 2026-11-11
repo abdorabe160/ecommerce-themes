@@ -1,0 +1,17 @@
+{
+  "name": "blog-posts",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان", "en": "Title" },
+      "default": ""
+    },
+    "articles": {
+      "type": "blog_articles",
+      "label": { "ar": "مقالات (اختياري)", "en": "Articles (optional)" }
+    }
+  },
+  "presets": [
+    { "category": "blog", "name": "blog-posts" }
+  ]
+}

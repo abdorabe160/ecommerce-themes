@@ -1,0 +1,8 @@
+{#- Dark Blood - عدّ المنتجات: {% ui "blk-count.njk", n=count %} ← منتج واحد، منتجان، 3 منتجات، 11 منتج.
+    نفس blkCountHtml في assets/main.js. strong[data-plp-count] هو اللي الـ JS بيحدّثه في صفحات المنتجات -#}
+{%- set n = (data.n | default(0, true)) | int -%}
+{%- set rest = n % 100 -%}
+{%- if n == 1 -%}<strong data-plp-count>{{ t('common.count_one') }}</strong>
+{%- elif n == 2 -%}<strong data-plp-count>{{ t('common.count_two') }}</strong>
+{%- else -%}<strong data-plp-count>{{ n }}</strong> {{ t('common.count_few') if (rest >= 3 and rest <= 10) else t('common.count_many') }}
+{%- endif -%}

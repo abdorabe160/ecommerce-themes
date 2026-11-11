@@ -1,0 +1,26 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المتجر",
+      "widget": "shop-page",
+      "settings": {
+        "kicker": "المتجر",
+        "title": "كل القطع",
+        "description": "",
+        "show_collections": true,
+        "show_cover": true,
+        "show_filters": true,
+        "show_sort": true
+      }
+    },
+    {
+      "name": "منتجات المتجر",
+      "widget": "shop-products",
+      "settings": {}
+    }
+  ]
+}

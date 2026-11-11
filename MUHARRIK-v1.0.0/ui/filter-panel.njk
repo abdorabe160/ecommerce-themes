@@ -1,0 +1,192 @@
+{# ============================================================================
+   HYPER FILTER PANEL — the filter groups, rendered once, used twice
+   ----------------------------------------------------------------------------
+   Included by widgets/shop-page in BOTH places: the desktop sidebar and the
+   mobile drawer. One partial rather than two copies — the two never drift, and
+   a new filter type is added in one file.
+
+   Both copies are live in the DOM at once and that is safe: neither holds any
+   filter state. Every option reads `isActive()` and writes through
+   `toggleFilter()`, so ticking one instantly reflects in the other and in the
+   removable chips above the grid. Only the open/closed and "show more" state is
+   local, and those are genuinely per-copy.
+
+   Runs inside the collectionFilter() Alpine scope — see the contract note at
+   the top of widgets/shop-page/widget.njk.
+
+   Look (MUHARRIK): assets/mh-commerce.css → "SHOP · FILTER PANEL". Groups are
+   hairline rows with a mono heading and a +/× toggle; options are rows with a
+   visible square checkbox that fills yellow; the price range is a pair of
+   mono hairline inputs.
+
+   Locals:  filters (required) · lang · visible (how many options before "more")
+   ========================================================================= #}
+
+{% set filters = data.filters | default([], true) %}
+{% set lang = data.lang | default(localization.language, true) | default('ar', true) %}
+{% set visible = data.visible | default(8, true) %}
+
+
+{# ---------------------------------------------------------------------------
+   Two resolvers, because a GROUP and an OPTION fail differently.
+
+   The payload does not use one shape. On a live store some groups carry
+   `label`, others carry the name elsewhere and `handle` is a numeric id —
+   which is how a sidebar prints "100" as a heading. Options have the same
+   spread of shapes.
+
+   groupName()  drops a purely numeric fallback. An id is never a name, and a
+                group with no heading is better than one headed "101".
+
+   optionLabel() does NOT drop numerics. An option is a control: a technical
+                label is a small problem, an option that vanishes is a filter
+                the shopper cannot use at all. This is why the brand group
+                rendered its heading over an empty box — every one of its
+                options fell through the numeric guard and was skipped.
+   --------------------------------------------------------------------------- #}
+{% macro pick(o, lang) %}
+  {%- set v = o.label | default(o.name, true) | default(o.title, true) | default(o.displayName, true) | default(o.text, true) | default('', true) -%}
+  {%- if v is string -%}{{ v }}
+  {%- elif v -%}{{ v[lang] | default(v.ar, true) | default(v.en, true) | default('', true) }}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro groupName(o, lang) %}
+  {%- set named = pick(o, lang) | trim -%}
+  {%- if (named | length) > 0 -%}{{ named }}
+  {%- else -%}
+    {%- set h = (o.handle | default(o.id, true) | default('', true)) | string -%}
+    {# Numeric test via a round trip through `int`: "100" survives it, "size"
+       comes back as "0" and fails. String.replace() cannot do this — called as
+       a JS method it swaps only the FIRST match, so "100" reduced to "0" and
+       still counted as a name. #}
+    {%- if h and (h | int | string) != h -%}{{ h }}{%- endif -%}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro optionLabel(o, lang) %}
+  {%- set named = pick(o, lang) | trim -%}
+  {%- if (named | length) > 0 -%}{{ named }}
+  {%- else -%}{{ (o.value | default(o.handle, true) | default(o.id, true) | default('', true)) | string }}
+  {%- endif -%}
+{% endmacro %}
+
+{% for f in filters %}
+  {# `| length`, not truthiness. name() is a macro and a macro returns a
+     SafeString OBJECT — an object is truthy even when it holds "". Guarding on
+     the raw value prints an empty heading for every unnamed group and keeps
+     every unnamed option. #}
+  {# The real payload uses `inputType` to say what a group IS. Reading it is
+     the difference between rendering a control and rendering nothing:
+       range        → two number inputs, bounded by f.range
+       search_text  → a text box; its `items` carry keywords, not choices, so
+                      rendering them as pills produced a heading over an empty
+                      box on the live store
+       select/list  → pills #}
+  {% set gLabel = groupName(f, lang) | trim %}
+  {% set hasGLabel = (gLabel | length) > 0 %}
+  {# Every key the payload has been seen to use for its option list. #}
+  {% set items = f.items | default(f.values, true) | default(f.options, true) | default(f.choices, true) | default(f.list, true) | default([], true) %}
+  {% set kind = f.inputType | default('select', true) %}
+  {% set isRange = kind == 'range' %}
+  {% set isText = kind == 'search_text' %}
+
+  {% if isRange or isText or (items | length) > 0 %}
+    <div class="hy-filter-group" x-data="{ open: true, more: false }">
+
+      {# No resolvable name → no heading, but the options still render. Losing a
+         heading is a smaller loss than losing the filter, and far smaller than
+         printing a numeric id as if it were one. #}
+      {% if hasGLabel %}
+        <button type="button" class="hy-filter-head"
+                @click="open = !open" :aria-expanded="open ? 'true' : 'false'">
+          <span class="hy-filter-title">{{ gLabel }}</span>
+          {# a plus that turns into an × when the group is open (CSS rotates it) #}
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor"
+               stroke-width="1.4" aria-hidden="true">
+            <path d="M6 0v12M0 6h12"/>
+          </svg>
+        </button>
+      {% endif %}
+
+      <div x-show="open" x-collapse>
+        {% if isRange %}
+          {# The bounds come from the payload, so the placeholders show the real
+             floor and ceiling instead of generic words — a shopper can see the
+             range before touching anything. #}
+          {% set rMin = f.range.min if f.range and f.range.min is defined else 0 %}
+          {% set rMax = f.range.max if f.range and f.range.max is defined else '' %}
+          <div class="hy-filter-price mh-mono">
+            <input type="number" inputmode="numeric" min="{{ rMin }}" {% if rMax %}max="{{ rMax }}"{% endif %}
+                   {% if f.range and f.range.step %}step="{{ f.range.step }}"{% endif %}
+                   x-model="priceMin" @input.debounce.500ms="applyPrice()"
+                   placeholder="{{ rMin }}" aria-label="{{t('pages.search.min_price')}}"/>
+            <span aria-hidden="true">—</span>
+            <input type="number" inputmode="numeric" min="{{ rMin }}" {% if rMax %}max="{{ rMax }}"{% endif %}
+                   {% if f.range and f.range.step %}step="{{ f.range.step }}"{% endif %}
+                   x-model="priceMax" @input.debounce.500ms="applyPrice()"
+                   placeholder="{{ rMax if rMax else t('pages.search.max_price') }}" aria-label="{{t('pages.search.max_price')}}"/>
+          </div>
+          {# Only present while applyPrice() has actually corrected something.
+             `x-cloak` because Alpine boots at the end of <body> and an unclaoked
+             empty <p> would still reserve its line on first paint.
+             `aria-live` so the correction is announced — a field that rewrites
+             itself silently is exactly what a screen reader user cannot see. #}
+          <p class="hy-filter-note" x-show="priceNote" x-text="priceNote"
+             x-cloak role="status" aria-live="polite"></p>
+
+        {% elif isText %}
+          {# A keyword filter. Its `items` hold match rules, not choices, so
+             there is nothing to list — the shopper types instead. #}
+          <label class="hy-filter-text">
+            <input type="search"
+                   data-h="{{ f.handle | default(f.id, true) | default('', true) }}"
+                   :value="textFilter($el.dataset.h)"
+                   @input.debounce.500ms="setTextFilter($el.dataset.h, $el.value)"
+                   placeholder="{{ gLabel if hasGLabel else t('common.search') }}"
+                   aria-label="{{ gLabel if hasGLabel else t('common.search') }}"/>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9"/>
+            </svg>
+          </label>
+
+        {% else %}
+          <div class="hy-filter-opts">
+            {% for it in items %}
+              {% set itLabel = optionLabel(it, lang) | trim %}
+              {% if (itLabel | length) > 0 %}
+                {# ⚠️  The handle and value go in `data-` attributes and the
+                   expressions read them back through `$el`. They are NOT
+                   interpolated into the expression: `| dump` emits DOUBLE
+                   quotes and the first one closes the surrounding HTML
+                   attribute — the browser then parses `@change="toggleFilter("`
+                   and the rest becomes stray markup. The box still ticks (that
+                   is the browser's own behaviour) so the page looks alive while
+                   no filter is ever applied. #}
+                <label class="hy-filter-opt"
+                       data-h="{{ f.handle | default(f.id, true) | default('', true) }}"
+                       data-v="{{ it.value | default(it.handle, true) | default(it.id, true) | default('', true) }}"
+                       :class="isActive($el.dataset.h, $el.dataset.v) && 'is-on'"
+                       {% if loop.index0 >= visible %}x-show="more" x-cloak{% endif %}>
+                  <input type="checkbox"
+                         :checked="isActive($el.parentElement.dataset.h, $el.parentElement.dataset.v)"
+                         @change="toggleFilter($el.parentElement.dataset.h, $el.parentElement.dataset.v)"/>
+                  <span>{{ itLabel }}</span>
+                  {% if it.count %}<span class="hy-filter-count">{{ it.count }}</span>{% endif %}
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% if (items | length) > visible %}
+            <button type="button" class="hy-filter-more" @click="more = !more">
+              <span x-show="!more">+{{ (items | length) - visible }}</span>
+              <span x-show="more" x-cloak>{{t('common.back')}}</span>
+            </button>
+          {% endif %}
+        {% endif %}
+      </div>
+
+    </div>
+  {% endif %}
+{% endfor %}

@@ -1,0 +1,224 @@
+{
+  "name": "صفحة المقال",
+  "settings": {
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": {
+        "ar": "مسار التنقل",
+        "en": "Breadcrumb"
+      },
+      "default": true
+    },
+    "show_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "الصورة الكبيرة",
+        "en": "Large picture"
+      },
+      "default": true
+    },
+    "hero_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الصورة — كمبيوتر",
+        "en": "Picture height — desktop"
+      },
+      "default": 420,
+      "min": 220,
+      "max": 640,
+      "step": 10,
+      "unit": "px"
+    },
+    "sidebar": {
+      "type": "select",
+      "label": {
+        "ar": "▸ العمود الجانبي",
+        "en": "▸ Sidebar"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "في بداية السطر",
+            "en": "Line start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "في نهاية السطر",
+            "en": "Line end"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "show_meta": {
+      "type": "boolean",
+      "label": {
+        "ar": "التصنيف والتاريخ",
+        "en": "Category and date"
+      },
+      "default": true
+    },
+    "show_read_time": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وقت القراءة التقريبي (بالدقائق)",
+        "en": "Show the estimated read time (minutes)"
+      },
+      "default": true
+    },
+    "show_tags": {
+      "type": "boolean",
+      "label": {
+        "ar": "الوسوم",
+        "en": "Tags"
+      },
+      "default": true
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": {
+        "ar": "المشاركة",
+        "en": "Share"
+      },
+      "default": true
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ مقالات ذات صلة",
+        "en": "▸ Related articles"
+      },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان المقالات ذات الصلة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Related title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 16,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 48,
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px"
+    }
+  },
+  "blocks": {
+    "box": {
+      "name": "صندوق في العمود الجانبي",
+      "settings": {
+        "style": {
+          "type": "select",
+          "label": {
+            "ar": "الشكل",
+            "en": "Style"
+          },
+          "default": "plain",
+          "options": [
+            {
+              "value": "plain",
+              "label": {
+                "ar": "نص على خلفية رمادية",
+                "en": "Text on grey"
+              }
+            },
+            {
+              "value": "promo",
+              "label": {
+                "ar": "بطاقة ملونة بزر",
+                "en": "Coloured card with a button"
+              }
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "النص",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة (للبطاقة الملونة)",
+            "en": "Picture (coloured card)"
+          }
+        },
+        "button": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر",
+            "en": "Button text"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر",
+            "en": "Button link"
+          },
+          "default": "/shop"
+        },
+        "bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون البطاقة",
+            "en": "Card colour"
+          },
+          "default": "",
+          "info": {
+            "ar": "فارغ = لوحة بلون الثيم الأساسي (الأصفر) ونص غامق",
+            "en": "Empty = the accent (yellow) panel with dark text"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "صفحة المقال"
+    }
+  ]
+}

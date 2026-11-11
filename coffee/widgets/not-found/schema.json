@@ -1,0 +1,43 @@
+{
+  "name": "الصفحة غير موجودة (404)",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "الصفحة غير موجودة"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "This page isn't on the menu"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Text"
+      },
+      "default": "ربما نفد المخزون أو تغيّر الرابط. جرّب العودة للرئيسية أو البحث عما تريد."
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "النص (إنجليزي)",
+        "en": "Text (English)"
+      },
+      "default": "The link may have changed or the page is gone. Head back home or search for what you need."
+    }
+  },
+  "presets": [
+    {
+      "category": "أقسام الصفحة",
+      "name": "الصفحة غير موجودة (404)"
+    }
+  ]
+}

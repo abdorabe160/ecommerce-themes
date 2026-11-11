@@ -1,0 +1,144 @@
+{
+  "name": "التصنيفات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": { "ar": "نص تمهيدي (فوق العنوان)", "en": "Eyebrow (above title)" },
+      "default": "الأقسام"
+    },
+    "title": {
+      "type": "text",
+      "label": { "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها", "en": "Title — wrap a word in <em> to accent it" },
+      "default": "تسوّقي حسب <em>القسم</em>"
+    },
+    "description": {
+      "type": "text",
+      "label": { "ar": "وصف قصير (اختياري)", "en": "Short Description (optional)" },
+      "default": ""
+    },
+    "collections": {
+      "type": "collections",
+      "label": { "ar": "التصنيفات المعروضة", "en": "Collections to show" }
+    },
+    "layout": {
+      "type": "select",
+      "label": { "ar": "التقسيم", "en": "Layout" },
+      "default": "grid",
+      "options": [
+        { "value": "grid", "label": { "ar": "شبكة", "en": "Grid" } },
+        { "value": "slider", "label": { "ar": "سلايدر", "en": "Slider" } },
+        { "value": "mosaic", "label": { "ar": "أول قسم كبير + شبكة", "en": "First large + grid" } }
+      ]
+    },
+    "label_style": {
+      "type": "select",
+      "label": { "ar": "موضع اسم القسم", "en": "Label Position" },
+      "default": "chip",
+      "options": [
+        { "value": "below", "label": { "ar": "تحت الصورة", "en": "Below the image" } },
+        { "value": "chip", "label": { "ar": "زر عائم أسفل الصورة", "en": "Floating pill on the image" } },
+        { "value": "overlay", "label": { "ar": "فوق الصورة", "en": "Over the image" } }
+      ]
+    },
+    "card_shape": {
+      "type": "select",
+      "label": { "ar": "شكل الصورة (الدائرة تناسب «تحت الصورة»)", "en": "Image Shape (circle suits the \"below\" label)" },
+      "default": "soft",
+      "options": [
+        { "value": "soft", "label": { "ar": "مستطيل ناعم", "en": "Soft rectangle" } },
+        { "value": "arch", "label": { "ar": "قوس", "en": "Arch" } },
+        { "value": "circle", "label": { "ar": "دائرة", "en": "Circle" } }
+      ]
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": { "ar": "أبعاد الصورة", "en": "Image Ratio" },
+      "default": "3/4",
+      "options": [
+        { "value": "1/1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "4/5", "label": { "ar": "طولي خفيف", "en": "Portrait 4:5" } },
+        { "value": "3/4", "label": { "ar": "طولي", "en": "Tall 3:4" } },
+        { "value": "4/3", "label": { "ar": "عرضي", "en": "Landscape 4:3" } }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": { "ar": "خلفية السكشن", "en": "Section Background" },
+      "default": "blush",
+      "options": [
+        { "value": "white", "label": { "ar": "أبيض", "en": "White" } },
+        { "value": "blush", "label": { "ar": "وردي فاتح", "en": "Blush" } },
+        { "value": "rose", "label": { "ar": "وردي", "en": "Rose wash" } },
+        { "value": "sage", "label": { "ar": "سيج فاتح", "en": "Sage wash" } }
+      ]
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (كمبيوتر)", "en": "Columns (Desktop)" },
+      "default": "3",
+      "options": [
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } },
+        { "value": "3", "label": { "ar": "٣ أعمدة", "en": "3" } },
+        { "value": "4", "label": { "ar": "٤ أعمدة", "en": "4" } },
+        { "value": "5", "label": { "ar": "٥ أعمدة", "en": "5" } }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (موبايل)", "en": "Columns (Mobile)" },
+      "default": "2",
+      "options": [
+        { "value": "1", "label": { "ar": "عمود واحد", "en": "1" } },
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } }
+      ]
+    },
+    "header_align": {
+      "type": "select",
+      "label": { "ar": "محاذاة العنوان", "en": "Header Alignment" },
+      "default": "center",
+      "options": [
+        { "value": "center", "label": { "ar": "في الوسط", "en": "Centered" } },
+        { "value": "split", "label": { "ar": "العنوان يمين والرابط شمال", "en": "Title start · link end" } }
+      ]
+    },
+    "show_count": {
+      "type": "boolean",
+      "label": { "ar": "إظهار عدد المنتجات", "en": "Show Product Count" },
+      "default": true
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": { "ar": "رابط عرض الكل (اتركيه فارغاً لإخفائه)", "en": "View All URL (leave empty to hide)" },
+      "default": "/collections"
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": { "ar": "نص رابط عرض الكل", "en": "View All Text" },
+      "default": ""
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": { "ar": "أسهم التنقل (للسلايدر)", "en": "Navigation Arrows (slider)" },
+      "default": true
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": { "ar": "تشغيل السلايدر تلقائياً", "en": "Autoplay Slider" },
+      "default": false
+    },
+    "autoplay_speed": {
+      "type": "number",
+      "label": { "ar": "سرعة التبديل (ثانية)", "en": "Autoplay Delay (seconds)" },
+      "default": 5,
+      "min": 2,
+      "max": 12,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "التصنيفات"
+    }
+  ]
+}

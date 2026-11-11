@@ -1,0 +1,90 @@
+{
+  "name": "تسوّق حسب الماركة — شريط الماركات",
+  "settings": {
+    "show_label": {
+      "type": "boolean",
+      "label": { "ar": "▸ التسمية الصغيرة فوق الشريط", "en": "▸ Small label above the strip" },
+      "default": true
+    },
+    "label": {
+      "type": "string",
+      "label": { "ar": "التسمية — فارغ = «تسوّق حسب الماركة»", "en": "Label — empty = “Shop by make”" },
+      "default": ""
+    },
+    "speed": {
+      "type": "range",
+      "label": { "ar": "مدة الدورة الواحدة — أقل = أسرع", "en": "Seconds per loop — lower = faster" },
+      "default": 36,
+      "min": 12,
+      "max": 90,
+      "step": 2,
+      "unit": "s"
+    },
+    "size": {
+      "type": "select",
+      "label": { "ar": "حجم الكلمات", "en": "Word size" },
+      "default": "large",
+      "options": [
+        { "value": "large", "label": { "ar": "كبير", "en": "Large" } },
+        { "value": "medium", "label": { "ar": "متوسط", "en": "Medium" } }
+      ]
+    },
+    "show_rules": {
+      "type": "boolean",
+      "label": { "ar": "▸ خطوط رفيعة بين الصفّين وحولهما", "en": "▸ Hairlines between and around the rows" },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 24,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 24,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": { "type": "color", "label": { "ar": "خلفية القسم", "en": "Section background" }, "default": "" },
+    "color_title": { "type": "color", "label": { "ar": "لون الكلمات", "en": "Word colour" }, "default": "" },
+    "color_text": { "type": "color", "label": { "ar": "لون الكلمات المجوّفة", "en": "Outline-word colour" }, "default": "" },
+    "color_accent": { "type": "color", "label": { "ar": "لون التمييز (عند مرور الماوس)", "en": "Accent (hover)" }, "default": "" },
+    "color_border": { "type": "color", "label": { "ar": "لون الخطوط", "en": "Hairline colour" }, "default": "" }
+  },
+  "blocks": {
+    "make": {
+      "name": "ماركة",
+      "settings": {
+        "name": {
+          "type": "string",
+          "label": { "ar": "▸ اسم الماركة — يُكتب بالحروف اللاتينية عادةً (TOYOTA)", "en": "▸ Make name — usually in Latin letters (TOYOTA)" },
+          "default": ""
+        },
+        "collection": {
+          "type": "collections",
+          "label": { "ar": "تصنيف الماركة — يُؤخذ أول تصنيف", "en": "The make's collection — the first one is used" }
+        },
+        "url": {
+          "type": "string",
+          "label": { "ar": "أو رابط يدوي — فارغ = التصنيف أو /shop", "en": "Or a manual link — empty = the collection or /shop" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "المحتوى", "name": "تسوّق حسب الماركة — شريط الماركات" }
+  ]
+}

@@ -1,0 +1,2899 @@
+/* ============================================================================
+   RIYADA · رياضة — Sports & Gym Theme
+   Design language: "Athletic Performance" — قوي · سريع · تحفيزي
+   ----------------------------------------------------------------------------
+   Palette : Flame #FF4D2E · Void #111111 · Chalk #F2F2F2
+   Type    : Changa / Anton (display) · Cairo (body & numerals)
+             Latin display is uppercase — "PUSH HARDER", not "Push harder".
+   Shape   : 2px corners · angled cuts · borders that ignite on hover
+   Density : 4px grid · 80px sections · big type, room to breathe
+   Prefix  : .riyada-*   (single namespace — nothing else lives here)
+   ----------------------------------------------------------------------------
+   PRINCIPLES
+     1. Dark is the ground, not a mode. Every token is authored for #111 first.
+     2. Flame is effort. It marks the next action and the number you earned —
+        never a decoration, never a background you have to read text on.
+     3. Product images sit on true black. The gear is the only lit thing.
+     4. Motion is fast. A sports store that eases slowly contradicts itself.
+     5. Weight over ornament. Type carries the shout; nothing else has to.
+   ----------------------------------------------------------------------------
+   TWO MECHANISMS WORTH KNOWING BEFORE YOU EDIT
+     · `.riyada-invert` flips the whole token set to paper-on-white for a
+       single section. Every primitive already reads from the tokens, so an
+       inverted section needs no new rules — see §01.
+     · `.riyada-cut` angles two opposite corners with clip-path. clip-path
+       erases borders and shadows at the cut, so it belongs on solid fills
+       only — see §14.
+   ----------------------------------------------------------------------------
+   SECTIONS
+     01. Design tokens (+ inverted scope)
+     02. Base & reset
+     03. Typography
+     04. Layout primitives (container / section / heading / grid)
+     05. Buttons
+     06. Badges · chips · tags
+     07. Athletic primitives (sizes · goals · stats · levels · nutrition ·
+         marquee · rating · stock · trust · timer)
+     08. Cards & media · product card
+     09. Forms & inputs
+     10. Navigation (header · mega · drawer · overlay · modal · breadcrumb)
+     11. PDP primitives (gallery · variants · accordion · tabs · buybar · cart)
+     12. Feedback (toast · skeleton · empty · spinner · notice)
+     13. Third-party overrides (Swiper · GLightbox)
+     14. Utilities & motion
+   ========================================================================= */
+
+
+/* ==========================================================================
+   01. DESIGN TOKENS
+   Every var below is retargetable from the Theme Editor via the :root block
+   that layout.njk prints straight after this file.
+   ========================================================================== */
+:root {
+    color-scheme: dark;
+
+    /* ---- Surfaces · the dark ladder ----
+       canvas (#111) is the ground. Cards rise to #1A1A1A. Wells sink to #0A0A0A.
+       Media is true black so product cut-outs read as lit objects. */
+    --color-bg-primary: #111111;     /* الأسود — the canvas */
+    --color-bg-secondary: #1A1A1A;   /* raised surface / cards */
+    --color-bg-tertiary: #0A0A0A;    /* well — inputs, insets, empty states */
+    --color-surface: #1A1A1A;
+    --color-surface-alt: #222222;
+    --color-media: #000000;          /* product media plate — always true black */
+    --color-light: #F2F2F2;          /* paper, for inverted sections */
+
+    /* Section alternation — canvas ↔ one step up */
+    --color-section-a: #111111;
+    --color-section-b: #171717;
+
+    /* ---- Flame · the accent (action + earned numbers) ---- */
+    --color-flame: #FF4D2E;
+    /* Resolved here at :root, so a panel that repaints --color-flame to white
+       for its own copy can still paint its background with the brand colour. */
+    --color-flame-solid: var(--color-flame-fill);   /* flame panels carry white text — see --color-flame-fill */
+    --color-flame-hover: #FF6B4F;    /* on dark, hover brightens */
+    --color-flame-dark: #D93A1D;     /* pressed, and flame text on paper */
+    --color-flame-wash: #2A1310;     /* deep tint — chip backgrounds */
+    --color-flame-line: #6B2517;     /* tinted border */
+    --color-flame-rgb: 255, 77, 46;
+
+    /* ---- Chalk · the light end (inverted blocks, solid light buttons) ---- */
+    --color-chalk: #F2F2F2;
+    --color-chalk-hover: #FFFFFF;
+    --color-chalk-rgb: 242, 242, 242;
+
+    /* ---- Text ---- */
+    --color-text-primary: #F2F2F2;
+    --color-text-secondary: #A3A3A3;
+    --color-text-tertiary: #8A8A8A;
+    --color-text-on-flame: #FFFFFF;
+    /* Flame FILLS that carry white text: the brand flame is 3.3:1 against white,
+       so text-bearing fills use a deeper shade of the same hue (≥4.5:1).
+       Decorative flame (bars, bullets, rules, flame text on dark) is unchanged. */
+    --color-flame-fill: var(--color-flame-dark);
+    --color-flame-fill-hover: var(--color-flame-dark);
+    --color-text-on-light: #111111;
+
+    /* ---- Lines — on dark they sit ABOVE the surface, never below ---- */
+    --color-border: #2A2A2A;
+    --color-border-strong: #3D3D3D;
+    --color-border-hover: #575757;
+    --color-border-focus: #FF4D2E;
+
+    /* ---- Header ---- */
+    --color-header: #111111;
+    --color-header-text: #F2F2F2;
+    --color-header-border: #2A2A2A;
+    --color-announcement: #FF4D2E;
+    --color-announcement-text: #FFFFFF;
+
+    /* ---- Footer ---- */
+    --color-footer: #0A0A0A;
+    --color-footer-text: #A3A3A3;
+    --color-footer-text-muted: #6E6E6E;
+    --color-footer-heading: #F2F2F2;
+    --color-footer-border: #262626;
+
+    /* ---- Status ----
+       Error is pushed toward crimson on purpose: at #FF3B30 it would read as
+       the brand flame, and "danger" would stop meaning anything. */
+    --color-success: #22C55E;
+    --color-success-light: #0E2A1A;
+    --color-error: #F5334F;
+    --color-error-light: #2A1119;
+    --color-warning: #FFB020;
+    --color-warning-light: #2A1F0A;
+    --color-info: #4C8DFF;
+    --color-info-light: #101C2E;
+
+    /* ---- Typography stacks ---- */
+    --font-display-ar: 'Changa', 'Cairo', system-ui, sans-serif;
+    --font-display-en: 'Anton', 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-body-ar: 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-body-en: 'Cairo', system-ui, -apple-system, sans-serif;
+    /* Numerals — prices, sizes, reps, counts. Always tabular. */
+    --font-num: 'Cairo', system-ui, sans-serif;
+    /* Scoreboard numerals — stats, countdowns, big claims. Condensed & loud. */
+    --font-stat: 'Anton', 'Changa', system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+    --font-size-base: 16px;
+    /* Latin display case — flipped to `none` from the Theme Editor */
+    --display-case: uppercase;
+
+    /* ---- Spacing · 4px grid ---- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 88px;
+    --space-10: 120px;
+
+    /* ---- Layout ---- */
+    --container-max: 1360px;
+    --container-px: 20px;
+    --container-px-sm: 16px;
+    --section-py: 80px;
+    --section-py-sm: 52px;
+    /* Live header height, republished by the header widget on every resize.
+       The value here is only the pre-JS fallback — see that widget's sync(). */
+    --header-h: 132px;
+
+    /* ---- Radii — restrained; this is equipment, not confectionery ---- */
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+    --radius-2xl: 20px;
+    --radius-pill: 999px;
+    /* semantic — the Theme Editor retargets these four */
+    --radius-card: var(--radius-xs);
+    --radius-btn: var(--radius-xs);
+    --radius-input: var(--radius-xs);
+    --radius-media: var(--radius-xs);
+
+    /* Angled-corner depth for .riyada-cut */
+    --cut: 12px;
+
+    /* ---- Shadows ----
+       On a #111 ground a drop shadow is close to invisible, so elevation is
+       carried by surface value and by rings. The flame glow is the exception:
+       it is light, not shade, and it reads. */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.55);
+    --shadow-md: 0 8px 22px -6px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 18px 44px -14px rgba(0, 0, 0, 0.8);
+    --shadow-xl: 0 32px 70px -22px rgba(0, 0, 0, 0.85);
+    --shadow-flame: 0 0 0 1px rgba(var(--color-flame-rgb), 0.5),
+                    0 12px 32px -12px rgba(var(--color-flame-rgb), 0.55);
+    --shadow-focus: 0 0 0 3px rgba(var(--color-flame-rgb), 0.35);
+    /* semantic — retargeted by the "card style" setting */
+    --shadow-card: none;
+    --shadow-card-hover: none;
+    --card-hover-border: var(--color-border-hover);
+
+    /* ---- Motion — fast. A sports store that eases slowly lies. ---- */
+    --ease-out: cubic-bezier(0.16, 0.84, 0.32, 1);
+    --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+    --t-fast: 120ms;
+    --t-base: 180ms;
+    --t-slow: 300ms;
+    --t-image: 480ms;
+
+    /* ---- Z-index scale ---- */
+    --z-header: 100;
+    --z-mega: 110;
+    --z-overlay: 200;
+    --z-drawer: 210;
+    --z-modal: 220;
+    --z-buybar: 300;
+    --z-toast: 9999;
+}
+
+/* --------------------------------------------------------------------------
+   INVERTED SCOPE — one section on paper
+   --------------------------------------------------------------------------
+   Every primitive in this file paints from the tokens above, so redefining
+   them on a section root re-colours the whole subtree — buttons, chips,
+   borders, cards, the lot — with no component-level overrides.
+
+   Product media stays true black even here. A shoe on white inside a white
+   section loses its edge, and the black plate is the theme's signature.
+   -------------------------------------------------------------------------- */
+.riyada-invert {
+    color-scheme: light;
+
+    --color-bg-primary: #F2F2F2;
+    --color-bg-secondary: #FFFFFF;
+    --color-bg-tertiary: #E6E6E6;
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #F7F7F7;
+    --color-section-a: #F2F2F2;
+    --color-section-b: #FFFFFF;
+
+    --color-flame-hover: var(--color-flame-dark);
+    --color-flame-wash: #FFEDE9;
+    --color-flame-line: #FFC4B7;
+
+    --color-text-primary: #111111;
+    --color-text-secondary: #4D4D4D;
+    --color-text-tertiary: #666666;
+
+    --color-border: #DEDEDE;
+    --color-border-strong: #C4C4C4;
+    --color-border-hover: #8A8A8A;
+
+    --color-success-light: #E6F7EE;
+    --color-error-light: #FDEBEE;
+    --color-warning-light: #FFF6E5;
+    --color-info-light: #EAF1FF;
+
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+
+/* ==========================================================================
+   02. BASE & RESET
+   Tailwind preflight handles the reset — this is the brand layer only.
+   ========================================================================== */
+
+/* Alpine.js — hide until initialised */
+[x-cloak] { display: none !important; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body-ar);
+    font-size: var(--font-size-base);
+    line-height: 1.65;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* `clip`, not `hidden` (معيار قمرة RSP-04): `hidden` turns body into a scroll
+       container and every `position: sticky` inside it then sticks to body instead of
+       the viewport — i.e. it never sticks. `clip` stops the sideways bleed without
+       that. (`hidden` stays first as the fallback for browsers without `clip`.) */
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
+html[dir="ltr"] body { font-family: var(--font-body-en); }
+
+img, svg, video { display: block; max-width: 100%; }
+img, video { height: auto; }
+
+a { color: inherit; text-decoration: none; }
+
+/* Numerals line up wherever they appear — prices, sizes, reps, counts. */
+.riyada-num,
+.riyada-price,
+.riyada-price-was,
+.riyada-size,
+.riyada-qty-value,
+.riyada-stat-num,
+.riyada-timer-num {
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+}
+
+::selection {
+    background: var(--color-flame);
+    color: var(--color-text-on-flame);
+}
+
+/* Focus — one visible ring everywhere, keyboard only. */
+:focus-visible {
+    outline: 2px solid var(--color-flame);
+    outline-offset: 2px;
+}
+
+/* Scrollbar — the dark ground continues into the chrome. */
+* { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: var(--color-border-hover); background-clip: content-box; }
+
+/* Screen-reader only */
+.riyada-sr {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+
+/* ==========================================================================
+   03. TYPOGRAPHY
+   Display = Changa (ar) / Anton (en). Anton is a single-weight condensed face,
+   so hierarchy comes from SIZE and CASE, never from weight — asking for
+   `font-weight: 700` on Anton silently gets you a synthesised bold.
+   ========================================================================== */
+
+.riyada-display,
+.riyada-h1, .riyada-h2, .riyada-h3, .riyada-h4 {
+    font-family: var(--font-display-ar);
+    color: var(--color-text-primary);
+    line-height: 1.15;
+    margin: 0;
+}
+
+html[dir="ltr"] .riyada-display,
+html[dir="ltr"] .riyada-h1,
+html[dir="ltr"] .riyada-h2,
+html[dir="ltr"] .riyada-h3,
+html[dir="ltr"] .riyada-h4 {
+    font-family: var(--font-display-en);
+    text-transform: var(--display-case);
+    /* Tracking is LTR-only: letter-spacing severs Arabic joins. */
+    letter-spacing: 0.005em;
+    font-weight: 400;
+}
+
+.riyada-display {
+    font-size: clamp(2.4rem, 6.4vw, 4.75rem);
+    line-height: 0.98;
+    font-weight: 700;
+    /* No tracking on the base rule. CSS letter-spacing is applied AFTER text
+       shaping, so ANY non-zero value — negative included — visually severs the
+       cursive joins in Arabic. Latin gets its tracking in the [dir=ltr] rule. */
+    letter-spacing: normal;
+}
+html[dir="ltr"] .riyada-display { letter-spacing: 0.01em; }
+
+.riyada-h1 { font-size: clamp(2rem, 4.6vw, 3.25rem); line-height: 1.05; font-weight: 700; }
+.riyada-h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem);  line-height: 1.1;  font-weight: 700; }
+.riyada-h3 { font-size: clamp(1.25rem, 2.2vw, 1.6rem); line-height: 1.2;  font-weight: 600; }
+.riyada-h4 { font-size: 1.0625rem; line-height: 1.35; font-weight: 600; }
+
+/* A word inside a heading, set in flame — the theme's one highlight device.
+   Widgets pass titles through `| safe` with <em> around the hot word. */
+.riyada-display em, .riyada-h1 em, .riyada-h2 em, .riyada-h3 em {
+    font-style: normal;
+    color: var(--color-flame);
+}
+
+/* Eyebrow — the small pre-title. Latin-only tracking, same guard as above. */
+.riyada-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body-ar);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-flame);
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-eyebrow { letter-spacing: 0.14em; font-family: var(--font-body-en); }
+
+/* A flame tick before the eyebrow text */
+.riyada-eyebrow::before {
+    content: '';
+    width: 18px;
+    height: 2px;
+    background: var(--color-flame);
+    flex: none;
+}
+
+.riyada-lead {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.riyada-text     { font-size: 1rem;      line-height: 1.7;  color: var(--color-text-secondary); }
+.riyada-text-sm  { font-size: 0.875rem;  line-height: 1.6;  color: var(--color-text-secondary); }
+.riyada-text-xs  { font-size: 0.75rem;   line-height: 1.55; color: var(--color-text-tertiary); }
+.riyada-strong   { color: var(--color-text-primary); font-weight: 600; }
+
+/* Small utility voices used by the chrome (drawers, sheets, panels) */
+.riyada-subtitle {
+    font-family: var(--font-display-ar);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-subtitle { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.04em; }
+
+.riyada-caption { font-size: 0.75rem; font-weight: 600; color: var(--color-text-tertiary); line-height: 1.4; }
+
+.riyada-micro {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-text-tertiary);
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-micro { letter-spacing: 0.12em; }
+
+.riyada-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-flame);
+    transition: color var(--t-fast) var(--ease-out);
+}
+.riyada-link:hover { color: var(--color-flame-hover); }
+
+/* Eyebrow on top of a photo — the tick and the text both go white */
+.riyada-eyebrow--light { color: #FFFFFF; }
+.riyada-eyebrow--light::before { background: #FFFFFF; }
+
+/* Wordmark — the fallback when no logo is uploaded. Always the Latin display
+   face: a brand name set in the body font stops reading as a logo. */
+.riyada-wordmark {
+    display: inline-block;
+    font-family: var(--font-display-en);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 3px solid var(--color-flame);
+    padding-bottom: 3px;
+}
+.riyada-wordmark--sm { font-size: 1.25rem; border-bottom-width: 2px; }
+
+/* Rich text coming out of a `text` schema field via `| safe` */
+.riyada-rte { color: var(--color-text-secondary); line-height: 1.8; }
+.riyada-rte > * + * { margin-top: 1em; }
+.riyada-rte h2, .riyada-rte h3, .riyada-rte h4 {
+    font-family: var(--font-display-ar);
+    color: var(--color-text-primary);
+    line-height: 1.25;
+    margin-top: 1.6em;
+}
+html[dir="ltr"] .riyada-rte h2,
+html[dir="ltr"] .riyada-rte h3,
+html[dir="ltr"] .riyada-rte h4 {
+    font-family: var(--font-display-en);
+    text-transform: var(--display-case);
+}
+.riyada-rte h2 { font-size: 1.5rem; font-weight: 700; }
+.riyada-rte h3 { font-size: 1.25rem; font-weight: 700; }
+.riyada-rte h4 { font-size: 1.0625rem; font-weight: 600; }
+.riyada-rte a { color: var(--color-flame); text-decoration: underline; text-underline-offset: 3px; }
+.riyada-rte a:hover { color: var(--color-flame-hover); }
+.riyada-rte strong { color: var(--color-text-primary); font-weight: 700; }
+.riyada-rte ul, .riyada-rte ol { padding-inline-start: 1.35em; }
+.riyada-rte li + li { margin-top: 0.4em; }
+.riyada-rte table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.riyada-rte th, .riyada-rte td { padding: 8px 10px; border: 1px solid var(--color-border); text-align: start; vertical-align: top; }
+.riyada-rte li::marker { color: var(--color-flame); }
+.riyada-rte img { border-radius: var(--radius-media); margin-block: 1.5em; }
+.riyada-rte blockquote {
+    border-inline-start: 3px solid var(--color-flame);
+    padding-inline-start: 1.1em;
+    color: var(--color-text-primary);
+    font-size: 1.0625rem;
+}
+.riyada-rte hr { border: 0; border-top: 1px solid var(--color-border); margin-block: 2em; }
+
+
+/* ==========================================================================
+   04. LAYOUT PRIMITIVES
+   ========================================================================== */
+
+.riyada-container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-px);
+}
+@media (max-width: 639px) {
+    .riyada-container { padding-inline: var(--container-px-sm); }
+}
+/* Reading measure — articles and legal pages. A 1360px line of body copy is
+   unreadable; this caps it at roughly 75 characters. */
+.riyada-container--narrow { max-width: 780px; }
+
+.riyada-section { padding-block: var(--section-py); position: relative; }
+@media (max-width: 767px) {
+    .riyada-section { padding-block: var(--section-py-sm); }
+}
+.riyada-section--flush   { padding-block: 0; }
+.riyada-section--tight   { padding-block: calc(var(--section-py) * 0.6); }
+.riyada-section--a       { background: var(--color-section-a); }
+.riyada-section--b       { background: var(--color-section-b); }
+.riyada-section--well    { background: var(--color-bg-tertiary); }
+.riyada-section--void    { background: var(--color-media); }
+
+/* Section head — eyebrow + title + optional action, in two arrangements */
+.riyada-head { margin-bottom: 32px; }
+.riyada-head-inner { display: flex; flex-direction: column; gap: 10px; }
+.riyada-head--center { text-align: center; }
+.riyada-head--center .riyada-head-inner { align-items: center; }
+.riyada-head--center .riyada-lead { max-width: 62ch; margin-inline: auto; }
+
+/* split: title on one side, "view all" pinned to the other */
+.riyada-head--split {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.riyada-head--split .riyada-head-inner { flex: 1 1 320px; }
+@media (max-width: 639px) {
+    .riyada-head--split { align-items: stretch; }
+}
+
+/* A flame rule under a title — the "underline" motif */
+.riyada-rule {
+    display: block;
+    width: 56px;
+    height: 3px;
+    background: var(--color-flame);
+    margin-top: 4px;
+}
+.riyada-head--center .riyada-rule { margin-inline: auto; }
+
+/* Grid — column counts are set by the widget via CSS vars so a single class
+   covers every breakpoint without a combinatorial explosion of utilities. */
+.riyada-grid {
+    display: grid;
+    gap: var(--grid-gap, 20px);
+    grid-template-columns: repeat(var(--cols-mobile, 2), minmax(0, 1fr));
+}
+@media (min-width: 640px) {
+    .riyada-grid { grid-template-columns: repeat(var(--cols-tablet, 3), minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    .riyada-grid { grid-template-columns: repeat(var(--cols-desktop, 4), minmax(0, 1fr)); }
+}
+.riyada-grid--tight { --grid-gap: 12px; }
+.riyada-grid--loose { --grid-gap: 32px; }
+
+/* Aspect ratios — keep in sync with the ratio classes used by the card. */
+.riyada-ratio-1x1 { aspect-ratio: 1 / 1; }
+.riyada-ratio-4x3 { aspect-ratio: 4 / 3; }
+.riyada-ratio-3x2 { aspect-ratio: 3 / 2; }
+.riyada-ratio-4x5 { aspect-ratio: 4 / 5; }
+.riyada-ratio-3x4 { aspect-ratio: 3 / 4; }
+.riyada-ratio-16x9 { aspect-ratio: 16 / 9; }
+
+.riyada-divider { border: 0; border-top: 1px solid var(--color-border); margin: 0; }
+
+
+/* ==========================================================================
+   05. BUTTONS
+   Flat, hard-edged, no gradients. Flame = the one next action on the screen.
+   ========================================================================== */
+
+.riyada-btn {
+    --btn-h: 46px;
+    --btn-px: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--btn-h);
+    padding-inline: var(--btn-px);
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    font-family: var(--font-body-ar);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: background var(--t-fast) var(--ease-out),
+                border-color var(--t-fast) var(--ease-out),
+                color var(--t-fast) var(--ease-out),
+                transform var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-btn {
+    font-family: var(--font-body-en);
+    text-transform: var(--display-case);
+    letter-spacing: 0.06em;
+}
+.riyada-btn:active:not(:disabled) { transform: translateY(1px); }
+.riyada-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* primary — flame fill */
+.riyada-btn--primary {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-btn--primary:hover:not(:disabled) {
+    background: var(--color-flame-fill-hover);
+    border-color: var(--color-flame-fill-hover);
+}
+
+/* light — chalk fill, for use ON a flame or photo block */
+.riyada-btn--light {
+    background: var(--color-chalk);
+    border-color: var(--color-chalk);
+    color: var(--color-text-on-light);
+}
+.riyada-btn--light:hover:not(:disabled) {
+    background: var(--color-chalk-hover);
+    border-color: var(--color-chalk-hover);
+}
+
+/* dark — void fill, for use inside an inverted section */
+.riyada-btn--dark {
+    background: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+    color: var(--color-bg-primary);
+}
+.riyada-btn--dark:hover:not(:disabled) { opacity: 0.86; }
+
+/* outline — the default secondary. Ignites on hover. */
+.riyada-btn--outline {
+    background: transparent;
+    border-color: var(--color-border-strong);
+    color: var(--color-text-primary);
+}
+.riyada-btn--outline:hover:not(:disabled) {
+    border-color: var(--color-flame);
+    color: var(--color-flame);
+}
+
+/* ghost — no chrome until hover */
+.riyada-btn--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-text-secondary);
+}
+.riyada-btn--ghost:hover:not(:disabled) {
+    background: var(--color-surface-alt);
+    color: var(--color-text-primary);
+}
+
+/* danger — destructive confirm only. Kept off the flame so "delete" never
+   wears the same colour as "add to cart". */
+.riyada-btn--danger {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: #FFFFFF;
+}
+.riyada-btn--danger:hover:not(:disabled) { opacity: 0.88; }
+
+/* link — inline action inside copy */
+.riyada-btn--link {
+    background: transparent;
+    border: 0;
+    min-height: 0;
+    padding: 0;
+    color: var(--color-flame);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+.riyada-btn--link:hover:not(:disabled) { color: var(--color-flame-hover); }
+
+/* sizes */
+.riyada-btn--xs { --btn-h: 30px; --btn-px: 12px; font-size: 0.75rem; gap: 6px; }
+.riyada-btn--sm { --btn-h: 38px; --btn-px: 16px; font-size: 0.8125rem; }
+.riyada-btn--lg { --btn-h: 56px; --btn-px: 34px; font-size: 1rem; }
+.riyada-btn--block { display: flex; width: 100%; }
+
+/* Icon-only button */
+.riyada-btn-icon {
+    --ib: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ib);
+    height: var(--ib);
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out),
+                border-color var(--t-fast) var(--ease-out),
+                color var(--t-fast) var(--ease-out);
+}
+.riyada-btn-icon:hover { background: var(--color-surface-alt); }
+.riyada-btn-icon--outline { border-color: var(--color-border); }
+.riyada-btn-icon--outline:hover { border-color: var(--color-border-hover); }
+.riyada-btn-icon--filled {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+}
+.riyada-btn-icon--filled:hover {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-btn-icon--flame {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-btn-icon--flame:hover { background: var(--color-flame-fill-hover); border-color: var(--color-flame-fill-hover); }
+.riyada-btn-icon--sm { --ib: 32px; }
+.riyada-btn-icon--lg { --ib: 48px; }
+
+/* Arrow pair used by every slider header */
+.riyada-navs { display: inline-flex; gap: 8px; }
+.riyada-navs .riyada-btn-icon svg { width: 18px; height: 18px; }
+/* The arrow glyph itself is authored pointing right; RTL flips it. */
+html[dir="rtl"] .riyada-nav-arrow { transform: scaleX(-1); }
+
+
+/* ==========================================================================
+   06. BADGES · CHIPS · TAGS
+   ========================================================================== */
+
+.riyada-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: var(--radius-xs);
+    font-family: var(--font-body-ar);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-badge { font-family: var(--font-body-en); letter-spacing: 0.08em; }
+
+.riyada-badge--flame { background: var(--color-flame-fill); color: var(--color-text-on-flame); }
+.riyada-badge--light { background: var(--color-chalk); color: var(--color-text-on-light); }
+.riyada-badge--dark  { background: var(--color-media); color: var(--color-chalk); }
+.riyada-badge--off   { background: var(--color-sale, var(--color-flame-fill)); color: var(--color-text-on-flame); font-family: var(--font-num); }
+.riyada-badge--new   { background: var(--color-chalk); color: var(--color-text-on-light); }
+.riyada-badge--soft  { background: var(--color-flame-wash); color: var(--color-flame); border: 1px solid var(--color-flame-line); }
+.riyada-badge--out   { background: var(--color-surface-alt); color: var(--color-text-tertiary); }
+.riyada-badge--success { background: var(--color-success-light); color: var(--color-success); }
+
+/* Chip — a filter value, a spec, a selectable pill */
+.riyada-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    min-width: 44px;
+    justify-content: center;
+    padding-inline: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease-out),
+                color var(--t-fast) var(--ease-out),
+                background var(--t-fast) var(--ease-out);
+}
+.riyada-chip:hover { border-color: var(--color-border-hover); color: var(--color-text-primary); }
+.riyada-chip.is-active {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-chip--static { cursor: default; }
+.riyada-chip--static:hover { border-color: var(--color-border); color: var(--color-text-secondary); }
+.riyada-chip--sm { min-height: 26px; padding-inline: 9px; font-size: 0.75rem; }
+
+/* --------------------------------------------------------------------------
+   FILTER CONTROLS
+   The shop's own vocabulary: a segmented view switch, the applied-filter
+   chips, and the rows inside the filter panel.
+   -------------------------------------------------------------------------- */
+
+/* Segmented control — grid / list view. One border around the pair, a hairline
+   between them, so it reads as one control with two states rather than two
+   buttons that happen to be adjacent. */
+.riyada-btn-group {
+    display: inline-flex;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    overflow: hidden;
+}
+.riyada-btn-group > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.riyada-btn-group > button + button { border-inline-start: 1px solid var(--color-border); }
+.riyada-btn-group > button:hover { color: var(--color-text-primary); }
+.riyada-btn-group > button.is-active { background: var(--color-flame-fill); color: var(--color-text-on-flame); }
+
+/* Applied-filter chip — carries its own remove button */
+.riyada-fchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 7px 5px 11px;
+    border: 1px solid var(--color-flame-line);
+    border-radius: var(--radius-btn);
+    background: var(--color-flame-wash);
+    color: var(--color-flame);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+html[dir="rtl"] .riyada-fchip { padding: 5px 11px 5px 7px; }
+.riyada-fchip button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border: 0;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out);
+}
+.riyada-fchip button:hover { background: color-mix(in srgb, var(--color-flame) 24%, transparent); }
+
+/* A row inside the filter panel — collection link or checkbox line */
+.riyada-ffilter-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.riyada-ffilter-row:hover { background: var(--color-surface-alt); color: var(--color-text-primary); }
+.riyada-ffilter-row.is-active { color: var(--color-flame); font-weight: 700; }
+
+/* The count trailing a filter row — pushed to the end, never competing with
+   the label for attention */
+.riyada-ffilter-count {
+    margin-inline-start: auto;
+    flex: none;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.6875rem;
+    color: var(--color-text-tertiary);
+}
+
+/* The checkbox square inside a filter row. Its own element rather than
+   .riyada-check-box because the row is a <button>, not a <label>+<input>. */
+.riyada-ffilter-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    flex: none;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-on-flame);
+    transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.riyada-ffilter-box.is-active { background: var(--color-flame); border-color: var(--color-flame); }
+
+/* Price range — two native range inputs stacked on one track */
+.riyada-price-slider { position: relative; padding-block: 6px; }
+.riyada-price-slider input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--color-border-strong);
+    border-radius: 999px;
+    outline: none;
+}
+.riyada-price-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-flame);
+    border: 2px solid var(--color-bg-primary);
+    cursor: pointer;
+}
+.riyada-price-slider input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-flame);
+    border: 2px solid var(--color-bg-primary);
+    cursor: pointer;
+}
+
+/* A count riding inside a chip (category rails) */
+.riyada-chip-count {
+    margin-inline-start: 5px;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.65;
+}
+
+/* Tag — a non-interactive label (goal, muscle group, flavour) */
+.riyada-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-tertiary);
+}
+.riyada-tag--flame { border-color: var(--color-flame-line); background: var(--color-flame-wash); color: var(--color-flame); }
+
+
+/* ==========================================================================
+   07. ATHLETIC PRIMITIVES
+   The vocabulary this theme is actually about. Everything here exists because
+   a sports catalogue needs it and a generic catalogue does not.
+   ========================================================================== */
+
+/* ---- Size swatches ------------------------------------------------------
+   Used in three places with the same markup: the product card, the PDP, and
+   the quick-view. `is-out` stays in the DOM on purpose — a shopper needs to
+   see that their size exists and is gone, not that it never existed. */
+.riyada-size-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+.riyada-size {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 34px;
+    padding-inline: 8px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-size { letter-spacing: 0.04em; }
+.riyada-size:hover:not(.is-out) {
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+}
+.riyada-size.is-active {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-size.is-out {
+    opacity: 0.32;
+    cursor: not-allowed;
+    position: relative;
+    overflow: hidden;
+}
+/* A single strike through the cell, corner to corner */
+.riyada-size.is-out::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top left, transparent calc(50% - 0.5px), currentColor calc(50% - 0.5px), currentColor calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+.riyada-size--sm { min-width: 32px; height: 26px; font-size: 0.6875rem; }
+.riyada-size--lg { min-width: 52px; height: 44px; font-size: 0.9375rem; }
+
+/* Colour swatch (kit colourways) */
+.riyada-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
+    padding: 2px;
+    background-clip: content-box;
+    cursor: pointer;
+    transition: box-shadow var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.riyada-swatch:hover { border-color: var(--color-border-hover); }
+.riyada-swatch.is-active {
+    border-color: var(--color-flame);
+    box-shadow: 0 0 0 2px var(--color-flame-wash);
+}
+
+/* ---- Goal tile ----------------------------------------------------------
+   "SHOP BY GOAL" — the theme's primary browse pattern. An image, a scrim,
+   a shouted label, and a flame bar that grows on hover. */
+.riyada-goal {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-media);
+    isolation: isolate;
+}
+.riyada-goal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+}
+.riyada-goal:hover .riyada-goal-img { transform: scale(1.06); }
+.riyada-goal-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 52%, rgba(0,0,0,0.05) 100%);
+}
+.riyada-goal-body {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.riyada-goal-label {
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #FFFFFF;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-goal-label { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+.riyada-goal-desc { font-size: 0.8125rem; color: rgba(255,255,255,0.72); line-height: 1.5; }
+.riyada-goal-bar {
+    height: 3px;
+    width: 32px;
+    background: var(--color-flame);
+    transition: width var(--t-base) var(--ease-out);
+}
+.riyada-goal:hover .riyada-goal-bar { width: 72px; }
+
+/* ---- Scoreboard stat ----------------------------------------------------
+   Big condensed numerals. Anton has no true tabular set, so a row of stats is
+   laid out on a grid rather than relying on figure width. */
+.riyada-stat { display: flex; flex-direction: column; gap: 2px; }
+.riyada-stat-num {
+    font-family: var(--font-stat);
+    font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 0.92;
+    color: var(--color-flame);
+}
+html[dir="ltr"] .riyada-stat-num { letter-spacing: 0.01em; }
+.riyada-stat-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+.riyada-stat--light .riyada-stat-num { color: var(--color-text-primary); }
+
+/* ---- Level meter (مبتدئ · متوسط · متقدم) ---- */
+.riyada-level { display: inline-flex; align-items: center; gap: 8px; }
+.riyada-level-bars { display: inline-flex; gap: 3px; align-items: flex-end; }
+.riyada-level-bar {
+    width: 5px;
+    background: var(--color-border-strong);
+    border-radius: 1px;
+}
+.riyada-level-bar:nth-child(1) { height: 8px; }
+.riyada-level-bar:nth-child(2) { height: 12px; }
+.riyada-level-bar:nth-child(3) { height: 16px; }
+.riyada-level-bar.is-on { background: var(--color-flame); }
+.riyada-level-label { font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); }
+
+/* ---- Nutrition / spec table (مكملات) ----
+   A two-column data table. `.is-key` rows are the ones people actually scan
+   for — protein, calories — so they get the primary text colour. */
+.riyada-nutri { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.riyada-nutri th {
+    text-align: start;
+    padding: 10px 0;
+    border-bottom: 2px solid var(--color-text-primary);
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+.riyada-nutri td {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+.riyada-nutri td:last-child {
+    text-align: end;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+.riyada-nutri tr.is-key td { color: var(--color-text-primary); font-weight: 600; }
+.riyada-nutri tr:last-child td { border-bottom: 0; }
+
+/* ---- Marquee (شريط عروض متحرك) ----
+   Track must contain the content TWICE; the keyframe translates by exactly
+   half, so the seam lands where the copy repeats and never shows. */
+.riyada-marquee {
+    overflow: hidden;
+    display: flex;
+    width: 100%;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+            mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+.riyada-marquee-track {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: var(--marquee-gap, 40px);
+    padding-inline-end: var(--marquee-gap, 40px);
+    animation: riyada-marquee var(--marquee-dur, 30s) linear infinite;
+}
+.riyada-marquee:hover .riyada-marquee-track { animation-play-state: paused; }
+@keyframes riyada-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+html[dir="rtl"] .riyada-marquee-track { animation-name: riyada-marquee-rtl; }
+@keyframes riyada-marquee-rtl { from { transform: translateX(0); } to { transform: translateX(50%); } }
+.riyada-marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-marquee-item { letter-spacing: 0.1em; }
+
+/* ---- Rating ---- */
+.riyada-stars { display: inline-flex; gap: 1px; color: var(--color-flame); }
+.riyada-stars svg { width: 15px; height: 15px; }
+.riyada-stars--sm svg { width: 12px; height: 12px; }
+.riyada-stars--lg svg { width: 19px; height: 19px; }
+.riyada-star-empty { color: var(--color-border-strong); }
+.riyada-star-half { position: relative; display: inline-flex; width: 15px; height: 15px; }
+.riyada-star-half svg { position: absolute; inset: 0; }
+.riyada-star-half svg:first-child { color: var(--color-border-strong); }
+.riyada-star-half svg:last-child { color: var(--color-flame); clip-path: inset(0 50% 0 0); }
+html[dir="rtl"] .riyada-star-half svg:last-child { clip-path: inset(0 0 0 50%); }
+.riyada-stars--sm .riyada-star-half { width: 12px; height: 12px; }
+.riyada-rating-count { font-size: 0.75rem; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; }
+
+/* ---- Stock ---- */
+.riyada-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.riyada-stock-dot { width: 6px; height: 6px; border-radius: 999px; flex: none; background: currentColor; }
+.riyada-stock--in  { color: var(--color-success); }
+.riyada-stock--low { color: var(--color-warning); text-wrap: balance; }
+.riyada-stock--out { color: var(--color-text-tertiary); }
+.riyada-stock--low .riyada-stock-dot { animation: riyada-pulse 1.6s var(--ease-soft) infinite; }
+@keyframes riyada-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ---- Trust row ---- */
+.riyada-trust { display: flex; align-items: center; gap: 10px; }
+.riyada-trust-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-flame-wash);
+    color: var(--color-flame);
+}
+.riyada-trust-icon svg { width: 20px; height: 20px; }
+.riyada-trust-icon--outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-text-primary); }
+.riyada-trust-title { font-size: 0.875rem; font-weight: 700; color: var(--color-text-primary); line-height: 1.3; }
+.riyada-trust-desc { font-size: 0.75rem; color: var(--color-text-tertiary); line-height: 1.4; }
+
+/* ---- Coupon code ----
+   A click-to-copy chip. Dashed on purpose: a solid border reads as a button
+   that navigates, and this one only ever puts text on the clipboard. The code
+   itself is tabular so a row of them lines up and so O/0 stay distinguishable. */
+.riyada-coupon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 15px;
+    border: 1px dashed var(--color-flame);
+    border-radius: var(--radius-btn);
+    background: var(--color-flame-wash);
+    color: var(--color-flame);
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+.riyada-coupon:hover { background: color-mix(in srgb, var(--color-flame) 22%, transparent); }
+.riyada-coupon svg { flex: none; }
+
+/* ---- Countdown ---- */
+.riyada-timer { display: inline-flex; align-items: center; gap: 6px; }
+.riyada-timer-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 52px;
+    padding: 8px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    background: var(--color-surface);
+}
+.riyada-timer-num {
+    font-family: var(--font-stat);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--color-text-primary);
+}
+.riyada-timer-label { font-size: 0.625rem; color: var(--color-text-tertiary); line-height: 1; }
+.riyada-timer-sep { font-family: var(--font-stat); font-size: 1.25rem; color: var(--color-flame); }
+.riyada-timer--flame .riyada-timer-cell { background: var(--color-flame); border-color: var(--color-flame); }
+.riyada-timer--flame .riyada-timer-num { color: var(--color-text-on-flame); }
+.riyada-timer--flame .riyada-timer-label { color: rgba(255,255,255,0.75); }
+
+
+/* ==========================================================================
+   08. CARDS & MEDIA · PRODUCT CARD
+   ========================================================================== */
+
+.riyada-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    transition: border-color var(--t-base) var(--ease-out),
+                box-shadow var(--t-base) var(--ease-out),
+                background var(--t-base) var(--ease-out);
+}
+.riyada-card--hover:hover {
+    border-color: var(--card-hover-border);
+    box-shadow: var(--shadow-card-hover);
+}
+.riyada-card--flush { background: transparent; border-color: transparent; box-shadow: none; }
+.riyada-card-body { padding: 20px; }
+
+.riyada-media {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-media);
+    border-radius: var(--radius-media);
+}
+
+/* --------------------------------------------------------------------------
+   ARTICLE CARD
+   Shared by ui/article-card.njk, blogs-page and blog-page — it repeats, so it
+   lives here rather than in any one widget's scoped block.
+   -------------------------------------------------------------------------- */
+.riyada-acard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    transition: border-color var(--t-base) var(--ease-out);
+}
+.riyada-acard:hover { border-color: var(--color-flame); }
+
+.riyada-acard-media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--color-media);
+    flex: none;
+}
+.riyada-acard-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--t-image) var(--ease-out);
+}
+.riyada-acard:hover .riyada-acard-media img { transform: scale(1.05); }
+
+/* the category rides on the image, not the body — it is a filter, not a fact
+   about the article, and the body is already carrying date + title + excerpt */
+.riyada-acard-cat {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-start: 10px;
+    z-index: 2;
+    padding: 4px 9px;
+    border-radius: var(--radius-xs);
+    background: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-acard-cat { letter-spacing: 0.08em; }
+
+.riyada-acard-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    padding: 18px;
+}
+
+.riyada-acard-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-acard-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.02em; }
+.riyada-acard:hover .riyada-acard-title { color: var(--color-flame); }
+
+.riyada-acard-excerpt {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   ARTICLE HERO + META — the blog and article page headers
+   -------------------------------------------------------------------------- */
+.riyada-article-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-media);
+    aspect-ratio: 21 / 9;
+}
+.riyada-article-hero img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 767px) {
+    .riyada-article-hero { aspect-ratio: 16 / 10; }
+}
+
+/* Byline row — date, author, reading time. Separated by a middot rather than
+   by borders: three facts, none of them worth a rule between them. */
+.riyada-article-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+.riyada-article-meta > * + *::before {
+    content: '·';
+    margin-inline-end: 8px;
+    opacity: 0.55;
+}
+
+/* compact: a side-by-side row, for "related articles" rails */
+.riyada-acard--compact { flex-direction: row; align-items: stretch; }
+.riyada-acard--compact .riyada-acard-media { width: 116px; aspect-ratio: 1; }
+.riyada-acard--compact .riyada-acard-body { padding: 12px 14px; gap: 5px; }
+.riyada-acard--compact .riyada-acard-title { font-size: 0.875rem; }
+.riyada-media img { width: 100%; height: 100%; object-fit: cover; }
+.riyada-media--contain img { object-fit: contain; }
+
+/* --------------------------------------------------------------------------
+   PRODUCT CARD
+   --------------------------------------------------------------------------
+   ⚠️  This card has a twin in assets/main.js that renders the same markup for
+   AJAX results (filters, search, lazy grids). Structure changes here must be
+   mirrored there; all styling lives in this block, so visual drift is not
+   possible — only the markup order has to stay in sync.
+
+   Reading order — the order a sports shopper actually scans:
+     goal tag → name → sizes → rating → price → stock → action
+   -------------------------------------------------------------------------- */
+.riyada-pcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: border-color var(--t-base) var(--ease-out),
+                box-shadow var(--t-base) var(--ease-out);
+}
+.riyada-pcard:hover {
+    border-color: var(--card-hover-border);
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* Media — true black plate, always. This is the theme's signature. */
+.riyada-pcard-media {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-media);
+}
+.riyada-pcard-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--t-image) var(--ease-out),
+                transform var(--t-image) var(--ease-out);
+}
+.riyada-pcard-img--alt { opacity: 0; }
+.riyada-pcard:hover .riyada-pcard-img--primary:not(.riyada-pcard-img--only) { opacity: 0; }
+.riyada-pcard:hover .riyada-pcard-img--alt { opacity: 1; }
+/* With a single image there is nothing to cross-fade to, so it zooms instead. */
+.riyada-pcard:hover .riyada-pcard-img--only { transform: scale(1.05); }
+
+.riyada-pcard-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-flame);
+    background-color: var(--color-flame-wash);
+}
+
+.riyada-pcard-badges {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-start: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    z-index: 2;
+}
+
+/* Hover actions — hidden on touch, where hover never fires and the buttons
+   would otherwise sit permanently over the product. */
+.riyada-pcard-actions {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.riyada-pcard:hover .riyada-pcard-actions { opacity: 1; transform: translateY(0); }
+@media (hover: none) {
+    .riyada-pcard-actions { display: none; }
+}
+
+/* Size row laid over the bottom of the image — pick a size without leaving
+   the grid. Falls back to always-visible on touch. */
+.riyada-pcard-sizes {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.riyada-pcard:hover .riyada-pcard-sizes { opacity: 1; transform: translateY(0); }
+@media (hover: none) {
+    .riyada-pcard-sizes { opacity: 1; transform: none; }
+}
+.riyada-pcard-sizes .riyada-size {
+    border-color: rgba(255,255,255,0.4);
+    color: #FFFFFF;
+    min-width: 32px;
+    height: 28px;
+    font-size: 0.6875rem;
+}
+.riyada-pcard-sizes .riyada-size:hover:not(.is-out) { border-color: #FFFFFF; background: rgba(255,255,255,0.12); }
+
+.riyada-reveal-tray {
+    position: absolute;
+    inset-inline: 10px;
+    inset-block-end: 10px;
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
+}
+.riyada-pcard:hover .riyada-reveal-tray { opacity: 1; transform: translateY(0); }
+@media (hover: none) {
+    .riyada-reveal-tray { opacity: 1; transform: none; }
+}
+.riyada-pcard-atc { width: 100%; }
+
+.riyada-soldout-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: saturate(0.4);
+}
+.riyada-soldout-veil span {
+    padding: 7px 14px;
+    border: 1px solid rgba(255,255,255,0.35);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-soldout-veil span { letter-spacing: 0.1em; }
+
+/* Body */
+.riyada-pcard-body {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 14px;
+    flex: 1;
+}
+.riyada-pcard-brand {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-flame);
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-pcard-brand { letter-spacing: 0.1em; }
+.riyada-pcard-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+    transition: color var(--t-fast) var(--ease-out);
+}
+.riyada-pcard-name:hover { color: var(--color-flame); }
+.riyada-pcard-prices { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 2px; }
+
+.riyada-price {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+}
+.riyada-price-was {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    text-decoration: line-through;
+}
+/* Price + was-price + savings tag on one baseline. Used by the PDP, the
+   quick view and the cart; wraps rather than squashing on a narrow column. */
+.riyada-price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.riyada-price--lg { font-size: 1.75rem; }
+.riyada-price--sm { font-size: 0.875rem; }
+.riyada-price--flame { color: var(--color-flame); }
+.riyada-price--sale { color: var(--color-sale-text, var(--color-text-primary)); }
+
+/* Spec chips on the card (weight, flavour, material …) */
+.riyada-spec-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.riyada-spec {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   09. FORMS & INPUTS
+   Inputs sink into a well rather than rising — on dark, a lighter field would
+   pull more attention than the content around it.
+   ========================================================================== */
+
+.riyada-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.riyada-input,
+.riyada-select,
+.riyada-textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 14px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-input);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.riyada-textarea { min-height: 120px; resize: vertical; }
+.riyada-input::placeholder, .riyada-textarea::placeholder { color: var(--color-text-tertiary); }
+.riyada-input:focus,
+.riyada-select:focus,
+.riyada-textarea:focus {
+    outline: none;
+    border-color: var(--color-flame);
+    box-shadow: var(--shadow-focus);
+}
+.riyada-input:disabled, .riyada-select:disabled, .riyada-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+.riyada-input.is-error, .riyada-select.is-error { border-color: var(--color-error); }
+
+.riyada-select {
+    appearance: none;
+    padding-inline-end: 38px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3A3A3' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: left 14px center;
+    cursor: pointer;
+}
+html[dir="ltr"] .riyada-select { background-position: right 14px center; }
+
+/* Search field */
+.riyada-search { position: relative; display: flex; align-items: center; width: 100%; }
+.riyada-search .riyada-input { padding-inline-start: 42px; }
+.riyada-search-icon {
+    position: absolute;
+    inset-inline-start: 14px;
+    width: 17px;
+    height: 17px;
+    color: var(--color-text-tertiary);
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Search bar — field + submit fused into one control.
+   Used by the header (inline mode) and by the search sheet, which is why it
+   lives here rather than inside either widget.
+   -------------------------------------------------------------------------- */
+.riyada-searchbar {
+    --sb-h: 44px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--sb-h);
+    padding-inline-start: 14px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-input);
+    background: var(--color-bg-tertiary);
+    overflow: hidden;
+    transition: border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out);
+}
+.riyada-searchbar:focus-within { border-color: var(--color-flame); box-shadow: var(--shadow-focus); }
+.riyada-searchbar-icon { display: flex; flex: none; color: var(--color-text-tertiary); }
+.riyada-searchbar-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding-inline: 10px;
+    border: 0;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+}
+.riyada-searchbar-input::placeholder { color: var(--color-text-tertiary); }
+.riyada-searchbar-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.riyada-searchbar-submit {
+    height: 100%;
+    flex: none;
+    padding-inline: 20px;
+    border: 0;
+    background: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: var(--display-case);
+    transition: background var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-searchbar-submit { letter-spacing: 0.08em; }
+.riyada-searchbar-submit:hover { background: var(--color-flame-fill-hover); }
+.riyada-searchbar--lg { --sb-h: 54px; }
+.riyada-searchbar--lg .riyada-searchbar-input { font-size: 1rem; }
+@media (max-width: 639px) {
+    .riyada-searchbar { --sb-h: 40px; }
+    .riyada-searchbar--lg { --sb-h: 46px; }
+    .riyada-searchbar-submit { padding-inline: 14px; }
+}
+
+/* Checkbox / radio — custom control, native input kept for a11y */
+.riyada-check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+.riyada-check input { position: absolute; opacity: 0; width: 0; height: 0; }
+.riyada-check-box {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    background: var(--color-bg-tertiary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast) var(--ease-out);
+}
+.riyada-check-box::after {
+    content: '';
+    width: 9px;
+    height: 5px;
+    border: 2px solid var(--color-text-on-flame);
+    border-top: 0;
+    border-inline-end: 0;
+    transform: rotate(-45deg) scale(0.5);
+    opacity: 0;
+    transition: all var(--t-fast) var(--ease-out);
+}
+.riyada-check input:checked + .riyada-check-box { background: var(--color-flame); border-color: var(--color-flame); }
+.riyada-check input:checked + .riyada-check-box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
+.riyada-check input:focus-visible + .riyada-check-box { box-shadow: var(--shadow-focus); }
+.riyada-check-label { font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.4; }
+.riyada-check:hover .riyada-check-label { color: var(--color-text-primary); }
+
+.riyada-check--radio .riyada-check-box { border-radius: 999px; }
+.riyada-check--radio .riyada-check-box::after {
+    width: 8px; height: 8px; border: 0; border-radius: 999px;
+    background: var(--color-text-on-flame); transform: scale(0.4);
+}
+.riyada-check--radio input:checked + .riyada-check-box::after { transform: scale(1); }
+
+/* Quantity stepper */
+.riyada-qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-input);
+    overflow: hidden;
+    background: var(--color-bg-tertiary);
+}
+.riyada-qty button {
+    width: 40px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.riyada-qty button:hover:not(:disabled) { background: var(--color-surface-alt); color: var(--color-flame); }
+.riyada-qty button:disabled { opacity: 0.35; cursor: not-allowed; }
+.riyada-qty-value {
+    min-width: 42px;
+    text-align: center;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+.riyada-qty--sm button { width: 32px; height: 34px; }
+.riyada-qty--sm .riyada-qty-value { min-width: 34px; font-size: 0.8125rem; }
+
+/* Range slider (price filter) */
+.riyada-range { width: 100%; height: 3px; appearance: none; background: var(--color-border-strong); border-radius: 999px; }
+.riyada-range::-webkit-slider-thumb {
+    appearance: none; width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-flame); border: 2px solid var(--color-bg-primary); cursor: pointer;
+}
+.riyada-range::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-flame); border: 2px solid var(--color-bg-primary); cursor: pointer;
+}
+
+/* Inline form — input + button glued together */
+.riyada-inline-form { display: flex; gap: 8px; width: 100%; }
+@media (max-width: 480px) {
+    .riyada-inline-form { flex-direction: column; }
+}
+
+
+/* ==========================================================================
+   10. NAVIGATION
+   ========================================================================== */
+
+.riyada-header {
+    position: relative;
+    z-index: var(--z-header);
+    background: var(--color-header);
+    color: var(--color-header-text);
+    border-bottom: 1px solid var(--color-header-border);
+}
+/* --------------------------------------------------------------------------
+   `fixed`, not `sticky` — and that is deliberate. (Since body moved to
+   `overflow-x: clip` sticky would work again; fixed is kept as is.)
+   `body` carries `overflow-x: hidden` (§02) to stop wide hero blocks bleeding
+   sideways. That computes `overflow-y` to `auto`, which turns body into a
+   scroll container, and a sticky descendant then sticks to *that* box rather
+   than to the viewport — i.e. it scrolls away. Fixed positioning is immune.
+   The cost is that the header leaves the flow, so the widget renders a spacer
+   div and keeps its height in sync with a ResizeObserver.
+   -------------------------------------------------------------------------- */
+.riyada-header--sticky {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+}
+
+.riyada-header-bar { background: var(--color-header); }
+
+/* Announcement bar — the marquee lives here */
+.riyada-announce {
+    background: var(--color-announcement);
+    color: var(--color-announcement-text);
+    padding-block: 9px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+.riyada-announce--dark { background: var(--color-media); color: var(--color-chalk); }
+
+.riyada-header-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 68px;
+}
+.riyada-logo { display: inline-flex; align-items: center; flex: none; }
+.riyada-logo img { width: auto; object-fit: contain; }
+.riyada-logo-text {
+    font-family: var(--font-display-en);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--color-header-text);
+    text-transform: uppercase;
+}
+html[dir="ltr"] .riyada-logo-text { letter-spacing: 0.04em; }
+
+/* Nav links */
+.riyada-nav { display: flex; align-items: center; gap: 4px; }
+.riyada-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-header-text);
+    text-transform: var(--display-case);
+    transition: color var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-nav-link { letter-spacing: 0.06em; }
+.riyada-nav-link::after {
+    content: '';
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline-start: 12px;
+    width: 0;
+    height: 2px;
+    background: var(--color-flame);
+    transition: width var(--t-base) var(--ease-out);
+}
+.riyada-nav-link:hover, .riyada-nav-link.is-active { color: var(--color-flame); }
+.riyada-nav-link:hover::after, .riyada-nav-link.is-active::after { width: calc(100% - 24px); }
+.riyada-nav-link--hot { color: var(--color-flame); }
+
+/* Cart count bubble, anchored to an icon button */
+.riyada-btn-count {
+    position: absolute;
+    inset-block-start: 1px;
+    inset-inline-end: 1px;
+    min-width: 17px;
+    height: 17px;
+    padding-inline: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+    font-family: var(--font-num);
+    font-size: 0.625rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+.riyada-btn-icon--count { position: relative; }
+
+/* Overlay + drawer */
+.riyada-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(2px);
+}
+/* The drawer is always in the DOM and slides on `.is-open`. `visibility` is
+   part of the transition so a closed drawer cannot be tabbed into — transform
+   alone leaves it focusable off-screen. The RTL pairs exist because translateX
+   is physical: an end-anchored drawer exits right in LTR and left in RTL. */
+.riyada-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: var(--z-drawer);
+    width: min(400px, 92vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    border-inline-start: 1px solid var(--color-border);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform var(--t-base) var(--ease-out), visibility var(--t-base) linear;
+}
+html[dir="rtl"] .riyada-drawer { transform: translateX(-100%); }
+
+.riyada-drawer--start {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+    border-inline: 0;
+    border-inline-end: 1px solid var(--color-border);
+    transform: translateX(-100%);
+}
+html[dir="rtl"] .riyada-drawer--start { transform: translateX(100%); }
+
+.riyada-drawer.is-open,
+html[dir="rtl"] .riyada-drawer.is-open,
+html[dir="rtl"] .riyada-drawer--start.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+.riyada-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--color-border);
+    flex: none;
+}
+.riyada-drawer-title {
+    font-family: var(--font-display-ar);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    text-transform: var(--display-case);
+}
+html[dir="ltr"] .riyada-drawer-title { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.04em; }
+.riyada-drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+.riyada-drawer-foot { flex: none; padding: 18px 20px; border-top: 1px solid var(--color-border); background: var(--color-surface); }
+
+/* Modal */
+.riyada-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+}
+.riyada-modal-panel {
+    position: relative;
+    width: min(940px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-xl);
+    pointer-events: auto;
+}
+.riyada-modal-close {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-end: 12px;
+    z-index: 2;
+}
+@media (max-width: 639px) {
+    .riyada-modal { padding: 0; align-items: flex-end; }
+    .riyada-modal-panel { max-height: 92vh; border-radius: var(--radius-card) var(--radius-card) 0 0; }
+}
+
+/* Breadcrumb */
+.riyada-crumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+.riyada-crumbs a { transition: color var(--t-fast) var(--ease-out); }
+.riyada-crumbs a:hover { color: var(--color-flame); }
+.riyada-crumbs-sep { opacity: 0.5; }
+html[dir="rtl"] .riyada-crumbs-sep { transform: scaleX(-1); }
+
+/* Tabs */
+.riyada-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--color-border); overflow-x: auto; }
+.riyada-tab {
+    position: relative;
+    padding: 12px 18px;
+    background: transparent;
+    border: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+    cursor: pointer;
+    text-transform: var(--display-case);
+    transition: color var(--t-fast) var(--ease-out);
+}
+html[dir="ltr"] .riyada-tab { letter-spacing: 0.06em; }
+.riyada-tab::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    height: 2px;
+    background: var(--color-flame);
+    transform: scaleX(0);
+    transition: transform var(--t-base) var(--ease-out);
+}
+.riyada-tab:hover { color: var(--color-text-primary); }
+.riyada-tab.is-active { color: var(--color-flame); }
+.riyada-tab.is-active::after { transform: scaleX(1); }
+
+/* Pagination */
+.riyada-pager { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.riyada-pager-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding-inline: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+    transition: all var(--t-fast) var(--ease-out);
+}
+.riyada-pager-item:hover:not(.is-disabled) { border-color: var(--color-border-hover); color: var(--color-text-primary); }
+.riyada-pager-item.is-active {
+    background: var(--color-flame-fill);
+    border-color: var(--color-flame-fill);
+    color: var(--color-text-on-flame);
+}
+.riyada-pager-item.is-disabled { opacity: 0.35; pointer-events: none; }
+
+
+/* ==========================================================================
+   11. PDP PRIMITIVES
+   ========================================================================== */
+
+.riyada-gallery { display: flex; flex-direction: column; gap: 10px; }
+.riyada-gallery-main {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-media);
+    border-radius: var(--radius-media);
+    border: 1px solid var(--color-border);
+}
+.riyada-gallery-main img { width: 100%; height: 100%; object-fit: cover; }
+.riyada-gallery-thumbs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.riyada-gallery-thumb {
+    flex: none;
+    width: 72px;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--color-media);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease-out);
+}
+.riyada-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.riyada-gallery-thumb:hover { border-color: var(--color-border-hover); }
+.riyada-gallery-thumb.is-active { border-color: var(--color-flame); }
+
+/* Zoom cursor on the main image */
+.riyada-zoom { cursor: zoom-in; }
+
+/* Variant group */
+.riyada-variant { display: flex; flex-direction: column; gap: 10px; }
+.riyada-variant-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.riyada-variant-name { font-size: 0.8125rem; font-weight: 800; text-transform: var(--display-case); color: var(--color-text-primary); }
+html[dir="ltr"] .riyada-variant-name { letter-spacing: 0.08em; }
+.riyada-variant-value { font-size: 0.8125rem; color: var(--color-text-secondary); }
+.riyada-variant-guide { font-size: 0.75rem; color: var(--color-flame); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Accordion (تفاصيل · نصائح تدريب · الشحن والإرجاع) */
+.riyada-acc { border-top: 1px solid var(--color-border); }
+.riyada-acc-item { border-bottom: 1px solid var(--color-border); }
+.riyada-acc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 0;
+    background: transparent;
+    border: 0;
+    text-align: start;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out);
+}
+.riyada-acc-head:hover { color: var(--color-flame); }
+.riyada-acc-icon { flex: none; width: 18px; height: 18px; color: var(--color-flame); transition: transform var(--t-base) var(--ease-out); }
+.riyada-acc-item.is-open .riyada-acc-icon { transform: rotate(180deg); }
+.riyada-acc-body { padding-bottom: 18px; }
+
+/* Training tips list — the PDP block that makes this a sports store */
+.riyada-tips { display: flex; flex-direction: column; gap: 12px; }
+.riyada-tip { display: flex; gap: 12px; align-items: flex-start; }
+.riyada-tip-num {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-xs);
+    background: var(--color-flame-wash);
+    border: 1px solid var(--color-flame-line);
+    color: var(--color-flame);
+    font-family: var(--font-num);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.riyada-tip-title { font-size: 0.875rem; font-weight: 700; color: var(--color-text-primary); line-height: 1.4; }
+.riyada-tip-text { font-size: 0.8125rem; color: var(--color-text-secondary); line-height: 1.6; }
+
+/* Bundle row (بروتين + شيكر) */
+.riyada-bundle { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.riyada-bundle-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    flex: 1 1 200px;
+}
+.riyada-bundle-item.is-off { opacity: 0.45; }
+.riyada-bundle-thumb {
+    width: 56px;
+    aspect-ratio: 1;
+    flex: none;
+    overflow: hidden;
+    background: var(--color-media);
+    border-radius: var(--radius-xs);
+}
+.riyada-bundle-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.riyada-bundle-plus {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    color: var(--color-flame);
+    font-size: 1.25rem;
+    line-height: 1;
+}
+.riyada-bundle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 16px;
+    border: 1px solid var(--color-flame-line);
+    border-radius: var(--radius-card);
+    background: var(--color-flame-wash);
+}
+
+/* Sticky buy bar (mobile) */
+.riyada-buybar {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: var(--z-buybar);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -8px 24px -12px rgba(0,0,0,0.9);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Cart line item */
+.riyada-citem { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
+.riyada-citem:last-child { border-bottom: 0; }
+.riyada-citem-media {
+    width: 84px;
+    aspect-ratio: 1;
+    flex: none;
+    overflow: hidden;
+    background: var(--color-media);
+    border-radius: var(--radius-xs);
+}
+.riyada-citem-media img { width: 100%; height: 100%; object-fit: cover; }
+.riyada-citem-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.riyada-citem-name { font-size: 0.875rem; font-weight: 700; color: var(--color-text-primary); line-height: 1.4; }
+.riyada-citem-name:hover { color: var(--color-flame); }
+.riyada-citem-opt { font-size: 0.75rem; color: var(--color-text-tertiary); }
+.riyada-citem-dot { opacity: 0.5; margin-inline: 4px; }
+.riyada-citem-unit { font-size: 0.75rem; color: var(--color-text-tertiary); }
+.riyada-citem-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 6px; }
+.riyada-citem-remove {
+    background: transparent;
+    border: 0;
+    padding: 4px;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out);
+}
+.riyada-citem-remove:hover { color: var(--color-error); }
+.riyada-citem--compact .riyada-citem-media { width: 64px; }
+.riyada-citem.is-removing { opacity: 0.4; pointer-events: none; }
+.riyada-citem-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding: 9px 11px;
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-input);
+    background: var(--color-error-light);
+    color: var(--color-error);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Order summary */
+.riyada-summary {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: 20px;
+}
+.riyada-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 8px; font-size: 0.875rem; color: var(--color-text-secondary); }
+.riyada-summary-row.is-total {
+    border-top: 1px solid var(--color-border);
+    margin-top: 8px;
+    padding-top: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+}
+.riyada-summary-row.is-save { color: var(--color-success); font-weight: 700; }
+
+/* Free-shipping progress */
+/* Also used for the rating-distribution rows in the testimonials summary, which
+   place it inside a grid cell as a <span> — hence the explicit display. */
+.riyada-progress { display: block; height: 5px; border-radius: 999px; background: var(--color-bg-tertiary); overflow: hidden; }
+.riyada-progress-fill { height: 100%; background: var(--color-flame); transition: width var(--t-slow) var(--ease-out); }
+
+
+/* ==========================================================================
+   12. FEEDBACK
+   ========================================================================== */
+
+/* Toast — class names are unprefixed because assets/main.js builds them. */
+.toast {
+    pointer-events: auto;
+    max-width: 420px;
+    padding: 12px 18px;
+    border-radius: var(--radius-btn);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-inline-start: 3px solid var(--color-text-tertiary);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: riyada-toast-in var(--t-base) var(--ease-out);
+}
+.toast-success { border-inline-start-color: var(--color-success); }
+.toast-error   { border-inline-start-color: var(--color-error); }
+.toast-warning { border-inline-start-color: var(--color-warning); }
+.toast-info    { border-inline-start-color: var(--color-flame); }
+@keyframes riyada-toast-in {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinner */
+.riyada-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border-strong);
+    border-top-color: var(--color-flame);
+    border-radius: 999px;
+    animation: riyada-spin 0.65s linear infinite;
+}
+@keyframes riyada-spin { to { transform: rotate(360deg); } }
+
+/* Skeleton — the shimmer is a light sweep, which on #111 reads correctly. */
+.riyada-skel {
+    background: linear-gradient(90deg,
+        var(--color-surface) 25%,
+        var(--color-surface-alt) 37%,
+        var(--color-surface) 63%);
+    background-size: 400% 100%;
+    border-radius: var(--radius-xs);
+    animation: riyada-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes riyada-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* Empty state */
+.riyada-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 56px 20px;
+    text-align: center;
+}
+.riyada-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-card);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-tertiary);
+}
+.riyada-empty-title { font-size: 1.0625rem; font-weight: 700; color: var(--color-text-primary); }
+
+/* Notice */
+.riyada-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-input);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    border: 1px solid transparent;
+}
+.riyada-notice--info    { background: var(--color-info-light);    border-color: var(--color-info);    color: var(--color-info); }
+.riyada-notice--success { background: var(--color-success-light); border-color: var(--color-success); color: var(--color-success); }
+.riyada-notice--warning { background: var(--color-warning-light); border-color: var(--color-warning); color: var(--color-warning); }
+.riyada-notice--error   { background: var(--color-error-light);   border-color: var(--color-error);   color: var(--color-error); }
+.riyada-notice svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+
+
+/* ==========================================================================
+   13. THIRD-PARTY OVERRIDES
+   ========================================================================== */
+
+/* ---- Swiper ---- */
+.swiper { overflow: visible; }
+.swiper-wrapper { align-items: stretch; }
+.swiper-slide { height: auto; }
+
+/* Native arrows are hidden — every slider in this theme uses .riyada-btn-icon
+   pairs in the section head instead, so the controls sit with the title. */
+.swiper-button-next, .swiper-button-prev { display: none !important; }
+
+.swiper-pagination-bullet {
+    width: 22px;
+    height: 3px;
+    border-radius: 0;
+    background: var(--color-border-strong);
+    opacity: 1;
+    transition: background var(--t-fast) var(--ease-out), width var(--t-base) var(--ease-out);
+}
+.swiper-pagination-bullet-active { background: var(--color-flame); width: 40px; }
+
+.swiper-pagination-progressbar {
+    background: var(--color-border) !important;
+    height: 2px !important;
+}
+.swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
+    background: var(--color-flame) !important;
+}
+
+/* A slider that must clip (full-bleed hero) opts in explicitly. */
+.riyada-swiper-clip .swiper { overflow: hidden; }
+
+/* ---- GLightbox ---- */
+.glightbox-container .gslide-description { background: var(--color-bg-secondary); }
+.glightbox-container .gslide-title { color: var(--color-text-primary); font-family: var(--font-display-ar); }
+.glightbox-container .gslide-desc { color: var(--color-text-secondary); }
+.gbtn { background: rgba(255, 255, 255, 0.08) !important; }
+.gbtn:hover { background: var(--color-flame) !important; }
+.goverlay { background: rgba(0, 0, 0, 0.94) !important; }
+
+
+/* ==========================================================================
+   14. UTILITIES & MOTION
+   ========================================================================== */
+
+/* ---- Angled corner cut ----
+   clip-path erases borders and shadows at the cut, so this belongs on solid
+   fills only — a `.riyada-cut` on an outline button loses two corners of the
+   outline. The RTL rule mirrors the cut so the angle always leads into the
+   reading direction. */
+.riyada-cut {
+    clip-path: polygon(
+        var(--cut) 0, 100% 0,
+        100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+        0 100%, 0 var(--cut)
+    );
+}
+html[dir="rtl"] .riyada-cut {
+    clip-path: polygon(
+        0 0, calc(100% - var(--cut)) 0,
+        100% var(--cut), 100% 100%,
+        var(--cut) 100%, 0 calc(100% - var(--cut))
+    );
+}
+.riyada-cut--sm { --cut: 8px; }
+.riyada-cut--lg { --cut: 20px; }
+
+/* ---- Speed lines ----
+   The brand motif: diagonal hatching, barely there. Requires a positioned
+   parent; the ::before is inert so it never eats a click. */
+.riyada-motif-speed { position: relative; }
+.riyada-motif-speed::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+        115deg,
+        rgba(var(--color-chalk-rgb), 0.05) 0 2px,
+        transparent 2px 14px
+    );
+}
+html[dir="rtl"] .riyada-motif-speed::before {
+    background-image: repeating-linear-gradient(
+        65deg,
+        rgba(var(--color-chalk-rgb), 0.05) 0 2px,
+        transparent 2px 14px
+    );
+}
+.riyada-motif-speed--flame::before {
+    background-image: repeating-linear-gradient(
+        115deg,
+        color-mix(in srgb, var(--color-flame) 12%, transparent) 0 2px,
+        transparent 2px 14px
+    );
+}
+
+/* ---- Scrims over photography / video ---- */
+.riyada-scrim { position: absolute; inset: 0; pointer-events: none; }
+.riyada-scrim--light  { background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.05)); }
+.riyada-scrim--medium { background: linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0.28)); }
+.riyada-scrim--heavy  { background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.55)); }
+.riyada-scrim--flat   { background: rgba(0,0,0,0.55); }
+
+/* Video plate — cover the box, never letterbox */
+.riyada-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+/* ---- Text clamping ---- */
+.riyada-clamp-1, .riyada-clamp-2, .riyada-clamp-3, .riyada-clamp-4 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.riyada-clamp-1 { -webkit-line-clamp: 1; }
+.riyada-clamp-2 { -webkit-line-clamp: 2; }
+.riyada-clamp-3 { -webkit-line-clamp: 3; }
+.riyada-clamp-4 { -webkit-line-clamp: 4; }
+
+/* ---- Scroll rail: a horizontal strip with snap, for mobile carousels ---- */
+.riyada-rail {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+.riyada-rail::-webkit-scrollbar { display: none; }
+.riyada-rail > * { scroll-snap-align: start; flex: none; }
+
+/* ---- Reveal on scroll — main.js adds .is-in via IntersectionObserver ---- */
+.riyada-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out);
+}
+.riyada-reveal.is-in { opacity: 1; transform: none; }
+
+/* ---- Directional glyph flip ----
+   Chevrons and arrows are authored pointing right. In RTL "forward" is left,
+   so anything that means *next / into* gets flipped. Never put this on an icon
+   that is not directional — a flipped cart is just a wrong cart. */
+html[dir="rtl"] .riyada-flip { transform: scaleX(-1); }
+
+/* ---- Thin scrollbar for panels ----
+   The global rule in §02 already thins every scrollbar; this class exists so
+   markup can say so explicitly, and so panels stay correct if that global rule
+   is ever narrowed. */
+.riyada-scroll-thin { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+.riyada-scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.riyada-scroll-thin::-webkit-scrollbar-thumb { background: var(--color-border-strong); border: 0; border-radius: 999px; }
+
+/* ---- Hover lift ---- */
+.riyada-lift { transition: transform var(--t-base) var(--ease-out); }
+.riyada-lift:hover { transform: translateY(-3px); }
+
+/* ---- Flame glow, for the one element that should look hot ---- */
+.riyada-glow { box-shadow: var(--shadow-flame); }
+
+/* ---- Full-bleed: escape the container to the viewport edges ---- */
+.riyada-bleed {
+    width: 100vw;
+    margin-inline-start: calc(50% - 50vw);
+    margin-inline-end: calc(50% - 50vw);
+}
+
+/* ---- Motion preference ----
+   Reduced motion kills the decorative loops outright rather than shortening
+   them: a marquee at 0.01s is a flicker, which is worse than no marquee. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .riyada-marquee-track { animation: none !important; }
+    .riyada-reveal { opacity: 1; transform: none; }
+}
+
+/* Theme setting "enableAnimations" off: as reduced motion, plus no hover zoom or lift.
+   Durations stay just above zero so Swiper still gets its transitionend. */
+html.riyada-no-motion { scroll-behavior: auto !important; }
+.riyada-no-motion *, .riyada-no-motion *::before, .riyada-no-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+.riyada-no-motion .riyada-marquee-track { animation: none !important; }
+.riyada-no-motion .riyada-reveal { opacity: 1; transform: none; }
+.riyada-no-motion .riyada-lift:hover,
+.riyada-no-motion .riyada-goal:hover .riyada-goal-img,
+.riyada-no-motion .riyada-acard:hover .riyada-acard-media img,
+.riyada-no-motion .riyada-pcard:hover .riyada-pcard-img--only { transform: none; }
+
+/* ---- Print: paper colours whatever the merchant's palette, and only the content ---- */
+@media print {
+    html:root {
+        --color-bg-primary: #FFFFFF; --color-bg-secondary: #FFFFFF; --color-bg-tertiary: #FFFFFF;
+        --color-surface: #FFFFFF; --color-surface-alt: #FFFFFF; --color-media: #FFFFFF;
+        --color-section-a: #FFFFFF; --color-section-b: #FFFFFF;
+        --color-text-primary: #000000; --color-text-secondary: #333333; --color-text-tertiary: #555555;
+        --color-border: #CCCCCC; --color-border-strong: #999999;
+    }
+    .riyada-header, .riyada-buybar, .riyada-announce, #toast-container, .riyada-fab, .riyada-overlay, .riyada-modal,
+    #riyada-main ~ footer, footer[id^="riyada-ft-"], .riyada-navs, .swiper-pagination { display: none !important; }
+    body { background: #FFFFFF; color: #000000; }
+    .riyada-pcard, .riyada-acard, img { break-inside: avoid; }
+}
+
+/* ── Touch: 44px hit areas + no iOS zoom on focus ─────────────────────
+   Fine pointers keep the compact look. On touch, icon buttons (incl. the
+   slider arrows in .riyada-navs) grow to 44px; the compact chips keep their
+   visual size but get an invisible ::before hit area that reaches 44px.
+   Inputs go to 16px so iOS Safari doesn't zoom the page on focus. */
+@media (pointer: coarse) {
+    .riyada-btn-icon, .riyada-btn-icon--sm { --ib: 44px; }
+    .riyada-btn-group > button { min-height: 44px; }
+    .riyada-size, .riyada-swatch, .riyada-qty--sm button { position: relative; }
+    .riyada-size::before, .riyada-swatch::before, .riyada-qty--sm button::before {
+        content: "";
+        position: absolute;
+        inset: 50% auto auto 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+    }
+    input, select, textarea { font-size: 16px !important; }
+}
+
+/* Cart stock notes ("only N left", "pick an option") and the checkout-gate line */
+.riyada-citem-note {
+    margin: 6px 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--color-error);
+}
+
+
+/* ==========================================================================
+   QA 1.0.2 — global guards
+   ========================================================================== */
+/* a class `display` rule must never beat the hidden attribute */
+[hidden] { display: none !important; }
+/* merchant-only content: visible in the Theme Editor, never to shoppers */
+html:not(.riyada-preview) [data-editor-only] { display: none !important; }
+
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+    :root {
+        --color-flame-fill: color-mix(in srgb, var(--color-flame) 82%, #000);
+        --color-flame-fill-hover: color-mix(in srgb, var(--color-flame) 72%, #000);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Touch targets on phones and tablets (≤1023px): every link and control is at
+   least 44×44. Lists and buttons grow; controls that sit inside a compact row
+   (language toggle) keep their look and get an invisible 44px hit area.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+    .riyada-btn, .riyada-btn--sm, .riyada-chip, .riyada-coupon { min-height: 44px; }
+    [class*="riyada-menubtn-"] { min-width: 44px; min-height: 44px; }
+    [class*="riyada-hd-"][class*="-brand"] { min-height: 44px; min-width: 44px; }
+    [class*="riyada-ft-"][class$="-totop"] { min-height: 44px; }
+    /* footer columns, footer bottom menu, footer wordmark */
+    /* column links stay one per line (block flex), the rest are inline */
+    a[class*="riyada-ft-"][class$="-link"] { display: flex !important; align-items: center; min-height: 44px; padding-block: 0 !important; }
+    [class*="riyada-ft-"][class$="-bottom"] nav a,
+    [class*="riyada-ft-"][class$="-main"] a.inline-flex {
+        display: inline-flex; align-items: center; min-height: 44px; min-width: 44px;
+    }
+    /* breadcrumbs */
+    .riyada-crumbs a, nav[aria-label="breadcrumb"] a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
+    [class*="riyada-ft-"][class$="-bottom"] nav a { justify-content: center; min-width: 44px; }
+    .riyada-btn-group > button { min-width: 44px; }
+    a.riyada-link { display: inline-flex; align-items: center; min-height: 44px; }
+    .riyada-variant-guide { display: inline-flex; align-items: center; min-height: 44px; }
+    .riyada-qty button { min-width: 44px; min-height: 44px; }
+    .riyada-citem-remove { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+    /* (card / cart-line names are 2-line clamps — growing them shows a sliver of a
+       3rd line; the product image beside them is the 44px+ link to the same page) */
+    [class*="riyada-lang-"] { position: relative; }
+    [class*="riyada-lang-"]::after {
+        content: "";
+        position: absolute;
+        inset: 50% auto auto 50%;
+        width: 44px;
+        height: 44px;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* wide tables inside product descriptions / pages scroll sideways on phones
+   instead of crushing every column */
+@media (max-width: 767px) {
+    .riyada-rte table { display: block; max-width: 100%; overflow-x: auto; }
+}
+
+/* Name links: the clamp lives on an inner span, so the link itself can grow a
+   44px hit area on touch widths (padding pulled back with negative margins —
+   the card layout doesn't move and no 3rd line shows through the padding). */
+.riyada-pcard-name, a.riyada-citem-name { display: block; }
+@media (max-width: 1023px), (pointer: coarse) {
+  .riyada-pcard-name, a.riyada-citem-name {
+    padding-block: 12px;
+    margin-block: -12px;
+    min-height: 44px;
+    position: relative;
+  }
+}
+
+/* Arabic letters join: letter-spacing tears them apart, wherever it was set */
+html[dir="rtl"] body, html[dir="rtl"] body *, :lang(ar) { letter-spacing: 0 !important; }
+
+/* No word alone on a last line */
+h1, h2, h3, .riyada-h2, .riyada-h3 { text-wrap: balance; }
+.riyada-lead { text-wrap: pretty; }
+
+/* Missing image: the dumbbell mark on the flame wash, not an empty box */
+.riyada-acard-media { position: relative; }
+.riyada-noimg-art {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--color-flame);
+    background-color: var(--color-flame-wash);
+}
+
+/* One card alone on the last row takes the whole row, beside its image. Grids publish
+   their column counts as inline vars, so each count has its own rule. nth-of-type
+   counts <article> cards only, and being plain CSS it holds for server and AJAX cards. */
+@media (max-width: 639px) {
+    .riyada-grid[style*="--cols-mobile: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); height: auto; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+    .riyada-grid[style*="--cols-tablet: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+    .riyada-grid[style*="--cols-tablet: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+    .riyada-grid[style*="--cols-tablet: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); height: auto; }
+    :is(.riyada-grid[style*="--cols-tablet: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-tablet: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-tablet: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1)) > .riyada-pcard-body { justify-content: center; padding-inline: 24px; }
+    :is(.riyada-grid[style*="--cols-tablet: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-tablet: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-tablet: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1)) .riyada-pcard-prices { margin-top: 8px; }
+    :is(.riyada-grid[style*="--cols-tablet: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-tablet: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-tablet: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1)) :is(.riyada-btn--block, .riyada-pcard-atc) { max-width: 320px; }
+}
+@media (min-width: 1024px) {
+    .riyada-grid[style*="--cols-desktop: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+    .riyada-grid[style*="--cols-desktop: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+    .riyada-grid[style*="--cols-desktop: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1),
+    .riyada-grid[style*="--cols-desktop: 5"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(5n+1),
+    .riyada-grid[style*="--cols-desktop: 6"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(6n+1) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); height: auto; }
+    :is(.riyada-grid[style*="--cols-desktop: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-desktop: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-desktop: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1),
+        .riyada-grid[style*="--cols-desktop: 5"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(5n+1),
+        .riyada-grid[style*="--cols-desktop: 6"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(6n+1)) > .riyada-pcard-body { justify-content: center; padding-inline: 24px; }
+    :is(.riyada-grid[style*="--cols-desktop: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-desktop: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-desktop: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1),
+        .riyada-grid[style*="--cols-desktop: 5"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(5n+1),
+        .riyada-grid[style*="--cols-desktop: 6"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(6n+1)) .riyada-pcard-prices { margin-top: 8px; }
+    :is(.riyada-grid[style*="--cols-desktop: 2"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(2n+1),
+        .riyada-grid[style*="--cols-desktop: 3"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(3n+1),
+        .riyada-grid[style*="--cols-desktop: 4"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(4n+1),
+        .riyada-grid[style*="--cols-desktop: 5"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(5n+1),
+        .riyada-grid[style*="--cols-desktop: 6"] > .riyada-pcard:not(:first-of-type):last-of-type:nth-of-type(6n+1)) :is(.riyada-btn--block, .riyada-pcard-atc) { max-width: 320px; }
+}
+
+/* /shop list view (the toggle above the grid): the same card, one per row */
+.riyada-list-view .riyada-grid { grid-template-columns: minmax(0, 1fr); }
+.riyada-list-view .riyada-grid > .riyada-pcard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); height: auto; }
+.riyada-list-view .riyada-pcard-body { justify-content: center; }
+.riyada-list-view .riyada-pcard-prices { margin-top: 8px; }
+.riyada-list-view :is(.riyada-btn--block, .riyada-pcard-atc) { max-width: 320px; }
+@media (max-width: 639px) {
+    .riyada-list-view .riyada-grid > .riyada-pcard { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+}
+
+.riyada-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Floating buttons: widgets whatsapp-float and scroll-top. They sit under the header and
+   the drawers, and lift above the product page's sticky buy bar. */
+.riyada-fab {
+    position: fixed;
+    z-index: 90;
+    inset-block-end: max(20px, env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    background: var(--color-surface-alt);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: transform var(--t-base) var(--ease-out), border-color var(--t-base) var(--ease-out);
+}
+.riyada-fab:hover { transform: translateY(-2px); border-color: var(--color-flame); }
+.riyada-no-motion .riyada-fab:hover { transform: none; }
+.riyada-fab--start { inset-inline-start: 20px; }
+.riyada-fab--end { inset-inline-end: 20px; }
+.riyada-fab--wa { border-color: transparent; background: var(--fab-bg); color: var(--fab-fg); }
+.riyada-fab-label { display: none; font-size: 0.875rem; font-weight: 700; white-space: nowrap; }
+body:has(.riyada-buybar.is-on) .riyada-fab { inset-block-end: max(92px, calc(env(safe-area-inset-bottom) + 72px)); }
+@media (min-width: 1024px) {
+    .riyada-fab-label { display: inline; padding-inline-end: 20px; }
+    .riyada-fab--wa:has(.riyada-fab-label) { padding-inline-start: 14px; }
+}
+@media (max-width: 1023px) {
+    .riyada-fab--desktop { display: none; }
+}

@@ -1,0 +1,130 @@
+{
+  "name": "أسئلة عن الهدايا",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اتركه فارغاً لإخفائه",
+        "en": "Title — leave empty to hide"
+      },
+      "default": "أسئلة عن الهدايا"
+    },
+    "subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "سطر تحت العنوان — اتركه فارغاً لإخفائه",
+        "en": "Line under the title — leave empty to hide"
+      },
+      "default": ""
+    },
+    "open_first": {
+      "type": "boolean",
+      "label": {
+        "ar": "أول سؤال مفتوح",
+        "en": "First question open"
+      },
+      "default": true
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "ورق الهدايا الدافئ",
+            "en": "Warm gift paper"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الروابط والعناصر النشطة",
+        "en": "Accent — links and active elements"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود",
+        "en": "Border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "qa": {
+      "name": "سؤال",
+      "settings": {
+        "question": {
+          "type": "string",
+          "label": {
+            "ar": "السؤال",
+            "en": "Question"
+          },
+          "default": ""
+        },
+        "answer": {
+          "type": "text",
+          "label": {
+            "ar": "الإجابة",
+            "en": "Answer"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهدايا",
+      "name": "أسئلة عن الهدايا"
+    }
+  ]
+}

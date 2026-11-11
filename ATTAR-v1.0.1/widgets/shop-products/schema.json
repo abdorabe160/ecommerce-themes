@@ -1,0 +1,60 @@
+{
+  "name": "منتجات المتجر",
+  "settings": {
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (سطح المكتب)",
+        "en": "Desktop Columns"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3 Columns"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4 Columns"
+          }
+        }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صورة الكارت",
+        "en": "Card Image Ratio"
+      },
+      "default": "portrait",
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولي",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "landscape",
+          "label": {
+            "ar": "مستطيل",
+            "en": "Landscape"
+          }
+        }
+      ]
+    }
+  }
+}

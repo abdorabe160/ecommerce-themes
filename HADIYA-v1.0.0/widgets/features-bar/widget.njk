@@ -1,0 +1,294 @@
+{# ============================================================================
+   HYPER · متعدد الأعمدة  (multi-column)
+   ----------------------------------------------------------------------------
+   Two looks from one grid, picked by `style`:
+
+     icon    ⌖ شحن مجّاني        a service bar — a glyph, a label, a line
+     image   [photo] عنوان       a feature row — a photograph per column with a
+                    فقرة وصف      heading and a paragraph under it
+
+   They share the grid, the column count and the alignment; only the media and
+   the type scale differ. Two widgets would have duplicated the responsive
+   column logic for no gain.
+
+   Icons are a fixed line-art set drawn at a 24 viewBox with a 1.2 stroke, so
+   they share one weight with the rest of the chrome. A merchant who needs
+   something outside the set uploads `custom_icon`, which wins over the choice.
+
+   Styling lives in assets/style.css → "15.12 MULTI-COLUMN".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([], true) %}
+{% set count = items | length %}
+
+{% set title = d.title | default('', true) %}
+{% set colsD = d.columns_desktop | default('3', true) %}
+{% set colsM = d.columns_mobile | default('1', true) %}
+{% set align = d.align | default('center', true) %}
+{% set iconSize = d.icon_size | default(30, true) %}
+{% set bg = d.background | default('white', true) %}
+{# ---- Rules ----
+   Were two Theme Editor switches; fixed at the values the section was drawn
+   for — a hairline UNDER the section and none above it, so a run of these
+   stacks with exactly one line between any two of them rather than two. The
+   top rule only ever existed for the case where this section is the first
+   thing under the header, which the header's own bottom border already
+   handles. #}
+{% set style = d.style | default('icon', true) %}
+{% set ratio = d.image_ratio | default('1x1', true) %}
+{# ---- Corner radius ----
+   Was a Theme Editor control; now fixed at the value the section was drawn
+   for. Same call as the shape knobs layouts/layout.njk stopped exposing: one
+   slider cannot know that this section, the product card and the badge want
+   different answers, and each of them already carries its own. #}
+{% set radius = 10 %}
+{% set gap = d.gap | default(28) %}
+
+{% if ratio == '4x3' %}{% set ratioVal = '4 / 3' %}
+{% elif ratio == '3x4' %}{% set ratioVal = '3 / 4' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% else %}{% set ratioVal = '1 / 1' %}{% endif %}
+
+{# Same tolerant resolver used by the hero — a media setting is an object once
+   uploaded and a plain string when a page JSON supplies it. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+
+{# Every `kind` the macro below can actually draw.
+
+   ⚠️  The macro is a plain if/elif chain with NO `{% else %}`, so a value that
+   is not in it produces an EMPTY <svg> — a transparent icon-sized hole, not a
+   missing element. That is silent: the column still reserves the space and
+   nothing in the markup says the icon failed. pages/page.json shipped
+   `shipping` and `warranty` (neither is an option in schema.json) and drew two
+   of those holes on every static page.
+
+   So the caller validates against this table first and falls back to `none`,
+   which renders no icon at all rather than an empty box. A wrong value should
+   look like a missing icon, not like a drawing that failed halfway.
+
+   Same shape as the WGHT table in layouts/layout.njk, and for the same reason:
+   a dictionary lookup with `| default()` works everywhere, while `in` is for
+   arrays and Qalab is not guaranteed to carry it. AN OPTION ADDED TO
+   schema.json MUST BE ADDED HERE TOO or it silently renders nothing. #}
+{% set ICONS = {
+  'truck': 1, 'returns': 1, 'shield': 1, 'rosette': 1, 'support': 1, 'gift': 1,
+  'card': 1, 'tag': 1, 'sparkle': 1, 'leaf': 1, 'ruler': 1, 'box': 1,
+  'clock': 1, 'heart': 1, 'globe': 1, 'lock': 1
+} %}
+
+{% macro icon(kind, size) %}
+  <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"
+       aria-hidden="true">
+    {% if kind == 'truck' %}
+      <path d="M1.5 6.5h11v9h-11z"/><path d="M12.5 9.5h4l3 3v3h-7z"/>
+      <circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/>
+    {% elif kind == 'returns' %}
+      <path d="M20 12a8 8 0 0 1-13.7 5.6"/><path d="M4 12a8 8 0 0 1 13.7-5.6"/>
+      <path d="M4 6.5V12h5.5"/><path d="M20 17.5V12h-5.5"/>
+    {% elif kind == 'shield' %}
+      <path d="M12 2.5 4.5 5.5v6c0 4.6 3.1 8.6 7.5 10 4.4-1.4 7.5-5.4 7.5-10v-6z"/>
+      <path d="M8.75 12 11 14.25l4.25-4.5"/>
+    {% elif kind == 'rosette' %}
+      <path d="M12 2.2l2.1 1.6 2.6-.3 1 2.4 2.4 1-.3 2.6L21.4 12l-1.6 2.1.3 2.6-2.4 1-1 2.4-2.6-.3L12 21.8l-2.1-1.6-2.6.3-1-2.4-2.4-1 .3-2.6L2.6 12l1.6-2.1-.3-2.6 2.4-1 1-2.4 2.6.3z"/>
+      <path d="M9.25 12 11.5 14.25l3.25-3.5"/>
+    {% elif kind == 'support' %}
+      <path d="M4 13v-1a8 8 0 0 1 16 0v1"/>
+      <path d="M4 13h2.5v5H5a1 1 0 0 1-1-1z"/><path d="M20 13h-2.5v5H19a1 1 0 0 0 1-1z"/>
+      <path d="M20 18v.5a2.5 2.5 0 0 1-2.5 2.5H13"/>
+    {% elif kind == 'gift' %}
+      <path d="M3.5 11h17v9.5h-17z"/><path d="M2.5 7h19v4h-19z"/><path d="M12 7v13.5"/>
+      <path d="M12 7S10.8 3 8.5 3a2.2 2.2 0 0 0 0 4"/><path d="M12 7s1.2-4 3.5-4a2.2 2.2 0 0 1 0 4"/>
+    {% elif kind == 'card' %}
+      <rect x="2.5" y="5" width="19" height="14"/><path d="M2.5 9.5h19"/><path d="M6 14.5h4"/>
+    {% elif kind == 'tag' %}
+      <path d="M11.5 2.5H21v9.5l-9.5 9.5-9.5-9.5z"/><circle cx="17" cy="7" r="1.6"/>
+    {% elif kind == 'sparkle' %}
+      <path d="M12 2.2c.8 5.6 4.2 9 9.8 9.8-5.6.8-9 4.2-9.8 9.8-.8-5.6-4.2-9-9.8-9.8 5.6-.8 9-4.2 9.8-9.8Z"/>
+    {% elif kind == 'leaf' %}
+      <path d="M11 20.5A7 7 0 0 1 9.8 6.6C15.5 5.5 17 5 19 2.5c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/>
+      <path d="M2.5 21.5c0-3 1.9-5.4 5.1-6C10 15 12.5 13.5 13.5 12.5"/>
+    {% elif kind == 'ruler' %}
+      <path d="M3 15 15 3l6 6L9 21z"/><path d="M7.5 10.5 9.5 12.5"/>
+      <path d="M10.5 7.5 12.5 9.5"/><path d="M13.5 4.5 15.5 6.5"/>
+    {% elif kind == 'box' %}
+      <path d="M12 2.5 21 7v10l-9 4.5L3 17V7z"/><path d="M3 7l9 4.5L21 7"/><path d="M12 11.5V21.5"/>
+    {% elif kind == 'clock' %}
+      <circle cx="12" cy="12" r="9.3"/><path d="M12 6.5V12l3.5 2.2"/>
+    {% elif kind == 'heart' %}
+      <path d="M12 20.5S3.5 15.4 3.5 9.4A4.6 4.6 0 0 1 12 6.9a4.6 4.6 0 0 1 8.5 2.5c0 6-8.5 11.1-8.5 11.1Z"/>
+    {% elif kind == 'globe' %}
+      <circle cx="12" cy="12" r="9.3"/><path d="M2.8 9.5h18.4M2.8 14.5h18.4"/>
+      <path d="M12 2.7a15 15 0 0 0 0 18.6 15 15 0 0 0 0-18.6Z"/>
+    {% elif kind == 'lock' %}
+      <rect x="4" y="10" width="16" height="11"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+      <path d="M12 14.5v2.5"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+
+{% if count > 0 %}
+{# The root background is INLINE, so it beats every stylesheet rule — which is
+   why it reads `var(--hy-sec-bg, …)`. The section-colours picker overrides the
+   custom property, not the declaration. Do not collapse it back. #}
+<section id="hy-cols-{{ id }}"{% if count == 0 %} data-hy-empty{% endif %}
+         class="hy-cols {{ 'hy-cols--start' if align == 'start' }}
+                hy-cols--{{ style }}
+                hy-cols--bordered"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);">
+  <div class="hy-container">
+
+    {% if title %}
+      <h2 class="hy-prow-title" style="margin-bottom: var(--space-7);">{{ title }}</h2>
+    {% endif %}
+
+    <div class="hy-cols-grid">
+      {% if count == 0 %}
+        {# Added from the builder, not filled in yet. A preset carries only a
+           category and a name — Qumra cannot seed blocks — so this arrives with
+           ZERO columns and the grid rendered as a bare 96px band: the section
+           was there, but nothing in it said whether it was broken or simply
+           empty. Three cells at the real column count teach the shape, and the
+           hint says what to do. Toolkit and rationale: style.css → 15.29.1. #}
+        {% for i in [1, 2, 3] %}
+          <div class="hy-col" data-hy-placeholder aria-hidden="true">
+            <div class="hy-ph-box" style="width: 100%; aspect-ratio: 16 / 9;">
+              {% if loop.first %}
+                <span class="hy-ph-hint">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+                  </svg>
+                  {{ t('common.placeholder_add') }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% for block in items %}
+        {% set b = block.data %}
+
+        {# Resolved BEFORE the render guard below, which tests them. #}
+        {% set custom = mediaUrl(b.custom_icon) | trim %}
+        {% set photo  = mediaUrl(b.image) | trim %}
+        {# `| length`, not truthiness — a macro returns a SafeString object,
+           which is truthy even when it holds an empty string. #}
+        {% set hasCustom = (custom | length) > 0 %}
+        {% set hasPhoto  = (photo  | length) > 0 %}
+        {# Anything the table above cannot draw becomes `none` — see the note
+           there for why an unknown value renders nothing rather than an empty
+           <svg>. #}
+        {# `none`, NOT `truck`. The schema default matches, and the pair is
+           load-bearing — see the note on the image branch below. #}
+        {% set kind = b.icon | default('none', true) %}
+        {% set kind = kind if ICONS[kind] else 'none' %}
+
+        {# ⚠️  MEDIA COUNTS. This used to read `b.title or b.text`, so a column
+           carrying only an icon — or only a photograph — was dropped whole:
+           the merchant uploaded an image, got nothing, and no field they could
+           see explained why. A column is empty only when it has no copy AND no
+           media of any kind. #}
+        {% if b.title or b.text or hasPhoto or hasCustom or kind != 'none' %}
+          {% set tag = 'a' if b.url else 'div' %}
+
+          <{{ tag }} class="hy-col"{% if b.url %} href="{{ b.url }}"{% endif %}>
+            {% if style == 'image' %}
+              {# ⚠️  `custom_icon` is read HERE TOO, not only in the icon look.
+
+                 This branch used to be `{% if style == 'image' %}` with the
+                 custom-icon and select branches as its `{% elif %}`s — so in
+                 the image look neither was ever reached. The field's own label
+                 promises it "replaces the choice above", the Theme Editor shows
+                 it in both looks (Qumra has no conditional field visibility),
+                 and it did nothing in one of them. Uploading an icon on a
+                 section set to `image` was a silent no-op.
+
+                 The order is photo → custom icon → SELECTED ICON → placeholder.
+                 The photograph wins because it is the look's own field; either
+                 icon is the fallback for a column that has no photograph.
+
+                 ⚠️  THE SELECT'S DEFAULT MUST STAY `none`, in schema.json AND
+                 in the `kind` fallback above. It used to be `truck`, which is
+                 why this branch first shipped WITHOUT the select at all: with
+                 a lorry as the default, every image column still waiting for
+                 its photograph would have drawn one, and a wrong picture is
+                 worse than an honest gap.
+
+                 But leaving the select out was the same silent no-op this
+                 whole branch exists to kill — the Theme Editor shows the field
+                 in both looks (Qumra has no conditional field visibility), so
+                 a merchant picked an icon and watched nothing happen. Default
+                 `none` fixes the cause instead of hiding the symptom: nothing
+                 is drawn until someone actually picks something, and then it
+                 is drawn in both looks. #}
+              <span class="hy-col-figure{{ ' hy-col-figure--icon' if not hasPhoto and (hasCustom or kind != 'none') }}">
+                {% if hasPhoto %}
+                  {# `contain`, set in style.css → 15.12: the frame is a fixed
+                     ratio the merchant picks and the photograph is not, so
+                     `cover` would crop whatever the ratio does not match. #}
+                  <img src="{{ photo }}" alt="{{ b.title | default('', true) }}" loading="lazy"/>
+                {% elif hasCustom %}
+                  <img src="{{ custom }}" alt="" loading="lazy"/>
+                {% elif kind != 'none' %}
+                  {# The width/height attributes the macro prints are overridden
+                     by the `--icon` rule in style.css → 15.12, so the glyph is
+                     sized to the FRAME here and to `icon_size` in the icon
+                     look, from one macro. #}
+                  {{ icon(kind, iconSize) }}
+                {% else %}
+                  <span class="hy-col-noimg">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.75" cy="9" r="1.5"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+                    </svg>
+                  </span>
+                {% endif %}
+              </span>
+            {% elif hasCustom %}
+              <span class="hy-col-icon">
+                <img src="{{ custom }}" alt="" loading="lazy"
+                     style="width: {{ iconSize }}px; height: {{ iconSize }}px;"/>
+              </span>
+            {% elif kind != 'none' %}
+              <span class="hy-col-icon">{{ icon(kind, iconSize) }}</span>
+            {% endif %}
+
+            {% if b.title %}<h3 class="hy-col-title">{{ b.title }}</h3>{% endif %}
+            {# ⚠️  A <div>, NOT a <p>: a `text` field returns block HTML and a
+               <p> cannot contain a <p> — the browser splits them and every
+               style on this class stops reaching the copy. #}
+            {% if b.text %}<div class="hy-col-text">{{ b.text | safe }}</div>{% endif %}
+          </{{ tag }}>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  {# The column count and the frame shape are variables, so the responsive
+     rules live once in the stylesheet (15.12) instead of being reprinted per
+     section. #}
+  #hy-cols-{{ id }} {
+    --cols-d: {{ colsD }};
+    --cols-md: {{ 3 if colsD | int > 3 else colsD }};
+    --cols-sm: {{ colsM }};
+    --cols-gap: {{ gap }}px;
+    --cols-ratio: {{ ratioVal }};
+    --cols-radius: {{ radius }}px;
+    --icon-size: {{ iconSize }}px;
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#hy-cols-' ~ id, c=d %}
+{% endif %}

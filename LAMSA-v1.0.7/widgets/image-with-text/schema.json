@@ -1,0 +1,312 @@
+{
+  "name": "صورة مع نص",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "overlap",
+      "options": [
+        {
+          "value": "split",
+          "label": {
+            "ar": "صورة ونص جانب بعض",
+            "en": "Image beside text"
+          }
+        },
+        {
+          "value": "overlap",
+          "label": {
+            "ar": "صورتان متراكبتان",
+            "en": "Two overlapping images"
+          }
+        },
+        {
+          "value": "wide",
+          "label": {
+            "ar": "صورة ممتدة لحد حافة الشاشة",
+            "en": "Image bleeding to the screen edge"
+          }
+        }
+      ]
+    },
+    "image_position": {
+      "type": "select",
+      "label": {
+        "ar": "موضع الصورة",
+        "en": "Image Position"
+      },
+      "default": "start",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "البداية (يمين في العربي)",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "النهاية (شمال في العربي)",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة الرئيسية",
+        "en": "Main Image"
+      }
+    },
+    "image_2": {
+      "type": "media",
+      "label": {
+        "ar": "الصورة الثانية (لتقسيم الصورتين المتراكبتين)",
+        "en": "Second Image (overlap layout)"
+      }
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد الصورة الرئيسية",
+        "en": "Main Image Ratio"
+      },
+      "default": "4/5",
+      "options": [
+        {
+          "value": "1/1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4/5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Portrait 4:5"
+          }
+        },
+        {
+          "value": "3/4",
+          "label": {
+            "ar": "طولي",
+            "en": "Tall 3:4"
+          }
+        },
+        {
+          "value": "4/3",
+          "label": {
+            "ar": "عرضي",
+            "en": "Landscape 4:3"
+          }
+        }
+      ]
+    },
+    "image_shape": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الصورة",
+        "en": "Image Shape"
+      },
+      "default": "soft",
+      "options": [
+        {
+          "value": "soft",
+          "label": {
+            "ar": "مستطيل ناعم",
+            "en": "Soft rectangle"
+          }
+        },
+        {
+          "value": "arch",
+          "label": {
+            "ar": "قوس",
+            "en": "Arch"
+          }
+        },
+        {
+          "value": "circle",
+          "label": {
+            "ar": "دائرة",
+            "en": "Circle"
+          }
+        }
+      ]
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "قصّتنا"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "عناية <em>واضحة</em> بلا وعود مبالغ فيها"
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص (يقبل HTML)",
+        "en": "Body Text (HTML allowed)"
+      },
+      "default": ""
+    },
+    "signature": {
+      "type": "string",
+      "label": {
+        "ar": "التوقيع (سطر أسفل النص)",
+        "en": "Signature (line under the text)"
+      },
+      "default": "— فريق لمسة"
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الرئيسي",
+        "en": "Primary Button Text"
+      },
+      "default": "تعرّفي علينا"
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الرئيسي",
+        "en": "Primary Button URL"
+      },
+      "default": "/pages/about"
+    },
+    "button2_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الثانوي (اتركيه فارغاً لإخفائه)",
+        "en": "Secondary Button Text (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "button2_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الثانوي",
+        "en": "Secondary Button URL"
+      },
+      "default": ""
+    },
+    "blocks_style": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة عرض النقاط",
+        "en": "How to render the blocks"
+      },
+      "default": "stats",
+      "options": [
+        {
+          "value": "stats",
+          "label": {
+            "ar": "أرقام في صف",
+            "en": "Numbers in a row"
+          }
+        },
+        {
+          "value": "checklist",
+          "label": {
+            "ar": "قائمة بعلامات صح",
+            "en": "Checklist"
+          }
+        },
+        {
+          "value": "none",
+          "label": {
+            "ar": "لا تعرضها",
+            "en": "Hide them"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        },
+        {
+          "value": "ink",
+          "label": {
+            "ar": "غامق",
+            "en": "Ink"
+          }
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "point": {
+      "name": "نقطة",
+      "settings": {
+        "number": {
+          "type": "string",
+          "label": {
+            "ar": "الرقم (لعرض «أرقام في صف»)",
+            "en": "Number (for the \"numbers\" style)"
+          },
+          "default": ""
+        },
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "النص",
+            "en": "Label"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "صورة مع نص"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{# ============================================================================
+   LAMSA 404
+   A dead end is a chance to send the shopper somewhere useful, so this page
+   offers search + the store + optional quick links instead of just an apology.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set links = widget.blocks | default([]) %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default(t('pages.404.title'), true) %}
+{% set message = d.message | default(t('pages.404.message'), true) %}
+{% set showSearch = d.show_search | default(true) %}
+{% set homeUrl = d.home_url | default('/') %}
+{% set shopUrl = d.shop_url | default('/shop') %}
+
+
+<style>
+  #lamsa-404-{{ id }} {
+    background: var(--color-bg-primary);
+    min-height: 68vh;
+    display: flex;
+    align-items: center;
+  }
+
+  .lamsa-404-{{ id }}-num {
+    font-family: var(--font-display-en);
+    font-size: clamp(5rem, 18vw, 11rem);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--color-accent-soft);
+    user-select: none;
+  }
+
+  .lamsa-404-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.28;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-404-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-404-{{ id }}-title { line-height: 1.4; }
+</style>
+
+
+<section id="lamsa-404-{{ id }}" class="lamsa-section lamsa-glow">
+  <div class="lamsa-container">
+    <div class="flex flex-col items-center text-center gap-5 max-w-xl mx-auto">
+
+      <span class="lamsa-404-{{ id }}-num" aria-hidden="true">404</span>
+
+      {% if eyebrow %}
+        <span class="lamsa-eyebrow"><span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}</span>
+      {% endif %}
+
+      <h1 class="lamsa-404-{{ id }}-title">{{ title }}</h1>
+
+      {% if message %}
+        <p class="lamsa-lead m-0" style="max-width: 46ch;">{{ message }}</p>
+      {% endif %}
+
+      {# ---- search: the fastest way out of a dead end ---- #}
+      {% if showSearch %}
+        <form action="/shop" method="get" class="lamsa-search w-full max-w-sm mt-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+            <circle cx="11" cy="11" r="7.25"/><path stroke-linecap="round" d="m20.5 20.5-4.2-4.2"/>
+          </svg>
+          <input type="search" name="q"
+                 placeholder="{{ t('pages.shop.search_placeholder') }}"
+                 aria-label="{{ t('pages.search.title') }}"/>
+        </form>
+      {% endif %}
+
+      <div class="flex items-center gap-3 flex-wrap justify-center mt-1">
+        <a href="{{ shopUrl }}" class="lamsa-btn lamsa-btn--primary">
+          {{ t('pages.404.browse_shop') }}
+        </a>
+        <a href="{{ homeUrl }}" class="lamsa-btn lamsa-btn--outline">
+          {{ t('pages.404.back_home') }}
+        </a>
+      </div>
+
+      {# ---- optional quick links ---- #}
+      {% if (links | length) > 0 %}
+        <div class="flex flex-col gap-3 w-full mt-6">
+          <span class="lamsa-caption">{{ t('pages.404.try_these') }}</span>
+          <div class="flex items-center gap-2 flex-wrap justify-center">
+            {% for block in links %}
+              {% if block.data.label %}
+                <a href="{{ block.data.url | default('/shop') }}" class="lamsa-chip">
+                  {{ block.data.label }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>

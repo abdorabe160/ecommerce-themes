@@ -1,0 +1,165 @@
+{# ============================================================================
+   HYPER COLLECTIONS PAGE — /collections
+   ----------------------------------------------------------------------------
+   Lists every collection in the store.
+
+   The tile is NOT redefined here: it is the very same `.hy-coll-tile` the
+   homepage carousel uses (assets/style.css → "15.11 COLLECTIONS CAROUSEL"), so
+   a collection looks identical wherever a shopper meets it. Only the container
+   differs — a grid here, a rail there.
+
+   Routes: every card points at /shop/<slug>, which is the single-collection
+   route this theme actually has. Nothing here invents a page.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# Hidden and deleted collections stay out, and the count below follows. #}
+{% set cols = [] %}
+{% for c in (context.collections or []) %}{% if c.title and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}{% endfor %}
+{% set count = cols | length %}
+{% set pagination = context.pagination %}
+
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default(t('defaults.browse'), true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.collections.title') %}
+{% set desc = d.description | default('', true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set metaLabel = d.meta_label | default('', true) %}
+{% set moreText = d.more_text | default(t('defaults.shop_now'), true) %}
+{% set colsD = d.columns_desktop | default('3', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{# Columns follow the count where the screen has room; a phone keeps its columns,
+   and a tile left alone on the last row spans it (`.is-lone`, main.js). #}
+{% macro fit(n, c) %}{% set m = c | int %}{% if n <= m %}{{ n if n > 0 else m }}{% elif n % m != 1 %}{{ m }}{% elif n % (m + 1) != 1 %}{{ m + 1 }}{% else %}{{ m }}{% endif %}{% endmacro %}
+{% set bg = d.background | default('white') %}
+
+{% set ratio = d.card_ratio | default('3x4') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+{% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+
+<section id="hy-collp-{{ id }}"
+         class="hy-collp {{ 'hy-collp--well' if bg == 'well' }}"
+         style="--collp-cols: {{ fit(count, colsD) | trim }}; --collp-cols-md: {{ fit(count, 2) | trim }}; --collp-cols-m: {{ colsM }};">
+  <div class="hy-container">
+
+    {% if showTitle %}
+      <div class="hy-collp-head">
+        {% if eyebrow %}<span class="hy-collp-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="hy-collp-title">{{ title }}</h1>
+        {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+             HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the CSS. #}
+        {% if desc %}<div class="hy-collp-desc">{{ desc | safe }}</div>{% endif %}
+        {% if showCount and count > 0 %}
+          <span class="hy-collp-count">
+            {% set colTotal = pagination.totalItems or count %}
+            {% ui "count.njk", n=colTotal, kind='collection' %}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if count > 0 %}
+
+      <div class="hy-collp-grid">
+        {% for c in cols %}
+          {% set url = '/shop/' ~ (c.slug or c.handle or c._id) %}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+
+          <a href="{{ url }}" class="hy-coll-tile" style="--coll-ratio: {{ ratioVal }};">
+
+            {% if img %}
+              <img src="{{ img }}" alt="{{ c.title }}" loading="lazy" class="hy-coll-img"/>
+            {% else %}
+              <span class="hy-coll-noimg">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true"><path stroke-linejoin="round" d="M6.5 4.5h11l-1 8h-9z"/><path stroke-linecap="round" d="M5.5 12.5h13M8 12.5 7 20M16 12.5l1 7.5"/></svg>
+              </span>
+            {% endif %}
+
+            {% if metaLabel or (showCount and c.productsCount) %}
+              <div class="hy-coll-meta">
+                <span class="hy-coll-label">
+                  {% if metaLabel %}
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/>
+                    </svg>
+                    {{ metaLabel }}
+                  {% endif %}
+                </span>
+                {% if showCount and c.productsCount %}
+                  <span class="hy-coll-count">{{ c.productsCount }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="hy-coll-foot">
+              <span class="hy-coll-name">{{ c.title }}</span>
+              {% if moreText %}
+                <span class="hy-coll-more">
+                  {{ moreText }}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8"/>
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {# ═════ pagination — plain links. This page has no Alpine scope and needs
+         none: /collections is server-paginated, so a link is the whole feature.
+         Same .hy-pager as the shop page, so the two never look different. ═════ #}
+      {% if pagination and pagination.totalPages > 1 %}
+        <nav class="hy-pager" aria-label="{{ t('common.next') }}">
+          {% if pagination.currentPage > 1 %}
+            <a href="?page={{ pagination.currentPage - 1 }}" class="hy-pager-btn" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+
+          {% for n in range(1, pagination.totalPages + 1) %}
+            {% if n == pagination.currentPage %}
+              <span class="hy-pager-btn is-active" aria-current="page">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="hy-pager-btn">{{ n }}</a>
+            {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+              <span class="hy-pager-gap">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if pagination.hasNextPage %}
+            <a href="?page={{ pagination.currentPage + 1 }}" class="hy-pager-btn" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+
+      {# Placeholder tiles rather than an apology: a merchant looking at their
+         own empty /collections learns more from the shape of the page than
+         from being told it is empty. #}
+      <div class="hy-collp-grid">
+        {% ui "placeholder.njk", kind='collection', count='6', image_ratio=ratio %}
+      </div>
+      <p class="hy-ph-note">{{ t('categories.no_categories_desc') }}</p>
+
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. #}
+{% ui "section-colors.njk", scope='#hy-collp-' ~ id, c=d %}

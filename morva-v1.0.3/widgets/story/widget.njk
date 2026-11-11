@@ -1,0 +1,32 @@
+{#
+  ============================================================================
+  MORVA · STORY — "— 04 / MANIFESTO"
+  ----------------------------------------------------------------------------
+  A bordered panel: image (with scroll parallax) beside a kicker, a large
+  statement and a signature. The parallax is main.js → [data-mv-parallax],
+  rAF-driven and skipped under prefers-reduced-motion.
+  ============================================================================
+#}
+{% set d = widget.data %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{% if not img and (settings.demoContent | default(true)) %}{% set img = 'demo-story.jpg' | assets %}{% endif %}
+
+<section class="mv-section" id="{{ d.anchor | default('story') }}">
+  <div class="mv-story{{ ' mv-story--flip' if d.image_side == 'end' }}">
+    <div class="mv-story-img reveal" style="--ry: 0px; --rs: 0.98;" {% if img %}data-mv-parallax{% endif %}>
+      {% if img %}
+        <img class="mv-fill" src="{{ img }}" alt="{{ d.image_alt | default('') }}" loading="lazy"/>
+      {% else %}
+        {% ui "topo.njk" %}
+      {% endif %}
+    </div>
+    <div class="mv-story-text">
+      <div class="mv-kicker reveal" style="--i: 0; --ry: 28px;">— {% if d.index %}{{ d.index }} / {% endif %}{{ d.kicker | default(t('morva.manifesto'), true) }}</div>
+      <div class="mv-story-body reveal" style="--i: 1; --ry: 28px;">{{ d.body | default(t('morva.story_default'), true) | safe }}</div>
+      {% if d.signature %}<div class="mv-story-sig reveal" style="--i: 2; --ry: 28px;">{{ d.signature }}</div>{% endif %}
+      {% if d.cta_text and d.cta_url %}
+        <a href="{{ d.cta_url }}" class="mv-viewall mv-story-cta reveal" style="--i: 3; --ry: 28px;">{{ d.cta_text }} <span class="mv-arrow" aria-hidden="true">→</span></a>
+      {% endif %}
+    </div>
+  </div>
+</section>

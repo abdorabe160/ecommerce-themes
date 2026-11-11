@@ -1,0 +1,316 @@
+{
+  "name": "شبكة مرنة",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم (اختياري)",
+        "en": "Section heading (optional)"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "▸ عدد البلاطات في الصف — كمبيوتر",
+        "en": "▸ Tiles per row — desktop"
+      },
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    "height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع البلاطة — كمبيوتر",
+        "en": "Tile height — desktop"
+      },
+      "min": 240,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "default": 390
+    },
+    "height_mobile": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع البلاطة — جوال",
+        "en": "Tile height — mobile"
+      },
+      "min": 240,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 420
+    },
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "بعرض الشاشة كاملًا بدون زوايا — مناسب لبلاطة واحدة",
+        "en": "Edge to edge, square corners — best with a single tile"
+      },
+      "default": false
+    },
+    "gap": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة بين البلاطات",
+        "en": "Gap between tiles"
+      },
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    "animate": {
+      "type": "boolean",
+      "label": {
+        "ar": "حركة دخول هادئة عند الوصول للقسم",
+        "en": "Calm entrance when the section scrolls into view"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون عنوان القسم",
+        "en": "Section heading colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "tile": {
+      "name": "بلاطة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "▸ الصورة — تملأ البلاطة، واترك مكان النص هادئًا",
+            "en": "▸ Image — fills the tile; keep the copy area quiet"
+          }
+        },
+        "image_mobile": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الجوال (اختيارية) — طولية",
+            "en": "Mobile image (optional) — portrait"
+          }
+        },
+        "bg_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون الخلفية (بدون صورة أو قبل تحميلها)",
+            "en": "Background colour (without an image or before it loads)"
+          },
+          "default": ""
+        },
+        "content_position": {
+          "type": "select",
+          "label": {
+            "ar": "▸ مكان النص على الصورة",
+            "en": "▸ Copy position on the image"
+          },
+          "default": "bottom-start",
+          "options": [
+            {
+              "value": "top-start",
+              "label": {
+                "ar": "أعلى · البداية",
+                "en": "Top · start"
+              }
+            },
+            {
+              "value": "top-center",
+              "label": {
+                "ar": "أعلى · المنتصف",
+                "en": "Top · centre"
+              }
+            },
+            {
+              "value": "top-end",
+              "label": {
+                "ar": "أعلى · النهاية",
+                "en": "Top · end"
+              }
+            },
+            {
+              "value": "middle-start",
+              "label": {
+                "ar": "وسط · البداية",
+                "en": "Middle · start"
+              }
+            },
+            {
+              "value": "middle-center",
+              "label": {
+                "ar": "وسط · المنتصف",
+                "en": "Middle · centre"
+              }
+            },
+            {
+              "value": "middle-end",
+              "label": {
+                "ar": "وسط · النهاية",
+                "en": "Middle · end"
+              }
+            },
+            {
+              "value": "bottom-start",
+              "label": {
+                "ar": "أسفل · البداية",
+                "en": "Bottom · start"
+              }
+            },
+            {
+              "value": "bottom-center",
+              "label": {
+                "ar": "أسفل · المنتصف",
+                "en": "Bottom · centre"
+              }
+            },
+            {
+              "value": "bottom-end",
+              "label": {
+                "ar": "أسفل · النهاية",
+                "en": "Bottom · end"
+              }
+            }
+          ]
+        },
+        "overlay": {
+          "type": "range",
+          "label": {
+            "ar": "تعتيم الصورة لقراءة النص (٠ = بدون)",
+            "en": "Darken the image for legibility (0 = none)"
+          },
+          "min": 0,
+          "max": 70,
+          "step": 5,
+          "unit": "%",
+          "default": 0
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير",
+            "en": "Small line"
+          },
+          "default": "كل يوم"
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Heading"
+          },
+          "default": "مخبوزات طازجة"
+        },
+        "text": {
+          "type": "text",
+          "label": {
+            "ar": "نص تحت العنوان (اختياري)",
+            "en": "Copy under the heading (optional)"
+          },
+          "default": ""
+        },
+        "button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر — فارغ = بدون زر",
+            "en": "Button label — empty hides it"
+          },
+          "default": "تسوّق الآن"
+        },
+        "button_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر · /shop · /collections · /blogs",
+            "en": "Button link · /shop · /collections · /blogs"
+          },
+          "default": "/shop"
+        },
+        "title_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون العنوان والسطر الصغير",
+            "en": "Heading and small-line colour"
+          },
+          "default": ""
+        },
+        "text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون النص",
+            "en": "Copy colour"
+          },
+          "default": ""
+        },
+        "button_bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون الزر",
+            "en": "Button colour"
+          },
+          "default": ""
+        },
+        "button_text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون نص الزر",
+            "en": "Button text colour"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "شبكة مرنة"
+    }
+  ]
+}

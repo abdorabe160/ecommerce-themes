@@ -1,0 +1,75 @@
+{
+  "name": "نموذج تواصل معنا",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": ""
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص",
+        "en": "Text"
+      },
+      "default": ""
+    },
+    "text_en": {
+      "type": "text",
+      "label": {
+        "ar": "النص (إنجليزي)",
+        "en": "Text (English)"
+      },
+      "default": ""
+    },
+    "form_action": {
+      "type": "string",
+      "label": {
+        "ar": "رابط استقبال الرسائل (Formspree / Getform / Google Form) — فارغ = يفتح البريد على إيميل المتجر من الإعدادات",
+        "en": "Form endpoint (Formspree / Getform / Google Form) — empty = opens mail to the store email from settings"
+      },
+      "default": ""
+    },
+    "heading_tag": {
+      "type": "select",
+      "label": {
+        "ar": "وسم العنوان",
+        "en": "Heading tag"
+      },
+      "default": "h1",
+      "options": [
+        {
+          "value": "h1",
+          "label": {
+            "ar": "H1 (عنوان الصفحة)",
+            "en": "H1 (page title)"
+          }
+        },
+        {
+          "value": "h2",
+          "label": {
+            "ar": "H2 (قسم)",
+            "en": "H2 (section)"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "عام",
+      "name": "نموذج تواصل معنا"
+    }
+  ]
+}

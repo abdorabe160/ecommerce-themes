@@ -1,0 +1,484 @@
+{
+  "name": "تشكيلات ترويجية",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "text_set": {
+      "type": "select",
+      "label": {
+        "ar": "النصوص الافتراضية (عند ترك العنوان وأسماء التبويبات فارغة)",
+        "en": "Default texts (used when the title and tab names are empty)"
+      },
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "«جودة أعلى. وأسعار أفضل.»",
+            "en": "“Top Quality. Even Better Prices.”"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "«صفقات توفير أكبر»",
+            "en": "“Greater Savings Deals”"
+          }
+        }
+      ]
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العنوان",
+        "en": "Show the title"
+      },
+      "default": true
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ رابط «عرض المجموعة» تحت المنتجات — يفتح تصنيف التبويب",
+        "en": "▸ “View collection” link under the products — opens the tab's collection"
+      },
+      "default": true
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Link text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "tab1_label": {
+      "type": "string",
+      "label": {
+        "ar": "▸ التبويب 1 — الاسم — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Tab 1 — name — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "tab1_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "التبويب 1 — إظهار",
+        "en": "Tab 1 — show"
+      },
+      "default": true
+    },
+    "tab1_icon": {
+      "type": "media",
+      "label": {
+        "ar": "التبويب 1 — صورة صغيرة بجانب الاسم (فارغ = صورة الثيم)",
+        "en": "Tab 1 — small picture beside the name (empty = theme picture)"
+      }
+    },
+    "tab1_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 1 — المنتجات (اختيار يدوي)",
+        "en": "Tab 1 — products (hand-picked)"
+      }
+    },
+    "tab1_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "التبويب 1 — أو تصنيف (يُستخدم لو لم تختر منتجات)",
+        "en": "Tab 1 — or a collection (used when no products are picked)"
+      }
+    },
+    "tab2_label": {
+      "type": "string",
+      "label": {
+        "ar": "▸ التبويب 2 — الاسم — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Tab 2 — name — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "tab2_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "التبويب 2 — إظهار",
+        "en": "Tab 2 — show"
+      },
+      "default": true
+    },
+    "tab2_icon": {
+      "type": "media",
+      "label": {
+        "ar": "التبويب 2 — صورة صغيرة بجانب الاسم (فارغ = صورة الثيم)",
+        "en": "Tab 2 — small picture beside the name (empty = theme picture)"
+      }
+    },
+    "tab2_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 2 — المنتجات (اختيار يدوي)",
+        "en": "Tab 2 — products (hand-picked)"
+      }
+    },
+    "tab2_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "التبويب 2 — أو تصنيف (يُستخدم لو لم تختر منتجات)",
+        "en": "Tab 2 — or a collection (used when no products are picked)"
+      }
+    },
+    "tab3_label": {
+      "type": "string",
+      "label": {
+        "ar": "▸ التبويب 3 — الاسم — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Tab 3 — name — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "tab3_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "التبويب 3 — إظهار",
+        "en": "Tab 3 — show"
+      },
+      "default": true
+    },
+    "tab3_icon": {
+      "type": "media",
+      "label": {
+        "ar": "التبويب 3 — صورة صغيرة بجانب الاسم (فارغ = صورة الثيم)",
+        "en": "Tab 3 — small picture beside the name (empty = theme picture)"
+      }
+    },
+    "tab3_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 3 — المنتجات (اختيار يدوي)",
+        "en": "Tab 3 — products (hand-picked)"
+      }
+    },
+    "tab3_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "التبويب 3 — أو تصنيف (يُستخدم لو لم تختر منتجات)",
+        "en": "Tab 3 — or a collection (used when no products are picked)"
+      }
+    },
+    "tab4_label": {
+      "type": "string",
+      "label": {
+        "ar": "▸ التبويب 4 — الاسم — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "▸ Tab 4 — name — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "tab4_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "التبويب 4 — إظهار",
+        "en": "Tab 4 — show"
+      },
+      "default": true
+    },
+    "tab4_icon": {
+      "type": "media",
+      "label": {
+        "ar": "التبويب 4 — صورة صغيرة بجانب الاسم (فارغ = صورة الثيم)",
+        "en": "Tab 4 — small picture beside the name (empty = theme picture)"
+      }
+    },
+    "tab4_products": {
+      "type": "products",
+      "label": {
+        "ar": "التبويب 4 — المنتجات (اختيار يدوي)",
+        "en": "Tab 4 — products (hand-picked)"
+      }
+    },
+    "tab4_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "التبويب 4 — أو تصنيف (يُستخدم لو لم تختر منتجات)",
+        "en": "Tab 4 — or a collection (used when no products are picked)"
+      }
+    },
+    "limit": {
+      "type": "range",
+      "label": {
+        "ar": "أقصى عدد منتجات من التصنيف أو الأحدث",
+        "en": "Max products from a collection / newest"
+      },
+      "default": 12,
+      "min": 4,
+      "max": 24,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات في الصف — كمبيوتر",
+        "en": "Products per row — desktop"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 6,
+      "step": 1
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد المنتجات في الصف — موبايل",
+        "en": "Products per row — mobile"
+      },
+      "default": "2.2",
+      "options": [
+        {
+          "value": "1.3",
+          "label": {
+            "ar": "1 مع جزء من التالي",
+            "en": "1 and a peek"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "2",
+            "en": "2"
+          }
+        },
+        {
+          "value": "2.2",
+          "label": {
+            "ar": "2 مع جزء من التالي",
+            "en": "2 and a peek"
+          }
+        }
+      ]
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل",
+        "en": "Arrows"
+      },
+      "default": true
+    },
+    "animate": {
+      "type": "boolean",
+      "label": {
+        "ar": "ظهور المنتجات بالتتابع عند تغيير التبويب",
+        "en": "Cards cascade in when the tab changes"
+      },
+      "default": true
+    },
+    "image_fit": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة عرض صورة المنتج",
+        "en": "Product image fit"
+      },
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": {
+            "ar": "كاملة داخل الإطار",
+            "en": "Whole, inside the frame"
+          }
+        },
+        {
+          "value": "cover",
+          "label": {
+            "ar": "تملأ الإطار",
+            "en": "Fill the frame"
+          }
+        }
+      ]
+    },
+    "image_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية إطار الصورة",
+        "en": "Image frame background"
+      },
+      "default": ""
+    },
+    "show_rating": {
+      "type": "boolean",
+      "label": {
+        "ar": "التقييم بالنجوم",
+        "en": "Star rating"
+      },
+      "default": true
+    },
+    "show_thumbs": {
+      "type": "boolean",
+      "label": {
+        "ar": "صور مصغّرة تحت السعر",
+        "en": "Thumbnails under the price"
+      },
+      "default": true
+    },
+    "hover_images": {
+      "type": "boolean",
+      "label": {
+        "ar": "تبديل الصور عند تحريك الماوس",
+        "en": "Switch images on mouse move"
+      },
+      "default": true
+    },
+    "show_stock": {
+      "type": "boolean",
+      "label": {
+        "ar": "حالة المخزون",
+        "en": "Stock status"
+      },
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر العرض السريع",
+        "en": "Quick view button"
+      },
+      "default": true
+    },
+    "show_atc": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر الإضافة للسلة",
+        "en": "Add to cart button"
+      },
+      "default": true
+    },
+    "show_sale_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة المنتجات المخفّضة",
+        "en": "▸ Discounted-product badge"
+      },
+      "default": true
+    },
+    "sale_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشارة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Badge text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_low_badge": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ شارة الكمية المحدودة",
+        "en": "▸ Low-stock badge"
+      },
+      "default": true
+    },
+    "low_badge": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشارة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Badge text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "show_note": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ملاحظة أسفل المنتجات المخفّضة",
+        "en": "▸ Note under discounted products"
+      },
+      "default": false
+    },
+    "card_note": {
+      "type": "string",
+      "label": {
+        "ar": "نص الملاحظة — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Note text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز (المخزون)",
+        "en": "Accent (stock)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "تشكيلات ترويجية"
+    }
+  ]
+}

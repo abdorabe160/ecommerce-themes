@@ -1,0 +1,149 @@
+{# ===== ATTAR Blogs Page — /blogs ===== #}
+{# The platform sends /blogs only the list of categories. The articles are gathered in the
+   browser from each category's own page (same ui/article-card.njk markup, one card, no twin);
+   the categories become a filter above them, hidden when there is only one. #}
+{% set blogs = context.blogs | default([], true) %}
+{% set blogHandles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = blogHandles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+{% set title = widget.data.title | default(t('pages.blog.title'), true) %}
+{% set subtitle = widget.data.subtitle | default(t('pages.blog.subtitle'), true) %}
+{% set cols = widget.data.columns | default('3', true) %}
+
+{# Column grid classes #}
+{% if cols == '2' %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 attar-fit-span attar-lone-lg2' %}
+{% elif cols == '4' %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 attar-fit-span attar-lone-lg3 attar-lone-xl4' %}
+{% else %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 attar-fit-3 attar-fit-span' %}
+{% endif %}
+
+<section id="blogs-{{ widget.id }}" class="py-12 md:py-20" style="background: var(--color-bg-primary);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+    {# —— Breadcrumbs —— #}
+    <nav class="flex items-center gap-2 text-[13px] mb-10 font-body-ar" style="color: var(--color-text-tertiary);">
+      <a href="/" class="transition-colors duration-200 [color:var(--color-text-tertiary)] hover:[color:var(--color-accent)]" style="text-decoration: none;">{{ t('common.home') }}</a>
+      <svg class="w-3 h-3 opacity-40 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span style="color: var(--color-text-primary);">{{ title | safe }}</span>
+    </nav>
+
+    {# —— Header —— #}
+    <div class="text-center mb-14 reveal">
+      <h1 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.15; color: var(--color-text-primary);">{{ title | safe }}</h1>
+      <span class="editorial-rule block max-w-[64px] mx-auto mt-6"></span>
+      {% if subtitle %}
+        <div class="text-base max-w-lg mx-auto leading-relaxed mt-6 font-body-ar" style="color: var(--color-text-secondary);">{{ subtitle }}</div>
+      {% endif %}
+    </div>
+
+    {# —— Empty State —— #}
+    <div class="text-center py-20 flex items-center justify-center flex-col" data-blogs-empty {% if blogs | length %}hidden{% endif %}>
+      <p class="text-base font-medium mb-1 font-body-ar" style="color: var(--color-text-primary);">{{ t('pages.blog.no_articles') }}</p>
+      <p class="text-sm mb-6 font-body-ar" style="color: var(--color-text-tertiary);">{{ t('pages.blog.no_articles_desc') }}</p>
+      <a href="/shop" class="anaqa-btn font-body-ar">{{ t('cart.continue_shopping') }}</a>
+    </div>
+
+    {# —— Articles —— #}
+    {% if blogs | length %}
+      {% if blogs | length > 1 %}
+        <div class="flex flex-wrap items-center justify-center gap-2.5 mb-12" data-blog-filters>
+          <a href="/blogs" data-blog-filter="" aria-current="true" class="attar-blog-chip font-body-ar">{{ t('pages.blog.all') }}</a>
+          {% for blog in blogs %}
+            {% set _h = blog.handle or blog.slug %}
+            {% if _h and blog.title %}<a href="/blogs/{{ _h }}" data-blog-filter="{{ _h }}" class="attar-blog-chip font-body-ar">{{ blog.title }}</a>{% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="grid {{ gridClass }} gap-x-6 gap-y-12" data-blogs-grid aria-busy="true">
+        {% for i in range(0, 3) %}
+          <div aria-hidden="true">
+            <div class="aspect-[4/3] w-full" style="background: var(--color-bg-secondary);"></div>
+            <div class="h-4 w-3/4 mt-5" style="background: var(--color-bg-secondary);"></div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <script>
+        (function () {
+          var root = document.getElementById('blogs-{{ widget.id }}');
+          var grid = root.querySelector('[data-blogs-grid]');
+          var empty = root.querySelector('[data-blogs-empty]');
+          var bar = root.querySelector('[data-blog-filters]');
+          var handles = {{ blogHandles | dump | safe }};
+          var MAX_PAGES = 5;
+
+          function page(handle, n) {
+            return fetch('/blogs/' + encodeURIComponent(handle) + (n > 1 ? '?page=' + n : ''))
+              .then(function (r) { return r.ok ? r.text() : ''; })
+              .then(function (html) { return new DOMParser().parseFromString(html, 'text/html'); })
+              .catch(function () { return null; });
+          }
+          function cards(doc, handle) {
+            if (!doc) return [];
+            return Array.prototype.map.call(doc.querySelectorAll('.attar-article-card'), function (el) {
+              el.setAttribute('data-blog', handle);
+              return document.importNode(el, true);
+            });
+          }
+          function load(handle) {
+            return page(handle, 1).then(function (doc) {
+              var first = cards(doc, handle);
+              var holder = doc && doc.querySelector('[data-pages]');
+              var pages = Math.min(Number(holder && holder.getAttribute('data-pages')) || 1, MAX_PAGES);
+              var rest = [];
+              for (var i = 2; i <= pages; i++) rest.push(page(handle, i));
+              return Promise.all(rest).then(function (docs) {
+                return docs.reduce(function (all, d) { return all.concat(cards(d, handle)); }, first);
+              });
+            });
+          }
+          function show(list, filter) {
+            grid.innerHTML = '';
+            list.forEach(function (card) {
+              if (filter && card.getAttribute('data-blog') !== filter) return;
+              var cell = document.createElement('div');
+              cell.appendChild(card);
+              grid.appendChild(cell);
+            });
+          }
+
+          Promise.all(handles.map(load)).then(function (lists) {
+            var seen = {};
+            var all = lists.reduce(function (a, b) { return a.concat(b); }, []).filter(function (c) {
+              var href = c.getAttribute('href');
+              if (seen[href]) return false;
+              seen[href] = true;
+              return true;
+            }).sort(function (a, b) {
+              return String(b.getAttribute('data-date')).localeCompare(String(a.getAttribute('data-date')));
+            });
+            grid.removeAttribute('aria-busy');
+            if (!all.length) {
+              grid.hidden = true;
+              if (bar) bar.hidden = true;
+              empty.hidden = false;
+              return;
+            }
+            show(all, '');
+            if (!bar) return;
+            bar.addEventListener('click', function (e) {
+              var chip = e.target.closest('[data-blog-filter]');
+              if (!chip) return;
+              e.preventDefault();
+              bar.querySelectorAll('[data-blog-filter]').forEach(function (c) { c.removeAttribute('aria-current'); });
+              chip.setAttribute('aria-current', 'true');
+              show(all, chip.getAttribute('data-blog-filter'));
+            });
+          });
+        })();
+      </script>
+
+      {% if context.pagination and context.pagination.totalPages > 1 %}
+        {% include "ui/pagination.njk" %}
+      {% endif %}
+    {% endif %}
+
+      </div>
+</section>

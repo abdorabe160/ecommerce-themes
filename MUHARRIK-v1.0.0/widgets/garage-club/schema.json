@@ -1,0 +1,155 @@
+{
+  "name": "نادي محرّك (اشتراك)",
+  "settings": {
+    "image": {
+      "type": "media",
+      "label": { "ar": "▸ صورة الخلفية — يفضّل ١٩٢٠×١٠٨٠ · فارغ = صورة الجراج من الثيم", "en": "▸ Background image — 1920×1080 recommended · empty = the theme's garage photo" }
+    },
+    "overlay": {
+      "type": "range",
+      "label": { "ar": "تعتيم الصورة", "en": "Image darkening" },
+      "default": 72,
+      "min": 30,
+      "max": 95,
+      "step": 5,
+      "unit": "%"
+    },
+    "kicker": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير — مثال: للأعضاء فقط (فارغ = نص الثيم بلغة الزائر)", "en": "Kicker — e.g. MEMBERS ONLY (empty = theme copy in the visitor's language)" },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان — السطر الأول (فارغ = نص الثيم)", "en": "Headline — first line (empty = theme copy)" },
+      "default": ""
+    },
+    "title_hl": {
+      "type": "string",
+      "label": { "ar": "العنوان — السطر الثاني بلون الهوية", "en": "Headline — second line in the accent colour" },
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "label": { "ar": "النص (فارغ = نص الثيم)", "en": "Text (empty = theme copy)" },
+      "default": ""
+    },
+    "nl_action": {
+      "type": "string",
+      "label": { "ar": "▸ رابط الإرسال (Mailchimp أو غيره) — فارغ = رسالة شكر فقط دون حفظ", "en": "▸ Form action URL (Mailchimp etc.) — empty = a thank-you message only, nothing is stored" },
+      "default": ""
+    },
+    "nl_field": {
+      "type": "string",
+      "label": { "ar": "اسم حقل البريد عند المزود", "en": "Email field name at the provider" },
+      "default": "EMAIL"
+    },
+    "nl_placeholder": {
+      "type": "string",
+      "label": { "ar": "نص الحقل قبل الكتابة (فارغ = نص الثيم)", "en": "Field placeholder (empty = theme copy)" },
+      "default": ""
+    },
+    "nl_button": {
+      "type": "string",
+      "label": { "ar": "نص الزر (فارغ = نص الثيم)", "en": "Button label (empty = theme copy)" },
+      "default": ""
+    },
+    "show_perks": {
+      "type": "boolean",
+      "label": { "ar": "▸ إظهار المزايا", "en": "▸ Show the perks" },
+      "default": true
+    },
+    "fine_print": {
+      "type": "string",
+      "label": { "ar": "السطر الصغير تحت المزايا (فارغ = نص الثيم)", "en": "Fine print under the perks (empty = theme copy)" },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": { "ar": "المسافة العلوية", "en": "Top spacing" },
+      "default": 112,
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": { "ar": "المسافة السفلية", "en": "Bottom spacing" },
+      "default": 112,
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": { "ar": "▸ ألوان خاصة بهذا القسم", "en": "▸ Custom colours for this section" },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية القسم (خلف الصورة)", "en": "Section background (behind the image)" },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": { "ar": "لون العنوان", "en": "Title colour" },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": { "ar": "لون النص", "en": "Text colour" },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": { "ar": "لون الهوية (السطر الثاني، الأيقونات، الزوايا)", "en": "Accent colour (second line, icons, corners)" },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": { "ar": "لون الخطوط الفاصلة", "en": "Hairline colour" },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": { "ar": "خلفية الزر", "en": "Button background" },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": { "ar": "نص الزر", "en": "Button text" },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "perk": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": { "ar": "الأيقونة", "en": "Icon" },
+          "default": "tag",
+          "options": [
+            { "value": "tag", "label": { "ar": "خصم", "en": "Discount tag" } },
+            { "value": "bell", "label": { "ar": "تذكير", "en": "Reminder bell" } },
+            { "value": "bolt", "label": { "ar": "برق (وصول مبكر)", "en": "Bolt (early access)" } },
+            { "value": "shield", "label": { "ar": "ضمان / حماية", "en": "Shield" } },
+            { "value": "truck", "label": { "ar": "توصيل", "en": "Truck" } },
+            { "value": "wrench", "label": { "ar": "صيانة", "en": "Wrench" } },
+            { "value": "star", "label": { "ar": "نجمة", "en": "Star" } }
+          ]
+        },
+        "text": {
+          "type": "string",
+          "label": { "ar": "نص الميزة — مثال: خصم 10% على أول طلب", "en": "Perk — e.g. 10% off your first order" },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    { "category": "القصة", "name": "نادي محرّك (اشتراك)" }
+  ]
+}

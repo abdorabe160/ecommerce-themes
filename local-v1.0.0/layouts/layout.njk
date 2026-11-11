@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+{#
+  ============================================================================
+  LOCAL · Root layout
+  ----------------------------------------------------------------------------
+  Order matters here:
+    1. Fonts (preconnect early)      2. {% seo %} + {% qumra_head %}
+    3. style.css (the design system) 4. :root overrides from Theme Editor
+    5. Tailwind CDN + config mapped onto the CSS vars
+    6. Swiper / GLightbox CSS + JS
+  Body:
+    header template → {% content %} → footer template → global overlays
+    → __QUMRA_CONFIG__ → {% qumra_scripts %} → main.js → Alpine
+  NOTE: {% qumra_head %} / {% qumra_scripts %} do NOT ship Tailwind, fonts,
+        Alpine, Swiper or GLightbox — they are all loaded manually below.
+  ============================================================================
+#}
+{% set lang = localization.language | default('ar') %}
+{% set isRtl = lang != 'en' %}
+
+{# ---- Fonts: display + body per script, plus the numerals face ---- #}
+{% set fontDisplayAr = settings.fontDisplayArabic | default('Cairo', true) %}
+{% set fontDisplayEn = settings.fontDisplayLatin | default('Outfit', true) %}
+{% set fontBodyAr    = settings.fontBodyArabic | default('Cairo', true) %}
+{% set fontBodyEn    = settings.fontBodyLatin | default('Outfit', true) %}
+{# Numerals ride on the Latin BODY face, not the display one. The display face
+   is a high-contrast serif — its figures are old-style and beautiful in a
+   sentence, and unreadable in a price column. #}
+{% set fontNum = fontBodyEn %}
+
+{# ---- Shape, elevation and rhythm ----
+   Fixed here to the LOCAL design language — the global settings are colours
+   and fonts only: softly rounded cards (12px) and media (10px), PILL buttons
+   and inputs, hairlines instead of shadows, and a 72px vertical rhythm. Every section that needs a different radius or a tighter band
+   already carries its own setting, which is where that choice belongs — a
+   global "rounded corners" switch could never know that the product card, the
+   payment badge and the subscribe pill want different answers. #}
+{% set rCard = '12px' %}{% set rInput = '999px' %}{% set rMedia = '10px' %}
+{% set rBtn = '999px' %}
+{% set secPy = '72px' %}{% set secPySm = '48px' %}
+{# 1264 + the 32px of padding `.lc-container` adds on each side = a 1200px
+   MEASURE, which is what this design is drawn to — the floating header card is
+   1200 wide and the hero's copy starts 120px in on a 1440 viewport. Changing
+   this without changing `--container-px` changes the measure with it. #}
+{% set containerWidth = '1440' %}
+
+{# ---- Colour override switch ----
+   Off, the whole colour block below is simply not printed and every token
+   falls back to the palette already declared in assets/style.css. That is the
+   revert: nothing is reset or cleared, the merchant's picked colours stay in
+   the settings and come back the moment the switch goes on again.
+
+   Same mechanism as `colors_enabled` on each section — the switch IS the
+   revert. It covers colours only; fonts, shape, elevation and rhythm are
+   printed unconditionally further down, because those have no equivalent
+   "original" to fall back to beyond their own defaults. #}
+{% set customColors = settings.useCustomColors | default(true) %}
+{# Off = no motion at all, same rules as prefers-reduced-motion. A store saved
+   before this setting has no key, which reads as on. #}
+{% set motionOn = settings.enableAnimations | default(true) %}
+
+<html lang="{{ lang }}" dir="{{ 'rtl' if isRtl else 'ltr' }}"{% if not motionOn %} class="lc-no-motion"{% endif %}>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {# The theme editor previews the store inside an iframe. Set-up hints and the
+       inert placeholders of unconfigured sections («أضف عناصر من إعدادات القسم»,
+       the newsletter's provider-URL note) are for the merchant there only —
+       shoppers never see them. See `.lc-builder-only` in assets/style.css. #}
+    <script>try { if (window.self !== window.top) document.documentElement.classList.add('is-builder'); } catch (e) { document.documentElement.classList.add('is-builder'); }</script>
+    {# The browser-chrome tint. Follows the page background, which is what the
+       header paints from now that `headerColor` is derived rather than picked. #}
+    <meta name="theme-color" content="{{ settings.backgroundColor | default('#FFFFFF', true) if customColors else '#FFFFFF' }}"/>
+
+    {# ===== Google Fonts =====
+       FOUR separate links, and a per-family weight list. Both matter.
+
+       ── Why four links ──
+       The CSS2 API returns 400 for the WHOLE request if any one family lacks a
+       requested weight. On a single combined URL that means one bad weight
+       silently drops all four faces and the entire storefront falls back to
+       system-ui. Split, a family that cannot serve a weight fails alone.
+
+       ── Why a per-family list ──
+       This used to request one weight list for all six options in a dropdown,
+       which forced the INTERSECTION: Amiri has only 400/700, so no Arabic
+       display face could ever be asked for 500 or 600. Worse, the Arabic BODY
+       list was 300;400;700 while the CSS asks for 500, 600 and 800 in sixteen
+       places — every section title in the theme was being FAUX-bolded by the
+       browser, which on Arabic thickens strokes unevenly and damages the joins.
+
+       Only one family per slot is ever loaded, so each can be asked for exactly
+       what it ships. The table below was measured against the live API, not
+       guessed: anything missing from it falls back to the full range, and an
+       option added to settings-schema.json must be measured and added here or
+       it silently loses its heavy weights.
+
+       `300` is deliberately absent — nothing in the theme sets it, and it was
+       four extra font files per page. #}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+
+    {# Measured against the live API — every option in settings-schema.json is
+       listed. An option added there WITHOUT a row here falls back to 400;700:
+       plain, but it always loads. The opposite default (the full range) would
+       404 the request for any family that lacks a weight and drop that face
+       entirely, which is the failure this table exists to prevent. #}
+    {% set SAFE = '400;700' %}
+    {% set WGHT = {
+      'Cairo':                '400;500;600;700;800;900',
+      'Almarai':              '400;700;800',
+      'Tajawal':              '400;500;700;800',
+      'Rubik':                '400;500;600;700;800;900',
+      'Noto Sans Arabic':     '400;500;600;700;800;900',
+      'IBM Plex Sans Arabic': '400;500;600;700',
+      'Marhey':               '400;500;600;700',
+      'El Messiri':           '400;500;600;700',
+      'Outfit':               '400;500;600;700;800;900',
+      'Figtree':              '400;500;600;700;800;900',
+      'Plus Jakarta Sans':    '400;500;600;700;800',
+      'Manrope':              '400;500;600;700;800',
+      'Poppins':              '400;500;600;700;800;900',
+      'Nunito':               '400;500;600;700;800;900',
+      'Baloo 2':              '400;500;600;700;800',
+      'DM Sans':              '400;500;600;700;800;900',
+      'Inter':                '400;500;600;700;800;900',
+      'Montserrat':           '400;500;600;700;800;900'
+    } %}
+
+    {% set wDisplayAr = WGHT[fontDisplayAr] | default(SAFE) %}
+    {% set wDisplayEn = WGHT[fontDisplayEn] | default(SAFE) %}
+    {% set wBodyAr    = WGHT[fontBodyAr]    | default(SAFE) %}
+    {% set wBodyEn    = WGHT[fontBodyEn]    | default(SAFE) %}
+
+    {# One family per slot, and a slot that repeats a family already requested
+       is skipped. This theme's default pairing uses ONE face per script for
+       both display and body (Cairo / Figtree at different weights), which under
+       the old unconditional four links fetched the same stylesheet twice.
+
+       Skipping is only safe because the family decides the weight list: two
+       slots holding the same family read the same WGHT row, so the URLs are
+       byte-identical and the dropped request could not have carried a weight
+       the kept one lacks. Two DIFFERENT families never dedupe. #}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayAr | replace(' ', '+') }}:wght@{{ wDisplayAr }}&display=swap"/>
+    {% if fontDisplayEn != fontDisplayAr %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayEn | replace(' ', '+') }}:wght@{{ wDisplayEn }}&display=swap"/>
+    {% endif %}
+    {% if fontBodyAr != fontDisplayAr and fontBodyAr != fontDisplayEn %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyAr | replace(' ', '+') }}:wght@{{ wBodyAr }}&display=swap"/>
+    {% endif %}
+    {% if fontBodyEn != fontDisplayAr and fontBodyEn != fontDisplayEn and fontBodyEn != fontBodyAr %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyEn | replace(' ', '+') }}:wght@{{ wBodyEn }}&display=swap"/>
+    {% endif %}
+
+    {% seo %}
+    {% qumra_head %}
+
+    {% if settings.favicon and settings.favicon.fileUrl %}
+    <link rel="icon" href="{{ settings.favicon.fileUrl }}"/>
+    <link rel="apple-touch-icon" href="{{ settings.favicon.fileUrl }}"/>
+    {% endif %}
+
+    {# Accepts the full <meta …> tag or just its content value #}
+    {% set gv = (settings.googleVerification or '') | trim %}
+    {% if gv %}
+      {% set _gvI = gv.indexOf('content=') %}{% set _gvTail = gv.slice(_gvI + 8) | trim if _gvI > -1 else '' %}{% set gvMatch = [gv, _gvTail.slice(1).split(_gvTail.slice(0, 1))[0]] if _gvTail else false %}
+      <meta name="google-site-verification" content="{{ gvMatch[1] if gvMatch else gv }}"/>
+    {% endif %}
+
+
+    {# ===== LOCAL design system ===== #}
+    {% set assetv = '18e5458e' %}
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+    {# ===== Theme Editor overrides =====
+       Colours are gated on `useCustomColors`; everything after them is not.
+       See the note beside the switch above for why. ===== #}
+    <style>
+      :root {
+      {% if customColors %}
+        {# ═══════════════════════════════════════════════════════════════════
+           NINE pickers drive THIRTY tokens. The rest are derived with
+           color-mix(), which is the same call ui/section-colors.njk already
+           makes for a single section, and for the reason written there:
+
+             "A merchant who picks one brand colour should not then have to
+              hand-pick its hover, its wash and its ring — and if they did,
+              nothing would stop the four drifting out of relation."
+
+           That was true per-section and it was not true here: this block used
+           to expose all thirty as pickers, including three whose LABELS still
+           described the previous theme ("text on blue wash", "navy hover") for
+           colours this palette does not contain.
+
+           ── Two mix targets, on purpose ──
+           Tints and muted text mix toward `wellColor`, not toward white. The
+           palette's neutrals are warm (#A29B93, #6E6862) and mixing ink into
+           pure white lands neutral — measured 12/255 off. Mixing into the warm
+           well halves that. The washes stay on `backgroundColor`, where white
+           is the more faithful target.
+
+           Ratios are measured against the original hand-picked palette, not
+           guessed. Every derived value lands within 6/255 of what it replaces.
+           ═══════════════════════════════════════════════════════════════════ #}
+        {% set P  = settings.primaryColor | default('#1F1F1F', true) %}
+        {% set D  = settings.dealColor | default('#C0432E', true) %}
+        {% set BG = settings.backgroundColor | default('#FFFFFF', true) %}
+        {% set W  = settings.wellColor | default('#F3F1EC', true) %}
+        {% set T  = settings.textColor | default('#1F1F1F', true) %}
+        {% set BR = settings.borderColor | default('#E6E3DD', true) %}
+        {% set FC = settings.footerColor | default('#F3F1EC', true) %}
+        {% set FT = settings.footerTextColor | default('#1F1F1F', true) %}
+        {% set ON_ACCENT = settings.accentTextColor | default('#FFFFFF', true) %}
+        {% set ON_DEAL   = settings.dealTextColor | default('#FFFFFF', true) %}
+
+        /* Accent · ink — in this theme the action colour IS the text colour,
+           so both families derive from the one brand pick. */
+        --color-accent:        {{ P }};
+        --color-accent-hover:  color-mix(in srgb, {{ P }} 88%, {{ BG }});
+        --color-accent-dark:   color-mix(in srgb, {{ P }} 55%, #000);
+        --color-accent-soft:   color-mix(in srgb, {{ P }} 40%, {{ W }});
+        --color-accent-light:  color-mix(in srgb, {{ P }} 6%,  {{ BG }});
+        --color-text-on-accent: {{ ON_ACCENT }};
+
+        --color-ink:           {{ P }};
+        --color-ink-hover:     color-mix(in srgb, {{ P }} 88%, {{ BG }});
+        --color-ink-light:     color-mix(in srgb, {{ P }} 6%,  {{ BG }});
+        --color-text-on-ink:   {{ ON_ACCENT }};
+
+        /* Deal · the one saturated colour the theme allows itself */
+        --color-deal:          {{ D }};
+        --color-deal-hover:    color-mix(in srgb, {{ D }} 85%, #000);
+        --color-deal-light:    color-mix(in srgb, {{ D }} 5%,  {{ BG }});
+        --color-text-on-deal:  {{ ON_DEAL }};
+
+        /* Surfaces — cards sit ON the paper rather than above it, so the card
+           surface is the page, not a second pick. */
+        --color-bg-primary:    {{ BG }};
+        --color-bg-secondary:  {{ BG }};
+        --color-surface:       {{ BG }};
+        --color-section-a:     {{ BG }};
+        --color-bg-tertiary:   {{ W }};
+        --color-section-b:     {{ W }};
+
+        /* Text */
+        --color-text-primary:   {{ T }};
+        /* 72% / 64%: the lightest mixes that still read at 4.5:1 on the warm
+           well (the darker of the two grounds). The old 62% / 40% measured
+           4.46 and 2.4 — every eyebrow, date, cart count and "calculated at
+           checkout" line was below the WCAG floor. */
+        --color-text-secondary: color-mix(in srgb, {{ T }} 72%, {{ W }});
+        --color-text-tertiary:  color-mix(in srgb, {{ T }} 64%, {{ W }});
+
+        /* Lines */
+        --color-border:        {{ BR }};
+        --color-border-strong: color-mix(in srgb, {{ T }} 9%, {{ BR }});
+        --color-border-hover:  {{ T }};
+        --color-border-focus:  {{ P }};
+
+        /* Header — follows the page. A merchant who wants a coloured bar has
+           the header widget's own `colors_enabled`, which is where a choice
+           about one section belongs. */
+        --color-header:        {{ BG }};
+        --color-header-text:   {{ T }};
+        --color-header-border: {{ BR }};
+
+        /* Footer — the one region with its own pair, because a dark footer
+           under a light page is a real and common design, not a consequence.
+           `footerTextColor` is the STRONGEST value: headings take it whole and
+           everything weaker mixes toward the footer's own ground. That is what
+           makes a dark footer work without a second set of pickers — mixing
+           toward the background reduces contrast in whichever direction the
+           footer actually goes. */
+        --color-footer:            {{ FC }};
+        --color-footer-heading:    {{ FT }};
+        --color-footer-text:       color-mix(in srgb, {{ FT }} 72%, {{ FC }});
+        --color-footer-text-muted: color-mix(in srgb, {{ FT }} 53%, {{ FC }});
+        --color-footer-border:     color-mix(in srgb, {{ FT }} 11%, {{ FC }});
+
+        /* Status — empty keeps the palette in assets/style.css */
+        {% if settings.successColor %}
+        --color-success:       {{ settings.successColor }};
+        --color-success-light: color-mix(in srgb, {{ settings.successColor }} 8%, {{ BG }});
+        {% endif %}
+        {% if settings.warningColor %}
+        --color-warning:       {{ settings.warningColor }};
+        {% endif %}
+      {% endif %}
+
+        /* Typography */
+        --font-display-ar: '{{ fontDisplayAr }}', '{{ fontBodyAr }}', system-ui, sans-serif;
+        --font-display-en: '{{ fontDisplayEn }}', system-ui, -apple-system, sans-serif;
+        --font-body-ar:    '{{ fontBodyAr }}', system-ui, -apple-system, sans-serif;
+        --font-body-en:    '{{ fontBodyEn }}', system-ui, -apple-system, sans-serif;
+        {# ⚠️  The SECOND slot must be the ARABIC body face, and this line always
+           wins — it is printed after assets/style.css, whose own declaration is
+           `"Jost", "Tajawal", system-ui`. This one used to read
+           `'{{ fontNum }}', '{{ fontBodyEn }}', ui-monospace` — and `fontNum`
+           IS `fontBodyEn`, so the family was named twice and the Arabic face was
+           dropped from the chain entirely.
+
+           That matters because `| money` renders whatever digits the store's
+           locale asks for. On Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩) the Latin face
+           has no glyphs, so every price fell through to `ui-monospace` — a
+           system monospace, in the most visible numbers in the shop. The Arabic
+           body font is already loaded and carries those digits, so it is the
+           correct catch. #}
+        --font-num:        '{{ fontNum }}', '{{ fontBodyAr }}', system-ui, sans-serif;
+
+        /* Shape */
+        --radius-card:  {{ rCard }};
+        --radius-input: {{ rInput }};
+        --radius-media: {{ rMedia }};
+        --radius-btn:   {{ rBtn }};
+
+        /* Elevation — hairlines, not shadows */
+        --shadow-card: none;
+
+        /* Rhythm */
+        --section-py:    {{ secPy }};
+        --section-py-sm: {{ secPySm }};
+        --container-max: {{ containerWidth }}px;
+      }
+    </style>
+
+    {# ===== Tailwind CDN — config maps utilities onto the CSS vars ===== #}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          container: {
+            center: true,
+            padding: { DEFAULT: '32px', sm: '20px', lg: '32px' },
+            screens: { '2xl': '1440px' },
+          },
+          extend: {
+            colors: {
+              accent: {
+                DEFAULT: 'var(--color-accent)',
+                hover: 'var(--color-accent-hover)',
+                dark: 'var(--color-accent-dark)',
+                soft: 'var(--color-accent-soft)',
+                light: 'var(--color-accent-light)',
+              },
+              ink: {
+                DEFAULT: 'var(--color-ink)',
+                hover: 'var(--color-ink-hover)',
+                light: 'var(--color-ink-light)',
+              },
+              deal: {
+                DEFAULT: 'var(--color-deal)',
+                hover: 'var(--color-deal-hover)',
+                light: 'var(--color-deal-light)',
+              },
+              surface: 'var(--color-surface)',
+              success: 'var(--color-success)',
+              error: 'var(--color-error)',
+              warning: 'var(--color-warning)',
+              info: 'var(--color-info)',
+              header: 'var(--color-header)',
+              footer: {
+                DEFAULT: 'var(--color-footer)',
+                text: 'var(--color-footer-text)',
+                muted: 'var(--color-footer-text-muted)',
+                heading: 'var(--color-footer-heading)',
+                border: 'var(--color-footer-border)',
+              },
+            },
+            backgroundColor: {
+              primary: 'var(--color-bg-primary)',
+              secondary: 'var(--color-bg-secondary)',
+              tertiary: 'var(--color-bg-tertiary)',
+              canvas: 'var(--color-bg-primary)',
+              well: 'var(--color-bg-tertiary)',
+              'section-a': 'var(--color-section-a)',
+              'section-b': 'var(--color-section-b)',
+            },
+            textColor: {
+              primary: 'var(--color-text-primary)',
+              secondary: 'var(--color-text-secondary)',
+              tertiary: 'var(--color-text-tertiary)',
+            },
+            borderColor: {
+              DEFAULT: 'var(--color-border)',
+              soft: 'var(--color-border)',
+              strong: 'var(--color-border-strong)',
+              hover: 'var(--color-border-hover)',
+              focus: 'var(--color-border-focus)',
+            },
+            fontFamily: {
+              display: ['{{ fontDisplayAr }}', '{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              'display-en': ['{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              body: ['{{ fontBodyAr }}', 'system-ui', 'sans-serif'],
+              'body-en': ['{{ fontBodyEn }}', 'system-ui', 'sans-serif'],
+              {# same chain as --font-num above, and for the same reason: the
+                 second slot is the ARABIC face, not a second copy of the Latin
+                 one. A `font-num` utility that disagreed with the CSS variable
+                 would put two different fallbacks on the same digits. #}
+              num: ['{{ fontNum }}', '{{ fontBodyAr }}', 'system-ui', 'sans-serif'],
+            },
+            borderRadius: {
+              none: '0px',
+              xs: 'var(--radius-xs)',
+              sm: 'var(--radius-sm)',
+              DEFAULT: 'var(--radius-md)',
+              md: 'var(--radius-md)',
+              lg: 'var(--radius-lg)',
+              xl: 'var(--radius-xl)',
+              '2xl': 'var(--radius-2xl)',
+              '3xl': 'var(--radius-2xl)',
+              card: 'var(--radius-card)',
+              btn: 'var(--radius-btn)',
+              input: 'var(--radius-input)',
+              media: 'var(--radius-media)',
+              full: '9999px',
+            },
+            boxShadow: {
+              xs: 'var(--shadow-xs)',
+              sm: 'var(--shadow-sm)',
+              DEFAULT: 'var(--shadow-sm)',
+              md: 'var(--shadow-md)',
+              lg: 'var(--shadow-lg)',
+              xl: 'var(--shadow-xl)',
+              accent: 'var(--shadow-accent)',
+              deal: 'var(--shadow-deal)',
+              card: 'var(--shadow-card)',
+              focus: 'var(--shadow-focus)',
+              none: 'none',
+            },
+            transitionTimingFunction: {
+              out: 'cubic-bezier(0.2, 0.7, 0.3, 1)',
+              soft: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            },
+            fontSize: {
+              display: ['clamp(2.25rem, 5.2vw, 4rem)', { lineHeight: '1.12', letterSpacing: '0' }],
+              headline: ['clamp(1.625rem, 3.4vw, 2.5rem)', { lineHeight: '1.2', letterSpacing: '0' }],
+            },
+            spacing: {
+              section: 'var(--section-py)',
+              'section-sm': 'var(--section-py-sm)',
+            },
+          },
+        },
+      }
+    </script>
+
+    {# ===== Swiper.js CSS ===== #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css"/>
+
+    {# ===== Swiper.js =====
+       MUST load in <head>, synchronously. Widgets init their sliders from an
+       inline <script> that runs while the body is parsed — i.e. BEFORE the end
+       of <body>. If Swiper were loaded at the bottom, `typeof Swiper` would be
+       'undefined' at that moment and every slider would silently skip init. #}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+
+    {# ===== LocalReady =====
+       Widgets print their init inline while the body parses, but LocalSlider /
+       LocalCard live in main.js at the END of <body>. A widget wraps its init
+       in LocalReady(fn): fn runs at DOMContentLoaded (main.js has run by then),
+       or at once if the page is already parsed — the Theme Editor re-injects
+       widgets long after load. #}
+    <script>
+      window.LocalReady = function (fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
+      };
+    </script>
+
+    {# ===== GLightbox =====
+       NOT the same as Swiper, which is why this no longer copies it.
+
+       Swiper has to be synchronous: ten widgets init a slider from an inline
+       <script> that runs while the body is still parsing, so the library must
+       already exist at that moment. GLightbox has exactly ONE caller — the
+       product page's gallery zoom — and it now inits on DOMContentLoaded, which
+       every deferred script is guaranteed to have finished before.
+
+       So this is `defer` and the stylesheet loads without blocking: measured
+       gzipped, that is 15.3KB of script and 2.6KB of CSS off the critical path
+       of the home page, every collection, the cart and the blog — pages that
+       cannot open a lightbox at all. On Slow 3G those bytes alone are ~0.4s.
+
+       The CSS trick: `media="print"` makes a stylesheet non-blocking, and onload
+       swaps it back to `all`. The <noscript> covers a browser with JS off, which
+       cannot run the swap — and cannot run GLightbox either, but the fallback
+       costs one line and keeps the markup honest. #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css"
+          media="print" onload="this.media='all'; this.onload=null;"/>
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css"/></noscript>
+    <script defer src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+
+    {# Merchant's own CSS — last in <head> so it wins over the theme #}
+    {% if settings.customCSS %}<style>{{ settings.customCSS | safe }}</style>{% endif %}
+  </head>
+
+  <body>
+    {# ===== Header ===== #}
+    {% template "header" %}
+
+    {# ===== Page content ===== #}
+    <main id="lc-main">{% content %}</main>
+
+    {# One H1 on every page. The layout renders before the widgets, so the server
+       can't know whether a hero with a title is there: the page is read here,
+       right after its content. None (hero removed or no title) gets the store
+       name as a hidden H1; a second one (two heroes) becomes an H2. #}
+    <script>
+      (function () {
+        var hs = document.querySelectorAll('h1');
+        [].slice.call(hs, 1).forEach(function (h) {
+          var n = document.createElement('h2');
+          n.className = h.className;
+          n.innerHTML = h.innerHTML;
+          h.parentNode.replaceChild(n, h);
+        });
+        if (hs.length) return;
+        var t = document.createElement('h1');
+        t.className = 'lc-sr-h1';
+        t.textContent = {{ store.name | default('', true) | dump | safe }} || document.title;
+        document.getElementById('lc-main').prepend(t);
+      })();
+    </script>
+
+    {# ===== Footer ===== #}
+    {% template "footer" %}
+
+    {# =====================================================================
+       Quick View modal — content is fetched and injected by main.js
+       (Alpine `quickView()` + #quick-view-content-dynamic are contractual)
+       .lcb-overlay IS shared (cart drawer, search sheet, filters drawer) and
+       stays. The panel, the close button and the padding are the quick view's
+       alone, so they are .lc-qvm-* and styled in "15.24 QUICK VIEW · LOCAL".
+       The CONTENT is widgets/quick-view-product, which borrows the product
+       page's shared .lc-buy-* box so the two can never drift.
+       ===================================================================== #}
+    <div x-data="quickView()" @quick-view.window="openQuickView($event.detail.slug)" x-cloak>
+      <div x-show="$store.modal.current === 'quick-view'"
+           @click="$store.modal.close()"
+           class="lcb-overlay"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"></div>
+
+      <div x-show="$store.modal.current === 'quick-view'"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-[0.98]"
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="lc-qvm">
+        <div class="lc-qvm-panel" @click.outside="$store.modal.close()">
+          {# Not .lc-icon-btn: that one is built for the header row — it inherits
+             `--color-header-text` and carries a -5px optical nudge, both wrong
+             on a white panel. And not Tailwind's `w-4 h-4` on the icon: the Play
+             CDN generates its classes only after its own script runs, so an
+             AJAX-injected modal painted its X at the SVG's intrinsic size first. #}
+          <button @click="$store.modal.close()"
+                  type="button"
+                  aria-label="{{ t('common.close') }}"
+                  class="lc-qvm-close">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          {# .lc-qvm-pad, not Tailwind's p-6: the Play CDN only generates its
+             classes after its own script runs, so a CDN-only padding leaves the
+             first paint of an AJAX-injected modal flush against the panel edge. #}
+          <div class="lc-qvm-pad">
+            {# Loading #}
+            <div x-show="loading" class="lc-qvm-loading">
+              <span class="lc-spinner" style="width: 28px; height: 28px;"></span>
+            </div>
+
+            {# Error #}
+            <div x-show="error && !loading" class="lc-empty">
+              <span>
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+              </span>
+              <p class="m-0 text-sm">{{t('common.error')}}</p>
+            </div>
+
+            {# Injected product markup — Alpine.initTree() runs on it #}
+            <div x-show="!loading && !error" id="quick-view-content-dynamic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ===== Toast host (id is contractual with main.js) ===== #}
+    {# Positioned and styled in assets/style.css → "12. FEEDBACK · TOAST".
+       The utility classes that used to live here pinned it at top: 20px, which
+       is across the sticky header — and they came from the Play CDN, so they
+       did not exist for the first frames of a load. The id is the contract with
+       Toast._show() in main.js; nothing else about this element is. #}
+    <div id="toast-container"></div>
+
+    {# ===== Alpine.js =====
+       Stays at the bottom and deferred: main.js registers the stores and
+       components on `alpine:init`, so Alpine must boot after main.js is parsed.
+       Swiper/GLightbox are in <head> instead — see the note there.
+       Alpine plugins MUST be deferred before the Alpine core script. #}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.17.5/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
+
+    {# ===== Runtime config consumed by main.js ===== #}
+    <script>
+      window.__QUMRA_CONFIG__ = {
+        currency: '{{ localization.currency.currencyCode | default("EGP") }}',
+        currencySymbol: '{{ localization.currency.currencySymbol | default("ج.م") }}',
+        language: '{{ lang }}',
+        exchangeRate: {{ localization.market.exchangeRate | default(1, true) }},
+        {# probe for main.js `_moneyFormat` — 1234567 is wide enough that the
+           result shows the thousands separator AND the decimals in one go.
+           Keep this number in sync with MONEY_PROBE in assets/main.js. #}
+        moneyFormatSample: '{{ 1234567 | money }}',
+        cartTotalQuantity: {{ cart.totalQuantity | default(0, true) }},
+        {# Read by CartManager._refreshShipBar() on DOMContentLoaded, so the
+           free-shipping bar can be recomputed with the DETECTED minor-unit
+           scale before the drawer is ever opened. In minor units, like every
+           other price that crosses this boundary. #}
+        cartTotalPrice: {{ cart.totalPrice | default(0, true) }},
+        wishlistIds: [{% for p in wishlist.products %}'{{ p._id }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        messages: {
+          addedToCart: '{{t("pages.product.added_to_cart")}}',
+          addError: '{{t("common.error")}}',
+          outOfStock: '{{t("cart.out_of_stock")}}'
+        },
+        {# Single source of truth for LocalCard.build() — widgets must NOT
+           dump their own copies of these strings. #}
+        card: {
+          addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+          buyNow: {{ t('pages.product.buy_now') | dump | safe }},
+          added: {{ t('pages.product.added') | dump | safe }},
+          chooseOptions: {{ t('pages.product.choose_options') | dump | safe }},
+          viewProduct: {{ t('pages.product.view_product') | dump | safe }},
+          outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+          quickView: {{ t('pages.product.quick_view') | dump | safe }},
+          onSale: {{ t('common.on_sale') | dump | safe }},
+          {# Read by Utils.formatPrice() — a price of 0 reads as a word, not
+             as "0.00". Only product PRICES use it; totals keep formatMoney. #}
+          free: {{ t('common.free') | dump | safe }},
+          noProducts: {{ t('products.no_products') | dump | safe }},
+          noResults: {{ t('pages.search.no_results') | dump | safe }},
+          isNew: {{ t('products.new') | dump | safe }},
+          isPopular: {{ t('products.popular') | dump | safe }},
+          isHot: {{ t('products.hot') | dump | safe }},
+          sellingFast: {{ t('products.selling_fast') | dump | safe }},
+          tryDifferent: {{ t('pages.search.try_different') | dump | safe }},
+          {# Read by collectionFilter.applyPrice() when it corrects a typed
+             bound — see the note there for why it corrects rather than refuses. #}
+          priceNegative: {{ t('pages.search.price_negative') | dump | safe }},
+          priceSwapped: {{ t('pages.search.price_swapped') | dump | safe }},
+          clearAll: {{ t('pages.search.clear_all') | dump | safe }},
+          products: {{ t('pages.search.products') | dump | safe }},
+          resultsFor: {{ t('pages.search.results_for') | dump | safe }},
+          home: {{ t('common.home') | dump | safe }},
+          prev: {{ t('common.prev') | dump | safe }},
+          next: {{ t('common.next') | dump | safe }}
+        },
+        {# Strings for the JS cart-line renderer — same single-source rule. #}
+        cart: {
+          remove: {{ t('pages.cart.remove_item') | dump | safe }},
+          removeConfirm: {{ t('pages.cart.remove_confirm') | dump | safe }},
+          unitPrice: {{ t('pages.cart.unit_price') | dump | safe }},
+          {# `{amount}` is substituted by _refreshShipBar(); the token has to
+             match the one in locales/*.json or the message renders with the
+             placeholder still in it. #}
+          freeShipLeft: {{ t('pages.cart.free_shipping_left') | dump | safe }},
+          freeShipDone: {{ t('pages.cart.free_shipping_done') | dump | safe }},
+          deleteLabel: {{ t('common.delete') | dump | safe }},
+          cancel: {{ t('common.cancel') | dump | safe }}
+        },
+        {# Product-card defaults for the AJAX renderer, which has to match the
+           server-rendered partial or a filtered grid would drop the New badge
+           and the low-stock strip that the grid above it shows.
+
+           ⚠️  These were Theme Editor settings. They are now literals, and
+           ui/product-card.njk falls back to THE SAME values — the two lists
+           must be changed together or the SSR card and the AJAX card drift.
+           A section that wants different values passes them per widget. #}
+        cardDefaults: {
+          imageRatio: '2x3',
+          showSecondImage: true,
+          showQuickView: true,
+          showBadge: true,
+          badgeStyle: 'vertical',
+          atcStyle: 'tray',
+          showNewBadge: true,
+          newTag: 'new',
+          popularTag: 'popular',
+          hotTag: 'hot',
+          lowStock: {{ settings.lowStockThreshold | default(3, true) }}
+        }
+      };
+    </script>
+
+    {% qumra_scripts %}
+
+    {# main.js registers the Alpine stores/components — must run before Alpine boots #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+    {% if settings.customJS %}<script>{{ settings.customJS | safe }}</script>{% endif %}
+  </body>
+</html>

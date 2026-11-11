@@ -1,0 +1,53 @@
+{# ============================================================================
+   LAMSA STATIC PAGE — «من نحن», policies, any page made in the dashboard
+   ----------------------------------------------------------------------------
+   pages/page.json used to have NO widgets, so every static page rendered an
+   empty shell: no title, no text, no H1. Qumra hands the page as `page`
+   (title, description, handle) — `description` IS the body (authored HTML);
+   `context.page` is read first in case the data arrives there instead.
+   Styled with the article page's own pieces (breadcrumb, display title,
+   .lamsa-prose) so a policy page reads like the rest of LAMSA.
+   ========================================================================= #}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set pg = (context.page if (context and context.page) else page) or {} %}
+{% set pTitle = pg.title | default('') %}
+{% set pBody = pg.description | default(pg.content, true) | default('', true) %}
+{% set showCrumbs = d.show_breadcrumb | default(true) %}
+{% set fallback = d.fallback_text | default('') %}
+
+<style>
+  .lamsa-pg-{{ id }}-title {
+    margin: 0 0 28px;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.38;
+    color: var(--color-text-primary);
+  }
+  html[dir="ltr"] .lamsa-pg-{{ id }}-title { font-family: var(--font-display-en); line-height: 1.24; }
+  .lamsa-pg-{{ id }}-body { max-width: none; }
+  .lamsa-pg-{{ id }}-body img { border-radius: var(--radius-lg); }
+</style>
+
+<section id="lamsa-pg-{{ id }}" class="lamsa-section" style="background: var(--color-bg-primary);">
+  <div class="lamsa-container lamsa-container--narrow">
+    {% if showCrumbs %}
+      <nav class="flex items-center gap-2 flex-wrap mb-6 lamsa-caption" aria-label="breadcrumb">
+        <a href="/" class="hover:text-accent transition-colors">{{ t('common.home') }}</a>
+        <svg class="rtl-flip shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="opacity:.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <span aria-current="page">{{ pTitle }}</span>
+      </nav>
+    {% endif %}
+
+    <h1 class="lamsa-pg-{{ id }}-title">{{ pTitle or store.name }}</h1>
+
+    {% if pBody | replace('<br>', ' ') | striptags | trim %}
+      <div class="lamsa-prose lamsa-pg-{{ id }}-body">{{ pBody | safe }}</div>
+    {% elif fallback %}
+      <div class="lamsa-prose lamsa-pg-{{ id }}-body">{{ fallback | safe }}</div>
+    {% endif %}
+  </div>
+</section>

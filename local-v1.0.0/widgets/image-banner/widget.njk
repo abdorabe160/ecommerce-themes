@@ -1,0 +1,115 @@
+{# ============================================================================
+   LOCAL · FLEXIBLE GRID — شبكة مرنة
+   ----------------------------------------------------------------------------
+     We promise!
+     ┌───────────────────────────┐ ┌───────────────────────────┐
+     │            picture        │ │            picture        │
+     │ Every day                 │ │ Hand-picked               │
+     │ Fresh bakery              │ │ Fruits & vegetables       │
+     │ ( Grab it! )              │ │ ( Shop now )              │
+     └───────────────────────────┘ └───────────────────────────┘
+
+   A grid of image TILES (blocks). Each tile carries its own picture, colours
+   and copy, and places that copy on a 3 × 3 grid (`content_position`,
+   logical: "start" is right in Arabic, left in English).
+
+   The section decides how many tiles share a row (1–4), their height, and the
+   gap. One tile + `full_width` is the classic edge-to-edge image banner — the
+   same widget, not a second one. Phones always stack.
+
+   `animate` rises each tile's copy in once, the first time the section
+   scrolls into view, staggered tile by tile.
+
+   Styling: assets/style.css → "15.5.5 FLEXIBLE GRID · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set tiles = widget.blocks | default([], true) %}
+{% set count = tiles | length %}
+
+{% set cols = d.columns | default(2) %}
+{% set full = d.full_width | default(false) %}
+{% set animate = d.animate | default(true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="lc-ibn-{{ id }}"
+         class="lc-ibn {{ 'is-full' if full else 'is-card' }} {{ 'lc-ibn--multi' if cols > 1 }} {{ 'is-animated' if animate }}"
+         style="--lc-ibn-h: {{ d.height | default(390) }}px;
+                --lc-ibn-h-sm: {{ d.height_mobile | default(420) }}px;
+                --lc-ibn-cols: {{ cols }};
+                --lc-ibn-gap: {{ d.gap | default(22) }}px;
+                padding-block: {{ d.padding_top | default(40) }}px {{ d.padding_bottom | default(40) }}px;">
+
+  {% if d.title %}
+    <div class="lc-hwrap"><h2 class="lc-sec-title">{{ d.title }}</h2></div>
+  {% endif %}
+
+  <div class="{{ '' if full else 'lc-hwrap' }}">
+    {% if count == 0 %}
+      <p class="lc-icols-empty lc-hwrap">{{ t('common.placeholder_add') }}</p>
+    {% else %}
+      <div class="lc-ibn-grid">
+        {% for block in tiles %}
+          {% set b = block.data %}
+          {% set img = mediaUrl(b.image) | trim %}
+          {% set imgM = mediaUrl(b.image_mobile) | trim %}
+          {% set pos = (b.content_position | default('bottom-start')).split('-') %}
+          {% set overlay = b.overlay | default(0, true) %}
+
+          <div class="lc-ibn-stage lc-ibn--v-{{ pos[0] }} lc-ibn--h-{{ pos[1] | default('start') }}"
+               style="--lc-ibn-bg: {{ b.bg_color | default('color-mix(in srgb, var(--color-bg-tertiary) 94%, var(--color-text-primary))', true) }};
+                      --lc-ibn-title: {{ b.title_color | default('var(--color-text-primary)', true) }};
+                      --lc-ibn-text: {{ b.text_color | default('var(--color-text-primary)', true) }};
+                      --lc-ibn-btn: {{ b.button_bg | default('var(--color-accent)', true) }};
+                      --lc-ibn-btn-fg: {{ b.button_text_color | default('var(--color-text-on-accent)', true) }};
+                      --lc-ibn-overlay: {{ overlay / 100 }};
+                      --t: {{ loop.index0 }};">
+            {% if (img | length) > 0 %}
+              <picture class="lc-ibn-media">
+                {% if (imgM | length) > 0 %}<source media="(max-width: 767px)" srcset="{{ imgM }}"/>{% endif %}
+                <img src="{{ img }}" alt="" loading="lazy"/>
+              </picture>
+            {% endif %}
+            {% if overlay > 0 %}<span class="lc-ibn-veil" aria-hidden="true"></span>{% endif %}
+
+            <div class="lc-ibn-inner">
+              <div class="lc-ibn-copy">
+                {% if b.eyebrow %}<p class="lc-ibn-eyebrow lc-ibn-in" style="--i: 0;">{{ b.eyebrow }}</p>{% endif %}
+                {% if b.title %}<h3 class="lc-ibn-title lc-ibn-in" style="--i: 1;">{{ b.title }}</h3>{% endif %}
+                {% if b.text %}<div class="lc-ibn-text lc-ibn-in" style="--i: 2;">{{ b.text | safe }}</div>{% endif %}
+                {% if b.button_text %}
+                  <a href="{{ b.button_url | default('/shop', true) }}" class="lc-ibn-btn lc-ibn-in" style="--i: 3;">{{ b.button_text }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if animate and count > 0 %}
+<script>
+  (function () {
+    var el = document.getElementById('lc-ibn-{{ id }}');
+    if (!el) return;
+    /* No observer (or reduced motion) → show at once; the CSS only hides the
+       copy while `.is-animated` is on AND `.is-in` is not. */
+    var reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('lc-no-motion');
+    if (reduce || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        el.classList.add('is-in');
+        io.disconnect();
+      });
+    }, { rootMargin: '0px 0px 15% 0px' });
+    io.observe(el);
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#lc-ibn-' ~ id, c=d %}

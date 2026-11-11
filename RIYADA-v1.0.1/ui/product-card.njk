@@ -1,0 +1,333 @@
+{# ============================================================================
+   RIYADA PRODUCT CARD  ·  SSR renderer
+   ----------------------------------------------------------------------------
+   ⚠️  THIS CARD HAS A TWIN: `RiyadaCard.build()` in assets/main.js renders the
+   same markup for AJAX results (filters, search, lazy grids). If you change the
+   structure here, change it there too. All styling lives in
+   assets/style.css → "PRODUCT CARD", so visual drift is impossible; only the
+   markup order has to stay in sync.
+   ----------------------------------------------------------------------------
+   Reading order — the order a sports shopper actually scans:
+     brand → name → size → rating → price → stock → action
+
+   ── Sizes on the card ──────────────────────────────────────────────────────
+   The size row is the card's reason for existing: in this catalogue the first
+   question is never "which product" but "do you have my size". It renders ONLY
+   when the list payload actually carries `options` — collection and search
+   endpoints may return a trimmed product, and a card that invents sizes it
+   cannot honour is worse than a card with none.
+
+   Picking the size option: `options[0]`, or `options[1]` when the first one is
+   a colour. Deliberately not a loop-and-match — Nunjucks scopes `{% set %}` to
+   the loop body, so "first option where type != color" cannot be carried out of
+   a `{% for %}` at all. Two explicit slots covers every real shape here (size,
+   or colour + size) and stays readable.
+
+   Selecting a size sets `selectedSize` on the shared `productCard` Alpine
+   component; addToCart() sends it as `options: [valueId]` (see CartManager.add).
+   When a product has sizes, add-to-cart stays disabled until one is chosen —
+   silently adding an arbitrary variant is how returns happen.
+
+   Usage (written without the tag braces so no parser ever sees them here):
+     ui "product-card.njk", product=item
+     ui "product-card.njk", product=item, image_ratio='4x5', show_rating=false
+
+   Locals (all optional — they fall back to the theme settings):
+     product         the product object (required)
+     image_ratio     '1x1' | '4x5' | '3x4' | '4x3'
+     show_brand · show_specs · show_rating · show_stock · show_second_image
+     show_sizes · show_quick_view · show_compare · atc_style
+   ========================================================================= #}
+
+{% set p = data.product %}
+
+{% if p %}
+
+  {# ---------------- resolve options: local override → theme setting ------- #}
+  {% set ratio        = data.image_ratio       | default(settings.cardImageRatio       | default('1x1', true)) %}
+  {% set showBrand    = data.show_brand        if data.show_brand        is defined else (settings.cardShowBrand       | default(true)) %}
+  {% set showSpecs    = data.show_specs        if data.show_specs        is defined else (settings.cardShowSpecs       | default(true)) %}
+  {% set showSizes    = data.show_sizes        if data.show_sizes        is defined else (settings.cardShowSizes       | default(true)) %}
+  {% set showRating   = data.show_rating       if data.show_rating       is defined else (settings.cardShowRating      | default(true)) %}
+  {% set showStock    = data.show_stock        if data.show_stock        is defined else (settings.cardShowStock       | default(true)) %}
+  {% set showAlt      = data.show_second_image if data.show_second_image is defined else (settings.cardShowSecondImage | default(true)) %}
+  {% set showQuick    = data.show_quick_view   if data.show_quick_view   is defined else (settings.cardShowQuickView   | default(true)) %}
+  {% set showCompare  = data.show_compare      if data.show_compare      is defined else (settings.cardShowCompare     | default(false)) %}
+  {% set atcStyle     = data.atc_style         | default(settings.cardAddToCartStyle | default('always', true)) %}
+
+  {# Keep in sync with RiyadaCard.ratioClass() in assets/main.js. #}
+  {% if ratio == '4x3' or ratio == 'landscape' %}{% set ratioCls = 'riyada-ratio-4x3' %}
+  {% elif ratio == '4x5' or ratio == 'portrait' %}{% set ratioCls = 'riyada-ratio-4x5' %}
+  {% elif ratio == '3x4' %}{% set ratioCls = 'riyada-ratio-3x4' %}
+  {% else %}{% set ratioCls = 'riyada-ratio-1x1' %}{% endif %}
+
+  {# ---------------- pricing ---------------------------------------------- #}
+  {% set price = p.pricing.price | default(0, true) %}
+  {% set wasPrice = p.pricing.compareAtPrice | default(0, true) %}
+  {% set onSale = wasPrice and wasPrice > price %}
+  {% set off = ((wasPrice - price) / wasPrice * 100) | int if onSale else 0 %}   {# floored: Qalab's round(0,'floor') doesn't floor #}
+
+  {# ---------------- stock ------------------------------------------------ #}
+  {% set untracked = p.allowBackorder or (not p.trackQuantity) %}
+  {% set qty = p.quantity | default(0, true) %}
+  {% set inStock = untracked or qty > 0 %}
+  {% set lowStock = inStock and (not untracked) and qty <= (settings.lowStockThreshold | default(3, true) | int) %}
+  {# list payloads may omit variantsCount — read variants/options too (same rule as RiyadaCard) #}
+  {% set hasVariants = (p.variantsCount and p.variantsCount > 0) or (p.variants and p.variants | length) or (p.options and p.options | length) %}
+  {% set checkVariants = (not p.variantsCount) and p.variantsCount != 0 and p.variants is not defined and p.options is not defined %}
+  {# Listings send a product with sizes as quantity 0 and no variant data, so 0 here means
+     "unknown", not sold out: the card offers the product page and asks /ajax/product once
+     it is near the screen (productCard.init in main.js). #}
+  {% set unknownStock = checkVariants and (not p.allowBackorder) and qty <= 0 %}
+  {% set inStock = inStock or unknownStock %}
+
+  {# ---------------- size option (see the header note) --------------------- #}
+  {% set optCount = (p.options | length) if p.options else 0 %}
+  {% set opt0 = p.options[0] if optCount > 0 else null %}
+  {% set opt1 = p.options[1] if optCount > 1 else null %}
+  {% if opt0 and opt0.type != 'color' and opt0.values %}{% set sizeOpt = opt0 %}
+  {% elif opt1 and opt1.type != 'color' and opt1.values %}{% set sizeOpt = opt1 %}
+  {% else %}{% set sizeOpt = null %}{% endif %}
+  {% set hasSizes = showSizes and sizeOpt and (sizeOpt.values | length) > 0 %}
+
+  {# ---------------- images ----------------------------------------------- #}
+  {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+  {% set imgAlt = p.images[1].fileUrl if showAlt and p.images and (p.images | length) > 1 else '' %}
+
+  {# ---------------- rating: floor + optional half ------------------------ #}
+  {% set rating = p.averageRating | default(0, true) %}
+  {% set reviews = p.reviewsCount | default(0, true) %}
+  {% set full = rating | int %}
+  {% set hasHalf = (rating - full) >= 0.25 %}
+
+  {# Brand is not a documented field on the Qumra product object — render the
+     line only if the API happens to send one, never a placeholder. #}
+  {% set brand = p.brand | default(p.vendor) | default('') %}
+
+  {# /product/<slug> (user's choice); never fall back to _id — /products/<_id> is a 500.
+     A demo product (empty-slot preview, twin of RiyadaCard's) is inert and links to /shop. #}
+  {% set url = '/shop' if p.demo else '/product/' ~ (p.slug | default(p.handle) | default('')) %}
+
+
+<article class="riyada-pcard group" {% if p.demo %}data-demo{% else %}x-data="productCard('{{ p._id }}')"{% if unknownStock %} data-stock-unknown{% endif %}{% endif %}>
+
+  {# ═══════════════════ media ═══════════════════ #}
+  <div class="riyada-pcard-media {{ ratioCls }}">
+    <a href="{{ url }}" aria-label="{{ p.title }}">
+      {% if img %}
+        <img src="{{ img }}"
+             alt="{{ p.title }}"
+             loading="lazy"
+             class="riyada-pcard-img riyada-pcard-img--primary {{ 'riyada-pcard-img--only' if not imgAlt }}"/>
+        {% if imgAlt %}
+          <img src="{{ imgAlt }}"
+               alt="{{ p.title }}"
+               loading="lazy"
+               class="riyada-pcard-img riyada-pcard-img--alt"/>
+        {% endif %}
+      {% else %}
+        <span class="riyada-pcard-noimg">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/>
+          </svg>
+        </span>
+      {% endif %}
+    </a>
+
+    {# ---- badges ---- #}
+    {% if onSale %}
+      <div class="riyada-pcard-badges">
+        <span class="riyada-badge riyada-badge--off">−{{ off }}%</span>
+      </div>
+    {% endif %}
+
+    {# ---- hover actions ---- #}
+    {% if (showQuick or showCompare) and not p.demo %}
+      <div class="riyada-pcard-actions">
+        {% if showQuick %}
+          <button type="button"
+                  class="riyada-btn-icon riyada-btn-icon--filled riyada-btn-icon--sm"
+                  aria-label="{{ t('pages.product.quick_view') }}"
+                  @click.prevent="$dispatch('quick-view', { slug: {{ (p.slug | default(p.handle) | default('')) | dump }} })">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12S18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+              <circle cx="12" cy="12" r="2.75"/>
+            </svg>
+          </button>
+        {% endif %}
+        {% if showCompare %}
+          <button type="button"
+                  class="riyada-btn-icon riyada-btn-icon--filled riyada-btn-icon--sm"
+                  aria-label="{{ t('pages.product.compare') }}"
+                  @click.prevent="$dispatch('compare-toggle', { id: '{{ p._id }}' })">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h7M4 7l2.5-2.5M4 7l2.5 2.5M20 17h-7m7 0-2.5-2.5M20 17l-2.5 2.5"/>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ---- out of stock veil ---- #}
+    {% if not inStock %}
+      <div class="riyada-soldout-veil">
+        <span>{{ t('pages.product.out_of_stock') }}</span>
+      </div>
+    {% endif %}
+
+    {# ---- size picker, laid over the foot of the image ---- #}
+    {% if inStock and hasSizes and not p.demo %}
+      <div class="riyada-pcard-sizes">
+        {% for v in sizeOpt.values %}
+          {% if loop.index <= 6 %}
+            <button type="button"
+                    class="riyada-size"
+                    :class="selectedSize === '{{ v._id }}' && 'is-active'"
+                    :aria-pressed="selectedSize === '{{ v._id }}'"
+                    @click.prevent="pickSize('{{ v._id }}')">{{ v.label }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ---- add to cart (revealed on hover) ---- #}
+    {% if inStock and atcStyle == 'tray' and not hasSizes and not p.demo %}
+      <div class="riyada-reveal-tray">
+        {% if hasVariants or unknownStock %}
+          <a href="{{ url }}"{% if unknownStock %} data-view-product{% endif %} class="riyada-btn riyada-btn--light riyada-btn--sm riyada-pcard-atc">
+            {{ t('pages.product.view_product') if unknownStock else t('pages.product.choose_options') }}
+          </a>
+        {% else %}
+          <button type="button"
+                  @click.prevent="addToCart()"
+                  :disabled="cartLoading || cartSuccess"
+                  class="riyada-btn riyada-btn--light riyada-btn--sm riyada-pcard-atc">
+            <span x-show="cartLoading" class="riyada-spinner" style="width:14px;height:14px;border-width:1.5px;"></span>
+            <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              {{ t('pages.product.added') }}
+            </span>
+            <span x-show="!cartLoading && !cartSuccess">{{ t('pages.product.add_to_cart') }}</span>
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# ═══════════════════ body ═══════════════════ #}
+  <div class="riyada-pcard-body">
+
+    {# ---- brand ---- #}
+    {% if showBrand and brand %}
+      <span class="riyada-pcard-brand">{{ brand }}</span>
+    {% endif %}
+
+    {# ---- name ---- #}
+    <a href="{{ url }}" class="riyada-pcard-name"><span class="riyada-clamp-2">{{ p.title }}</span></a>
+
+    {# ---- spec chips — driven by the product's tags ---- #}
+    {% if showSpecs and p.tags and (p.tags | length) > 0 %}
+      <div class="riyada-spec-row">
+        {% for tag in p.tags %}
+          {% if tag is string %}{% set tn = tag %}{% elif tag %}{% set tn = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}{% else %}{% set tn = '' %}{% endif %}{% if loop.index <= 3 and tn %}<span class="riyada-spec">{{ tn }}</span>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ---- rating ---- #}
+    {% if showRating and reviews > 0 %}
+      <div class="flex items-center gap-1.5">
+        <span class="riyada-stars riyada-stars--sm">
+          {% for i in [1, 2, 3, 4, 5] %}
+            {% if i <= full %}
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+            {% elif i == full + 1 and hasHalf %}
+              <span class="riyada-star-half">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+              </span>
+            {% else %}
+              <svg class="riyada-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z"/></svg>
+            {% endif %}
+          {% endfor %}
+        </span>
+        <span class="riyada-rating-count">({{ reviews }})</span>
+      </div>
+    {% endif %}
+
+    {# ---- price ---- #}
+    <div class="riyada-pcard-prices">
+      {% if price > 0 %}<span class="riyada-price{{ ' riyada-price--sale' if onSale }}">{{ price | money }}</span>{% endif %}
+      {% if onSale %}<span class="riyada-price-was">{{ wasPrice | money }}</span>{% endif %}
+    </div>
+
+    {# ---- stock ---- #}
+    {% if showStock %}
+      {% if unknownStock %}
+        <span class="riyada-stock" data-stock-pill hidden></span>
+      {% elif not inStock %}
+        <span class="riyada-stock riyada-stock--out">
+          <span class="riyada-stock-dot"></span>{{ t('pages.product.out_of_stock') }}
+        </span>
+      {% elif lowStock %}
+        {# the string carries a {count} placeholder; without the replace the card
+           printed the placeholder itself. Keep it in sync with RiyadaCard.stock(). #}
+        <span class="riyada-stock riyada-stock--low">
+          <span class="riyada-stock-dot"></span>{{ t('pages.product.low_stock') | replace('{count}', qty) }}
+        </span>
+      {% else %}
+        <span class="riyada-stock riyada-stock--in">
+          <span class="riyada-stock-dot"></span>{{ t('pages.product.in_stock') }}
+        </span>
+      {% endif %}
+    {% endif %}
+
+    {# ---- add to cart (always-visible variant) ---- #}
+    {% if inStock and atcStyle != 'hidden' and not p.demo %}
+      {% if hasSizes %}
+        {# Sizes are on the card, so the button acts on the picked one. Until
+           something is picked it stays disabled and says so — adding an
+           arbitrary variant on the shopper's behalf is how returns happen. #}
+        <button type="button"
+                @click.prevent="addToCart()"
+                :disabled="!selectedSize || cartLoading || cartSuccess"
+                class="riyada-btn riyada-btn--primary riyada-btn--sm riyada-btn--block mt-1">
+          <span x-show="cartLoading" class="riyada-spinner" style="width:14px;height:14px;border-width:1.5px;"></span>
+          <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+            </svg>
+            {{ t('pages.product.added') }}
+          </span>
+          <span x-show="!cartLoading && !cartSuccess && !selectedSize">{{ t('pages.product.choose_size') }}</span>
+          <span x-show="!cartLoading && !cartSuccess && selectedSize">{{ t('pages.product.add_to_cart') }}</span>
+        </button>
+      {% elif atcStyle == 'always' %}
+        {% if hasVariants or unknownStock %}
+          <a href="{{ url }}"{% if unknownStock %} data-view-product{% endif %} class="riyada-btn riyada-btn--outline riyada-btn--sm riyada-btn--block mt-1">
+            {{ t('pages.product.view_product') if unknownStock else t('pages.product.choose_options') }}
+          </a>
+        {% else %}
+          <button type="button"
+                  @click.prevent="addToCart()"
+                  :disabled="cartLoading || cartSuccess"
+                  class="riyada-btn riyada-btn--primary riyada-btn--sm riyada-btn--block mt-1">
+            <span x-show="cartLoading" class="riyada-spinner" style="width:14px;height:14px;border-width:1.5px;"></span>
+            <span x-show="cartSuccess && !cartLoading" x-cloak class="inline-flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              {{ t('pages.product.added') }}
+            </span>
+            <span x-show="!cartLoading && !cartSuccess">{{ t('pages.product.add_to_cart') }}</span>
+          </button>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+  </div>
+</article>
+
+{% endif %}

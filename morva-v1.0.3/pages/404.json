@@ -1,0 +1,17 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة 404",
+      "widget": "page-404",
+      "settings": {
+        "kicker": "تُهت؟",
+        "title": "الصفحة غير موجودة",
+        "text": "الرابط ده مش موجود أو اتنقل. ارجع للشارع."
+      }
+    }
+  ]
+}

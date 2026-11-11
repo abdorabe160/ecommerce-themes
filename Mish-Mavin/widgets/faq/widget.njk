@@ -1,0 +1,23 @@
+{# الأسئلة الشائعة — مطابق لـ mavin-wear.com: خلفية #ebf2f2، عمود ضيق، عنوان كبير، أكورديون بسهم رفيع. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set faqs = widget.blocks | default([]) %}
+{% if faqs | length %}
+<section class="mw-faq" x-data="{ open: null }">
+  <div class="container container--narrow">
+    {% if wd.title %}<h2 class="mw-faq__title">{{ wd.title }}</h2>{% endif %}
+    <div>
+      {% for b in faqs %}{% set s = b.settings %}
+        <div class="mw-faq__item" :class="{ 'is-open': open === {{ loop.index0 }} }">
+          <button type="button" class="mw-faq__q" id="mw-faq-q-{{ loop.index0 }}" @click="open = open === {{ loop.index0 }} ? null : {{ loop.index0 }}" :aria-expanded="(open === {{ loop.index0 }}).toString()" aria-controls="mw-faq-a-{{ loop.index0 }}">
+            <span dir="auto">{{ s.question | default('Question') }}</span>
+            <svg class="mw-faq__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 8.5 8 8 8-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="mw-faq__a" id="mw-faq-a-{{ loop.index0 }}" role="region" aria-labelledby="mw-faq-q-{{ loop.index0 }}">
+            <div><div class="mw-faq__a-inner" dir="auto">{{ s.answer | default('') | safe }}</div></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

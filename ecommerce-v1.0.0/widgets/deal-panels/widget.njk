@@ -1,0 +1,109 @@
+{#
+  ============================================================================
+  DEAL PANELS · لوحات العروض
+  ----------------------------------------------------------------------------
+  Two tinted panels side by side, each under its own title (with a lightning
+  mark): a row of three merchant-written lines (editor-only labels until typed), then a row of compact product tiles —
+  picture, price, name.
+
+  Products per panel: picked → server-rendered; else the panel's collection,
+  else the store sorted differently per panel — fetched and built by
+  HxMini (assets/hx.js). Demo tiles (theme pictures, CC0) stand in until the
+  answer arrives and stay when the store has nothing.
+
+  Styles: assets/sections.css → "DEAL PANELS".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set limit = d.limit | default(4) %}
+
+{% macro icon(k) %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if k == 'delivery' %}<path d="M14.5 3.5 19 5v3.6c0 2.9-1.9 5-4.5 5.9-2.6-.9-4.5-3-4.5-5.9V5l4.5-1.5Z"/><path d="M3 20.5v-6h2.5v6H3Z"/><path d="M5.5 15.5 8 13.6c.6-.5 1.4-.5 2 0l1.6 1.4h2.2c.7 0 1.2.5 1.2 1.2s-.5 1.2-1.2 1.2H10.5M5.5 19.5h7.3l4.8-3.4c.5-.4.6-1.1.2-1.6-.4-.5-1.1-.6-1.6-.3l-2.4 1.5"/>
+  {% elif k == 'shield' %}<path d="M12 3 19 5.6v5.2c0 4.4-2.9 7.9-7 9.2-4.1-1.3-7-4.8-7-9.2V5.6L12 3Z"/><path d="m9.2 11.8 2 2 3.8-4"/>
+  {% elif k == 'truck' %}<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>
+  {% elif k == 'returns' %}<path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6"/><path d="M17.9 3.4v3.2h-3.2M6.1 20.6v-3.2h3.2"/>
+  {% elif k == 'card' %}<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 9.5h19M6 14.5h4"/>
+  {% elif k == 'support' %}<path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="3" y="12.5" width="4" height="5.5" rx="1.5"/><rect x="17" y="12.5" width="4" height="5.5" rx="1.5"/>
+  {% elif k == 'tag' %}<path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.4 1.4 0 0 1 0 2l-7.1 7.1a1.4 1.4 0 0 1-2 0l-8-8Z"/><circle cx="8" cy="8" r="1.4"/>
+  {% elif k == 'gift' %}<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% macro mini(url, img, price, was, name, demo) %}
+  <a href="{{ url }}" class="hx-dp-item{{ ' is-demo' if demo }}">
+    <span class="hx-dp-media">{% if img %}<img src="{{ img }}" alt="" loading="lazy"/>{% endif %}</span>
+    <span class="hx-dp-price">{% if price == 0 %}{{ t('common.free') }}{% else %}{{ price | money }}{% endif %}{% if was and was > price %} <s>{{ was | money }}</s>{% endif %}</span>
+    <span class="hx-dp-name">{{ name }}</span>
+  </a>
+{% endmacro %}
+
+{% set demoSets = [
+  [['hx-cg-5.webp', 1890, t('promo.demo.p5')], ['hx-cg-6.webp', 390, t('promo.demo.p6')], ['hx-demo-1.jpg', 890, t('featured.demo.p1')], ['hx-cg-4.webp', 15990, t('promo.demo.p4')],
+   ['hx-demo-2.jpg', 1490, t('featured.demo.p2')], ['hx-demo-6.jpg', 290, t('featured.demo.p6')], ['hx-demo-5.jpg', 690, t('featured.demo.p5')], ['hx-demo-4.jpg', 24990, t('featured.demo.p4')]],
+  [['hx-cg-3.webp', 6990, t('promo.demo.p3')], ['hx-cg-1.webp', 21990, t('promo.demo.p1')], ['hx-cg-2.webp', 9490, t('promo.demo.p2')], ['hx-demo-3.jpg', 12990, t('featured.demo.p3')],
+   ['hx-demo-4.jpg', 24990, t('featured.demo.p4')], ['hx-cg-4.webp', 15990, t('promo.demo.p4')], ['hx-cg-5.webp', 1890, t('promo.demo.p5')], ['hx-demo-1.jpg', 890, t('featured.demo.p1')]]
+] %}
+{% set sorts = ['rating-desc', 'price-desc'] %}
+{% set defIcons = [['delivery', 'shield', 'truck'], ['delivery', 'shield', 'returns']] %}
+
+<section id="hx-dp-{{ id }}"
+         class="hx-dp"
+         style="--dp-n: {{ limit }}; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;{% if d.colors_enabled and d.color_accent %} --dp-price: {{ d.color_accent }};{% endif %}">
+  <div class="hx-dp-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    <div class="hx-dp-grid">
+      {% for n in [1, 2] %}
+        {% if d['p' ~ n ~ '_enabled'] != false %}
+          {% set pi = n - 1 %}
+          {% set title = d['p' ~ n ~ '_title'] or t('deals.p' ~ n) %}
+          {% set picked = d['p' ~ n ~ '_products'] | default([]) %}
+          {% set cols = d['p' ~ n ~ '_collection'] | default([]) %}
+          {% set c0 = cols[0] if (cols | length) > 0 else null %}
+          {% set colId = (c0 if c0 is string else (c0._id | default(''))) if c0 else '' %}
+          {% set icons = defIcons[pi] %}
+          <div class="hx-dp-col">
+            <h2 class="hx-dp-title">{{ title | safe }}{% if d.show_bolt != false %} <svg class="hx-dp-bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg>{% endif %}</h2>
+            <div class="hx-dp-panel" style="--dp-bg: {{ d['p' ~ n ~ '_bg'] | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 15%, white)' if n == 1 else 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 25%, white)', true) }};">
+              {% if d.show_features != false %}
+                <ul class="hx-dp-feats" role="list">
+                  {% for k in [1, 2, 3] %}
+                    {% set ic = d['p' ~ n ~ '_f' ~ k ~ '_icon'] | default(icons[k - 1]) %}
+                    {% set own = d['p' ~ n ~ '_f' ~ k ~ '_text'] %}
+                    {% set txt = own or (t('deals.f2shield') if (n == 2 and ic == 'shield') else t('deals.f.' ~ ic)) %}
+                    <li class="hx-dp-feat"{% if not own %} data-hx-demo{% endif %}><span class="hx-dp-ico">{{ icon(ic) }}</span><span>{{ txt | safe }}</span></li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+              <div class="hx-dp-items" {% if (picked | length) == 0 %}data-hx-mini data-col="{{ colId }}" data-sort="{{ sorts[pi] }}" data-limit="{{ limit }}"{% endif %}>
+                {% if (picked | length) > 0 %}
+                  {% for p in picked %}{% if loop.index <= limit %}
+                    {{ mini('/products/' ~ (p.slug | default(p.handle) | default(p._id)), p.images[0].fileUrl if p.images and (p.images | length) > 0 else '', p.pricing.price | default(0), p.pricing.compareAtPrice | default(0), p.title) }}
+                  {% endif %}{% endfor %}
+                {% else %}
+                  {% for dm in demoSets[pi] %}{% if loop.index <= limit %}
+                    {{ mini('/shop', dm[0] | assets, dm[1], 0, dm[2], true) }}
+                  {% endif %}{% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      if (!window.HxMini) return;
+      document.querySelectorAll('#hx-dp-{{ id }} [data-hx-mini]').forEach(function (el) { HxMini.fill(el); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-dp-' ~ id, c=d %}

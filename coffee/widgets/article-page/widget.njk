@@ -1,0 +1,49 @@
+{#-
+  Single blog article (/articles/:slug). Renders the platform `article` variable when present;
+  graceful empty state otherwise — no placeholder content, no dead controls.
+-#}
+{%- set art = article or (context or {}).article or (context or {}).post or {} -%}
+{%- set hasArt = art and art.title -%}
+<section class="dc-article-page section surface-cream">
+  <div class="shell">
+    {%- if hasArt %}
+    {%- set aimg = '' -%}
+    {%- if art.image %}{%- set aimg = art.image.fileUrl or art.image.url or art.image or '' -%}{%- elif art.imageUrl %}{%- set aimg = art.imageUrl -%}{%- endif -%}
+    {%- set adate = art.publishedAt or art.createdAt or art.created_at or art.date or '' -%}
+    {%- set abody = art.content or art.body or art.html or art.description or '' -%}
+    {#- QLT-11: Article structured data -#}
+    <script type="application/ld+json">{{ {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      'headline': art.title,
+      'image': aimg,
+      'datePublished': adate,
+      'publisher': { '@type': 'Organization', 'name': store.name | default('', true), 'logo': { '@type': 'ImageObject', 'url': (store.logo.fileUrl if (store and store.logo and store.logo.fileUrl) else '') } },
+      'mainEntityOfPage': { '@type': 'WebPage', '@id': (store.url | default('', true)) ~ '/articles/' ~ (art.slug or art.handle or '') }
+    } | dump | replace('</', '<\\/') | safe }}</script>
+    <nav class="dc-breadcrumb" aria-label="{{ t('a11y.breadcrumb') }}">
+      <a href="/">{{ t('nav.home') }}</a><span aria-hidden="true">/</span><a href="/blogs">{{ t('journal.title') }}</a><span aria-hidden="true">/</span><span aria-current="page">{{ art.title }}</span>
+    </nav>
+    <article class="dc-article">
+      <header>
+        {%- if adate %}<p class="dc-article__meta"><time data-date datetime="{{ adate }}">{{ adate }}</time></p>{%- endif %}
+        <h1 class="h-display dc-article__title">{{ art.title }}</h1>
+      </header>
+      {%- if aimg %}<img class="dc-article__cover" src="{{ aimg }}" alt="" width="1200" height="675" fetchpriority="high" decoding="async">{%- endif %}
+      {%- if abody %}
+      <div class="prose-decafe">{{ abody | safe }}</div>
+      {%- elif art.excerpt %}
+      <div class="prose-decafe">{{ art.excerpt | safe }}</div>
+      {%- endif %}
+      <p class="mt-12"><a class="link-arrow" href="/blogs">{% ui "icon.njk", name="arrow", size=16, cls="rotate-180" %} {{ t('common.back') }}</a></p>
+    </article>
+    {%- else %}
+    <div class="dc-empty-state">
+      <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+      <h1 class="dc-empty-state__title">{{ t('journal.empty') }}</h1>
+      <p>{{ t('journal.text') }}</p>
+      <a href="/blogs" class="btn btn-dark">{{ t('journal.view_blog') }}</a>
+    </div>
+    {%- endif %}
+  </div>
+</section>

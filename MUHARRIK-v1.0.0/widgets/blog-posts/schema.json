@@ -1,0 +1,220 @@
+{
+  "name": "مقالات المدونة",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Title"
+      },
+      "default": true
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "kicker": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير فوق العنوان (مثل: 01 / العناية بالسيارة)",
+        "en": "Kicker above the title (e.g. 01 / CAR CARE)"
+      },
+      "default": "",
+      "info": {
+        "ar": "فارغ = «المدونة». مثال: أدلة افعلها بنفسك",
+        "en": "Empty = “Blog”. Example: DIY GUIDES"
+      }
+    },
+    "show_view_all": {
+      "type": "boolean",
+      "label": {
+        "ar": "زر «عرض الكل» بجانب العنوان",
+        "en": "“View all” button beside the title"
+      },
+      "default": true
+    },
+    "blog_handle": {
+      "type": "string",
+      "label": {
+        "ar": "المدونة — اكتب رابطها المختصر (handle) أو اتركه فارغًا لأحدث مقالات كل المدونات",
+        "en": "Blog — its handle, or empty for the latest articles from every blog"
+      },
+      "default": ""
+    },
+    "limit": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المقالات",
+        "en": "Number of articles"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 8,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المقالات في الصف — كمبيوتر",
+        "en": "Articles per row — desktop"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 4,
+      "step": 1
+    },
+    "image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الصورة",
+        "en": "Picture shape"
+      },
+      "default": "wide",
+      "options": [
+        {
+          "value": "wide",
+          "label": {
+            "ar": "عريضة",
+            "en": "Wide"
+          }
+        },
+        {
+          "value": "square",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "portrait",
+          "label": {
+            "ar": "طولية",
+            "en": "Portrait"
+          }
+        }
+      ]
+    },
+    "show_date": {
+      "type": "boolean",
+      "label": {
+        "ar": "التاريخ",
+        "en": "Date"
+      },
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "boolean",
+      "label": {
+        "ar": "مقتطف من المقال",
+        "en": "Excerpt"
+      },
+      "default": true
+    },
+    "show_read_more": {
+      "type": "boolean",
+      "label": {
+        "ar": "رابط «اقرأ الآن»",
+        "en": "“Read now” link"
+      },
+      "default": true
+    },
+    "read_more_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الرابط — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Link text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "hover_zoom": {
+      "type": "boolean",
+      "label": {
+        "ar": "تكبير الصورة عند مرور الماوس",
+        "en": "Zoom on hover"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون الرابط",
+        "en": "Link colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "مقالات المدونة"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{# صفحة السلة — نفس تصميم درج السلة، والحالة من Alpine.store('mw') لتحديث الكميات بدون إعادة تحميل #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+<section class="mw-page" x-data>
+  <div class="container">
+    <h1 class="mw-collection-hero__title">{{ t('cart.title') }}</h1>
+
+    <div class="mw-cart__empty" x-show="!$store.mw.cart.items.length" {% if cart and cart.items and (cart.items | length) %}x-cloak{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.5 8.5h13l-.9 11.2a1.5 1.5 0 0 1-1.5 1.3H7.9a1.5 1.5 0 0 1-1.5-1.3L5.5 8.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 10.5V7a3 3 0 0 1 6 0v3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <p>{{ t('cart.empty') }}</p>
+      <a href="/shop" class="mw-btn mw-btn--filled mw-btn--square">{{ t('cart.explore') }}</a>
+    </div>
+
+    <div class="mw-cart-page" x-show="$store.mw.cart.items.length" {% if not (cart and cart.items and (cart.items | length)) %}x-cloak{% endif %}>
+      <div class="mw-cart-page__items">
+        <template x-for="item in $store.mw.cart.items" :key="item._id">
+          <div class="mw-cart__item">
+            <a :href="$store.mw.itemUrl(item)"><img class="mw-cart__item-img" :src="(item.productData && item.productData.image && item.productData.image.fileUrl) || $store.mw.placeholder" :alt="item.productData && item.productData.title" width="168" height="224"/></a>
+            <div class="mw-cart__item-info">
+              <a class="mw-cart__item-title" :href="$store.mw.itemUrl(item)" x-text="item.productData && item.productData.title"></a>
+              <p class="mw-cart__item-variant" x-show="item.variantTitle" x-text="item.variantTitle"></p>
+              {# تغيير اللون من السلة — بيبدّل السطر لنفس المقاس باللون الجديد (setColor في main.js) #}
+              <div class="mw-cart__colors" x-show="$store.mw.colorsFor(item).length" role="group" aria-label="{{ t('product.color') }}">
+                <template x-for="c in $store.mw.colorsFor(item)" :key="c.key">
+                  <button type="button" class="mw-cart__swatch" :class="{ 'is-active': c.active, 'is-unavailable': !c.available }" :style="'--sw:' + c.color" :title="c.label" :aria-label="c.label" :aria-pressed="c.active ? 'true' : 'false'" :disabled="c.active || !c.available || $store.mw.isBusy('qty:' + item._id)" @click="$store.mw.setColor(item, c.v)"><span></span></button>
+                </template>
+              </div>
+              <div class="mw-price">
+                <s x-show="item.compareAtPrice > item.price" x-text="$store.mw.money(item.compareAtPrice)"></s>
+                <span :class="{ 'is-sale': item.compareAtPrice > item.price }" x-text="$store.mw.money(item.price)"></span>
+              </div>
+              <p class="mw-stockmsg mw-stockmsg--low" x-show="$store.mw.atMax(item) && $store.mw.maxFor(item) > 0" x-text="$store.mw.maxText(item)"></p>
+            <p class="mw-stockmsg mw-stockmsg--out" x-show="$store.mw.maxFor(item) <= 0" x-text="$store.mw.soldOutText()"></p>
+              <div class="mw-cart__item-row">
+                <div class="mw-qty">
+                  <button type="button" @click="$store.mw.change(item, item.quantity - 1)" :disabled="$store.mw.isBusy('qty:' + item._id)" aria-label="{{ t('cart.decrease') }}">−</button>
+                  <span x-text="item.quantity"></span>
+                  <button type="button" @click="$store.mw.change(item, item.quantity + 1)" :disabled="$store.mw.atMax(item) || $store.mw.isBusy('qty:' + item._id)" aria-label="{{ t('cart.increase') }}">+</button>
+                </div>
+                <button type="button" class="mw-cart__item-remove" @click="$store.mw.remove(item)">{{ t('cart.remove') }}</button>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <aside class="mw-cart-page__summary">
+        <div class="mw-freeship" x-show="$store.mw.freeShip > 0" x-cloak>
+        <p class="mw-freeship__text" x-text="$store.mw.freeShipText"></p>
+        <div class="mw-freeship__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="$store.mw.freeShipPct"><span :style="'width:' + $store.mw.freeShipPct + '%'"></span></div>
+      </div>
+      <div class="mw-cart__savings" x-show="$store.mw.cart.totalSavings > 0">
+          <span>{{ t('cart.savings') }}</span>
+          <span x-text="$store.mw.money($store.mw.cart.totalSavings)"></span>
+        </div>
+        <div class="mw-cart__subtotal">
+          <span>{{ t('cart.subtotal') }}</span>
+          <span x-text="$store.mw.money($store.mw.cart.totalPrice)"></span>
+        </div>
+        <p class="mw-cart__note">{{ t('cart.shipping_note') }}</p>
+        <a href="/checkout" class="mw-btn mw-btn--filled mw-btn--block mw-cart__checkout" @click.prevent="$store.mw.goCheckout()">{{ t('cart.checkout') }}</a>
+      </aside>
+    </div>
+  </div>
+</section>

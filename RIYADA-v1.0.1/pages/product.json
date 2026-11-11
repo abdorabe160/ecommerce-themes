@@ -1,0 +1,106 @@
+{
+  "name": "صفحة المنتج",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المنتج",
+      "widget": "product-detail",
+      "settings": {
+        "gallery_layout": "thumbs-side",
+        "image_ratio": "1x1",
+        "show_zoom": true,
+        "show_breadcrumb": true,
+        "show_brand": true,
+        "show_rating": true,
+        "show_variant_labels": true,
+        "size_guide_url": "",
+        "show_savings": true,
+        "show_stock_status": true,
+        "low_stock_threshold": 3,
+        "show_installment": false,
+        "installment_months": 4,
+        "installment_text": "أو {months} دفعات بدون فوائد بقيمة {amount}",
+        "show_warranty": true,
+        "warranty_text": "",
+        "show_specs": true,
+        "spec1_label": "الخامة",
+        "spec1_value": "",
+        "spec2_label": "الوزن",
+        "spec2_value": "",
+        "spec3_label": "المقاسات المتاحة",
+        "spec3_value": "",
+        "spec4_label": "مناسب لـ",
+        "spec4_value": "",
+        "spec5_label": "العناية",
+        "spec5_value": "",
+        "spec6_label": "بلد الصنع",
+        "spec6_value": "",
+        "show_tips": false,
+        "tips_title": "نصائح للاستخدام",
+        "tip1_title": "سخّن قبل ما تبدأ",
+        "tip1_text": "٥–١٠ دقايق كارديو خفيف تقلّل فرصة الإصابة أكتر من أي حاجة تانية.",
+        "tip2_title": "ابدأ بوزن تتحكّم فيه",
+        "tip2_text": "لو مش قادر تكمّل ٨ عدّات بشكل نظيف، الوزن كبير عليك دلوقتي.",
+        "tip3_title": "نضّفه بعد كل استخدام",
+        "tip3_text": "قطعة قماش مبلولة وتجفيف — ده اللي بيفرق بين سنة وخمس سنين.",
+        "show_qty": true,
+        "show_buy_now": true,
+        "show_sku": true,
+        "show_share": true,
+        "show_sticky_bar": true,
+        "show_related": true,
+        "related_title": "يناسبه كمان",
+        "related_limit": 5
+      },
+      "blocks": [
+        {
+          "block": "panel",
+          "name": "p1",
+          "settings": {
+            "title": "التفاصيل والخامات",
+            "source": "description",
+            "text": "",
+            "icon": "info",
+            "open_by_default": true
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p2",
+          "settings": {
+            "title": "المقاسات والقياس",
+            "source": "text",
+            "text": "<p>راجع جدول المقاسات في وصف المنتج قبل الطلب. لو محتار بين مقاسين، اسألنا قبل ما تطلب.</p>",
+            "icon": "ruler",
+            "open_by_default": false
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p3",
+          "settings": {
+            "title": "الشحن والتوصيل",
+            "source": "text",
+            "text": "<p>تكلفة الشحن ومدة التوصيل حسب منطقتك، وبتظهر قبل ما تأكّد الطلب.</p>",
+            "icon": "shipping",
+            "open_by_default": false
+          }
+        },
+        {
+          "block": "panel",
+          "name": "p4",
+          "settings": {
+            "title": "الاستبدال والإرجاع",
+            "source": "text",
+            "text": "<p>شروط الاستبدال والإرجاع بتحدّدها سياسة المتجر — راجعها من روابط أسفل الصفحة قبل الطلب.</p>",
+            "icon": "returns",
+            "open_by_default": false
+          }
+        }
+      ]
+    }
+  ]
+}

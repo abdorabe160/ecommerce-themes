@@ -1,0 +1,114 @@
+{
+  "name": "صفحة المدونات",
+  "settings": {
+    "show_title": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العنوان",
+        "en": "Show the title"
+      },
+      "default": true
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي فوق العنوان (اتركه فارغاً لإخفائه)",
+        "en": "Eyebrow above the title (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان — اتركه فارغاً ليُترجم تلقائياً حسب لغة الزائر",
+        "en": "Title — leave empty to translate with the visitor's language"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير تحت العنوان",
+        "en": "Short description under the title"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        },
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المدونة",
+      "name": "صفحة المدونات"
+    }
+  ]
+}

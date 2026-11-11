@@ -1,0 +1,114 @@
+{
+  "name": "شريط المميزات",
+  "settings": {
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (ديسكتوب)",
+        "en": "Columns (desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "feature": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "truck",
+          "options": [
+            {
+              "value": "truck",
+              "label": "شحن / Shipping"
+            },
+            {
+              "value": "shield",
+              "label": "ضمان / Warranty"
+            },
+            {
+              "value": "headset",
+              "label": "دعم / Support"
+            },
+            {
+              "value": "refresh",
+              "label": "استرجاع / Returns"
+            },
+            {
+              "value": "card",
+              "label": "دفع / Payment"
+            },
+            {
+              "value": "bolt",
+              "label": "سرعة / Fast"
+            },
+            {
+              "value": "cpu",
+              "label": "تقنية / Tech"
+            },
+            {
+              "value": "gift",
+              "label": "هدية / Gift"
+            },
+            {
+              "value": "lock",
+              "label": "أمان / Secure"
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (إنجليزي)",
+            "en": "Text (English)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "شريط المميزات"
+    }
+  ]
+}

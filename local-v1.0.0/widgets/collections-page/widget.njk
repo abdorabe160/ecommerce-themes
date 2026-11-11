@@ -1,0 +1,181 @@
+{# ============================================================================
+   LOCAL · COLLECTIONS PAGE — /collections
+   ----------------------------------------------------------------------------
+   Lists every collection in the store.
+
+   The tile is NOT redefined here: it is the very same `.lc-coll-tile` the
+   homepage carousel uses (assets/style.css → "15.11 COLLECTIONS CAROUSEL"), so
+   a collection looks identical wherever a shopper meets it. Only the container
+   differs — a grid here, a rail there.
+
+   Routes: every card points at /shop/<slug>, which is the single-collection
+   route this theme actually has. Nothing here invents a page.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# hidden from the store (onlineStore false / deleted) or missing a title or link: skipped #}
+{% set cols = [] %}
+{% for c in context.collections | default([], true) %}
+  {% if c and c.title and (c.slug or c.handle or c._id) and not c.deleted and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% set _ = cols.push(c) %}{% endif %}
+{% endfor %}
+{% set count = cols | length %}
+{% set pagination = context.pagination %}
+
+{% set showTitle = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.collections.title') %}
+{% set desc = d.description | default('', true) %}
+{% set showCount = d.show_count | default(true) %}
+{% set metaLabel = d.meta_label | default('', true) %}
+{% set moreText = d.more_text | default('', true) %}
+{% set colsD = d.columns_desktop | default('3') %}
+{% set colsM = d.columns_mobile | default('2') %}
+{% set bg = d.background | default('white') %}
+
+{% set ratio = d.card_ratio | default('3x4') %}
+{% if ratio == '1x1' %}{% set ratioVal = '1 / 1' %}
+{% elif ratio == '4x5' %}{% set ratioVal = '4 / 5' %}
+{% elif ratio == '2x3' %}{% set ratioVal = '2 / 3' %}
+{% else %}{% set ratioVal = '3 / 4' %}{% endif %}
+
+{# ── No tile alone on the last row ──
+   Desktop: if the picked column count leaves a single tile, step to the
+   neighbouring count that does not (7 in 3 → 4+3; 5 in 4 → 3+2).
+   Two-column phones/tablets: an odd count lets the LAST tile span both
+   columns at twice the width ratio, so it keeps the row height. #}
+{% set cD = colsD | int %}
+{% if count > cD and count % cD == 1 %}
+  {% if cD < 4 and count % (cD + 1) != 1 %}{% set cD = cD + 1 %}
+  {% elif cD > 2 and count % (cD - 1) != 1 %}{% set cD = cD - 1 %}{% endif %}
+{% endif %}
+{% set colsD = cD %}
+{% if ratio == '1x1' %}{% set wideRatio = '2 / 1' %}
+{% elif ratio == '4x5' %}{% set wideRatio = '8 / 5' %}
+{% elif ratio == '2x3' %}{% set wideRatio = '4 / 3' %}
+{% else %}{% set wideRatio = '3 / 2' %}{% endif %}
+{% set spanLast = count % 2 == 1 %}
+{# stepping above can't always help (13 in 3 or 4): that tile takes the row #}
+{% set spanWide = colsD > 2 and count % colsD == 1 %}
+
+
+<section id="lc-collp-{{ id }}"
+         class="lc-collp {{ 'lc-collp--well' if bg == 'well' }}"
+         style="--collp-cols: {{ colsD }}; --collp-cols-m: {{ colsM }};">
+  <div class="lc-container">
+
+    {% if showTitle %}
+      <div class="lc-collp-head">
+        {% if eyebrow %}<span class="lc-collp-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="lc-collp-title">{{ title }}</h1>
+        {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+             HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the CSS. #}
+        {% if desc %}<div class="lc-collp-desc">{{ desc | safe }}</div>{% endif %}
+        {% if showCount and count > 0 %}
+          <span class="lc-collp-count">
+            {{ t('pages.collections.count') }}: <bdi>{{ count if (not pagination or (pagination.totalPages | default(1, true)) <= 1) else pagination.totalItems }}</bdi>
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if count > 0 %}
+
+      <div class="lc-collp-grid">
+        {% for c in cols %}
+          {% set url = '/shop/' ~ (c.slug | default(c.handle, true) | default(c._id, true)) %}
+          {# `notFound` is the platform's stand-in picture for a collection with none #}
+          {% set img = c.image.fileUrl if c.image and c.image.fileUrl and not c.image.notFound else '' %}
+
+          <a href="{{ url }}" class="lc-coll-tile{{ ' lc-coll-tile--wide' if spanLast and loop.last }}{{ ' lc-coll-tile--wide-d' if spanWide and loop.last }}{{ ' lc-coll-tile--noimg' if not img }}" style="--coll-ratio: {{ ratioVal }}; --coll-ratio-wide: {{ wideRatio }};">
+
+            {% if img %}
+              <img src="{{ img }}" alt="{{ c.title }}" loading="lazy" class="lc-coll-img"/>
+            {% else %}
+              <span class="lc-coll-noimg"><svg class="lc-ph-art" viewBox="0 0 200 170" fill="none" aria-hidden="true" focusable="false"><path class="lc-ph-fill" d="M100 48c-14-10-44-12-58 8-16 22-8 64 12 86 12 13 28 20 46 12 18 8 34 1 46-12 20-22 28-64 12-86-14-20-44-18-58-8Z"/><rect class="lc-ph-tint" x="94" y="20" width="12" height="34" rx="6"/><ellipse class="lc-ph-tint" cx="128" cy="30" rx="22" ry="11" transform="rotate(-24 128 30)"/></svg></span>
+            {% endif %}
+
+            {% if metaLabel or (showCount and c.productsCount) %}
+              <div class="lc-coll-meta">
+                <span class="lc-coll-label">
+                  {% if metaLabel %}
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/>
+                    </svg>
+                    {{ metaLabel }}
+                  {% endif %}
+                </span>
+                {% if showCount and c.productsCount %}
+                  <span class="lc-coll-count">{{ c.productsCount }}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="lc-coll-foot">
+              <span class="lc-coll-name">{{ c.title }}</span>
+              {% if moreText %}
+                <span class="lc-coll-more">
+                  {{ moreText }}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8"/>
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {# ═════ pagination — plain links. This page has no Alpine scope and needs
+         none: /collections is server-paginated, so a link is the whole feature.
+         Same .lc-pagination as the shop page, so the two never look different. ═════ #}
+      {% if pagination and pagination.totalPages > 1 %}
+        <nav class="lc-pagination" aria-label="{{ t('common.next') }}">
+          {% if pagination.currentPage > 1 %}
+            <a href="?page={{ pagination.currentPage - 1 }}" class="lc-pagination-btn" aria-label="{{ t('common.prev') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+
+          {% for n in range(1, pagination.totalPages + 1) %}
+            {% if n == pagination.currentPage %}
+              <span class="lc-pagination-btn is-active" aria-current="page">{{ n }}</span>
+            {% elif n == 1 or n == pagination.totalPages or (n >= pagination.currentPage - 1 and n <= pagination.currentPage + 1) %}
+              <a href="?page={{ n }}" class="lc-pagination-btn">{{ n }}</a>
+            {% elif n == pagination.currentPage - 2 or n == pagination.currentPage + 2 %}
+              <span class="lc-pagination-gap">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if pagination.hasNextPage %}
+            <a href="?page={{ pagination.currentPage + 1 }}" class="lc-pagination-btn" aria-label="{{ t('common.next') }}">
+              <svg class="rtl-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+
+      {# Placeholder tiles rather than an apology: a merchant looking at their
+         own empty /collections learns more from the shape of the page than
+         from being told it is empty. #}
+      <div class="lc-collp-grid">
+        {% ui "placeholder.njk", kind='collection', count='6', image_ratio=ratio %}
+      </div>
+      <p class="lc-ph-note">{{ t('categories.no_categories_desc') }}</p>
+
+    {% endif %}
+
+  </div>
+</section>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. #}
+{% ui "section-colors.njk", scope='#lc-collp-' ~ id, c=d %}

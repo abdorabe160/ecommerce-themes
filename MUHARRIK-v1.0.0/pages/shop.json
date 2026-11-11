@@ -1,0 +1,37 @@
+{
+  "name": "المتجر",
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة المتجر",
+      "widget": "shop-page",
+      "settings": {
+        "title": "",
+        "description": "",
+        "show_breadcrumb": true,
+        "show_filters": true,
+        "show_sort": true,
+        "columns_desktop": "6",
+        "columns_mobile": "2",
+        "card_image_ratio": "",
+        "columns_tablet": "3",
+        "show_count": true,
+        "show_banner": true,
+        "banner_title": "",
+        "banner_text": "",
+        "banner_url": "/shop",
+        "filter_layout": "drawer",
+        "default_view": "grid",
+        "show_heading": false
+      }
+    },
+    {
+      "name": "منتجات المتجر",
+      "widget": "shop-products",
+      "settings": {}
+    }
+  ]
+}

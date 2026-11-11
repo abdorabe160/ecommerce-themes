@@ -1,0 +1,359 @@
+{
+  "name": "منتجات",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — ضع <em>كلمة</em> لتلوينها بالبرتقالي",
+        "en": "Title — wrap a word in <em> to set it in flame"
+      },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير (اختياري)",
+        "en": "Short Description (optional)"
+      },
+      "default": ""
+    },
+    "featuredCollection": {
+      "type": "products",
+      "label": {
+        "ar": "المنتجات (اتركها فارغة لعرض الأحدث تلقائياً)",
+        "en": "Products (leave empty to auto-show the latest)"
+      },
+      "default": []
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة",
+            "en": "Grid"
+          }
+        },
+        {
+          "value": "slider",
+          "label": {
+            "ar": "سلايدر",
+            "en": "Slider"
+          }
+        }
+      ]
+    },
+    "header_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Header Alignment"
+      },
+      "default": "split",
+      "options": [
+        {
+          "value": "split",
+          "label": {
+            "ar": "العنوان في البداية والرابط في النهاية",
+            "en": "Title start · link end"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "في الوسط",
+            "en": "Centered"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "canvas",
+      "options": [
+        {
+          "value": "canvas",
+          "label": {
+            "ar": "خلفية الموقع (موصى به)",
+            "en": "Page background (recommended)"
+          }
+        },
+        {
+          "value": "alt",
+          "label": {
+            "ar": "خلفية متبادلة — أفتح درجة",
+            "en": "Alternating — one step up"
+          }
+        },
+        {
+          "value": "surface",
+          "label": {
+            "ar": "لون البطاقات",
+            "en": "Card surface"
+          }
+        },
+        {
+          "value": "well",
+          "label": {
+            "ar": "غائرة",
+            "en": "Well"
+          }
+        },
+        {
+          "value": "void",
+          "label": {
+            "ar": "أسود صافٍ",
+            "en": "True black"
+          }
+        }
+      ]
+    },
+    "card_surface": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار حدود وخلفية للبطاقات",
+        "en": "Give cards a border and surface"
+      },
+      "default": true
+    },
+    "limit": {
+      "type": "number",
+      "label": {
+        "ar": "عدد المنتجات",
+        "en": "Products Limit"
+      },
+      "default": 10,
+      "min": 2,
+      "max": 30,
+      "step": 1
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3 Columns"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4 Columns"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥ أعمدة",
+            "en": "5 Columns"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "٦ أعمدة",
+            "en": "6 Columns"
+          }
+        }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (موبايل)",
+        "en": "Columns (Mobile)"
+      },
+      "default": "2",
+      "options": [
+        {
+          "value": "1",
+          "label": {
+            "ar": "عمود واحد",
+            "en": "1 Column"
+          }
+        },
+        {
+          "value": "2",
+          "label": {
+            "ar": "عمودان",
+            "en": "2 Columns"
+          }
+        }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "أبعاد صورة البطاقة",
+        "en": "Card Image Ratio"
+      },
+      "default": "1x1",
+      "options": [
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربّع",
+            "en": "Square"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولي خفيف",
+            "en": "Portrait"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولي",
+            "en": "Tall portrait"
+          }
+        },
+        {
+          "value": "4x3",
+          "label": {
+            "ar": "عرضي",
+            "en": "Landscape"
+          }
+        }
+      ]
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (اتركه فارغاً لإخفائه)",
+        "en": "View All URL (leave empty to hide)"
+      },
+      "default": "/shop"
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل",
+        "en": "View All Text"
+      },
+      "default": ""
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "أسهم التنقل (للسلايدر)",
+        "en": "Navigation Arrows (slider)"
+      },
+      "default": true
+    },
+    "show_progress": {
+      "type": "boolean",
+      "label": {
+        "ar": "شريط التقدّم (للسلايدر)",
+        "en": "Progress Bar (slider)"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص والوصف",
+        "en": "Body & description colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون التمييز — الكلمة الملوّنة والأيقونات والروابط",
+        "en": "Accent — highlighted word, icons, links"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون الحدود والفواصل",
+        "en": "Borders & dividers"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية البطاقات",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "لون خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "شبكة منتجات"
+    }
+  ]
+}

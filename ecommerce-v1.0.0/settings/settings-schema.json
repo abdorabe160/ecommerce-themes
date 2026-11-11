@@ -1,0 +1,440 @@
+[
+  {
+    "label": {
+      "ar": "الألوان",
+      "en": "Colours"
+    },
+    "settings": {
+      "useCustomColors": {
+        "type": "boolean",
+        "label": {
+          "ar": "استخدام ألوان مخصّصة — أطفئه للرجوع لألوان الثيم الأصلية (اختياراتك تبقى محفوظة)",
+          "en": "Use custom colours — switch off to restore the theme's original palette (your picks stay saved)"
+        },
+        "default": true
+      },
+      "primaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون العلامة — الأزرار والروابط والعناصر النشطة",
+          "en": "Brand Colour — buttons, links and active elements"
+        },
+        "default": "#1E2A78"
+      },
+      "accentTextColor": {
+        "type": "select",
+        "label": {
+          "ar": "النص فوق لون العلامة",
+          "en": "Text on the brand colour"
+        },
+        "default": "#FFFFFF",
+        "options": [
+          {
+            "value": "#FFFFFF",
+            "label": "فاتح — للألوان الغامقة"
+          },
+          {
+            "value": "#14110F",
+            "label": "غامق — للألوان الفاتحة"
+          }
+        ]
+      },
+      "dealColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون التخفيضات — شارة «تخفيض» والأسعار المخفّضة",
+          "en": "Sale Colour — the sale badge and discounted prices"
+        },
+        "default": "#B3202A"
+      },
+      "dealTextColor": {
+        "type": "select",
+        "label": {
+          "ar": "النص فوق لون التخفيضات",
+          "en": "Text on the sale colour"
+        },
+        "default": "#FFFFFF",
+        "options": [
+          {
+            "value": "#FFFFFF",
+            "label": "فاتح — للألوان الغامقة"
+          },
+          {
+            "value": "#14110F",
+            "label": "غامق — للألوان الفاتحة"
+          }
+        ]
+      },
+      "successColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «متوفر» — فارغ = لون الثيم الحالي",
+          "en": "“In stock” colour — empty keeps the theme's colour"
+        },
+        "default": ""
+      },
+      "warningColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون «أوشك على النفاد» — فارغ = لون الثيم الحالي",
+          "en": "“Low stock” colour — empty keeps the theme's colour"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الأسطح والنص",
+      "en": "Surfaces & Text"
+    },
+    "settings": {
+      "backgroundColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الصفحة",
+          "en": "Page Background"
+        },
+        "default": "#FFFFFF"
+      },
+      "wellColor": {
+        "type": "color",
+        "label": {
+          "ar": "الخلفية الدافئة — الأقسام المتبادلة وحقول الإدخال",
+          "en": "Warm Background — alternating sections and input fields"
+        },
+        "default": "#F7F6F4"
+      },
+      "textColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص — يُشتق منه النص الثانوي والخفيف",
+          "en": "Text Colour — secondary and muted text are derived from it"
+        },
+        "default": "#14110F"
+      },
+      "borderColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود",
+          "en": "Border Colour"
+        },
+        "default": "#E8E5E0"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الفوتر",
+      "en": "Footer"
+    },
+    "settings": {
+      "footerColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الفوتر — اتركه على خلفية الصفحة ليندمج، أو غامقًا ليفصل",
+          "en": "Footer Background — match the page to blend, or go dark to separate"
+        },
+        "default": "#0E1116"
+      },
+      "footerTextColor": {
+        "type": "color",
+        "label": {
+          "ar": "نص الفوتر — تُشتق منه العناوين والنص المكتوم والحدود",
+          "en": "Footer Text — headings, muted text and borders are derived from it"
+        },
+        "default": "#FFFFFF"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الخطوط",
+      "en": "Typography"
+    },
+    "settings": {
+      "fontDisplayArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط العناوين العربي",
+          "en": "Arabic Display Font"
+        },
+        "default": "Cairo",
+        "options": [
+          {
+            "value": "Cairo",
+            "label": "Cairo — الافتراضي"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Rubik",
+            "label": "Rubik"
+          },
+          {
+            "value": "Noto Sans Arabic",
+            "label": "Noto Sans Arabic"
+          },
+          {
+            "value": "Marhey",
+            "label": "Marhey — مرح"
+          },
+          {
+            "value": "El Messiri",
+            "label": "El Messiri"
+          }
+        ]
+      },
+      "fontDisplayLatin": {
+        "type": "select",
+        "label": {
+          "ar": "خط العناوين اللاتيني",
+          "en": "Latin Display Font"
+        },
+        "default": "Figtree",
+        "options": [
+          {
+            "value": "Figtree",
+            "label": "Figtree — الافتراضي"
+          },
+          {
+            "value": "Plus Jakarta Sans",
+            "label": "Plus Jakarta Sans"
+          },
+          {
+            "value": "Manrope",
+            "label": "Manrope"
+          },
+          {
+            "value": "Poppins",
+            "label": "Poppins"
+          },
+          {
+            "value": "Nunito",
+            "label": "Nunito — مدوّر"
+          },
+          {
+            "value": "Baloo 2",
+            "label": "Baloo 2 — مرح"
+          },
+          {
+            "value": "Montserrat",
+            "label": "Montserrat"
+          }
+        ]
+      },
+      "fontBodyArabic": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص العربي",
+          "en": "Arabic Body Font"
+        },
+        "default": "Cairo",
+        "options": [
+          {
+            "value": "Cairo",
+            "label": "Cairo — الافتراضي"
+          },
+          {
+            "value": "Tajawal",
+            "label": "Tajawal"
+          },
+          {
+            "value": "Almarai",
+            "label": "Almarai"
+          },
+          {
+            "value": "IBM Plex Sans Arabic",
+            "label": "IBM Plex Sans Arabic"
+          },
+          {
+            "value": "Noto Sans Arabic",
+            "label": "Noto Sans Arabic"
+          },
+          {
+            "value": "Rubik",
+            "label": "Rubik"
+          }
+        ]
+      },
+      "fontBodyLatin": {
+        "type": "select",
+        "label": {
+          "ar": "خط النص اللاتيني (ومنه تُشتق الأرقام)",
+          "en": "Latin Body Font (also drives numerals)"
+        },
+        "default": "Figtree",
+        "options": [
+          {
+            "value": "Figtree",
+            "label": "Figtree — الافتراضي"
+          },
+          {
+            "value": "Plus Jakarta Sans",
+            "label": "Plus Jakarta Sans"
+          },
+          {
+            "value": "Manrope",
+            "label": "Manrope"
+          },
+          {
+            "value": "Nunito",
+            "label": "Nunito — مدوّر"
+          },
+          {
+            "value": "DM Sans",
+            "label": "DM Sans"
+          },
+          {
+            "value": "Inter",
+            "label": "Inter"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الوضع الليلي",
+      "en": "Dark mode"
+    },
+    "settings": {
+      "enableDarkMode": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل الوضع الليلي — يظهر زر التبديل في الهيدر ويحفظ اختيار الزائر",
+          "en": "Enable dark mode — shows the switch in the header and remembers the shopper's choice"
+        },
+        "default": true
+      },
+      "darkBackgroundColor": {
+        "type": "color",
+        "label": {
+          "ar": "خلفية الصفحة",
+          "en": "Page background"
+        },
+        "default": "#0F1115"
+      },
+      "darkWellColor": {
+        "type": "color",
+        "label": {
+          "ar": "الأسطح الثانوية (الحقول والبطاقات)",
+          "en": "Secondary surfaces (fields, cards)"
+        },
+        "default": "#1A1D23"
+      },
+      "darkTextColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون النص",
+          "en": "Text"
+        },
+        "default": "#F2F3F5"
+      },
+      "darkBorderColor": {
+        "type": "color",
+        "label": {
+          "ar": "لون الحدود",
+          "en": "Borders"
+        },
+        "default": "#2A2E36"
+      },
+      "darkPrimaryColor": {
+        "type": "color",
+        "label": {
+          "ar": "اللون الأساسي (الأزرار والروابط)",
+          "en": "Primary (buttons, links)"
+        },
+        "default": "#FFFFFF"
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "الهوية والحركة",
+      "en": "Identity & motion"
+    },
+    "settings": {
+      "favicon": {
+        "type": "media",
+        "label": {
+          "ar": "أيقونة المتصفح (Favicon) — مربعة 512×512",
+          "en": "Browser icon (favicon) — square 512×512"
+        }
+      },
+      "enableAnimations": {
+        "type": "boolean",
+        "label": {
+          "ar": "تفعيل الحركات — أطفئه لإيقاف كل الحركة والانتقالات في المتجر",
+          "en": "Enable animations — switch off to stop all motion and transitions"
+        },
+        "default": true
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "المنتجات",
+      "en": "Products"
+    },
+    "settings": {
+      "lowStockThreshold": {
+        "type": "range",
+        "label": {
+          "ar": "تنبيه «أوشك على النفاد» عند كمية",
+          "en": "Low-stock notice at"
+        },
+        "default": 3,
+        "min": 1,
+        "max": 10,
+        "step": 1
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "محركات البحث",
+      "en": "Search engines"
+    },
+    "settings": {
+      "googleVerification": {
+        "type": "string",
+        "label": {
+          "ar": "كود تحقق Google Search Console (الوسم كامل <meta …> أو قيمة content فقط)",
+          "en": "Google Search Console verification (the full <meta …> tag or just its content value)"
+        },
+        "default": ""
+      }
+    }
+  },
+  {
+    "label": {
+      "ar": "كود مخصص",
+      "en": "Custom code"
+    },
+    "settings": {
+      "customCSS": {
+        "type": "css",
+        "label": {
+          "ar": "CSS مخصص (يُطبَّق بعد ستايل الثيم)",
+          "en": "Custom CSS (applied after the theme styles)"
+        },
+        "default": ""
+      },
+      "customJS": {
+        "type": "javascript",
+        "label": {
+          "ar": "JavaScript مخصص (آخر الصفحة)",
+          "en": "Custom JavaScript (end of page)"
+        },
+        "default": ""
+      }
+    }
+  }
+]

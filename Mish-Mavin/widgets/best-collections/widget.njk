@@ -1,0 +1,32 @@
+{# تسوق حسب الفئة — مطابق لـ mavin-wear.com: عنوان على اليسار + شبكة 4 أعمدة (2 على الموبايل) ببطاقات 3:4 ونص أبيض بالأسفل.
+   المصدر: البلوكات (صورة + عنوان + رابط) أولاً، وإن لم توجد فالتصنيفات المختارة. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set blocks = widget.blocks | default([]) %}
+{% set collections = wd.collections | default([]) %}
+<section class="mw-cats">
+  <div class="container">
+    {% if wd.title %}<h2 class="mw-cats__title mw-align-{{ wd.heading_align | default('left') }}">{{ wd.title }}</h2>{% endif %}
+    <div class="mw-cats__grid"{% if not (blocks | length) and not (collections | length) %} data-mw-demo="cats"{% endif %}>
+      {%- if blocks | length %}
+        {% for b in blocks %}{% set s = b.settings %}
+          <a href="{{ s.url | default('/collections') }}" class="mw-cat">
+            <div class="mw-cat__media">
+              {% set img = s.image.fileUrl if (s.image and s.image.fileUrl) else ((('mw-cat-' + loop.index + '.jpg') | assets) if loop.index <= 4 else '') %}
+              {% if img %}<img src="{{ img }}" alt="{{ s.title | default('') }}" loading="lazy" decoding="async" width="600" height="800"/>{% endif %}
+            </div>
+            {% if s.title %}<span class="mw-cat__label">{{ s.title }}</span>{% endif %}
+          </a>
+        {% endfor %}
+      {% else %}
+        {% for c in collections %}{% if c and c.title and (c.handle or c.slug) %}
+          <a href="/collections/{{ c.handle or c.slug }}" class="mw-cat">
+            <div class="mw-cat__media">
+              {% if c.image and c.image.fileUrl and not ('/system/assets/' in c.image.fileUrl) %}<img src="{{ c.image.fileUrl }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="600" height="800"/>{% endif %}
+            </div>
+            <span class="mw-cat__label">{{ c.title }}</span>
+          </a>
+        {% endif %}{% endfor %}
+      {% endif -%}
+    </div>
+  </div>
+</section>

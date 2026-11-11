@@ -1,0 +1,182 @@
+{
+  "name": "header",
+  "settings": {
+    "logo": {
+      "type": "media",
+      "label": {
+        "ar": "الشعار (اختياري — بدلاً من شعار المتجر)",
+        "en": "Logo (optional — overrides store logo)"
+      }
+    },
+    "menu": {
+      "type": "menu",
+      "label": {
+        "ar": "القائمة الرئيسية",
+        "en": "Main menu"
+      },
+      "default": "header-menu"
+    },
+    "sticky_header": {
+      "type": "boolean",
+      "label": {
+        "ar": "تثبيت الهيدر أعلى الصفحة أثناء التمرير",
+        "en": "Sticky header while scrolling"
+      },
+      "default": true
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان الأول",
+        "en": "Announcement text 1"
+      },
+      "default": "New collection just landed"
+    },
+    "announcement_text_2": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان الثاني",
+        "en": "Announcement text 2"
+      },
+      "default": "Training essentials for every day"
+    },
+    "announcement_text_3": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإعلان الثالث",
+        "en": "Announcement text 3"
+      },
+      "default": ""
+    },
+    "announcement_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدة دورة الشريط (ثانية)",
+        "en": "Marquee loop duration (s)"
+      },
+      "default": 60,
+      "min": 15,
+      "max": 120,
+      "step": 5,
+      "unit": "s"
+    },
+    "announcement_link_text": {
+      "type": "string",
+      "label": {
+        "ar": "رابط شريط الإعلانات (نص)",
+        "en": "Announcement link text"
+      },
+      "default": "New Products"
+    },
+    "announcement_link_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط شريط الإعلانات (URL)",
+        "en": "Announcement link URL"
+      },
+      "default": "/collections"
+    },
+    "announcement_closable": {
+      "type": "boolean",
+      "label": {
+        "ar": "إمكانية إغلاق شريط الإعلانات (يفضل مغلقاً طوال الجلسة)",
+        "en": "Allow closing the announcement bar (stays closed for the session)"
+      },
+      "default": true
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار البحث",
+        "en": "Show search"
+      },
+      "default": true
+    },
+    "popular_searches": {
+      "type": "text",
+      "label": {
+        "ar": "الأكثر بحثاً (افصل بينها بفاصلة)",
+        "en": "Popular searches (comma separated)"
+      },
+      "default": "Compression, Sweatpants, Oversized Tee, Tank, Shorts"
+    },
+    "show_language": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار تبديل اللغة",
+        "en": "Show language switch"
+      },
+      "default": true
+    },
+    "english_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط النسخة الإنجليزية",
+        "en": "English URL"
+      },
+      "default": "/en"
+    },
+    "arabic_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط النسخة العربية",
+        "en": "Arabic URL"
+      },
+      "default": "/ar"
+    },
+    "currencies": {
+      "type": "string",
+      "label": {
+        "ar": "عملات التبديل (أكواد مفصولة بفاصلة مثل EGP,USD — اتركها فارغة للإخفاء)",
+        "en": "Switchable currencies (comma codes e.g. EGP,USD — empty hides)"
+      },
+      "default": ""
+    },
+    "show_notification": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار جرس الإشعارات",
+        "en": "Show notification bell"
+      },
+      "default": true
+    },
+    "notification_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان الإشعار",
+        "en": "Notification title"
+      },
+      "default": "New arrivals"
+    },
+    "notification_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الإشعار",
+        "en": "Notification text"
+      },
+      "default": "Explore the latest pieces in the store."
+    },
+    "notification_button": {
+      "type": "string",
+      "label": {
+        "ar": "زر الإشعار",
+        "en": "Notification button"
+      },
+      "default": "Shop now"
+    },
+    "notification_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط زر الإشعار",
+        "en": "Notification button URL"
+      },
+      "default": "/collections"
+    }
+  },
+  "presets": [
+    {
+      "category": "header",
+      "name": "header"
+    }
+  ]
+}

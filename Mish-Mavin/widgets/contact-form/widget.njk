@@ -1,0 +1,38 @@
+{# نموذج تواصل معنا (CNT-06). قمرة مفيهاش endpoint للتواصل في الواجهة، فالنموذج بيبعت لرابط التاجر (form_action — Formspree / Getform …)
+   أو بيفتح البريد على إيميل المتجر من الإعدادات. من غير الاتنين بيعرض بيانات التواصل بس — مفيش نموذج بيروح في الفراغ. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set S = settings or {} %}
+{% set ht = 'h2' if wd.heading_tag == 'h2' else 'h1' %}
+{% set L = '_en' if (localization.language | default('ar')) != 'ar' else '' %}
+{% set title = (wd['title' + L] or wd.title) or t('contact.title') %}
+{% set text = (wd['text' + L] or wd.text) or t('contact.text') %}
+{% set action = (wd.form_action or '') | trim %}
+{% set hasForm = action | length > 0 %}
+{% set hasMail = not hasForm and S.contactEmail %}
+{% set addr = S['contactAddress' + L] or S.contactAddress %}
+<section class="mw-page mw-contact" x-data="mwContact()">
+  <div class="container container--narrow">
+    <{{ ht }} class="mw-collection-hero__title">{{ title }}</{{ ht }}>
+    {% if text %}<p class="mw-contact__text">{{ text }}</p>{% endif %}
+    {% if S.contactPhone or S.contactEmail or addr %}
+    <ul class="mw-contact__details">
+      {% if S.contactPhone %}<li><span>{{ t('contact.phone') }}</span><a href="tel:{{ S.contactPhone | replace(' ', '') }}" dir="ltr">{{ S.contactPhone }}</a></li>{% endif %}
+      {% if S.contactEmail %}<li><span>{{ t('contact.email') }}</span><a href="mailto:{{ S.contactEmail }}" dir="ltr">{{ S.contactEmail }}</a></li>{% endif %}
+      {% if addr %}<li><span>{{ t('contact.address') }}</span><span>{{ addr }}</span></li>{% endif %}
+    </ul>
+    {% endif %}
+    {% if hasForm or hasMail %}
+    <form class="mw-form" method="post" novalidate @submit="submit($event)"
+          {% if hasForm %}action="{{ action }}" target="_blank"{% else %}action="mailto:{{ S.contactEmail }}" enctype="text/plain"{% endif %}>
+      <div class="mw-form__row">
+        <label class="mw-field"><span>{{ t('contact.name') }}</span><input type="text" name="name" x-model="name" autocomplete="name" required maxlength="80" :aria-invalid="(errors.name ? 'true' : 'false')"/><small x-show="errors.name" x-cloak x-text="errors.name" role="alert"></small></label>
+        <label class="mw-field"><span>{{ t('contact.email') }}</span><input type="email" inputmode="email" name="email" x-model="email" autocomplete="email" required maxlength="120" dir="ltr" :aria-invalid="(errors.email ? 'true' : 'false')"/><small x-show="errors.email" x-cloak x-text="errors.email" role="alert"></small></label>
+      </div>
+      <label class="mw-field"><span>{{ t('contact.phone') }} <em>({{ t('contact.optional') }})</em></span><input type="tel" inputmode="tel" name="phone" x-model="phone" autocomplete="tel" maxlength="20" dir="ltr"/></label>
+      <label class="mw-field"><span>{{ t('contact.message') }}</span><textarea name="message" rows="6" x-model="message" required maxlength="2000" :aria-invalid="(errors.message ? 'true' : 'false')"></textarea><small x-show="errors.message" x-cloak x-text="errors.message" role="alert"></small></label>
+      <button type="submit" class="mw-btn mw-btn--filled">{{ t('contact.send') }}</button>
+      <p class="mw-form__ok" x-show="state === 'sent'" x-cloak role="status">{{ t('contact.success') }}</p>
+    </form>
+    {% endif %}
+  </div>
+</section>

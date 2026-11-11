@@ -1,0 +1,48 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{% set blocks = widget.blocks | default([]) %}
+{# عدد البانرات في الصف: 1–6 على الشاشات الكبيرة، و1–2 على الموبايل (.lg-promo-grid في style.css) #}
+{% set cols = (wd.columns | default('2')) | string %}
+{% set colsM = '2' if wd.columns_mobile == '2' else '1' %}
+{% if blocks | length %}
+<section class="lg-section">
+  <div class="lg-container">
+    <div class="lg-promo-grid" data-cols="{{ cols }}" data-cols-m="{{ colsM }}">
+      {% for block in blocks %}
+        {% set s = block.settings %}
+        {# التصنيف المرتبط بالبانر: الضغط يفتح صفحته الحقيقية، ويأخذ البانر اسمه وصورته إن لم يُحدَّدا (نوع collections يرجع مصفوفة) #}
+        {% set bc = s.collection %}
+        {% if bc and bc[0] %}{% set bc = bc[0] %}{% endif %}
+        {% set bcOk = bc and (bc.handle or bc.slug) and bc.status != 'inactive' and bc.status != 'draft' and bc.active != false and bc.isActive != false and bc.deleted != true and not (bc.salesChannels and bc.salesChannels.onlineStore == false) and bc.published != false %}
+        {% set href = ('/collections/' + (bc.handle or bc.slug)) if bcOk else s.url %}
+        {% set btitle = (s['title' + L] or s.title) or (bc.title if bcOk else '') %}
+        {% set demo = s.demo_image if (s.demo_image and s.demo_image != 'none') else '' %}
+        {% if s.image and s.image.fileUrl %}{% set pimg = s.image.fileUrl %}{% elif demo and 'cutout_' in demo %}{% set pimg = ('demo-' + (demo | replace('cutout_', '')) + '.webp') | assets %}{% elif bcOk and bc.image and bc.image.fileUrl and not bc.image.notFound %}{% set pimg = bc.image.fileUrl %}{% else %}{% set pimg = '' %}{% endif %}
+        {% set pcover = pimg and s.image_mode == 'cover' %}
+        {% set Tag = 'a' if href else 'div' %}
+        <{{ Tag }} {% if href %}href="{{ href }}"{% endif %} class="lg-promo group {% if pcover %}lg-promo--cover{% else %}lg-promo--glass{% endif %}"
+           style="--promo-from: {{ s.color_from | default('var(--promo-d-from)', true) }}; --promo-to: {{ s.color_to | default('var(--promo-d-to)', true) }};{% if s.text_color %} --promo-text: {{ s.text_color }}; --promo-muted: color-mix(in srgb, {{ s.text_color }} 80%, transparent);{% endif %}">
+          {% if pcover %}<img src="{{ pimg }}" alt="" class="lg-promo__bg" loading="lazy" decoding="async" width="700" height="450">{% endif %}
+          <div class="lg-promo__body relative z-10 flex-1 min-w-0 flex flex-col justify-center gap-1.5 p-6 md:p-7 {% if pimg and not pcover %}max-w-[62%]{% endif %}">
+            {% if (s['eyebrow' + L] or s.eyebrow) %}<p class="lg-promo__eyebrow">{{ (s['eyebrow' + L] or s.eyebrow) }}</p>{% endif %}
+            {% if btitle %}<h3 class="lg-promo__title">{{ btitle }}</h3>{% endif %}
+            {% if (s['text' + L] or s.text) %}<p class="lg-promo__text text-sm">{{ (s['text' + L] or s.text) }}</p>{% endif %}
+            {% if (s['button_text' + L] or s.button_text) and href %}
+              <span class="btn btn-ghost-light lg-promo__btn !min-h-[40px] text-sm mt-3 self-start">
+                {{ (s['button_text' + L] or s.button_text) }} {% ui "icon.njk", name="arrow", cls="w-4 h-4 lg-flip-rtl" %}
+              </span>
+            {% endif %}
+          </div>
+          {% if pimg and not pcover %}
+            <div class="lg-promo__stage relative w-[40%] shrink-0 grid place-items-center p-3">
+              <img src="{{ pimg }}" alt="{{ btitle }}" loading="lazy" decoding="async" width="260" height="200" class="lg-promo__product max-h-44 w-auto object-contain">
+            </div>
+          {% endif %}
+        </{{ Tag }}>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

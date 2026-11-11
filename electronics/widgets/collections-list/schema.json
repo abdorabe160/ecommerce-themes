@@ -1,0 +1,65 @@
+{
+  "name": "كل التصنيفات",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": "كل التصنيفات"
+    },
+    "title_en": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان (إنجليزي)",
+        "en": "Title (English)"
+      },
+      "default": "All categories"
+    },
+    "show_products": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار منتجات كل تصنيف تحته",
+        "en": "Show each category's products below it"
+      },
+      "default": true
+    },
+    "products_per_collection": {
+      "type": "select",
+      "label": {
+        "ar": "عدد المنتجات الظاهرة لكل تصنيف (والباقي بزر عرض المزيد)",
+        "en": "Products shown per category (rest via Load more)"
+      },
+      "default": "8",
+      "options": [
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "8",
+          "label": "8"
+        },
+        {
+          "value": "12",
+          "label": "12"
+        }
+      ]
+    },
+    "show_uncategorized": {
+      "type": "boolean",
+      "label": {
+        "ar": "قسم \"منتجات أخرى\" للمنتجات التي ليست في أي تصنيف",
+        "en": "\"More products\" section for products in no category"
+      },
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة التصنيفات",
+      "name": "كل التصنيفات"
+    }
+  ]
+}

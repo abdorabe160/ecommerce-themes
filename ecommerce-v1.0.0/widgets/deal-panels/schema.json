@@ -1,0 +1,622 @@
+{
+  "name": "لوحات العروض",
+  "settings": {
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ عرض كامل للشاشة",
+        "en": "▸ Full-width layout"
+      },
+      "default": true
+    },
+    "show_bolt": {
+      "type": "boolean",
+      "label": {
+        "ar": "أيقونة البرق بجانب العناوين",
+        "en": "Lightning icon beside the titles"
+      },
+      "default": true
+    },
+    "limit": {
+      "type": "range",
+      "label": {
+        "ar": "عدد المنتجات في كل لوحة",
+        "en": "Products per panel"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 8,
+      "step": 1
+    },
+    "show_features": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ صف المميزات أعلى كل لوحة",
+        "en": "▸ Feature row at the top of each panel"
+      },
+      "default": true
+    },
+    "p1_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ اللوحة 1 — إظهار",
+        "en": "▸ Panel 1 — show"
+      },
+      "default": true
+    },
+    "p1_title": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 1 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 1 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p1_bg": {
+      "type": "color",
+      "label": {
+        "ar": "اللوحة 1 — اللون",
+        "en": "Panel 1 — colour"
+      },
+      "default": ""
+    },
+    "p1_products": {
+      "type": "products",
+      "label": {
+        "ar": "اللوحة 1 — المنتجات",
+        "en": "Panel 1 — products"
+      }
+    },
+    "p1_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "اللوحة 1 — أو تصنيف (لو لم تختر منتجات)",
+        "en": "Panel 1 — or a collection (when no products are picked)"
+      }
+    },
+    "p1_f1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 1: الأيقونة",
+        "en": "Panel 1 — feature 1: icon"
+      },
+      "default": "delivery",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p1_f1_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 1: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 1 — feature 1: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p1_f2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 2: الأيقونة",
+        "en": "Panel 1 — feature 2: icon"
+      },
+      "default": "shield",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p1_f2_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 2: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 1 — feature 2: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p1_f3_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 3: الأيقونة",
+        "en": "Panel 1 — feature 3: icon"
+      },
+      "default": "truck",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p1_f3_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 1 — الميزة 3: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 1 — feature 3: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p2_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ اللوحة 2 — إظهار",
+        "en": "▸ Panel 2 — show"
+      },
+      "default": true
+    },
+    "p2_title": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 2 — العنوان — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 2 — title — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p2_bg": {
+      "type": "color",
+      "label": {
+        "ar": "اللوحة 2 — اللون",
+        "en": "Panel 2 — colour"
+      },
+      "default": ""
+    },
+    "p2_products": {
+      "type": "products",
+      "label": {
+        "ar": "اللوحة 2 — المنتجات",
+        "en": "Panel 2 — products"
+      }
+    },
+    "p2_collection": {
+      "type": "collections",
+      "label": {
+        "ar": "اللوحة 2 — أو تصنيف (لو لم تختر منتجات)",
+        "en": "Panel 2 — or a collection (when no products are picked)"
+      }
+    },
+    "p2_f1_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 1: الأيقونة",
+        "en": "Panel 2 — feature 1: icon"
+      },
+      "default": "delivery",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p2_f1_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 1: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 2 — feature 1: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p2_f2_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 2: الأيقونة",
+        "en": "Panel 2 — feature 2: icon"
+      },
+      "default": "shield",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p2_f2_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 2: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 2 — feature 2: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "p2_f3_icon": {
+      "type": "select",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 3: الأيقونة",
+        "en": "Panel 2 — feature 3: icon"
+      },
+      "default": "returns",
+      "options": [
+        {
+          "value": "delivery",
+          "label": {
+            "ar": "ضمان التوصيل",
+            "en": "Delivery guarantee"
+          }
+        },
+        {
+          "value": "shield",
+          "label": {
+            "ar": "ضمان",
+            "en": "Warranty"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "ar": "توصيل سريع",
+            "en": "Fast delivery"
+          }
+        },
+        {
+          "value": "returns",
+          "label": {
+            "ar": "إرجاع",
+            "en": "Returns"
+          }
+        },
+        {
+          "value": "card",
+          "label": {
+            "ar": "دفع آمن",
+            "en": "Secure payment"
+          }
+        },
+        {
+          "value": "support",
+          "label": {
+            "ar": "دعم",
+            "en": "Support"
+          }
+        },
+        {
+          "value": "tag",
+          "label": {
+            "ar": "سعر",
+            "en": "Price"
+          }
+        },
+        {
+          "value": "gift",
+          "label": {
+            "ar": "هدية",
+            "en": "Gift"
+          }
+        }
+      ]
+    },
+    "p2_f3_text": {
+      "type": "string",
+      "label": {
+        "ar": "اللوحة 2 — الميزة 3: النص — فارغ = النص الافتراضي بلغة الزائر",
+        "en": "Panel 2 — feature 3: text — empty = default text in the visitor's language"
+      },
+      "default": ""
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة العلوية",
+        "en": "Top spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة السفلية",
+        "en": "Bottom spacing"
+      },
+      "default": 32,
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px"
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ ألوان خاصة بهذا القسم",
+        "en": "▸ Custom colours for this section"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "لون السعر",
+        "en": "Price colour"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "لوحات العروض"
+    }
+  ]
+}

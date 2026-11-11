@@ -1,0 +1,459 @@
+{# ============================================================================
+   NAKHA CTA BANNER — the offer block
+   ----------------------------------------------------------------------------
+   Three layouts: card (inset) · full (edge-to-edge strip) · split (image + text).
+   Carries an optional live countdown and a click-to-copy coupon code.
+
+   The countdown reads the merchant's date as the VISITOR's local time — no
+   trailing Z — because "the sale ends at midnight" means midnight where the
+   shopper is, not UTC.
+
+   Countdown and coupon both use the shared primitives in style.css
+   (.nakha-timer · .nakha-coupon), so they look identical wherever else the
+   theme reuses them.
+
+   ── Colour ────────────────────────────────────────────────────────────────
+   Two of the backgrounds change what "readable" means, and each redefines the
+   TOKENS for the panel rather than repainting elements one by one:
+     flame   white text on the accent — the timer and coupon go translucent
+     light   .nakha-invert, the whole panel flips to paper
+   A background photo forces the flame treatment too, whatever colour was set:
+   over a photograph the theme's own text colours are a coin toss.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set layout = d.layout | default('card', true) %}
+{% set isFull = layout == 'full' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('appetite', true) %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+{% set imgSplit = d.image_split.fileUrl if d.image_split and d.image_split.fileUrl else '' %}
+{# Out of the box: a bundled demo photo until the merchant picks one — split side only; the colour panels stay as designed (docs/demo-images.md) #}
+{% if not imgSplit %}{% set imgSplit = 'demo-cta-split.jpg' | assets %}{% endif %}
+{% set scrim = d.scrim | default('medium', true) %}
+{% set showMotif = d.show_speed_motif | default(true) %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set subtitle = d.subtitle | default('') %}
+
+{% set align = d.text_alignment | default('center', true) %}
+{% set isCenter = align == 'center' and not isSplit %}
+
+{% set height = d.height | default('medium', true) %}
+{% if height == 'small' %}{% set pad = '40px' %}
+{% elif height == 'large' %}{% set pad = '92px' %}
+{% else %}{% set pad = '64px' %}{% endif %}
+
+{% set showCd = d.show_countdown | default(false) %}
+{% set hideOnExpire = d.hide_on_expire | default(false) %}
+
+{# ---- deadline: a date field plus an hour dropdown ----------------------------
+   Split on purpose. `date` gives the Theme Editor a chance to render a real
+   picker, and the hour is a `select` so there is no format left to mistype at
+   all. Older configs stored one combined "YYYY-MM-DD HH:MM" string; if the date
+   still carries a space it is used verbatim and the time dropdown is ignored,
+   so nothing breaks on upgrade. #}
+{% set cdRaw = d.countdown_date | default('', true) %}
+{% set cdTime = d.countdown_time | default('23:59', true) %}
+{% if ' ' in cdRaw %}
+  {% set cdDate = cdRaw %}
+{% elif cdRaw %}
+  {% set cdDate = cdRaw ~ ' ' ~ cdTime %}
+{% else %}
+  {% set cdDate = '' %}
+{% endif %}
+{% set coupon = d.coupon_code | default('') %}
+
+{% set btnText = d.button_text | default(t('defaults.order_now'), true) %}
+{% set btnLink = d.button_link | default('/shop', true) %}
+{% set btn2Text = d.button2_text | default('') %}
+{% set btn2Link = d.button2_link | default('/shop', true) %}
+
+{# ---- background ---- #}
+{% set onPhoto = img and scrim != 'none' %}
+{% set isDark = (bg == 'dark' or bg == 'void') and not onPhoto %}
+{% set isFlame = (bg == 'appetite' or onPhoto) and not isDark %}
+
+{% if bg == 'void' %}{% set bgVal = 'var(--color-char)' %}
+{% elif bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'canvas' %}{% set bgVal = 'var(--color-bg-primary)' %}
+{% elif isDark %}{% set bgVal = 'var(--color-char)' %}
+{% else %}{% set bgVal = 'var(--color-appetite-solid)' %}{% endif %}
+
+
+<style>
+  /* ================= shell ================= */
+  .nakha-cta-{{ id }}-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: {{ bgVal }};
+    padding-block: {{ pad }};
+    {% if not isFull %}border-radius: var(--radius-card);{% endif %}
+    {% if not isFlame %}border: 1px solid var(--color-border);{% endif %}
+  }
+  @media (max-width: 767px) {
+    .nakha-cta-{{ id }}-panel { padding-block: calc({{ pad }} * 0.68); }
+  }
+
+  {% if isFlame %}
+  /* Token overrides for the whole panel, not per-element repainting — the
+     shared timer and coupon primitives then invert themselves. */
+  .nakha-cta-{{ id }}-panel {
+    --color-text-primary: var(--color-cream);
+    --color-text-secondary: rgba(255, 247, 239, 0.86);
+    --color-text-tertiary: rgba(255, 247, 239, 0.72);
+    --color-border: rgba(255, 247, 239, 0.28);
+    /* also needed: .nakha-btn--outline borders on --color-border-strong, which
+       would otherwise stay dark grey and vanish against the band */
+    --color-border-strong: rgba(255, 247, 239, 0.5);
+    /* The APPETITE tokens, not the legacy --color-flame ones: every primitive
+       inside this panel (the coupon, the chips, the heading <em>) reads
+       --color-appetite*, so overriding the old names here changed nothing. */
+    --color-appetite: var(--color-cream);
+    --color-appetite-ink: var(--color-cream);
+    --color-appetite-wash: rgba(255, 247, 239, 0.14);
+    --color-appetite-line: rgba(255, 247, 239, 0.34);
+    --color-surface: rgba(255, 247, 239, 0.12);
+  }
+
+  /* ---- the <em> highlight word ----
+     Everywhere else it rides on --color-appetite. That cannot work here, and
+     the two reasons are different, so the two cases get different answers:
+
+       solid red band  the token is red and the ground is red — red on red.
+                       The emphasis goes DARK. #241410 is a deep cocoa rather
+                       than the plain charcoal: 3.82:1 on the default red (vs
+                       3.07 for --color-char) and warm enough not to read as a
+                       hole punched in the band. Being the only dark thing on
+                       the panel is what makes it the highlight; the title
+                       itself sits at 4.39:1 in cream.
+
+                       Deliberately a fixed colour, not a mix of the merchant's
+                       brand colour: `color-mix(appetite 30%, near-black)` was
+                       tried and lands at 2.95:1 on red and 2.68:1 on a blue
+                       brand — i.e. it fails exactly when the brand colour is
+                       not the default.
+
+       photo + scrim   charcoal would sink into the dark scrim instead. Here
+                       the emphasis goes UP: the brand red lifted toward white,
+                       the same mix the hero uses over its stage.
+
+     Both are set after the token block above, which has just repointed
+     --color-appetite at cream — so neither can inherit it by accident. */
+  .nakha-cta-{{ id }}-panel .nakha-h1 em,
+  .nakha-cta-{{ id }}-panel .nakha-h1 i {
+    font-style: normal;
+    color: {{ '#E47872' if onPhoto else '#241410' }};
+  }
+  {% endif %}
+
+  {% if img %}
+  .nakha-cta-{{ id }}-bg { position: absolute; inset: 0; z-index: -2; }
+  .nakha-cta-{{ id }}-bg img { width: 100%; height: 100%; object-fit: cover; }
+  {% endif %}
+
+  {% if showMotif and (isFlame or bg == 'void') and not img %}
+  /* speed lines — the brand motif. Never over a photo: the photograph already
+     carries the texture, and the two hatchings fight. Same gate the newsletter
+     uses, so the motif appears on the flame AND the black panel. */
+  .nakha-cta-{{ id }}-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      115deg, rgba(255, 247, 239, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  html[dir="rtl"] .nakha-cta-{{ id }}-panel::before {
+    background-image: repeating-linear-gradient(
+      65deg, rgba(255, 247, 239, {{ '0.10' if isFlame else '0.05' }}) 0 2px, transparent 2px 15px);
+  }
+  {% endif %}
+
+  /* ================= split row ================= */
+  .nakha-cta-{{ id }}-row {
+    display: grid;
+    align-items: center;
+    gap: 36px;
+    {% if isSplit %}grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+  }
+  @media (max-width: 1023px) {
+    .nakha-cta-{{ id }}-row { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+
+  .nakha-cta-{{ id }}-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-media);
+    aspect-ratio: 4 / 3;
+  }
+  .nakha-cta-{{ id }}-media img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ================= text ================= */
+  .nakha-cta-{{ id }}-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+    {% if isCenter %}align-items: center; text-align: center;{% else %}align-items: flex-start;{% endif %}
+  }
+
+  .nakha-cta-{{ id }}-sub {
+    margin: 0;
+    max-width: 56ch;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+  }
+
+  {% if isFlame %}
+  /* On the flame panel the timer cells are white-on-white — go translucent. */
+  .nakha-cta-{{ id }}-panel .nakha-timer-cell {
+    /* a solid, deeper shade of the panel's own accent: cream labels need
+       ≥4.5:1 and a 16% black glass only reached 3.65:1 on the default red.
+       70% accent + black keeps the chip in the brand hue (≈7.5:1). It reads
+       --color-appetite-solid: --color-appetite is remapped to cream in here. */
+    background: rgba(0, 0, 0, 0.3);
+    background: color-mix(in srgb, var(--color-appetite-solid) 70%, #000);
+    border-color: rgba(255, 247, 239, 0.3);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .nakha-cta-{{ id }}-panel .nakha-timer-num { color: var(--color-cream); }
+  .nakha-cta-{{ id }}-panel .nakha-timer-label { color: var(--color-cream); font-weight: 700; }
+  .nakha-cta-{{ id }}-panel .nakha-coupon { background: rgba(0, 0, 0, 0.3); background: color-mix(in srgb, var(--color-appetite-solid) 70%, #000); }
+  {% endif %}
+
+  .nakha-cta-{{ id }}-expired {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+  }
+</style>
+
+
+<section id="nakha-cta-{{ id }}"
+         class="{{ 'nakha-section' if not isFull else '' }} {{ 'nakha-invert' if isDark }}"
+         x-data="nakhaCta()"
+         x-show="!hidden"
+         {% if hideOnExpire %}x-cloak{% endif %}>
+
+  <div class="{{ 'nakha-container' if not isFull }}">
+    <div class="nakha-cta-{{ id }}-panel">
+
+      {% if img %}
+        <div class="nakha-cta-{{ id }}-bg">
+          <img src="{{ img }}" alt="" loading="lazy"/>
+        </div>
+        {# The scrim is its OWN element, never a class on the panel.
+           .nakha-scrim is `position:absolute; inset:0; pointer-events:none` —
+           put it on the panel and the panel leaves the flow and stops taking
+           clicks, which silently kills every button inside it. #}
+        {% if onPhoto %}
+          <span class="nakha-scrim nakha-scrim--{{ scrim }}" style="z-index: -1;"></span>
+        {% endif %}
+      {% endif %}
+
+      <div class="nakha-container" style="position: relative; z-index: 2;">
+        <div class="nakha-cta-{{ id }}-row">
+
+          {# ═══════════════ text ═══════════════ #}
+          <div class="nakha-cta-{{ id }}-body">
+
+            {% if eyebrow %}
+              <span class="nakha-eyebrow {{ 'nakha-eyebrow--light' if isFlame }}">{{ eyebrow }}</span>
+            {% endif %}
+
+            {% if title %}
+              <div class="nakha-h1">{{ title | safe }}</div>
+            {% endif %}
+
+            {% if subtitle %}
+              <p class="nakha-cta-{{ id }}-sub">{{ subtitle | safe }}</p>
+            {% endif %}
+
+            {# ---- countdown ---- #}
+            {% if showCd and cdDate %}
+              <div x-show="!expired && !invalid" x-cloak class="nakha-timer">
+                <span class="nakha-timer-cell">
+                  <span class="nakha-timer-num" x-text="pad(days)">00</span>
+                  <span class="nakha-timer-label">{{ t('common.days') }}</span>
+                </span>
+                <span class="nakha-timer-cell">
+                  <span class="nakha-timer-num" x-text="pad(hours)">00</span>
+                  <span class="nakha-timer-label">{{ t('common.hours') }}</span>
+                </span>
+                <span class="nakha-timer-cell">
+                  <span class="nakha-timer-num" x-text="pad(minutes)">00</span>
+                  <span class="nakha-timer-label">{{ t('common.minutes') }}</span>
+                </span>
+                <span class="nakha-timer-cell">
+                  <span class="nakha-timer-num" x-text="pad(seconds)">00</span>
+                  <span class="nakha-timer-label">{{ t('common.seconds') }}</span>
+                </span>
+              </div>
+
+              <span x-show="expired && !invalid" x-cloak class="nakha-cta-{{ id }}-expired">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="8.75"/><path stroke-linecap="round" d="M12 7.2V12l3.4 2"/>
+                </svg>
+                {{ t('cta.expired') }}
+              </span>
+            {% endif %}
+
+            {# ---- coupon ---- #}
+            {% if coupon %}
+              <button type="button" @click="copy()" class="nakha-coupon" aria-label="{{ t('cta.copy_code') }}">
+                <span>{{ coupon }}</span>
+                <span x-show="!copied">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="8.5" y="8.5" width="12" height="12" rx="2.2"/>
+                    <path stroke-linecap="round" d="M15.5 5.5v-.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h.5"/>
+                  </svg>
+                </span>
+                <span x-show="copied" x-cloak>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+                  </svg>
+                </span>
+              </button>
+            {% endif %}
+
+            {# ---- buttons ---- #}
+            {% if btnText or btn2Text %}
+              <div class="flex items-center gap-3 flex-wrap {{ 'justify-center' if isCenter }}">
+                {% if btnText %}
+                  <a href="{{ btnLink }}" class="nakha-btn nakha-btn--lg {{ 'nakha-btn--light' if isFlame else 'nakha-btn--primary' }}">
+                    {{ btnText }}
+                    <svg class="nakha-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                    </svg>
+                  </a>
+                {% endif %}
+                {% if btn2Text %}
+                  <a href="{{ btn2Link }}" class="nakha-btn nakha-btn--lg nakha-btn--outline">{{ btn2Text }}</a>
+                {% endif %}
+              </div>
+            {% endif %}
+
+          </div>
+
+          {# ═══════════════ side image ═══════════════ #}
+          {% if isSplit and imgSplit %}
+            <div class="nakha-cta-{{ id }}-media">
+              <img src="{{ imgSplit }}" alt="{{ title | default('', true) | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('alpine:init', function () {
+    Alpine.data('nakhaCta', function () {
+      return {
+        days: 0, hours: 0, minutes: 0, seconds: 0,
+        expired: false,
+        invalid: false,   /* deadline unreadable — hide the timer, keep the banner */
+        hidden: false,
+        copied: false,
+        _timer: null,
+
+        pad: function (n) { return String(n).padStart(2, '0'); },
+
+        init() {
+          {% if not showCd %}return;{% endif %}
+
+          /* 'YYYY-MM-DD HH:MM' → 'YYYY-MM-DDTHH:MM' so Safari parses it too.
+             No trailing Z on purpose: the merchant means the VISITOR's local time. */
+          var target = new Date('{{ cdDate }}'.replace(' ', 'T')).getTime();
+
+          /* An unparseable date used to set `expired = true`, which made a typo
+             render as "انتهى العرض" — the banner actively told shoppers the sale
+             was over. A date we cannot read means we know nothing about the
+             deadline, so the countdown simply does not appear and the rest of
+             the banner (title, coupon, button) keeps working. */
+          if (isNaN(target)) {
+            this.invalid = true;
+            console.warn('[cta-banner] unreadable countdown date:', '{{ cdDate }}');
+            return;
+          }
+
+          var self = this;
+          var tick = function () {
+            var diff = target - Date.now();
+            if (diff <= 0) {
+              self.days = self.hours = self.minutes = self.seconds = 0;
+              self.expired = true;
+              {% if hideOnExpire %}self.hidden = true;{% endif %}
+              clearInterval(self._timer);
+              self._timer = null;
+              return;
+            }
+            self.days    = Math.floor(diff / 86400000);
+            self.hours   = Math.floor((diff % 86400000) / 3600000);
+            self.minutes = Math.floor((diff % 3600000) / 60000);
+            self.seconds = Math.floor((diff % 60000) / 1000);
+          };
+
+          tick();
+          this._timer = setInterval(tick, 1000);
+        },
+
+        /* Alpine calls this when the element is torn down (the Theme Editor
+           re-renders sections constantly) — without it the interval leaks
+           and you end up with several timers fighting over the same state. */
+        destroy() {
+          if (this._timer) { clearInterval(this._timer); this._timer = null; }
+        },
+
+        async copy() {
+          var code = {{ coupon | dump | safe }};
+          if (!code) return;
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch (e) {
+            /* clipboard API needs https + permission — fall back to a temp field */
+            var el = document.createElement('textarea');
+            el.value = code;
+            el.setAttribute('readonly', '');
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
+            document.body.appendChild(el);
+            el.select();
+            try { document.execCommand('copy'); } catch (e2) { /* nothing else to try */ }
+            document.body.removeChild(el);
+          }
+          this.copied = true;
+          if (window.Qumra) Qumra.toast.success({{ t('cta.copied') | dump | safe }});
+          var self = this;
+          setTimeout(function () { self.copied = false; }, 2200);
+        }
+      };
+    });
+  });
+</script>
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-cta-' ~ id, c=d %}

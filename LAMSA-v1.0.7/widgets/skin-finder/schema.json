@@ -1,0 +1,377 @@
+{
+  "name": "تسوّقي حسب بشرتك",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "ابدئي من هنا"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "اعرفي <em>بشرتك</em> الأول"
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "وصف قصير",
+        "en": "Short Description"
+      },
+      "default": "اختاري نوع بشرتك أو المشكلة اللي تهمّك، ونعرض لك المنتجات المناسبة فقط."
+    },
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "cards",
+      "options": [
+        {
+          "value": "cards",
+          "label": {
+            "ar": "بطاقات بصور",
+            "en": "Image cards"
+          }
+        },
+        {
+          "value": "tiles",
+          "label": {
+            "ar": "مربّعات بأيقونات (بدون صور)",
+            "en": "Icon tiles (no images)"
+          }
+        },
+        {
+          "value": "pills",
+          "label": {
+            "ar": "شريط أزرار مدمج",
+            "en": "Compact pill rail"
+          }
+        }
+      ]
+    },
+    "card_shape": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الصورة",
+        "en": "Image Shape"
+      },
+      "default": "arch",
+      "options": [
+        {
+          "value": "soft",
+          "label": {
+            "ar": "مستطيل ناعم",
+            "en": "Soft rectangle"
+          }
+        },
+        {
+          "value": "arch",
+          "label": {
+            "ar": "قوس",
+            "en": "Arch"
+          }
+        },
+        {
+          "value": "circle",
+          "label": {
+            "ar": "دائرة",
+            "en": "Circle"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية السكشن",
+        "en": "Section Background"
+      },
+      "default": "white",
+      "options": [
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose wash"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج فاتح",
+            "en": "Sage wash"
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (كمبيوتر)",
+        "en": "Columns (Desktop)"
+      },
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": {
+            "ar": "٣ أعمدة",
+            "en": "3"
+          }
+        },
+        {
+          "value": "4",
+          "label": {
+            "ar": "٤ أعمدة",
+            "en": "4"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "ar": "٥ أعمدة",
+            "en": "5"
+          }
+        },
+        {
+          "value": "6",
+          "label": {
+            "ar": "٦ أعمدة",
+            "en": "6"
+          }
+        }
+      ]
+    },
+    "header_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة العنوان",
+        "en": "Header Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "في الوسط",
+            "en": "Centered"
+          }
+        },
+        {
+          "value": "split",
+          "label": {
+            "ar": "العنوان يمين والرابط شمال",
+            "en": "Title start · link end"
+          }
+        }
+      ]
+    },
+    "show_descriptions": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار وصف كل بطاقة",
+        "en": "Show Card Descriptions"
+      },
+      "default": true
+    },
+    "view_all_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط عرض الكل (اتركيه فارغاً لإخفائه)",
+        "en": "View All URL (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "view_all_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط عرض الكل",
+        "en": "View All Text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "concern": {
+      "name": "نوع بشرة / مشكلة",
+      "settings": {
+        "label": {
+          "type": "string",
+          "label": {
+            "ar": "الاسم",
+            "en": "Label"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "string",
+          "label": {
+            "ar": "وصف قصير",
+            "en": "Short Description"
+          },
+          "default": ""
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط",
+            "en": "URL"
+          },
+          "default": "/shop"
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "الصورة (لتقسيم البطاقات)",
+            "en": "Image (cards layout)"
+          }
+        },
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة (تُستخدم بدون صورة)",
+            "en": "Icon (used when there is no image)"
+          },
+          "default": "droplet",
+          "options": [
+            {
+              "value": "droplet",
+              "label": {
+                "ar": "قطرة — دهنية / ترطيب",
+                "en": "Droplet — oily / hydration"
+              }
+            },
+            {
+              "value": "leaf",
+              "label": {
+                "ar": "ورقة — جافة / طبيعية",
+                "en": "Leaf — dry / natural"
+              }
+            },
+            {
+              "value": "half",
+              "label": {
+                "ar": "نصف دائرة — مختلطة",
+                "en": "Half circle — combination"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "درع — حساسة",
+                "en": "Shield — sensitive"
+              }
+            },
+            {
+              "value": "dots",
+              "label": {
+                "ar": "نقاط — مسام / حبوب",
+                "en": "Dots — pores / acne"
+              }
+            },
+            {
+              "value": "sun",
+              "label": {
+                "ar": "شمس — تصبّغات / حماية",
+                "en": "Sun — pigmentation / SPF"
+              }
+            },
+            {
+              "value": "moon",
+              "label": {
+                "ar": "قمر — روتين ليلي",
+                "en": "Moon — night routine"
+              }
+            },
+            {
+              "value": "flame",
+              "label": {
+                "ar": "لهب — احمرار",
+                "en": "Flame — redness"
+              }
+            },
+            {
+              "value": "sparkle",
+              "label": {
+                "ar": "لمعة — نضارة / علامات السن",
+                "en": "Sparkle — glow / ageing"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة — الأكثر طلباً",
+                "en": "Star — most wanted"
+              }
+            }
+          ]
+        },
+        "tint": {
+          "type": "select",
+          "label": {
+            "ar": "لون البطاقة",
+            "en": "Card Tint"
+          },
+          "default": "rose",
+          "options": [
+            {
+              "value": "rose",
+              "label": {
+                "ar": "وردي",
+                "en": "Rose"
+              }
+            },
+            {
+              "value": "sage",
+              "label": {
+                "ar": "سيج",
+                "en": "Sage"
+              }
+            },
+            {
+              "value": "blush",
+              "label": {
+                "ar": "وردي فاتح",
+                "en": "Blush"
+              }
+            },
+            {
+              "value": "ink",
+              "label": {
+                "ar": "غامق",
+                "en": "Ink"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "تسوّقي حسب بشرتك"
+    }
+  ]
+}

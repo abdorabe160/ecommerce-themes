@@ -1,0 +1,77 @@
+{#-
+  Contact form (CNT-06). Qumra exposes no storefront contact endpoint, so the form POSTs to the
+  merchant's endpoint (Formspree / Getform / Google Forms…) via form_action, or to mailto: when only
+  settings.contactEmail exists. With neither, the widget renders the store's contact details alone —
+  never a form that silently goes nowhere (same contract as the newsletter band).
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{#- live Qumra may ignore the h1 setting in pages/contact.json, so the route decides too -#}
+{%- set ht = 'h1' if (wd.heading_tag == 'h1' or ((context or {}).page or {}).handle == 'contact') else 'h2' -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = (wd['title' + L] or wd.title) or t('contact.title') -%}
+{%- set text = (wd['text' + L] or wd.text) or t('contact.text') -%}
+{%- set action = (wd.form_action or '') | trim -%}
+{%- set field = wd.field_name or 'email' -%}
+{%- set btn = (wd['button_text' + L] or wd.button_text) or t('contact.send') -%}
+{%- set surface = wd.surface or 'cream' -%}
+{%- set surfaceClass = {'white': 'surface-white', 'cream': 'surface-cream', 'sand': 'surface-sand', 'dark': 'surface-dark'}[surface] or 'surface-cream' -%}
+{%- set hasForm = action | length > 0 -%}
+{%- set hasMail = not hasForm and settings.contactEmail -%}
+{%- set hasDetails = settings.contactPhone or settings.contactEmail or settings.contactAddress or settings['contactAddress' + L] -%}
+<section class="dc-contact section {{ surfaceClass }}" aria-labelledby="dc-contact-title" x-data="dcContact()">
+  <div class="shell">
+    <div class="dc-contact__grid {{ 'dc-contact__grid--solo' if not (hasForm or hasMail) }}">
+      <div data-reveal>
+        <p class="eyebrow">{{ t('contact.eyebrow') }}</p>
+        <{{ ht }} id="dc-contact-title" class="h-section">{{ title }}</{{ ht }}>
+        {%- if text %}<p class="dc-section-heading__text">{{ text }}</p>{%- endif %}
+        {%- if hasDetails %}
+        <ul class="dc-contact__details">
+          {%- if settings.contactPhone %}
+          <li>{% ui "icon.njk", name="phone", size=18 %}<a href="tel:{{ settings.contactPhone }}" dir="ltr">{{ settings.contactPhone }}</a></li>
+          {%- endif %}
+          {%- if settings.contactEmail %}
+          <li>{% ui "icon.njk", name="mail", size=18 %}<a href="mailto:{{ settings.contactEmail }}">{{ settings.contactEmail }}</a></li>
+          {%- endif %}
+          {%- if settings['contactAddress' + L] or settings.contactAddress %}
+          <li>{% ui "icon.njk", name="pin", size=18 %}<span>{{ settings['contactAddress' + L] or settings.contactAddress }}</span></li>
+          {%- endif %}
+        </ul>
+        {%- endif %}
+      </div>
+
+      {%- if hasForm or hasMail %}
+      <div data-reveal>
+        <form class="dc-contact__form" method="post" novalidate @submit="submit($event)"
+              {%- if hasForm %} action="{{ action }}" target="_blank"
+              {%- else %} action="mailto:{{ settings.contactEmail }}" enctype="text/plain"
+              {%- endif %}>
+          <div class="dc-contact__row">
+            <div>
+              <label for="dc-contact-name">{{ t('contact.name') }}</label>
+              <input id="dc-contact-name" class="field" type="text" name="name" x-model="name"
+                     autocomplete="name" required placeholder="{{ t('contact.name') }}">
+            </div>
+            <div>
+              <label for="dc-contact-email">{{ t('contact.email') }}</label>
+              <input id="dc-contact-email" class="field" type="email" name="{{ field }}" x-model="email"
+                     autocomplete="email" required placeholder="{{ t('contact.email') }}">
+            </div>
+          </div>
+          <div>
+            <label for="dc-contact-message">{{ t('contact.message') }}</label>
+            <textarea id="dc-contact-message" class="field dc-contact__textarea" name="message" x-model="message"
+                      rows="6" required placeholder="{{ t('contact.message_placeholder') }}"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">{{ btn }}</button>
+        </form>
+        <p class="dc-newsletter__note" x-show="state === 'sent'" x-cloak role="status">{{ t('contact.success') }}</p>
+        <p class="dc-newsletter__note" x-show="state === 'error'" x-cloak role="alert" x-text="error"></p>
+        {%- if hasMail %}
+        <p class="dc-newsletter__privacy">{{ t('contact.mail_note') }}</p>
+        {%- endif %}
+      </div>
+      {%- endif %}
+    </div>
+  </div>
+</section>

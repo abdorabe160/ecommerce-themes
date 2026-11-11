@@ -1,0 +1,59 @@
+{#-
+  Alpine twin of ui/product-card.njk. Use inside: <template x-for="p in items" :key="p._id"> {% ui "card-js.njk" %} </template>
+  Helpers come from the root decafeApp() scope.
+-#}
+<article class="p-card group h-full" data-reveal x-init="productUnknown(p) && watchStock($el, p._id, p.slug || p.handle)">
+  <div class="p-card__media">
+    <template x-if="productImage(p)">
+      <img :src="productImage(p)" :alt="p.title" width="550" height="440" loading="lazy" decoding="async">
+    </template>
+    <template x-if="!productImage(p)">
+      <div class="grid h-full place-items-center text-caramel/60">{% ui "icon.njk", name="bean", size=44 %}</div>
+    </template>
+
+    <div class="p-card__badges">
+      <span x-show="cardOut(p)" class="badge badge-dark">{{ t('product.sold_out') }}</span>
+      <span x-show="!cardOut(p) && discountOf(p) > 0" class="badge badge-sale" x-text="'\u200E-' + discountOf(p) + '%'"></span>
+      <span x-show="productLow(p)" class="badge badge-low">{{ t('product.low_badge') }}</span>
+      <span x-show="!cardOut(p) && (p.tags || []).some(t => String(t.name || t).toLowerCase() === 'new' || String(t.name || t) === 'جديد')" class="badge badge-soft">{{ t('product.new') }}</span>
+    </div>
+
+  </div>
+
+  <div class="p-card__body">
+    <h3 class="p-card__title"><a :href="productUrl(p)" x-text="p.title"></a></h3>
+    <p class="p-card__meta" x-show="cardMeta(p)" x-text="cardMeta(p)"></p>
+    <div class="mt-1 flex items-center justify-between gap-2">
+      <p class="price">
+        <span x-text="formatMoney(productPrice(p))"></span>
+        <s class="price__compare" x-show="productCompare(p) > productPrice(p)" x-text="formatMoney(productCompare(p))"></s>
+      </p>
+      <span x-show="p.reviewsCount > 0" class="inline-flex items-center gap-1 text-xs text-muted-ink">
+        <span class="text-caramel">{% ui "icon.njk", name="star", size=13 %}</span><span x-text="Number(p.averageRating || 0).toFixed(1)"></span>
+      </span>
+    </div>
+
+    <div class="p-card__actions" x-show="cardButtons">
+      <button type="button" class="btn btn-outline btn-sm" x-show="cardOut(p)" disabled><span class="btn__label">{{ t('product.sold_out') }}</span></button>
+      {#- quantity 0 with no variant data: unknown, so link to the product (main.js upgrades it after checking) -#}
+      <a class="btn btn-primary btn-sm" :href="productUrl(p)" x-show="productUnknown(p) && !cardOut(p)"
+         @click="if (cardState(p._id) === 'options') { $event.preventDefault(); quickView(p.slug || p.handle, productUrl(p)); }"
+         :aria-label="{{ t('product.view_product') | dump | escape }} + ': ' + p.title">
+        <span class="btn__label" x-text="cardState(p._id) === 'options' ? {{ t('product.choose_options') | dump | escape }} : {{ t('product.view_product') | dump | escape }}"></span>
+      </a>
+      <button type="button" class="btn btn-primary btn-sm" x-show="!cardOut(p) && !productUnknown(p)"
+              :disabled="isBusy('add:' + p._id) || isBusy('qv:' + (p.slug || p.handle))"
+              @click="productHasOptions(p) ? quickView(p.slug || p.handle, productUrl(p)) : cardAdd(p._id, p.slug || p.handle, productUrl(p))"
+              :aria-label="(productHasOptions(p) ? {{ t('product.choose_options') | dump | escape }} : {{ t('product.add_to_cart') | dump | escape }}) + ': ' + p.title">
+        <span x-show="isBusy('add:' + p._id) || isBusy('qv:' + (p.slug || p.handle))" class="spinner"></span>
+        <span class="btn__icon" x-show="!productHasOptions(p) && !isBusy('add:' + p._id)">{% ui "icon.njk", name="cart", size=16 %}</span>
+        <span class="btn__icon" x-show="productHasOptions(p) && !isBusy('qv:' + (p.slug || p.handle))">{% ui "icon.njk", name="sliders", size=16 %}</span>
+        <span class="btn__label" x-text="productHasOptions(p) ? {{ t('product.choose_options') | dump | escape }} : {{ t('product.add_to_cart') | dump | escape }}"></span>
+      </button>
+      <button type="button" class="btn btn-dark btn-sm" x-show="!cardOut(p) && !productUnknown(p)"
+              :disabled="isBusy('add:' + p._id) || isBusy('qv:' + (p.slug || p.handle)) || isBusy('checkout')"
+              @click="productHasOptions(p) ? quickView(p.slug || p.handle, productUrl(p)) : cardAdd(p._id, p.slug || p.handle, productUrl(p), true)"
+              :aria-label="{{ t('product.buy_now') | dump | escape }} + ': ' + p.title"><span class="btn__label">{{ t('product.buy_now') }}</span></button>
+    </div>
+  </div>
+</article>

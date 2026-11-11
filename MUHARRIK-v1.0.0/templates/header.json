@@ -1,0 +1,211 @@
+{
+  "title": "Header Group",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "full_width": true,
+        "sticky": true,
+        "logo_height": 40,
+        "topbar_enabled": true,
+        "topbar_tone": "hairline",
+        "topbar_bg_start": "",
+        "topbar_bg_end": "",
+        "topbar_text": "",
+        "topbar_speed": 50,
+        "topbar_pause": true,
+        "show_menu_button": true,
+        "menu_button_label": "",
+        "menu_button_bg": "",
+        "menu_button_text": "",
+        "show_search": true,
+        "search_placeholder": "",
+        "search_voice": true,
+        "search_products_title": "",
+        "search_collections_title": "",
+        "search_bg": "",
+        "show_theme_toggle": false,
+        "action1_icon": "pin",
+        "action1_url": "",
+        "action1_label": "",
+        "action2_icon": "heart",
+        "action2_url": "",
+        "action2_label": "",
+        "show_cart": true,
+        "show_garage": true,
+        "garage_label": "",
+        "garage_empty_label": "",
+        "garage_url": "",
+        "nav_enabled": true,
+        "nav_align": "start",
+        "utility_enabled": true,
+        "utility_menu": "footer-menu",
+        "utility_email": "",
+        "utility_phone": "",
+        "utility_language": true,
+        "cart_free_shipping": 0,
+        "cart_upsell_title": "",
+        "cart_footer_dark": false,
+        "cart_note": "",
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "color_border": ""
+      },
+      "blocks": [
+        {
+          "name": "إعلان: اختار عربيتك",
+          "block": "announcement",
+          "settings": {
+            "ann_text": "اختار عربيتك ونعرض لك القطع المناسبة لها",
+            "ann_icon": "truck",
+            "ann_url": "/#mh-vehicle-finder"
+          }
+        },
+        {
+          "name": "إعلان: العناية والتلميع",
+          "block": "announcement",
+          "settings": {
+            "ann_text": "كل اللي تحتاجه للعناية والتلميع في مكان واحد",
+            "ann_icon": "badge",
+            "ann_url": "/shop"
+          }
+        },
+        {
+          "name": "إعلان: كل الماركات",
+          "block": "announcement",
+          "settings": {
+            "ann_text": "قطع وإكسسوارات لكل الماركات",
+            "ann_icon": "shield",
+            "ann_url": "/collections"
+          }
+        },
+        {
+          "name": "العروض",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "العروض والتخفيضات",
+            "item_url": "/shop",
+            "item_style": "auto",
+            "item_menu": "header-menu",
+            "item_badge": "",
+            "item_view_all": ""
+          }
+        },
+        {
+          "name": "الأكثر مبيعًا",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "الأكثر مبيعًا",
+            "item_url": "/shop",
+            "item_style": "auto",
+            "item_menu": "header-menu",
+            "item_badge": "عرض",
+            "item_badge_bg": "",
+            "item_badge_text": ""
+          }
+        },
+        {
+          "name": "كل الأقسام",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "كل الأقسام",
+            "item_url": "/collections",
+            "item_style": "tabs",
+            "item_menu": "",
+            "item_badge": ""
+          }
+        },
+        {
+          "name": "↳ القسم ١",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "العناية والتنظيف",
+            "group_url": "/collections",
+            "group_menu": "header-menu"
+          }
+        },
+        {
+          "name": "↳ القسم ٢",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "إكسسوارات داخلية",
+            "group_url": "/collections",
+            "group_menu": "footer-menu"
+          }
+        },
+        {
+          "name": "تسوّق حسب التصنيف",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "تسوّق حسب التصنيف",
+            "item_url": "/shop",
+            "item_style": "columns",
+            "item_menu": "",
+            "item_badge": "جديد",
+            "item_badge_bg": "",
+            "item_badge_text": ""
+          }
+        },
+        {
+          "name": "↳ مجموعة ١",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "الأكثر طلبًا",
+            "group_url": "",
+            "group_menu": "header-menu"
+          }
+        },
+        {
+          "name": "↳ مجموعة ٢",
+          "block": "nav_group",
+          "settings": {
+            "group_title": "حسب نوع العربية",
+            "group_url": "",
+            "group_menu": "footer-menu"
+          }
+        },
+        {
+          "name": "↳ بطاقة ١",
+          "block": "nav_promo",
+          "settings": {
+            "promo_title": "عناية كاملة بعربيتك",
+            "promo_text": "شامبو، تلميع، حماية — كل خطوة في مكان واحد.",
+            "promo_cta": "تسوّق الآن",
+            "promo_url": "/shop",
+            "promo_bg": "",
+            "promo_fg": ""
+          }
+        },
+        {
+          "name": "↳ بطاقة ٢",
+          "block": "nav_promo",
+          "settings": {
+            "promo_title": "إكسسوارات داخلية",
+            "promo_text": "راحة وترتيب لكل رحلة.",
+            "promo_cta": "تسوّق الآن",
+            "promo_url": "/shop",
+            "promo_bg": "",
+            "promo_fg": ""
+          }
+        },
+        {
+          "name": "المدونة",
+          "block": "nav_item",
+          "settings": {
+            "item_label": "المدونة",
+            "item_url": "/blogs",
+            "item_style": "none",
+            "item_menu": ""
+          }
+        }
+      ]
+    }
+  ]
+}

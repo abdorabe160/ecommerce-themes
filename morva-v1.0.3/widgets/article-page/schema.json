@@ -1,0 +1,13 @@
+{
+  "name": "صفحة المقال",
+  "settings": {
+    "show_meta": { "type": "boolean", "label": { "ar": "التاريخ وعدد المشاهدات", "en": "Date and views" }, "default": true },
+    "show_cover": { "type": "boolean", "label": { "ar": "صورة المقال", "en": "Cover image" }, "default": true },
+    "show_related": { "type": "boolean", "label": { "ar": "مقالات ذات صلة", "en": "Related articles" }, "default": true },
+    "related_title": { "type": "string", "label": { "ar": "عنوان المقالات ذات الصلة", "en": "Related articles heading" }, "default": "" },
+    "related_limit": { "type": "range", "label": { "ar": "عدد المقالات ذات الصلة", "en": "Related articles count" }, "default": 3, "min": 2, "max": 8, "step": 1 }
+  },
+  "presets": [
+    { "category": "المدونة", "name": "صفحة المقال" }
+  ]
+}

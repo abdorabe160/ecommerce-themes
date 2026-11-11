@@ -1,0 +1,19 @@
+{
+  "layout": "layout",
+  "widgets": [
+    {
+      "name": "product-detail",
+      "widget": "product-detail",
+      "settings": {
+        "show_payments": false,
+        "show_delivery": false,
+        "show_trust": false,
+        "show_share": true,
+        "show_related": true,
+        "related_title": ""
+      }
+    }
+  ],
+  "name": "product",
+  "title": "المنتج"
+}

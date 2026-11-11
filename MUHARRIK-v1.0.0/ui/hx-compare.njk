@@ -1,0 +1,81 @@
+{# ============================================================================
+   COMPARE — floating tab, side drawer and full-screen comparison table.
+   Included once by layouts/layout.njk. State: Alpine store `hxCompare`
+   (assets/hx.js). Modals: $store.modal 'compare' and 'compare-table'.
+   ========================================================================= #}
+<div class="hx-cmp" x-data x-cloak>
+
+  {# floating tab on the page edge — only while something is being compared #}
+  <button type="button" class="hx-cmp-tab" x-show="$store.hxCompare && $store.hxCompare.items.length && $store.modal.current !== 'compare'"
+          x-transition.opacity @click="$store.modal.open('compare')" aria-label="{{ t('compare.title') }}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M8 20h8M5 7h14M12 4.5 5 7M12 4.5 19 7"/><path d="M5 7 2.5 13a2.5 2.5 0 0 0 5 0L5 7ZM19 7l-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z"/></svg>
+    <b x-text="$store.hxCompare ? $store.hxCompare.items.length : 0"></b>
+  </button>
+
+  {# drawer #}
+  <div class="taqa-overlay" x-show="$store.modal.current === 'compare'" @click="$store.modal.close()" x-transition.opacity></div>
+  <aside class="hx-cmp-drawer" :class="{ 'is-open': $store.modal.current === 'compare' }" role="dialog" aria-label="{{ t('compare.title') }}">
+    <div class="hx-cmp-head">
+      <h2>{{ t('compare.title') }} <bdi dir="ltr" class="hx-cmp-count">(<span x-text="$store.hxCompare ? $store.hxCompare.items.length : 0"></span>/5)</bdi></h2>
+      <button type="button" class="hx-cmp-x" @click="$store.modal.close()" aria-label="{{ t('common.close') }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+    </div>
+    <p class="hx-cmp-warn" x-show="$store.hxCompare && $store.hxCompare.warn" x-transition>{{ t('compare.full') }}</p>
+    <ul class="hx-cmp-list" role="list">
+      <template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="it.id">
+        <li class="hx-cmp-item">
+          <a :href="'/products/' + encodeURIComponent(it.slug)" class="hx-cmp-img"><img :src="it.img" alt="" x-show="it.img"/></a>
+          <div class="hx-cmp-info">
+            <a :href="'/products/' + encodeURIComponent(it.slug)" class="hx-cmp-name" dir="auto" x-text="it.title"></a>
+            <p class="hx-cmp-price"><span :class="it.was > it.price && 'is-sale'" x-text="$store.hxCompare.money(it.price)"></span><s x-show="it.was > it.price" x-text="$store.hxCompare.moneyRaw(it.was)"></s></p>
+          </div>
+          <button type="button" class="hx-cmp-x is-sm" @click="$store.hxCompare.remove(it.id)" aria-label="{{ t('common.remove') }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+        </li>
+      </template>
+    </ul>
+    <div class="hx-cmp-foot">
+      <button type="button" class="hx-btn-solid" @click="$store.hxCompare.open()" :disabled="!$store.hxCompare || $store.hxCompare.items.length < 2">{{ t('compare.go') }} <bdi dir="ltr">(<span x-text="$store.hxCompare ? $store.hxCompare.items.length : 0"></span>)</bdi></button>
+      <button type="button" class="hx-cmp-clear" @click="$store.hxCompare.clear()">{{ t('compare.clear') }}</button>
+    </div>
+  </aside>
+
+  {# full-screen table #}
+  <div class="hx-cmp-page" x-show="$store.modal.current === 'compare-table'" x-transition.opacity role="dialog" aria-label="{{ t('compare.table') }}">
+    <button type="button" class="hx-cmp-x hx-cmp-close" @click="$store.modal.close()" aria-label="{{ t('common.close') }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+    <div class="hx-cmp-wrap">
+      <h2 class="hx-cmp-h">{{ t('compare.table') }}</h2>
+      <p class="hx-cmp-sub">{{ t('compare.sub') }}</p>
+      <div class="hx-cmp-scroll">
+        <table class="hx-cmp-table" :class="$store.hxCompare && $store.hxCompare.loading && 'is-loading'">
+          <tbody>
+            <tr class="is-top">
+              <th></th>
+              <template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'t' + it.id">
+                <td>
+                  <button type="button" class="hx-cmp-x is-sm hx-cmp-rm" @click="$store.hxCompare.remove(it.id); if ($store.hxCompare.items.length) $store.modal.open('compare-table')" aria-label="{{ t('common.remove') }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+                  <a :href="'/products/' + encodeURIComponent(it.slug)" class="hx-cmp-timg"><img :src="it.img" alt="" x-show="it.img"/></a>
+                  <a :href="'/products/' + encodeURIComponent(it.slug)" class="hx-cmp-tname" dir="auto" x-text="it.title"></a>
+                  <p class="hx-cmp-price"><span :class="it.was > it.price && 'is-sale'" x-text="$store.hxCompare.money(it.price)"></span><s x-show="it.was > it.price" x-text="$store.hxCompare.moneyRaw(it.was)"></s></p>
+                </td>
+              </template>
+            </tr>
+            <tr><th>{{ t('compare.desc') }}</th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'d' + it.id"><td><div class="hx-cmp-desc" dir="auto" x-text="$store.hxCompare.desc(it.id)"></div></td></template></tr>
+            <tr><th>{{ t('compare.rating') }}</th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'r' + it.id">
+              <td><span class="hx-card-rating"><span class="hx-stars" :style="'--hx-stars:' + ($store.hxCompare.rating(it.id) / 5 * 100) + '%'"><span class="hx-stars-bg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span><span class="hx-stars-fg">{% for s in range(0, 5) %}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5Z"/></svg>{% endfor %}</span></span><span class="hx-card-count" x-text="'(' + $store.hxCompare.reviews(it.id) + ')'"></span></span></td>
+            </template></tr>
+            <tr><th>{{ t('compare.brand') }}</th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'b' + it.id">
+              <td><a x-show="$store.hxCompare.brandUrl(it.id)" :href="$store.hxCompare.brandUrl(it.id)" class="hx-cmp-link" x-text="$store.hxCompare.brand(it.id)"></a><span x-show="!$store.hxCompare.brandUrl(it.id)">-</span></td>
+            </template></tr>
+            <tr><th>{{ t('compare.options') }}</th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'o' + it.id">
+              <td><template x-for="ln in $store.hxCompare.options(it.id)" :key="ln"><span class="hx-cmp-line" x-text="ln"></span></template></td>
+            </template></tr>
+            <tr><th>{{ t('compare.stock') }}</th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'s' + it.id"><td x-text="$store.hxCompare.stock(it.id)"></td></template></tr>
+            <tr class="is-cta"><th></th><template x-for="it in ($store.hxCompare ? $store.hxCompare.items : [])" :key="'c' + it.id">
+              <td><a :href="'/products/' + encodeURIComponent(it.slug)" class="hx-btn-solid hx-cmp-btn">{{ t('compare.details') }}</a></td>
+            </template></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hx-cmp-empty" x-show="!$store.hxCompare || !$store.hxCompare.items.length">{{ t('compare.empty') }}</p>
+    </div>
+  </div>
+</div>

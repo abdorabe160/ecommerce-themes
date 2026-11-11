@@ -1,0 +1,429 @@
+{# ============================================================================
+   HYPER · مجموعة مميزة — merchandising row
+   ----------------------------------------------------------------------------
+     New Arrivals                                    New Arrivals   Hot Items
+     One line of supporting copy.                    ‾‾‾‾‾‾‾‾‾‾‾‾
+     ┌──────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+     │ promo    │ │ card   │ │ card   │ │ card   │ │ card  ⋯
+     └──────────┘ └────────┘ └────────┘ └────────┘ └────────┘
+     ▬▬▬▬▬▬▬▬▬▬────────────────────────────────      ( ‹ ) ( › )
+
+   ── Tabs ──
+   Three fixed slots (`tab1_*` … `tab3_*`), NOT repeatable blocks.
+
+   ⚠️  They were blocks, each holding its own `products` picker, and the Theme
+   Editor would not render the block's settings at all with one there. No
+   original widget in this theme puts `products` inside a `blocks` entry —
+   `media` and `menu` are the only pickers that appear in one — so the type is
+   supported at widget level only. Three slots is also what the design asks for;
+   the reference has two. Do not move these back into blocks.
+
+   A slot with no LABEL is not a tab and renders nothing. With fewer than two
+   labelled slots no tab strip renders at all — the section is just a row. Every set is rendered
+   SERVER-SIDE and toggled with x-show, not fetched on click: the sets are
+   already in the page JSON, so a fetch would be a round-trip to redisplay data
+   the browser is holding. Each set gets its OWN Swiper, built lazily the first
+   time its tab is opened — a Swiper initialised inside `display: none` measures
+   every slide as zero and lays the row out on top of itself.
+
+   ── RTL ──
+   ⚠️  Swiper has NO `rtl` init option. It resolves direction off the ELEMENT —
+   `el.dir` first, then the computed `direction` — so the only reliable way to
+   set it is the `dir` attribute written on the .swiper below. Passing `rtl:` in
+   the config is silently ignored. Inherited computed style would usually be
+   enough here (the <html> is rtl), but the attribute also survives the Theme
+   Editor re-injecting this section outside the document's direction context.
+   Once it is set, prev/next stay semantic and Swiper maps them to the correct
+   visual side; `.rtl-flip` mirrors the chevron glyph to match. The scrollbar
+   fill follows the same flag, so the rail fills from the correct edge.
+
+   ── Cards ──
+   Rendered by ui/product-card.njk on the server and by HayatCard.build() when
+   they arrive over AJAX. Both live in one place each; this widget never writes
+   card markup itself. `variant: catalog` is the one used here — see 15.9.1.
+
+   ── Empty states ──
+   A merchant drops this section in before picking anything, so an empty tab
+   falls back to fetching the newest products. And if the STORE itself is empty,
+   the row draws placeholder cards rather than a bare apology: the merchant sees
+   the real layout at the real size, waiting to be filled.
+
+   All styling lives in assets/style.css → "15.7 PRODUCT CARD", "15.9.1 CATALOG
+   VARIANT" and "15.8 PRODUCT ROW".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# Fixed slots, listed once here so the three loops below stay in step. `key`
+   is the pane's id suffix and doubles as its Alpine index. #}
+{% set tabs = [
+  { label: d.tab1_label | default('', true), products: d.tab1_products | default([]) },
+  { label: d.tab2_label | default('', true), products: d.tab2_products | default([]) },
+  { label: d.tab3_label | default('', true), products: d.tab3_products | default([]) }
+] %}
+{# Counted with an inline-if sum rather than a loop: Nunjucks scopes `{% set %}`
+   to the block it runs in, so a counter incremented inside `{% for %}` reads
+   back as its pre-loop value outside it. #}
+{% set labelled = (1 if d.tab1_label else 0) + (1 if d.tab2_label else 0) + (1 if d.tab3_label else 0) %}
+{# On a product page the first empty slot takes the platform's related products,
+   and no slot ever shows the product being looked at. A pushed array for each
+   slot, because `{% set %}` inside a loop does not survive it. #}
+{% set openId = context.product._id if context.product else '' %}
+{% set relatedCtx = context.related_products or [] %}
+{% set paneLists = [] %}
+{% for tb in tabs %}
+  {% set src = tb.products if (tb.products | length) > 0 else (relatedCtx if (loop.first and openId) else []) %}
+  {% set kept = [] %}
+  {% for rp in src %}{% if not openId or rp._id != openId %}{% set _ = kept.push(rp) %}{% endif %}{% endfor %}
+  {% set _ = paneLists.push(kept) %}
+{% endfor %}
+{% set tabCount = labelled %}
+
+{% set title = d.title | default(t('defaults.new_arrivals'), true) %}
+{% set subtitle = d.subtitle | default('', true) %}
+{# ---- Fallback size ----
+   Was a Theme Editor control; fixed at the value the carousel was sized
+   for. It only ever applied to the automatic "newest products" fallback —
+   a hand-picked list is shown in full — and it is still both SENT to the
+   API and applied with `slice` further down; see the note there. #}
+{% set limit = 12 %}
+{% set colsD = d.columns_desktop | default('4', true) %}
+{% set colsM = d.columns_mobile | default('2', true) %}
+{% set ratio = d.card_image_ratio | default('1x1') %}
+{% set bg = d.background | default('white') %}
+{% set showArrows = d.show_arrows | default(true) %}
+{% set showProgress = d.show_progress | default(true) %}
+{% set viewAllText = d.view_all_text | default(t('common.view_all'), true) %}
+{% set viewAllUrl = d.view_all_url | default('/shop') %}
+
+{% set promoOn = d.promo_enabled | default(false) %}
+{% set promoImg = d.promo_image.fileUrl if d.promo_image and d.promo_image.fileUrl else (d.promo_image if d.promo_image is string else '') %}
+{# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+{% if not promoImg %}{% set promoImg = 'demo-promo.jpg' | assets %}{% endif %}
+{% set promoUrl = d.promo_url | default('/shop') %}
+
+{# The fractional part is the point: a card cut by the viewport edge is what
+   tells a shopper the row scrolls. A whole number reads as a finished grid.
+   The sliver is also the width dial — every extra 0.1 of a card shown at the
+   edge comes straight out of the cards themselves. #}
+{% set perView = colsD | float + 0.4 %}
+{% set perViewMd = 3.4 if colsD | float > 3 else 2.4 %}
+{% set perViewSm = colsM | float + 0.25 %}
+
+{% set isRtl = (localization.language | default('ar')) != 'en' %}
+
+
+{# The root background is INLINE, so it beats every stylesheet rule — which is
+   why it reads `var(--hy-sec-bg, …)`. The section-colours picker overrides the
+   custom property, not the declaration. Do not collapse it back. #}
+<section id="hy-cp-{{ id }}"
+         class="hy-prow"
+         style="background: var(--hy-sec-bg, {{ 'var(--color-bg-tertiary)' if bg == 'well' else 'var(--color-surface)' }});
+                padding-block: var(--section-py);"
+         x-data="{ tab: 0 }"
+         {# If slot 1 is unlabelled but slot 2 is, no button carries index 0 and
+            `tab: 0` would open a pane nothing can switch away from. Read the
+            rendered buttons rather than computing an index in the template. #}
+         x-init="if (!$el.querySelector('.hy-prow-tab[data-i=\'' + tab + '\']')) {
+                   const first = $el.querySelector('.hy-prow-tab');
+                   if (first) tab = Number(first.dataset.i);
+                 }">
+  <div class="hy-container">
+
+    {# ═══════════════════ head ═══════════════════ #}
+    {% if title or subtitle or labelled > 1 or viewAllText %}
+      <div class="hy-prow-head">
+        <div class="hy-prow-headings">
+          {% if title %}<h2 class="hy-prow-title">{{ title }}</h2>{% endif %}
+          {% if subtitle %}<p class="hy-prow-sub">{{ subtitle }}</p>{% endif %}
+        </div>
+
+        {# The tab strip and the "view all" link share the head's end edge, so
+           only one of them can have it. Tabs win when there are any: they change
+           what the row SHOWS, while the link only leaves it. #}
+        {% if labelled < 2 and viewAllText %}
+          <a href="{{ viewAllUrl }}" class="hy-cgrid-all">
+            <span>{{ viewAllText }}</span>
+            <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+            </svg>
+          </a>
+        {% endif %}
+
+        {% if labelled > 1 %}
+          <div class="hy-prow-tabs" role="tablist">
+            {# Unlabelled slots are skipped. `loop.index0` still counts them, so
+               the indices stay in step with the panels below. There is no
+               fallback label on purpose — a shared one makes every unnamed tab
+               read identically. #}
+            {% for tb in tabs %}
+              {% if tb.label %}
+                <button type="button"
+                        role="tab"
+                        data-i="{{ loop.index0 }}"
+                        class="hy-prow-tab"
+                        :class="tab === {{ loop.index0 }} && 'is-active'"
+                        :aria-selected="tab === {{ loop.index0 }} ? 'true' : 'false'"
+                        @click="tab = {{ loop.index0 }}; $dispatch('hy-tab-shown', { id: {{ loop.index0 }} })">
+                  {{ tb.label }}
+                </button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# ═══════════════════ panels ═══════════════════ #}
+    {# A slot renders a pane when it is labelled, and slot 1 renders even
+       unlabelled so a section with no tabs at all is still a product row. #}
+    {% for tb in tabs %}
+      {% set products = paneLists[loop.index0] %}
+      {% set hasServer = (products | length) > 0 %}
+      {% set pane = id ~ '-' ~ loop.index0 %}
+      {% if tb.label or (loop.first and labelled == 0) %}
+
+      {# x-show, not x-if: the inactive panel stays in the DOM so its Swiper can
+         be built on first reveal and its images can start loading. #}
+      <div class="hy-prow-panel"
+           id="hy-cpPanel-{{ pane }}"
+           data-pane="{{ loop.index0 }}"
+           role="tabpanel"
+           {% if labelled > 1 %}x-show="tab === {{ loop.index0 }}"{% endif %}>
+
+        {# `--pr-cols*` must match `slidesPerView` in the script: the CSS sizes the
+           slides too, so the row is correct on the first frame instead of
+           flashing one full-width card while Swiper boots. #}
+        <div class="hy-prow-stage"
+             style="--pr-cols: {{ perViewSm }};
+                    --pr-cols-md: {{ perViewMd }};
+                    --pr-cols-lg: {{ perView }};">
+          {# `dir` is load-bearing — see the RTL note at the top of this file. #}
+          <div id="hy-cpSw-{{ pane }}" class="swiper" dir="{{ 'rtl' if isRtl else 'ltr' }}">
+            <div id="hy-cpWrapper-{{ pane }}" class="swiper-wrapper">
+
+              {% if promoOn and loop.first %}
+                {# The promo tile rides in the FIRST slide rather than sitting
+                   outside the slider: outside it would need its own column and
+                   the row's scroll would start past it, which on a phone hides
+                   it entirely behind the first product. #}
+                <div class="swiper-slide">
+                  <a href="{{ promoUrl }}" class="hy-promo">
+                    {% if promoImg %}
+                      <img src="{{ promoImg }}" alt="{{ d.promo_title | default('', true) }}" loading="lazy" class="hy-promo-img"/>
+                    {% endif %}
+                    <span class="hy-promo-scrim"></span>
+                    <span class="hy-promo-body">
+                      {% if d.promo_eyebrow %}<span class="hy-promo-eyebrow">{{ d.promo_eyebrow }}</span>{% endif %}
+                      {% if d.promo_title %}<span class="hy-promo-title">{{ d.promo_title }}</span>{% endif %}
+                    </span>
+                    {% if d.promo_cta_text %}
+                      <span class="hy-promo-cta">{{ d.promo_cta_text }}</span>
+                    {% endif %}
+                  </a>
+                </div>
+              {% endif %}
+
+              {% for p in products %}
+                <div class="swiper-slide">
+                  {% ui "product-card.njk", product=p, image_ratio=ratio, variant='catalog' %}
+                </div>
+              {% endfor %}
+
+              {% if not hasServer %}
+                {# Placeholders for a store with nothing in it yet. They live
+                   INSIDE the wrapper so the row has its true height from the
+                   first paint; the script replaces them the moment real
+                   products arrive, and leaves them standing if none ever do. #}
+                {% ui "placeholder.njk", kind='product', count=colsD, image_ratio=ratio, variant='catalog', wrap='swiper-slide' %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {# ---- controls: rail on the start edge, arrows on the end edge ----
+           One row so the two can never drift apart vertically, and so the rail
+           gets whatever width the arrows leave it at every breakpoint. #}
+        {% if showArrows or showProgress %}
+          <div class="hy-prow-controls" id="hy-cpCtl-{{ pane }}" {% if not hasServer %}style="display: none;"{% endif %}>
+            {% if showProgress %}
+              <div id="hy-cpProg-{{ pane }}" class="hy-prow-rail"></div>
+            {% endif %}
+            {% if showArrows %}
+              <div class="hy-prow-nav">
+                <button type="button" id="hy-cpPrev-{{ pane }}" class="hy-prow-arrow" aria-label="{{ t('common.prev') }}">
+                  <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 6 9 12l6 6"/>
+                  </svg>
+                </button>
+                <button type="button" id="hy-cpNext-{{ pane }}" class="hy-prow-arrow" aria-label="{{ t('common.next') }}">
+                  <svg class="rtl-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+                  </svg>
+                </button>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+  </div>
+</section>
+
+<script>
+  /* Runs once main.js has defined Qumra / HayatCard. This script sits inside the
+     page body and main.js loads at its end, so running immediately threw
+     "Qumra is not defined" and the row never filled (the newest-products
+     fallback and the empty-store demo both lived behind it). */
+  (function (run) {
+    if (window.Qumra && window.HayatCard) run();
+    else document.addEventListener('DOMContentLoaded', run);
+  })(function () {
+    var SECTION = document.getElementById('hy-cp-{{ id }}');
+    if (!SECTION) return;
+
+    var LIMIT = {{ limit | int }};
+    var OPEN_ID = {{ openId | dump | safe }};
+
+    /* Mirrors the locals passed to ui "product-card.njk" above, so an AJAX card
+       and a server card resolve their options identically. An empty ratio means
+       "inherit the theme setting", which HayatCard already does through its own
+       defaults — so it must not be sent as an empty string. */
+    var cardOpts = { variant: 'catalog' };
+    {% if ratio %}cardOpts.imageRatio = '{{ ratio }}';{% endif %}
+
+    /* Only the slots that actually rendered a pane. */
+    var panes = [
+      {% for tb in tabs %}{% if tb.label or (loop.first and labelled == 0) %}
+      {
+        key: '{{ id }}-{{ loop.index0 }}',
+        hasServer: {{ 'true' if (paneLists[loop.index0] | length) > 0 else 'false' }},
+        sw: null
+      },
+      {% endif %}{% endfor %}
+    ];
+
+    function build(pane) {
+      /* Already built, or the panel is hidden — a Swiper initialised inside
+         `display: none` measures every slide as zero width and stacks the whole
+         row on top of itself, with no error anywhere. */
+      if (pane.sw) return;
+      var el = document.getElementById('hy-cpSw-' + pane.key);
+      if (!el || !el.offsetParent || typeof Swiper === 'undefined') return;
+
+      pane.sw = new Swiper(el, {
+        /* Direction comes from the element's `dir` attribute, NOT from here —
+           see the RTL note at the top of this file. */
+        direction: 'horizontal',
+        slidesPerView: {{ perViewSm | float }},
+        spaceBetween: 16,
+        watchOverflow: true,
+        breakpoints: {
+          768:  { slidesPerView: {{ perViewMd | float }}, spaceBetween: 20 },
+          1024: { slidesPerView: {{ perView | float }},   spaceBetween: 24 }
+        },
+        {% if showArrows %}
+        navigation: { prevEl: '#hy-cpPrev-' + pane.key, nextEl: '#hy-cpNext-' + pane.key },
+        {% endif %}
+        {% if showProgress %}
+        scrollbar: { el: '#hy-cpProg-' + pane.key, draggable: true, hide: false },
+        {% endif %}
+        a11y: { enabled: true }
+      });
+    }
+
+    /* First pane is visible on load; the rest are built when their tab opens. */
+    panes.forEach(function (p, i) { if (i === 0) build(p); });
+
+    SECTION.addEventListener('hy-tab-shown', function (e) {
+      /* The event carries the SLOT index, which is not the array position once
+         an unlabelled slot has been skipped — look the pane up by its key. */
+      var want = '{{ id }}-' + (e.detail && e.detail.id);
+      var pane = null;
+      panes.forEach(function (p) { if (p.key === want) pane = p; });
+      if (!pane) return;
+      /* One frame later: x-show has to have cleared `display: none` before
+         Swiper can measure anything. */
+      requestAnimationFrame(function () {
+        build(pane);
+        if (pane.sw) pane.sw.update();
+      });
+    });
+
+    /* ---- Empty tabs fall back to the newest products ---- */
+    panes.forEach(function (pane) {
+      if (pane.hasServer) return;
+
+      /* LIMIT is sent AND applied, and both halves are load-bearing.
+
+         /ajax/search/products documents only q, minPrice, maxPrice,
+         collectionId, minRating and sort — no page size at all. So this used to
+         ask for nothing and trim the answer, which made the setting work in one
+         direction only: below the endpoint's own page size it cut the list, and
+         above it nothing happened, because there was no second request to fetch
+         more with. That is what "the control does nothing" looked like.
+
+         The docs are known to be incomplete — see the note beside the price
+         bounds in main.js `_applyFilters`, where the same reasoning sends two
+         spellings of the same filter. Both spellings of a page size go out
+         here for the same reason: an endpoint that understands either now
+         returns the right number, and one that understands neither ignores two
+         unknown query params exactly as it ignored none.
+
+         `slice` stays regardless. It is the only guarantee that a server which
+         ignores both does not paint 60 cards into a carousel sized for 12. */
+      Qumra.search.search('', {
+        sort: 'created-desc',
+        limit: LIMIT,
+        'resources[limit]': LIMIT
+      }).then(function (data) {
+        var list = (data && (data.products || data.data || data.results)) || [];
+        /* The newest list can hold the product being looked at. */
+        if (OPEN_ID) list = list.filter(function (p) { return p && p._id !== OPEN_ID; });
+        /* Nothing came back — the store itself is empty. Show the demo catalogue
+           (main.js HayatDemo: real photos, inert cards) so a fresh install is
+           never a row of grey boxes. Any store with one product never sees it. */
+        var inEditor = document.documentElement.classList.contains('hy-editor');
+        if (!list.length && Qumra.demo && inEditor) list = Qumra.demo.products(LIMIT);
+
+        var wrapper = document.getElementById('hy-cpWrapper-' + pane.key);
+        if (!wrapper) return;
+        /* Demo cards are for the merchant in the editor only. A shopper on an
+           empty store gets no section at all rather than fake products. */
+        if (!list.length) {
+          if (!inEditor && wrapper.closest('section')) wrapper.closest('section').setAttribute('data-hy-empty', '');
+          return;                               /* editor: leave the placeholders standing */
+        }
+
+        wrapper.innerHTML = list.slice(0, LIMIT).map(function (p) {
+          return '<div class="swiper-slide">' + HayatCard.build(p, cardOpts) + '</div>';
+        }).join('');
+
+        if (window.Alpine) {
+          wrapper.querySelectorAll('[x-data]').forEach(function (el) { Alpine.initTree(el); });
+        }
+
+        var ctl = document.getElementById('hy-cpCtl-' + pane.key);
+        if (ctl) ctl.style.display = '';
+
+        pane.hasServer = true;
+        if (pane.sw) { pane.sw.update(); } else { build(pane); }
+      }).catch(function () { /* placeholders stay */ });
+    });
+  });
+</script>
+
+<style>
+  #hy-cp-{{ id }} .hy-pcard--catalog .hy-pcard-frame {
+    {# was a Theme Editor control; fixed at the drawn value — see the note
+       in any sibling widget's radius block. #}
+    --hy-cat-radius: 10px;
+  }
+</style>
+
+{# Per-section palette. Emits nothing unless `colors_enabled` is on, so the
+   switch IS the revert. Must stay after the widget's own <style>. #}
+{% ui "section-colors.njk", scope='#hy-cp-' ~ id, c=d %}

@@ -1,0 +1,150 @@
+{# ===== ATTAR Mobile Sidebar ===== #}
+
+<style>
+  .anaqa-sb-wordmark {
+    font-family: var(--font-heading-en);
+    font-weight: 600;
+    font-size: 1.35rem;
+    line-height: 1;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    padding-inline-start: 0.28em;
+    white-space: nowrap;
+  }
+  html[dir="rtl"] .anaqa-sb-wordmark {
+    font-family: var(--font-heading-ar);
+    letter-spacing: 0;
+    text-transform: none;
+    padding-inline-start: 0;
+  }
+
+  .anaqa-sb-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 4px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    transition: color 0.25s ease;
+  }
+  html[dir="rtl"] .anaqa-sb-link { letter-spacing: 0; text-transform: none; font-size: 15px; }
+  .anaqa-sb-link:hover { color: var(--color-accent); }
+
+  .anaqa-sb-lang {
+    flex: 1;
+    padding: 11px 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    transition: all 0.25s ease;
+  }
+  html[dir="rtl"] .anaqa-sb-lang { letter-spacing: 0; text-transform: none; font-size: 13px; }
+  .anaqa-sb-lang.active {
+    background: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+    color: var(--color-bg-primary);
+  }
+</style>
+
+<div x-data x-cloak>
+  {# Overlay #}
+  <div x-show="$store.modal.current === 'sidebar'"
+       @click="$store.modal.close()"
+       class="overlay"
+       x-transition:enter="transition ease-out duration-400"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0">
+  </div>
+
+  {# Drawer #}
+  <div class="drawer drawer-start custom-scrollbar flex flex-col"
+       :class="{ 'open': $store.modal.current === 'sidebar' }"
+       style="background: var(--color-bg-primary);">
+
+    {# Header #}
+    <div class="flex items-center justify-between px-6 py-5" style="border-bottom: 1px solid var(--color-border);">
+      <span class="anaqa-sb-wordmark min-w-0 overflow-hidden text-ellipsis" title="{{ store.name | default('ATTAR') }}">{% ui "store-name.njk" %}</span>
+      <button @click="$store.modal.close()"
+              class="w-11 h-11 -me-2 flex items-center justify-center transition-opacity duration-200 hover:opacity-60"
+              style="color: var(--color-text-primary);"
+              aria-label="{{ t('common.close') | default('إغلاق') }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {# Menu Items #}
+    <nav class="flex-1 overflow-y-auto px-6 py-4">
+      {% if data.menu and data.menu.items %}
+        {% set menuItems = data.menu.items %}
+      {% elif data.menu %}
+        {% set menuItems = data.menu %}
+      {% else %}
+        {% set menuItems = [] %}
+      {% endif %}
+
+      <ul>
+        {% for item in menuItems %}
+          {# sub-items arrive under `item.menu` (measured), not `children` #}
+          {% set subs = item.menu or item.children or [] %}
+          <li>
+            <a href="{{ item.url | default('#') }}" class="anaqa-sb-link font-body-ar">
+              <span>{{ item.title }}</span>
+            </a>
+            {% if subs | length %}
+              <ul class="attar-sb-subs">
+                {% for s in subs %}
+                  <li><a href="{{ s.url | default('#') }}" class="anaqa-sb-link attar-sb-sublink font-body-ar"><span>{{ s.title }}</span></a>
+                    {% set subs3 = s.menu or s.children or [] %}
+                    {% if subs3 | length %}
+                      <ul class="attar-sb-subs">
+                        {% for s3 in subs3 %}<li><a href="{{ s3.url | default('#') }}" class="anaqa-sb-link attar-sb-sublink font-body-ar"><span>{{ s3.title }}</span></a></li>{% endfor %}
+                      </ul>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+
+    {# ——— Bottom Actions (Language) ——— #}
+    {% set sidebarLang = data.currentLang | default(localization.language) | default('ar') %}
+    {% if data.showLang != false %}
+    <div class="flex-shrink-0 px-6 py-5" style="border-top: 1px solid var(--color-border);">
+      <p class="editorial-label mb-3 font-body-ar">
+        {{ t('common.language') | default('اللغة') }}
+      </p>
+      {% form 'lang' %}
+        <div class="flex gap-2.5">
+          <button type="submit" name="lang" value="ar"
+                  class="anaqa-sb-lang font-body-ar {{ 'active' if sidebarLang == 'ar' }}">
+            العربية
+          </button>
+          <button type="submit" name="lang" value="en"
+                  class="anaqa-sb-lang font-body-ar {{ 'active' if sidebarLang == 'en' }}">
+            English
+          </button>
+        </div>
+      {% endform %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>

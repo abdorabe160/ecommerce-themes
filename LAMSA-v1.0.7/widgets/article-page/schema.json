@@ -1,0 +1,44 @@
+{
+  "name": "صفحة المقال",
+  "settings": {
+    "show_hero": {
+      "type": "boolean",
+      "label": { "ar": "إظهار صورة المقال", "en": "Show the cover image" },
+      "default": true
+    },
+    "show_meta": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الكاتب والتاريخ والمشاهدات", "en": "Show author, date and views" },
+      "default": true
+    },
+    "show_tags": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الوسوم", "en": "Show tags" },
+      "default": true
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": { "ar": "إظهار زر المشاركة", "en": "Show the share button" },
+      "default": true
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مقالات ذات صلة", "en": "Show related articles" },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": { "ar": "عنوان قسم المقالات ذات الصلة", "en": "Related section title" },
+      "default": "مقالات ذات صلة"
+    },
+    "related_limit": {
+      "type": "number",
+      "label": { "ar": "عدد المقالات ذات الصلة", "en": "Related articles limit" },
+      "default": 3,
+      "min": 2,
+      "max": 8,
+      "step": 1
+    }
+  },
+  "presets": [{ "category": "المدونة", "name": "صفحة المقال" }]
+}

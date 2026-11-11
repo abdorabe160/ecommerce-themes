@@ -1,0 +1,47 @@
+{#-
+  Newsletter band. Qumra exposes no storefront subscription endpoint, so the form POSTs to the
+  merchant's provider (Mailchimp / Klaviyo / Brevo / Google Forms…) via form_action.
+  Without a configured action the section stays a brand note (plus a mailto fallback when a contact
+  email exists) — never a form that silently goes nowhere.
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- set title = (wd['title' + L] or wd.title) or t('newsletter.title') -%}
+{%- set text = (wd['text' + L] or wd.text) or t('newsletter.text') -%}
+{%- set action = (wd.form_action or '') | trim -%}
+{%- set field = wd.field_name or 'email' -%}
+{%- set btn = (wd['button_text' + L] or wd.button_text) or t('newsletter.subscribe') -%}
+{%- set surface = wd.surface or 'dark' -%}
+{%- set hasForm = action | length > 0 -%}
+{%- set hasMail = not hasForm and settings.contactEmail -%}
+<section class="dc-newsletter section {{ 'surface-dark' if surface != 'cream' else 'surface-cream' }}"
+         {% if hasForm %}x-data="dcNewsletter()"{% endif %} aria-labelledby="dc-newsletter-title">
+  <div class="shell">
+    <div class="dc-newsletter__inner {{ 'dc-newsletter__inner--solo' if not (hasForm or hasMail) }}">
+      <div data-reveal>
+        <h2 id="dc-newsletter-title" class="h-section dc-newsletter__title">{{ title }}</h2>
+        <p class="dc-newsletter__text">{{ text }}</p>
+      </div>
+
+      {%- if hasForm or hasMail %}
+      <div data-reveal>
+        {%- if hasForm %}
+        <form class="dc-newsletter__form" method="post" action="{{ action }}" target="_blank" novalidate
+              @submit="submit($event)">
+          <label class="sr-only" for="dc-newsletter-email">{{ t('newsletter.placeholder') }}</label>
+          <input id="dc-newsletter-email" class="field" type="email" name="{{ field }}" x-model="email"
+                 autocomplete="email" required placeholder="{{ t('newsletter.placeholder') }}">
+          <button type="submit" class="btn btn-primary">{{ btn }}</button>
+        </form>
+        <p class="dc-newsletter__note" x-show="state === 'sent'" x-cloak role="status">{{ t('newsletter.success') }}</p>
+        <p class="dc-newsletter__note" x-show="state === 'error'" x-cloak role="alert" x-text="message"></p>
+        {%- else %}
+        <a class="btn btn-outline" href="mailto:{{ settings.contactEmail }}?subject={{ t('newsletter.title') | urlencode }}">
+          {% ui "icon.njk", name="mail", size=18 %} <span>{{ t('footer.contact') }}</span>
+        </a>
+        {%- endif %}
+      </div>
+      {%- endif %}
+    </div>
+  </div>
+</section>

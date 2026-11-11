@@ -1,0 +1,328 @@
+{# ============================================================================
+   HYPER MOBILE DRAWER
+   ----------------------------------------------------------------------------
+   The header, restated for a thumb. Same source, same order:
+     nav_item blocks (dropdown → accordion) → extra_menu links
+     → the merchant's custom action link → language.
+
+   The last two are here because the bar HIDES them below 1024px: the action
+   link is an icon with no label, which on a phone is a mystery, and the
+   language switcher lives in the announcement strip, which keeps only its
+   message at that width. Without this section both would exist on desktop and
+   vanish on mobile with no replacement.
+
+   ⚠️  NO SOCIAL ICONS. They used to render here from a <use> sprite the header
+   printed once per page. The header is one row now and carries no socials, so
+   the sprite is gone — and a <use> pointing at a missing symbol renders an
+   empty box, not an error. The footer is where this theme puts socials.
+
+   The drawer SHELL (.taqa-drawer / .taqa-overlay) is reused deliberately. It
+   resolves its off-canvas side with physical `left`/`right` rather than logical
+   properties, because the translate that hides it has to point the same way —
+   logical props alone slide an RTL drawer INTO view instead of out of it. That
+   logic is correct and tested; only the contents are re-dressed here.
+
+   Locals (passed by the header widget):
+     data.nav_items · data.extra_menu · data.currentLang · data.showLang
+     data.action_url · data.action_label
+   ========================================================================= #}
+
+{# ---- External-link test ----
+   Identical to the macro in widgets/footer/widget.njk, and duplicated rather
+   than shared on purpose: ui/sidebar.njk is itself a `ui` partial included by
+   this widget, and `{% ui %}` calling `{% ui %}` is a construct this theme
+   bans outright (see the header of ui/cart.njk). Six characters of duplication
+   beat reintroducing nested includes.
+
+   `indexOf` rather than the `in` operator — `in` is written for arrays and
+   dicts here and throws on an undefined string. The second test lets an
+   absolute link to THIS store stay in-tab; `store.url` is guarded so a render
+   without it cannot make every link external by accident. #}
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+{% set navItems = data.nav_items | default([], true) %}
+{% set extraMenu = data.extra_menu %}
+{% set sbLang = data.currentLang | default(localization.language, true) | default('ar', true) %}
+{% set showLang = data.showLang | default(true) %}
+{% set actionUrl = data.action_url | default('', true) %}
+{% set actionLabel = data.action_label | default('', true) %}
+
+{#- Third menu level (`children`) listed under its parent, indented. -#}
+{% macro sbLinks(menu) %}
+  {% for item in (menu.items if menu.items else menu) %}
+    <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }} class="hy-sb-sublink">{{ item.title }}</a>
+    {% for ch in item.children | default([], true) %}
+      <a href="{{ ch.url | default('#', true) }}"{{ extAttrs(ch.url) }} class="hy-sb-sublink hy-sb-sublink--child">{{ ch.title }}</a>
+    {% endfor %}
+  {% endfor %}
+{% endmacro %}
+
+<style>
+  /* The wordmark matches the header's: heavy sans, uppercase, tightened —
+     tracking is LTR-only, it breaks Arabic letter joining. */
+  /* `white-space: nowrap` with nothing to stop it was the worst of both: the
+     name could not wrap AND could not truncate, so a long one ran straight past
+     the drawer's 400px edge. min-width:0 lets the flex row give it up. */
+  .hy-sb-wordmark {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-family: var(--font-body-ar);
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+  }
+  html[lang="en"] .hy-sb-wordmark,
+  html[dir="ltr"] .hy-sb-wordmark {
+    font-family: var(--font-body-en);
+    font-size: 1.375rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Accordion trigger and plain link share one look, so the list reads as one
+     column whether a row opens or navigates. */
+  .hy-sb-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 0;
+    border: 0;
+    background: transparent;
+    font-family: var(--font-body-ar);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-align: start;
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  html[lang="en"] .hy-sb-row,
+  html[dir="ltr"] .hy-sb-row {
+    font-family: var(--font-body-en);
+  }
+  .hy-sb-row:hover { color: var(--color-accent); }
+
+  /* Mirrors .hy-nav-link.is-hot in the desktop nav. */
+  .hy-sb-row.is-hot { color: var(--hy-sb-hot, var(--color-deal)); }
+  .hy-sb-badge {
+    margin-inline-start: 8px;
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--hy-sb-hot, var(--color-deal));
+    color: var(--color-text-on-deal);
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .hy-sb-item + .hy-sb-item { border-top: 1px solid var(--color-border); }
+
+  .hy-sb-caret {
+    flex: none;
+    display: flex;
+    color: var(--color-text-tertiary);
+    transition: transform var(--t-base) var(--ease-out);
+  }
+  .hy-sb-item.is-open .hy-sb-caret { transform: rotate(180deg); }
+
+  .hy-sb-panel { padding-bottom: 12px; }
+
+  .hy-sb-sublink {
+    display: block;
+    padding: 9px 0;
+    padding-inline-start: 14px;
+    border-inline-start: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    transition: color var(--t-fast) var(--ease-soft),
+                border-color var(--t-fast) var(--ease-soft);
+  }
+  .hy-sb-sublink:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  .hy-sb-viewall {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding-inline-start: 14px;
+    padding-bottom: 2px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    border-bottom: 1px solid currentColor;
+  }
+
+  /* ---- The rows the header drops below 1024px ---- */
+  .hy-sb-utility {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+  .hy-sb-utility a {
+    padding: 11px 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    transition: color var(--t-fast) var(--ease-soft);
+  }
+  .hy-sb-utility a:hover { color: var(--color-text-primary); }
+
+  /* Language — two plain rows rather than a segmented control: the drawer
+     already carries enough chrome, and a toggle here would be the only control
+     in it that is not a link. */
+  .hy-sb-lang { display: flex; gap: 28px; }
+  .hy-sb-lang button {
+    padding: 0 0 3px;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-soft),
+                border-color var(--t-fast) var(--ease-soft);
+  }
+  .hy-sb-lang button:hover { color: var(--color-text-primary); }
+  .hy-sb-lang button.is-active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-text-primary);
+    cursor: default;
+  }
+</style>
+
+<div x-data="{ open: null }" x-cloak>
+
+  {# ---- Overlay ---- #}
+  <div x-show="$store.modal.current === 'sidebar'"
+       @click="$store.modal.close()"
+       class="taqa-overlay"
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"></div>
+
+  {# ---- Drawer ---- #}
+  <div class="taqa-drawer taqa-drawer--start"
+       :class="{ 'is-open': $store.modal.current === 'sidebar' }"
+       style="max-width: 360px;"
+       role="dialog"
+       aria-label="{{ t('common.menu') }}">
+
+    {# head #}
+    <div class="taqa-drawer-head">
+      <a href="/" class="hy-sb-wordmark">{{ store.name | default('', true) }}</a>
+      <button type="button"
+              @click="$store.modal.close()"
+              class="hy-icon-btn"
+              aria-label="{{ t('common.close') }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {# body #}
+    <div class="taqa-drawer-body taqa-scroll-thin">
+      <nav aria-label="{{ t('common.menu') }}">
+
+        {% for block in navItems %}
+          {% set b = block.data %}
+          {% if b.nav_label %}
+            {% set key = 'sb' ~ loop.index %}
+            {% set links = b.nav_menu.items if b.nav_menu and b.nav_menu.items else b.nav_menu %}
+            {% set hasDrop = links and (links | length) > 0 %}
+
+            <div class="hy-sb-item" :class="open === '{{ key }}' && 'is-open'">
+              {% if hasDrop %}
+                <button type="button"
+                        class="hy-sb-row {{ 'is-hot' if b.nav_highlight }}"
+                       
+                        @click="open = open === '{{ key }}' ? null : '{{ key }}'"
+                        :aria-expanded="open === '{{ key }}' ? 'true' : 'false'">
+                  <span>{{ b.nav_label }}{% if b.nav_badge %}<span class="hy-sb-badge">{{ b.nav_badge }}</span>{% endif %}</span>
+                  <span class="hy-sb-caret">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <div x-show="open === '{{ key }}'" x-collapse class="hy-sb-panel">
+                  {{ sbLinks(b.nav_menu) }}
+                  <a href="{{ b.nav_url | default('#', true) }}" class="hy-sb-viewall">
+                    {{ t('common.view_all') }}
+                  </a>
+                </div>
+              {% else %}
+                <a href="{{ b.nav_url | default('#', true) }}"
+                   class="hy-sb-row {{ 'is-hot' if b.nav_highlight }}"
+                  >
+                  <span>{{ b.nav_label }}{% if b.nav_badge %}<span class="hy-sb-badge">{{ b.nav_badge }}</span>{% endif %}</span>
+                  <svg class="rtl-flip hy-sb-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+                  </svg>
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if extraMenu %}
+          {% for item in (extraMenu.items if extraMenu.items else extraMenu) %}
+            <div class="hy-sb-item">
+              <a href="{{ item.url | default('#', true) }}"{{ extAttrs(item.url) }} class="hy-sb-row">
+                <span>{{ item.title }}</span>
+                <svg class="rtl-flip hy-sb-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+                </svg>
+              </a>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </nav>
+
+      {# The merchant's custom link. Qumra has no account page, so the header's
+         action slot is whatever the merchant points it at — and on the bar it
+         is an icon with no label, which is legible on a desktop hover and a
+         guess on a phone. Here it gets its words back. #}
+      {% if actionUrl %}
+        <div class="hy-sb-utility">
+          <a href="{{ actionUrl }}"{{ extAttrs(actionUrl) }}>
+            {{ actionLabel | default(t('header.quick_link'), true) }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    {# foot — language #}
+    {% if showLang %}
+      <div class="taqa-drawer-foot">
+        {% form 'lang' %}
+          <div class="hy-sb-lang">
+            <button type="submit" name="lang" value="ar"
+                    class="font-body {{ 'is-active' if sbLang == 'ar' }}"
+                    {% if sbLang == 'ar' %}disabled{% endif %}>العربية</button>
+            <button type="submit" name="lang" value="en"
+                    class="font-body-en {{ 'is-active' if sbLang == 'en' }}"
+                    {% if sbLang == 'en' %}disabled{% endif %}>English</button>
+          </div>
+        {% endform %}
+      </div>
+    {% endif %}
+
+  </div>
+</div>

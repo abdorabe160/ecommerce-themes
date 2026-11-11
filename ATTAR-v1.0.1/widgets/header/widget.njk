@@ -1,0 +1,397 @@
+<!-- ===== ATTAR HEADER — Oriental Fragrance House ===== -->
+{% set showLang = widget.data.show_language_switcher | default(true) %}
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'ar' or rawLang == 'en' else 'ar' %}
+{% set isSticky = widget.data.sticky | default(true) %}
+{% set overlayHero = widget.data.overlay_hero | default(true) %}
+{% set announcementText = widget.data.announcement_text | default(t('header.announcement_text'), true) %}
+{% set menu = widget.data.header_menu | default([]) %}
+{# Normalize menu items — supports both { items: [...] } and [...] formats #}
+{% if menu and menu.items %}
+  {% set menuItems = menu.items %}
+{% elif menu %}
+  {% set menuItems = menu %}
+{% else %}
+  {% set menuItems = [] %}
+{% endif %}
+
+<style>
+  /* ===== ANAQA Header ===== */
+
+  #anaqa-header.is-sticky {
+    position: fixed;
+    top: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+  }
+
+  /* State transitions */
+  .anaqa-announce,
+  .anaqa-nav {
+    transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  /* --- Overlay state (transparent over dark smoky hero) --- */
+  #anaqa-header { color: var(--color-text-primary); }
+  #anaqa-header:not(.is-solid) { text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45); }
+  #anaqa-header .anaqa-announce { border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent); }
+  #anaqa-header .anaqa-nav { background: transparent; }
+
+  /* --- Solid state (scrolled / no hero) — dark glass + gold hairline --- */
+  #anaqa-header.is-solid { color: var(--color-text-primary); text-shadow: none; }
+  #anaqa-header.is-solid .anaqa-announce {
+    background: var(--color-footer);
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+  #anaqa-header.is-solid .anaqa-nav {
+    background: color-mix(in srgb, var(--color-bg-primary) 88%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Announcement bar */
+  .anaqa-announce {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 9px 0;
+  }
+  html[dir="rtl"] .anaqa-announce { letter-spacing: 0.02em; text-transform: none; }
+
+  /* Logo wordmark */
+  .anaqa-logo {
+    display: block;
+    max-width: min(320px, 30vw);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-heading-en);
+    font-weight: 600;
+    font-size: 1.65rem;
+    line-height: 1;
+    letter-spacing: 0.30em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    padding-inline-start: 0.30em; /* optical balance for tracking */
+    white-space: nowrap;
+  }
+  html[dir="rtl"] .anaqa-logo {
+    font-family: var(--font-heading-ar);
+    letter-spacing: 0;
+    text-transform: none;
+    padding-inline-start: 0;
+  }
+
+  /* Nav links */
+  .anaqa-nav-link {
+    position: relative;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: currentColor;
+    white-space: nowrap;
+    padding: 4px 0;
+  }
+  html[dir="rtl"] .anaqa-nav-link { letter-spacing: 0; text-transform: none; font-size: 14px; }
+  .anaqa-nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s ease;
+  }
+  html[dir="rtl"] .anaqa-nav-link::after { transform-origin: left; }
+  .anaqa-nav-link:hover { color: var(--color-accent); }
+  .anaqa-nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+  html[dir="rtl"] .anaqa-nav-link:hover::after { transform-origin: right; }
+
+  /* Icon buttons */
+  .anaqa-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  .anaqa-icon-btn:hover { color: var(--color-accent); opacity: 1; }
+
+  /* Cart badge */
+  .anaqa-badge {
+    position: absolute;
+    top: 3px;
+    inset-inline-end: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-bg-primary);
+    background: var(--color-accent);
+    border-radius: 9999px;
+    text-shadow: none;
+  }
+
+  /* Language switcher (in announce bar) */
+  .anaqa-lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: currentColor;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s ease;
+  }
+  html[dir="rtl"] .anaqa-lang-btn { letter-spacing: 0; text-transform: none; }
+  .anaqa-lang-btn:hover { opacity: 0.65; }
+
+  .anaqa-lang-drop {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+  }
+  .anaqa-lang-drop button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 11px 18px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-shadow: none;
+    transition: background 0.15s ease;
+  }
+  .anaqa-lang-drop button:hover:not(:disabled) { background: var(--color-bg-secondary); }
+  .anaqa-lang-drop button:disabled { opacity: 0.4; cursor: default; }
+
+  /* the burger's own display:flex must not beat lg:hidden (this style block loads after Tailwind) */
+  @media (min-width: 1024px) { .anaqa-icon-btn.lg\:hidden { display: none; } }
+
+  @media (max-width: 767px) {
+    .anaqa-announce { font-size: 10px; padding: 7px 0; }
+    .anaqa-logo { font-size: 1.25rem; letter-spacing: 0.24em; padding-inline-start: 0.24em; max-width: 42vw; }
+  }
+</style>
+
+<div
+  id="anaqa-header"
+  class="{{ 'is-sticky' if isSticky else 'relative' }} is-solid z-[100] w-full"
+>
+
+  <!-- ===== Announcement Bar ===== -->
+  {% if widget.data.show_announcement | default(true) %}
+  <div class="anaqa-announce">
+    <div class="container mx-auto px-6 max-sm:px-4 relative flex items-center justify-center">
+      {% if widget.data.closable_announcement %}
+      <button type="button" class="anaqa-announce-x absolute start-0" aria-label="{{ t('common.close') }}"
+              onclick="this.closest('.anaqa-announce').classList.add('is-closed'); try { sessionStorage.setItem('attarAnnounceClosed', '1'); } catch (e) {}">
+        <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <script>try { if (sessionStorage.getItem('attarAnnounceClosed')) document.currentScript.closest('.anaqa-announce').classList.add('is-closed'); } catch (e) {}</script>
+      {% endif %}
+      <span class="anaqa-announce-text text-center truncate {{ 'px-12' if (showLang or widget.data.closable_announcement) }}">{{ announcementText }}</span>
+
+      <!-- Language Switcher -->
+      {% if showLang %}
+      <div x-data="{ langOpen: false }" class="absolute end-0 flex-shrink-0">
+        <button @click="langOpen = !langOpen"
+                @click.outside="langOpen = false"
+                class="anaqa-lang-btn" type="button"
+                aria-label="{{ t('common.language') }}">
+          <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+          </svg>
+          <span>{{ 'EN' if currentLang == 'en' else 'ع' }}</span>
+        </button>
+
+        <div x-show="langOpen" x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="absolute top-full mt-2 end-0 min-w-[130px] anaqa-lang-drop z-[9999]">
+          {% form 'lang' %}
+            <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>
+              <span class="font-body-ar">العربية</span>
+            </button>
+            <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>
+              <span class="font-body-en">English</span>
+            </button>
+          {% endform %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===== Main Nav ===== -->
+  <nav class="anaqa-nav w-full">
+    <div class="container mx-auto px-6 max-sm:px-4">
+      <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)] items-center min-h-[76px] max-sm:min-h-[60px] gap-4 max-sm:gap-2">
+
+        <!-- Start: menu (mobile) + nav links (desktop) -->
+        <div class="flex items-center justify-start gap-7 min-w-0">
+          <button onclick="toggleModal('sidebar')" type="button"
+                  class="anaqa-icon-btn lg:hidden -ms-2"
+                  aria-label="{{ t('common.menu') }}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.4">
+              <path stroke-linecap="round" d="M3.5 8h17M3.5 16h17"/>
+            </svg>
+          </button>
+
+          {% if menuItems and menuItems | length > 0 %}
+          <div class="hidden lg:flex flex-wrap items-center gap-x-7 gap-y-1 min-w-0">
+            {# Sub-items arrive under `item.menu` (measured on the real store), not `children`.
+               A CSS dropdown (hover / keyboard focus) — no extra script. #}
+            {% for item in menuItems %}
+              {% set subs = item.menu or item.children or [] %}
+              {% if subs | length %}
+                <div class="attar-nav-item">
+                  <a href="{{ item.url | default('#') }}" class="anaqa-nav-link{{ ' attar-ar' if ((item.title or '') | upper) == ((item.title or '') | lower) }}" aria-haspopup="true">{{ item.title }}</a>
+                  <div class="attar-nav-drop">
+                    {% for s in subs %}
+                      <a href="{{ s.url | default('#') }}" class="attar-nav-drop-link font-body-ar">{{ s.title }}</a>
+                      {# third level — indented under its parent #}
+                      {% for s3 in (s.menu or s.children or []) %}<a href="{{ s3.url | default('#') }}" class="attar-nav-drop-link attar-nav-drop-link--l3 font-body-ar">{{ s3.title }}</a>{% endfor %}
+                    {% endfor %}
+                  </div>
+                </div>
+              {% else %}
+                <a href="{{ item.url | default('#') }}" class="anaqa-nav-link{{ ' attar-ar' if ((item.title or '') | upper) == ((item.title or '') | lower) }}">{{ item.title }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Center: logo -->
+        <div class="flex items-center justify-center min-w-0">
+          <a href="/" class="flex-shrink-0 min-w-0 flex items-center min-h-[44px]" aria-label="{{ store.name | default('ATTAR') }}">
+            {% if widget.data.header_logo and widget.data.header_logo.fileUrl %}
+              <img
+                src="{{ widget.data.header_logo.fileUrl }}"
+                alt="{{ store.name | default('ATTAR') }}"
+                class="attar-logo-img w-auto object-contain"
+              />
+            {% else %}
+              <span class="anaqa-logo" title="{{ store.name | default('ATTAR') }}">{% ui "store-name.njk" %}</span>
+            {% endif %}
+          </a>
+        </div>
+
+        <!-- End: search + cart -->
+        <div class="flex items-center justify-end gap-1 flex-shrink-0">
+
+          {% if widget.data.show_search %}
+          <button onclick="toggleModal('search')" type="button"
+                  aria-label="{{ t('header.search') }}"
+                  class="anaqa-icon-btn">
+            <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          {% endif %}
+
+          {% if widget.data.show_cart | default(true) %}
+          <button onclick="toggleModal('cart')" type="button"
+                  aria-label="{{ t('header.cart') }}"
+                  class="anaqa-icon-btn" x-data>
+            <svg class="w-[21px] h-[21px]" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 2 3.5 6v13.5A1.5 1.5 0 0 0 5 21h14a1.5 1.5 0 0 0 1.5-1.5V6L18 2z"/>
+              <path stroke-linecap="round" d="M3.5 6h17"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span x-show="$store.cart.totalQuantity > 0"
+                  x-text="$store.cart.totalQuantity"
+                  x-cloak
+                  class="anaqa-badge"></span>
+          </button>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+{# Spacer — reserves the fixed header's height in solid mode.
+   In overlay mode the hero sits full-bleed behind the header (height 0). #}
+{% if isSticky %}
+<div id="anaqa-header-spacer" aria-hidden="true"></div>
+{% endif %}
+
+<script>
+  (function () {
+    var header = document.getElementById('anaqa-header');
+    if (!header) return;
+    var spacer = document.getElementById('anaqa-header-spacer');
+    var sticky = {{ 'true' if isSticky else 'false' }};
+    var overlaySetting = {{ 'true' if overlayHero else 'false' }};
+
+    // Overlay only when sticky AND a section opts in via [data-hero-top] AND
+    // it sits at the very top of the page (nothing rendered above it).
+    var heroTop = document.querySelector('[data-hero-top]');
+    var atTop = false;
+    if (heroTop) {
+      var rect = heroTop.getBoundingClientRect();
+      atTop = (rect.top + window.scrollY) < 4;
+    }
+    var overlay = sticky && overlaySetting && atTop;
+
+    function setSolid(on) { header.classList.toggle('is-solid', on); }
+
+    function onScroll() { setSolid(window.scrollY > 40); }
+
+    if (overlay) {
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      setSolid(true); // always solid when not overlaying a hero
+    }
+
+    if (spacer) {
+      function sync() { spacer.style.height = overlay ? '0px' : header.offsetHeight + 'px'; }
+      sync();
+      window.addEventListener('load', sync);
+      window.addEventListener('resize', sync);
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(header); }
+    }
+  })();
+</script>
+
+<!-- Mobile Sidebar -->
+{% ui "sidebar.njk", menu=menu, showLang=showLang, currentLang=currentLang %}
+
+<!-- Search Popup -->
+{% ui "search.njk" %}
+
+<!-- Cart Side Panel -->
+{% ui "cart.njk" %}

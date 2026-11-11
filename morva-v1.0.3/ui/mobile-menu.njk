@@ -1,0 +1,143 @@
+{# ============================================================================
+   MORVA MOBILE MENU — full-screen overlay (≤ 880px)
+   ----------------------------------------------------------------------------
+   kicker + close · big staggered links · quick-link chips · featured pieces
+   with a BUY button · utility bar (search / language)
+   Opened with $store.modal.open('menu').
+
+   Locals:
+     menu        the main menu object (header-menu)
+     quick       the quick-links menu object (footer-menu)
+     products    featured products (array)
+     shop_label  first big link — goes to /shop
+     show_lang   language switch on/off
+   ========================================================================= #}
+
+{% set menu = data.menu %}
+{% set menuItems = (menu.items if menu and menu.items else menu) or [] %}
+{% set quick = data.quick %}
+{% set quickItems = (quick.items if quick and quick.items else quick) or [] %}
+{% set products = data.products | default([]) %}
+{% set lang = localization.language | default('ar') %}
+
+<div class="mv-menu" x-data x-show="$store.modal.current === 'menu'" x-cloak
+     x-transition:leave.opacity.duration.250ms
+     role="dialog" aria-modal="true" aria-label="{{ t('common.menu') }}">
+
+  <div class="mv-menu-top">
+    <span class="mv-kicker">{{ t('common.menu') }}</span>
+    <button type="button" class="mv-close" @click="$store.modal.close()" aria-label="{{ t('common.close') }}">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+  </div>
+
+  <div class="mv-menu-body" data-lenis-prevent>
+    <nav class="mv-menu-nav" aria-label="{{ t('common.menu') }}">
+      <a href="/shop" class="mv-menu-link" style="--i: 0" @click="$store.modal.close()">{{ data.shop_label | default(t('morva.shop_all'), true) }}</a>
+      {% for item in menuItems %}
+        {#- Same two keys as the desktop nav (widgets/header): `menu` on stores, `children` in the docs. -#}
+        {% set kids = item.menu if (item.menu and (item.menu | length) > 0) else (item.children or []) %}
+        {% if (kids | length) > 0 %}
+          <div x-data="{ open: false }">
+            <div class="mv-menu-row">
+              <a href="{{ item.url | default('#') }}" class="mv-menu-link" style="--i: {{ loop.index }}" @click="$store.modal.close()">{{ item.title }}</a>
+              <button type="button" class="mv-menu-toggle" :class="open && 'is-open'" @click="open = !open" aria-expanded="false" :aria-expanded="open ? 'true' : 'false'"
+                      aria-label="{{ t('morva.submenu') }}: {{ item.title }}" style="--i: {{ loop.index }}">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5"/></svg>
+              </button>
+            </div>
+            <div class="mv-menu-sub" x-show="open" x-collapse x-cloak>
+              {% for child in kids %}
+                {% set subs = child.menu if (child.menu and (child.menu | length) > 0) else (child.children or []) %}
+                {% if (subs | length) > 0 %}
+                  <div x-data="{ open: false }">
+                    <div class="mv-menu-row">
+                      <a href="{{ child.url | default('#') }}" class="mv-menu-sublink" @click="$store.modal.close()">{{ child.title }}</a>
+                      <button type="button" class="mv-menu-toggle mv-menu-toggle--sm" :class="open && 'is-open'" @click="open = !open" aria-expanded="false" :aria-expanded="open ? 'true' : 'false'"
+                              aria-label="{{ t('morva.submenu') }}: {{ child.title }}">
+                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5"/></svg>
+                      </button>
+                    </div>
+                    <div class="mv-menu-sub" x-show="open" x-collapse x-cloak>
+                      {% for sub in subs %}
+                        <a href="{{ sub.url | default('#') }}" class="mv-menu-sublink" @click="$store.modal.close()">{{ sub.title }}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% else %}
+                  <a href="{{ child.url | default('#') }}" class="mv-menu-sublink" @click="$store.modal.close()">{{ child.title }}</a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% else %}
+        <a href="{{ item.url | default('#') }}" class="mv-menu-link" style="--i: {{ loop.index }}" @click="$store.modal.close()">{{ item.title }}</a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    {% if (quickItems | length) > 0 %}
+      <div class="mv-menu-sec">
+        <span class="mv-menu-label">{{ t('morva.quick_links') }}</span>
+        <div class="mv-chips">
+          {% for item in quickItems %}
+            {% if item.title %}<a href="{{ item.url | default('#') }}" class="mv-chip" @click="$store.modal.close()">{{ item.title }}</a>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if (products | length) > 0 %}
+      <div class="mv-menu-sec">
+        <span class="mv-menu-label">{{ t('morva.featured_drops') }}</span>
+        <div class="mv-mini-list">
+          {% for p in products %}
+            {% set slug = p.slug | default(p.handle) | default(p._id) %}
+            {% set url = '/products/' ~ slug %}
+            {% set img = p.images[0].fileUrl if p.images and (p.images | length) > 0 else '' %}
+            {% set price = p.pricing.price | default(0) if p.pricing else 0 %}
+            {% set was = p.pricing.compareAtPrice | default(0) if p.pricing else 0 %}
+            {#- Listing payloads carry no options, variants or variantsCount, and a parent
+      quantity of 0 says nothing about its variants. Only a product known to
+      be simple can be called sold out here; anything else is unknown, and the
+      buttons resolve it from /ajax/product on click. Twin: HayatCard.facts(). -#}
+            {% set vKnown = (p.options | default([], true) | length) + (p.variants | default([], true) | length) %}
+            {% set isSimple = p.variantsCount == 0 or (vKnown == 0 and p.options is defined and p.variants is defined) %}
+            {% set inStock = p.allowBackorder or (not p.trackQuantity) or (p.quantity | default(0, true)) > 0 or (not isSimple) %}
+            {% set stockUnknown = (not p.allowBackorder) and (p.quantity | default(0, true)) <= 0 and (not isSimple) %}
+            <div class="mv-mini" x-data="productCard('{{ p._id }}', '{{ url }}')">
+              <a href="{{ url }}" class="mv-mini-img" @click="$store.modal.close()">
+                {% if img %}<img class="mv-fill" src="{{ img }}" alt="{{ p.title }}" loading="lazy"/>{% endif %}
+              </a>
+              <div class="mv-mini-info">
+                <a href="{{ url }}" class="mv-mini-name" @click="$store.modal.close()">{{ p.title }}</a>
+                <span class="mv-price">
+                  {% if was and was > price %}<s class="mv-was">{{ was | money }}</s>{% endif %}
+                  <span>{{ price | money }}</span>
+                </span>
+              </div>
+              {% if stockUnknown %}
+                <a href="{{ url }}" class="mv-mini-buy" @click="$store.modal.close()">{{ t('morva.view_product') }}</a>
+              {% elif inStock %}
+                <button type="button" class="mv-mini-buy" @click="buyNow()" :disabled="cartLoading">{{ t('morva.buy') }}</button>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mv-menu-util">
+    <button type="button" @click="$store.modal.open('search')">{{ t('morva.search') }}</button>
+    {% if data.show_lang %}
+      {% form 'lang' %}
+        {% if lang == 'en' %}
+          <button type="submit" name="lang" value="ar">العربية</button>
+        {% else %}
+          <button type="submit" name="lang" value="en">ENGLISH</button>
+        {% endif %}
+      {% endform %}
+    {% endif %}
+  </div>
+</div>

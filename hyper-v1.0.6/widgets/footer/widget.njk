@@ -1,0 +1,535 @@
+{# ============================================================================
+   HYPER · الفوتر  (footer)
+   ----------------------------------------------------------------------------
+     ┌─────────────────────────────────────────────────────────────────┐
+     │ 💬 خدمة العملاء │ 📞 اتصل بنا │ ✉︎ راسلنا │ 📍 العنوان          │
+     ├─────────────────────────────────────────────────────────────────┤
+     │  انضم لنشرتنا                 المتجر    المجموعات   الشركة      │
+     │  سطر الوصف                    …          …           …          │
+     │  [ بريدك ] ( اشترك )                                            │
+     │  بالاشتراك أنت توافق على …                                      │
+     │                                                                 │
+     │  العربية ⌄                                      ( f )( x )( ig )│
+     │  [VISA][mada][MC][…]                                            │
+     ├─────────────────────────────────────────────────────────────────┤
+     │  © 2026 المتجر                        الشروط · سياسة الخصوصية   │
+     └─────────────────────────────────────────────────────────────────┘
+
+   ── The lead column is not one of the auto-fit columns ──
+   The grid is `var(--fo-lead) repeat(var(--fo-cols), 1fr)`, and `--fo-cols` is
+   the RENDERED block count printed once by the widget. The previous version used
+   `auto-fit, minmax(240px, 1fr)`, which treats the subscribe form as just
+   another column: with three link columns beside it the field was squeezed to
+   240px and the heading wrapped after two words. A subscribe form and a list of
+   five links do not want the same width.
+
+   ── The contact strip is four fixed slots, not blocks ──
+   No widget in this theme declares more than one block TYPE, so a repeatable
+   contact item would have to share the `column` list with the link menus — and
+   the merchant could then interleave them, which the layout has no answer for.
+   Four slots is also what the strip is designed for: the dividers and the
+   4→2→1 grid stop making sense past four.
+
+   ── No country / currency switcher ──
+   The reference footer opens a "United States (USD $)" picker. Qumra resolves
+   the market SERVER-side from `localization.market` — there is no storefront
+   form that changes it, the way `{% form 'lang' %}` changes the language. A
+   dropdown that cannot change anything is worse than no dropdown, so the slot
+   holds the LANGUAGE switcher, which is the one thing a shopper can actually
+   switch here.
+
+   ── Payment badges ──
+   Drawn marks from ui/payment-icons.njk, Gulf-first. A merchant whose provider
+   requires exact trademark artwork fills `payment_image_1..3` instead, and
+   those replace the drawn row rather than sitting next to it — a mixed row of
+   official logos and drawn ones looks broken.
+
+   ── RTL ──
+   The whole footer flows with the document. The dividers in the contact strip
+   are `border-inline-start` on every cell but the first, so they land between
+   the right pairs in both directions with no override. The subscribe arrow and
+   the "view all" chevrons use `.rtl-flip`.
+
+   Styling lives in assets/style.css → "15.20 FOOTER".
+   ========================================================================= #}
+
+{# ---- External-link test, used by both menu loops below --------------------
+   A merchant menu can hold anything: an internal path (/shop), an absolute URL
+   back to this same store, or a link to somewhere else entirely. Only the last
+   of those should leave the tab.
+
+   `indexOf('://')` catches every absolute URL — and it is indexOf rather than
+   the `in` operator because `in` is written for arrays and dicts here, and a
+   string that happens to be empty or undefined makes it throw rather than
+   return false. The second test lets an absolute link to THIS store stay
+   in-tab, so a merchant who types their full domain out of habit does not get
+   a pop-out to their own shop. `store.url` is guarded because a link must not
+   become external-by-accident on a render where it is missing.
+
+   `noopener noreferrer` matches what the social row already does. Modern
+   browsers imply noopener on target="_blank", but the older ones a storefront
+   still sees do not, and an explicit rel is one attribute. #}
+{% macro extAttrs(url) %}{% if url and url.indexOf('://') > -1 and not (store.url and url.indexOf(store.url) == 0) %} target="_blank" rel="noopener noreferrer"{% endif %}{% endmacro %}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{# Columns with no links are dropped, and so is a column repeating an earlier
+   column's links: the default blocks all point at one menu, and a footer that
+   prints the same three links three times reads as a bug. #}
+{% set columns = [] %}
+{% set seenMenus = [] %}
+{% for block in (widget.blocks or []) %}
+  {% set _items = block.data.menu.items if block.data.menu and block.data.menu.items else block.data.menu %}
+  {% if _items and (_items | length) > 0 %}
+    {% set _urls = [] %}
+    {% for _it in _items %}{% set _ = _urls.push(_it.url or _it.title or '') %}{% endfor %}
+    {% set _key = _urls.join('|') %}
+    {% if seenMenus.indexOf(_key) == -1 %}
+      {% set _ = seenMenus.push(_key) %}
+      {% set _ = columns.push(block) %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{# ---- subscribe ---- #}
+{% set showNl = d.show_newsletter | default(true) %}
+{% set nlAction = d.newsletter_action | default('', true) %}
+{% set nlField = d.newsletter_field | default('EMAIL') %}
+{% set nlPlaceholder = d.newsletter_placeholder | default(t('newsletter.placeholder'), true) %}
+{% set nlButton = d.newsletter_button | default('', true) %}
+{% set nlNote = d.newsletter_note | default('', true) %}
+
+{# ---- store blurb ---- #}
+{% set showBrand = d.show_brand | default(false) %}
+{% set brandText = d.brand_text | default('', true) %}
+
+{# ---- contact strip ---- #}
+{% set showContact = d.show_contact | default(true) %}
+{% set contactIconColor = d.contact_icon_color | default('', true) %}
+{# The number of FILLED cells, so the grid gets `repeat(3, 1fr)` for three
+   slots instead of `repeat(4, 1fr)` and a hole. Written as ONE expression on
+   purpose: a running total built with `{% set %}` inside `{% if %}` blocks is
+   the pattern that has bitten this theme three times, and there is no reason
+   to go near it when the four slots are known. #}
+{% set fcCount = (1 if d.contact1_text else 0)
+               + (1 if d.contact2_text else 0)
+               + (1 if d.contact3_text else 0)
+               + (1 if d.contact4_text else 0) %}
+
+{# ---- utility row ---- #}
+{% set socialStyle = d.social_style | default('circle') %}
+{% set showPay = d.show_payments | default(true) %}
+{% set showLang = d.show_language_switcher | default(true) %}
+
+{% set copyright = d.copyright | default('', true) %}
+{# the store-name fallback is shortened to 3 words (ui/store-name.njk); a line the merchant typed is kept as is #}
+{% set _sn = (store.name or '') | trim %}{% set _sw = [] %}{% for _w in _sn.split(' ') %}{% if _w %}{% set _x = _sw.push(_w) %}{% endif %}{% endfor %}{% set storeShort = (_sw.slice(0, 3).join(' ') ~ '…') if (_sw | length) > 3 else _sn %}
+{% if not copyright %}{% set copyright = storeShort %}{% endif %}
+{% set bottomMenu = d.bottom_menu %}
+
+{# The footer paints from its own `--color-footer-*` family, which layout.njk
+   fills from the GLOBAL theme settings. `tone` swaps that whole family locally
+   in the CSS — one click for the light footer the design asks for, instead of
+   five colour pickers a merchant has to get consistent by hand. The pickers
+   below still override whatever the tone set, so they remain the fine control.
+   Empty picker = fall through, so each field doubles as its own revert.
+
+   `--fo-bg` stays separate from `--color-footer`: the subscribe button paints
+   its label with the footer's background colour and needs the picked one. #}
+{# The 🎨 switch is the revert, exactly as in every other section: off and
+   every pick below falls out of the <style> block entirely, so the footer
+   drops straight back to `tone` and the global theme palette. The merchant's
+   colours stay saved and return the moment the switch goes back on. #}
+{% set colorsOn = d.colors_enabled | default(false) %}
+{% set bg = (d.color_bg | default('', true)) if colorsOn else '' %}
+{% set bar = (d.color_bottom_bar | default('', true)) if colorsOn else '' %}
+{% set foHeading = (d.color_title | default('', true)) if colorsOn else '' %}
+{% set foText = (d.color_text | default('', true)) if colorsOn else '' %}
+{% set foBorder = (d.color_border | default('', true)) if colorsOn else '' %}
+
+{% set rawLang = localization.language | default('ar') %}
+{% set currentLang = rawLang if rawLang == 'en' else 'ar' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set payImg1 = mediaUrl(d.payment_image_1) | trim %}
+{% set payImg2 = mediaUrl(d.payment_image_2) | trim %}
+{% set payImg3 = mediaUrl(d.payment_image_3) | trim %}
+{# `| length`, not truthiness — a macro returns a SafeString OBJECT, and an
+   object is truthy even when it holds an empty string. #}
+{% set hasPayImg = (payImg1 | length) > 0 or (payImg2 | length) > 0 or (payImg3 | length) > 0 %}
+
+
+{# ═══════════════════ icon sets ═══════════════════ #}
+
+{% macro contactIcon(kind) %}
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {% if kind == 'chat' %}
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.3 9.3 0 0 1-2.8-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/>
+      <path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/>
+    {% elif kind == 'phone' %}
+      <path d="M22 16.9v2.6a1.8 1.8 0 0 1-2 1.8 17.6 17.6 0 0 1-7.7-2.7 17.4 17.4 0 0 1-5.3-5.3A17.6 17.6 0 0 1 4.3 5.6 1.8 1.8 0 0 1 6.1 3.6h2.6a1.8 1.8 0 0 1 1.8 1.6c.1.9.3 1.7.6 2.5a1.8 1.8 0 0 1-.4 1.9l-1.1 1.1a14 14 0 0 0 5.3 5.3l1.1-1.1a1.8 1.8 0 0 1 1.9-.4c.8.3 1.6.5 2.5.6a1.8 1.8 0 0 1 1.6 1.8Z"/>
+    {% elif kind == 'mail' %}
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2"/>
+      <path d="m3 6.5 9 6 9-6"/>
+    {% elif kind == 'pin' %}
+      <path d="M20 10.5c0 5.5-8 12-8 12s-8-6.5-8-12a8 8 0 0 1 16 0Z"/>
+      <circle cx="12" cy="10.3" r="2.9"/>
+    {% elif kind == 'send' %}
+      <path d="M21.5 2.5 2.5 9.8l7.6 2.9 3 8L21.5 2.5Z"/>
+      <path d="m10.1 12.7 4.6-4.6"/>
+    {% elif kind == 'clock' %}
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5.3l3.4 2"/>
+    {% elif kind == 'truck' %}
+      <path d="M2.5 6.5h10v9h-10zM12.5 10h4l3 3v2.5h-7z"/>
+      <circle cx="6.5" cy="17.6" r="1.7"/><circle cx="16.6" cy="17.6" r="1.7"/>
+    {% elif kind == 'shield' %}
+      <path d="M12 3 5 6v5.5c0 4.3 3 8.2 7 9.5 4-1.3 7-5.2 7-9.5V6l-7-3Z"/>
+      <path d="m9.2 12 2 2 3.6-3.8"/>
+    {% elif kind == 'whatsapp' %}
+      <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3.5 20.5l1.5-4.4a8.4 8.4 0 1 1 15.5-4.4Z"/>
+      <path d="M9.3 8.6c.4 1 .8 1.6.8 1.6s-.5.7-.3 1.1a6 6 0 0 0 2.9 2.9c.4.2 1.1-.3 1.1-.3s.6.4 1.6.8"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{% macro social(kind) %}
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    {% if kind == 'instagram' %}
+      <path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.22 1 .48 1.4.9.4.4.68.8.9 1.4.17.4.37 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.05 1.2-.25 1.8-.42 2.2-.22.6-.5 1-.9 1.4-.4.4-.8.68-1.4.9-.4.17-1 .37-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.05-1.8-.25-2.2-.42-.6-.22-1-.5-1.4-.9-.4-.4-.68-.8-.9-1.4-.17-.4-.37-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.22-.6.5-1 .9-1.4.4-.4.8-.68 1.4-.9.4-.17 1-.37 2.2-.42C8.4 2.2 8.8 2.2 12 2.2Zm0 1.8c-3.1 0-3.5 0-4.7.07-1.1.05-1.7.24-2.1.4-.5.2-.9.44-1.3.84-.4.4-.64.8-.84 1.3-.16.4-.35 1-.4 2.1C2.6 9.9 2.6 10.3 2.6 12s0 2.1.06 3.3c.05 1.1.24 1.7.4 2.1.2.5.44.9.84 1.3.4.4.8.64 1.3.84.4.16 1 .35 2.1.4 1.2.06 1.6.06 4.7.06s3.5 0 4.7-.06c1.1-.05 1.7-.24 2.1-.4.5-.2.9-.44 1.3-.84.4-.4.64-.8.84-1.3.16-.4.35-1 .4-2.1.06-1.2.06-1.6.06-3.3s0-2.1-.06-3.3c-.05-1.1-.24-1.7-.4-2.1a3.5 3.5 0 0 0-.84-1.3 3.5 3.5 0 0 0-1.3-.84c-.4-.16-1-.35-2.1-.4C15.5 4 15.1 4 12 4Zm0 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Zm5.2-3.1a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/>
+    {% elif kind == 'x' %}
+      <path d="M17.3 3h3.1l-6.8 7.8L21.7 21h-6.2l-4.9-6.4L4.9 21H1.8l7.3-8.3L1.9 3h6.4l4.4 5.8L17.3 3Zm-1.1 16.2h1.7L7.9 4.7H6.1l10.1 14.5Z"/>
+    {% elif kind == 'facebook' %}
+      <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12Z"/>
+    {% elif kind == 'tiktok' %}
+      <path d="M16.6 2h-3.1v13.1a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .7.1V9.4a5.7 5.7 0 1 0 5 5.7V8.6a6.5 6.5 0 0 0 3.8 1.2V6.7a3.7 3.7 0 0 1-3.8-3.6V2Z"/>
+    {% elif kind == 'youtube' %}
+      <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.1V8.9l5.3 3.1-5.3 3.1Z"/>
+    {% elif kind == 'snapchat' %}
+      <path d="M12 2c2.7 0 4.6 2 4.7 4.7 0 .8 0 1.6-.1 2.3.4.2.9.1 1.4-.1.5-.2 1 .1 1.1.6.1.5-.2.9-.7 1.1-.5.2-1.3.5-1.5.9-.2.4.5 1.9 2.4 3 .4.2.5.6.4 1-.3.7-1.4 1-2.3 1.2-.2.3-.2.7-.4 1-.2.3-.6.3-1 .2-.6-.1-1.2-.2-1.9 0-.6.2-1.2 1.1-2.1 1.1s-1.5-.9-2.1-1.1c-.7-.2-1.3-.1-1.9 0-.4.1-.8.1-1-.2-.2-.3-.2-.7-.4-1-.9-.2-2-.5-2.3-1.2-.1-.4 0-.8.4-1 1.9-1.1 2.6-2.6 2.4-3-.2-.4-1-.7-1.5-.9-.5-.2-.8-.6-.7-1.1.1-.5.6-.8 1.1-.6.5.2 1 .3 1.4.1-.1-.7-.1-1.5-.1-2.3C7.4 4 9.3 2 12 2Z"/>
+    {% elif kind == 'whatsapp' %}
+      <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm0 1.8a8.2 8.2 0 1 1-4.2 15.2l-.3-.2-2.8.8.8-2.8-.2-.3A8.2 8.2 0 0 1 12 3.8Zm-3.1 4c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.7 4.2 3.7 2 .8 2.5.7 2.9.6.6-.1 1.8-.7 2-1.5.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3l-2-1c-.3-.1-.5-.1-.7.1l-.7.9c-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.5-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.2-.5 0-.2 0-.4-.1-.5l-.9-2c-.2-.5-.4-.5-.6-.5h-.4Z"/>
+    {% elif kind == 'pinterest' %}
+      <path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5.1s-.3-.6-.3-1.5c0-1.4.8-2.5 1.8-2.5.9 0 1.3.6 1.3 1.4 0 .9-.5 2.2-.8 3.4-.3 1 .5 1.9 1.5 1.9 1.8 0 3.2-1.9 3.2-4.7 0-2.4-1.8-4.2-4.3-4.2a4.5 4.5 0 0 0-4.7 4.5c0 .9.3 1.8.8 2.3.1.1.1.2.1.3l-.3 1c0 .2-.1.2-.3.1-1.2-.6-2-2.4-2-3.8 0-3.1 2.3-6 6.5-6 3.4 0 6.1 2.4 6.1 5.7 0 3.4-2.1 6.2-5.1 6.2-1 0-2-.5-2.3-1.1l-.6 2.4c-.2.9-.8 2-1.2 2.6A10 10 0 1 0 12 2Z"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{% macro socialLink(url, kind, label) %}
+  {% if url %}
+    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ label }}">{{ social(kind) }}</a>
+  {% endif %}
+{% endmacro %}
+
+{# One contact cell. The four slots are passed in explicitly rather than looped:
+   Nunjucks cannot build `d['contact' ~ i ~ '_title']` from a loop variable in
+   this engine — the same reason editorial-products lists its four thumbnails by
+   hand. An empty slot renders NOTHING at all, so a merchant using three of the
+   four gets three cells and three-way dividers, not a gap. #}
+{% macro contactCell(icon, title, text, url) %}
+  {% if text %}
+    <div class="hy-fcontact-item">
+      {% if icon and icon != 'none' %}
+        <span class="hy-fcontact-icon">{{ contactIcon(icon) }}</span>
+      {% endif %}
+      {# ⚠️  `dir="auto"` on the two merchant strings, and it is not decoration.
+         A phone number starts with `+` and digits — none of them a STRONG
+         character — so in an Arabic document it inherits RTL and
+         "+966 55 000 0000" renders as "0000 000 55 966+". `dir="auto"` picks
+         the direction from the first strong character in the value itself:
+         Latin/numeric copy goes LTR, Arabic copy stays RTL, and the merchant
+         does not have to know any of this. The cell keeps its RTL placement
+         because `.hy-fcontact-body` aligns its children to the cross-START,
+         which is a logical edge — see the note in the CSS. #}
+      <div class="hy-fcontact-body">
+        {% if title %}<span class="hy-fcontact-title" dir="auto">{{ title }}</span>{% endif %}
+        {% if text %}
+          {% if url %}
+            <a class="hy-fcontact-text hy-fcontact-text--link" dir="auto" href="{{ url }}">{{ text }}</a>
+          {% else %}
+            <span class="hy-fcontact-text" dir="auto">{{ text }}</span>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+
+<footer id="hy-footer-{{ id }}" class="hy-footer">
+  <style>
+    /* `--fo-cols` is the rendered link-column count — see the note at the top
+       of this file for why the lead column is not one of them. */
+    #hy-footer-{{ id }} {
+      --fo-cols: {{ (columns | length) if (columns | length) > 0 else 1 }};
+      --fc-cols: {{ fcCount if fcCount > 0 else 1 }};
+      {% if contactIconColor %}--color-footer-accent: {{ contactIconColor }};{% endif %}
+    }
+    {% if bg %}#hy-footer-{{ id }} { --fo-bg: {{ bg }}; --color-footer: {{ bg }}; }{% endif %}
+    {% if bar %}#hy-footer-{{ id }} { --fo-bar: {{ bar }}; }{% endif %}
+    {% if foHeading %}#hy-footer-{{ id }} { --color-footer-heading: {{ foHeading }}; }{% endif %}
+    {% if foText %}#hy-footer-{{ id }} { --color-footer-text: {{ foText }}; --color-footer-text-muted: color-mix(in srgb, {{ foText }} 72%, transparent); }{% endif %}
+    {% if foBorder %}#hy-footer-{{ id }} { --color-footer-border: {{ foBorder }}; }{% endif %}
+  </style>
+
+  {# The footer mixes its own `--color-footer-*` family with the GENERIC tokens
+     (`--color-border`, `--color-surface`, `--color-text-*`) — the newsletter
+     field, the social ring and the payment badges all paint from those. Without
+     this the picks landed on half the footer and left the other half on the
+     theme palette, which is what "الألوان مش شغالة" looked like. #}
+  {% ui "section-colors.njk", scope='#hy-footer-' ~ id, c=d %}
+
+  {# ═══════════════════ contact strip ═══════════════════ #}
+  {% if showContact and fcCount > 0 %}
+    <div class="hy-container">
+      <div class="hy-fcontact">
+        {{ contactCell(d.contact1_icon, d.contact1_title, d.contact1_text, d.contact1_url) }}
+        {{ contactCell(d.contact2_icon, d.contact2_title, d.contact2_text, d.contact2_url) }}
+        {{ contactCell(d.contact3_icon, d.contact3_title, d.contact3_text, d.contact3_url) }}
+        {{ contactCell(d.contact4_icon, d.contact4_title, d.contact4_text, d.contact4_url) }}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="hy-container">
+    {% set leadVisible = (showNl and nlAction) or (showBrand and brandText) %}
+    <div class="hy-footer-top{% if not leadVisible %} hy-footer-top--nolead{% endif %}">
+
+      {# ═══════════ lead column — subscribe ═══════════ #}
+      <div class="hy-footer-lead" x-data="{ sent: false }">
+        {% if showNl %}
+          {# Without an action URL there is no form, and «subscribe» with nothing
+             to subscribe through is a dead promise — the heading and line are
+             then editor-only, beside the setup hint. #}
+          <div class="hy-footer-nl-head"{% if not nlAction %} data-hy-placeholder{% endif %}>
+            {% if d.newsletter_title %}<h2 class="hy-footer-lead-title">{{ d.newsletter_title }}</h2>{% endif %}
+            {% if d.newsletter_text %}<p class="hy-footer-text">{{ d.newsletter_text }}</p>{% endif %}
+          </div>
+
+          {# The field is a NATIVE form POST, not fetch(): list providers send no
+             CORS headers, so fetch() fails silently and the shopper is told they
+             subscribed when nothing was stored. With no action URL the field is
+             not rendered at all — an input that posts nowhere collects nothing
+             while looking like it works. #}
+          {% if nlAction %}
+            <span class="hy-footer-hint" x-show="sent" x-cloak>{{ t('newsletter.success') }}</span>
+
+            {# ---- Validation messages in the STORE's language ----
+               `type="email"` + `required` already stop a bad address — the
+               browser refuses to submit and `@submit` never runs, so the success
+               line cannot appear on a rejected entry. What the browser then
+               shows is ITS OWN tooltip, in the BROWSER's language: an Arabic
+               shopper on an English Chrome reads "Please include an '@'".
+
+               `novalidate` turns the native bubble off and `checkValidity()`
+               keeps the native RULES — the check is still the browser's, only
+               the sentence is ours. Cheaper and safer than a hand-written
+               regex, which is how email validation goes wrong.
+
+               `@submit` is `.prevent`ed only when invalid, so a good address
+               still posts to the provider exactly as before. #}
+            <form action="{{ nlAction }}" method="post" target="_blank" rel="noopener"
+                  class="hy-footer-form" novalidate
+                  x-data="{ err: '' }" x-show="!sent"
+                  @submit="
+                    const f = $el.querySelector('input[type=email]');
+                    if (f.checkValidity()) { err = ''; sent = true; return; }
+                    $event.preventDefault();
+                    err = f.value.trim() === ''
+                      ? {{ t('newsletter.error_empty')  | dump | escape }}
+                      : {{ t('newsletter.error_format') | dump | escape }};
+                    f.focus();
+                  ">
+              <div class="hy-footer-field">
+                <input type="email" name="{{ nlField }}" required autocomplete="email" inputmode="email"
+                       :aria-invalid="err ? 'true' : 'false'"
+                       @input="err = ''"
+                       placeholder="{{ nlPlaceholder }}" aria-label="{{ t('common.email') }}"/>
+              </div>
+
+              {% if nlButton %}
+                <button type="submit" class="hy-footer-send hy-footer-send--label">{{ nlButton }}</button>
+              {% else %}
+                {# No label set: fall back to the arrow disc, which survives a
+                   narrow column that a word would not. #}
+                <button type="submit" class="hy-footer-send" aria-label="{{ t('newsletter.button') }}">
+                  <svg class="rtl-flip" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h15M13 6l6 6-6 6"/>
+                  </svg>
+                </button>
+              {% endif %}
+
+              {# Bots fill every field they find; a human never sees this one.
+
+                 ⚠️  The hiding is INLINE, not left to `.hy-hp` in style.css — which
+                 still carries the same declarations and the reasoning behind them.
+                 A honeypot is the one element in the theme that must not depend on
+                 an external stylesheet: this form is `display: flex` with the email
+                 field on `flex: 1`, so the instant `.hy-hp` does not apply, the trap
+                 claims real flex space, squeezes the email field down to a rounded
+                 stub, and prints "Leave this field empty" to every shopper. It fails
+                 OPEN, loudly, in the footer of every page. A stale cache, a CSS file
+                 that 404s, or a published build older than this one is enough to do
+                 it — and all three are outside this template's control. Inline
+                 styles are not, and they beat every stylesheet.
+
+                 `clip-path` rather than `left: -9999px`: see the note in style.css
+                 → the offset version adds a ten-thousand-pixel horizontal scrollbar
+                 to every Arabic page. #}
+              <div class="hy-hp" aria-hidden="true"
+                   style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;">
+                <label><span>Leave this field empty</span>
+                  <input type="text" name="hy_hp" tabindex="-1" autocomplete="off"/></label>
+              </div>
+              {# aria-live so the message is announced, not just drawn. #}
+              <p class="hy-footer-err" x-show="err" x-text="err" x-cloak
+                 role="alert" aria-live="assertive"></p>
+            </form>
+
+            {% if nlNote %}
+              {# ⚠️  A <div>, NOT a <p>. A `text` field comes back as block HTML
+                   (`<p>…</p>`), and a <p> cannot contain a <p> — the browser
+                   closes the outer one and the content becomes a SIBLING, so
+                   every style on this class stops reaching the text. The inner
+                   margins are reset in the CSS. #}
+              <div class="hy-footer-note">{{ nlNote | safe }}</div>
+            {% endif %}
+          {% else %}
+            <span class="hy-footer-hint hy-footer-hint--setup">{{ t('newsletter.setup_hint') }}</span>
+          {% endif %}
+        {% endif %}
+
+        {% if showBrand and brandText %}
+          <div class="hy-footer-blurb">{{ brandText | safe }}</div>
+        {% endif %}
+      </div>
+
+      {# ═══════════ link columns ═══════════ #}
+      {% for block in columns %}
+        {% set b = block.data %}
+        {% set items = b.menu.items if b.menu and b.menu.items else b.menu %}
+        {# A heading with no links was an empty column (≈150px of blank on phones). #}
+        {% if items and (items | length) > 0 %}
+          <div class="hy-footer-col">
+            {% if b.title %}<h2 class="hy-footer-heading">{{ b.title }}</h2>{% endif %}
+            {% if items %}
+              <nav class="hy-footer-links">
+                {% for item in items %}
+                  <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }}>{{ item.title }}</a>
+                  {# sub-items arrive under `item.menu` (measured), not `children` #}
+                  {% for s in (item.menu or item.children or []) %}
+                    <a href="{{ s.url | default('#') }}"{{ extAttrs(s.url) }} class="hy-footer-sublink">{{ s.title }}</a>
+                  {% endfor %}
+                {% endfor %}
+              </nav>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+
+    {# ═══════════════════ utility row ═══════════════════ #}
+    <div class="hy-footer-util">
+      <div class="hy-footer-util-start">
+
+        {% if showLang %}
+          {# Where the reference puts a country/currency picker. See the note at
+             the top of this file: the market is resolved server-side and there
+             is no storefront form for it — the language is the one thing a
+             shopper can switch from here. #}
+          <div class="hy-footer-lang" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" class="hy-footer-lang-btn" @click="open = !open"
+                    :aria-expanded="open ? 'true' : 'false'" aria-label="{{ t('common.language') }}">
+              <span>{{ 'English' if currentLang == 'en' else 'العربية' }}</span>
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor"
+                   stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/>
+              </svg>
+            </button>
+
+            <div class="hy-footer-lang-drop" x-show="open" x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+              {% form 'lang' %}
+                <button type="submit" name="lang" value="ar" {% if currentLang == 'ar' %}disabled{% endif %}>
+                  <span class="font-body">العربية</span>
+                </button>
+                <button type="submit" name="lang" value="en" {% if currentLang == 'en' %}disabled{% endif %}>
+                  <span class="font-body-en">English</span>
+                </button>
+              {% endform %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if showPay %}
+          <div class="hy-footer-pay" role="list" aria-label="{{ t('footer.payments') }}">
+            {% if hasPayImg %}
+              {# Uploaded artwork REPLACES the drawn row — see the note at the
+                 top of ui/payment-icons.njk. #}
+              {% if (payImg1 | length) > 0 %}<img src="{{ payImg1 }}" alt="" loading="lazy"/>{% endif %}
+              {% if (payImg2 | length) > 0 %}<img src="{{ payImg2 }}" alt="" loading="lazy"/>{% endif %}
+              {% if (payImg3 | length) > 0 %}<img src="{{ payImg3 }}" alt="" loading="lazy"/>{% endif %}
+            {% else %}
+              {% if d.pay_mada %}{% ui "payment-icons.njk", key='mada', label='mada' %}{% endif %}
+              {% if d.pay_visa %}{% ui "payment-icons.njk", key='visa', label='Visa' %}{% endif %}
+              {% if d.pay_mastercard %}{% ui "payment-icons.njk", key='mastercard', label='Mastercard' %}{% endif %}
+              {% if d.pay_amex %}{% ui "payment-icons.njk", key='amex', label='American Express' %}{% endif %}
+              {% if d.pay_applepay %}{% ui "payment-icons.njk", key='applepay', label='Apple Pay' %}{% endif %}
+              {% if d.pay_stcpay %}{% ui "payment-icons.njk", key='stcpay', label='STC Pay' %}{% endif %}
+              {% if d.pay_tabby %}{% ui "payment-icons.njk", key='tabby', label='Tabby' %}{% endif %}
+              {% if d.pay_tamara %}{% ui "payment-icons.njk", key='tamara', label='Tamara' %}{% endif %}
+              {% if d.pay_paypal %}{% ui "payment-icons.njk", key='paypal', label='PayPal' %}{% endif %}
+              {% if d.pay_cod %}{% ui "payment-icons.njk", key='cod', label=t('footer.cod') %}{% endif %}
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="hy-footer-social hy-footer-social--{{ socialStyle }}">
+        {{ socialLink(d.social_facebook, 'facebook', 'Facebook') }}
+        {{ socialLink(d.social_x, 'x', 'X') }}
+        {{ socialLink(d.social_instagram, 'instagram', 'Instagram') }}
+        {{ socialLink(d.social_tiktok, 'tiktok', 'TikTok') }}
+        {{ socialLink(d.social_youtube, 'youtube', 'YouTube') }}
+        {{ socialLink(d.social_snapchat, 'snapchat', 'Snapchat') }}
+        {{ socialLink(d.social_whatsapp, 'whatsapp', 'WhatsApp') }}
+        {{ socialLink(d.social_pinterest, 'pinterest', 'Pinterest') }}
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════════ bottom bar ═══════════════════ #}
+  <div class="hy-footer-bottom">
+    <div class="hy-container hy-footer-bar">
+
+      <span>
+        {# The year is written by the script below rather than typed into the
+           setting — a hardcoded "© 2026" is wrong from January and nobody
+           notices for months. #}
+        © <span data-hy-year>2026</span>{% if copyright %} {{ copyright }}{% endif %}
+      </span>
+
+      {% if bottomMenu %}
+        <nav class="hy-footer-legal">
+          {% for item in (bottomMenu.items if bottomMenu.items else bottomMenu) %}
+            <a href="{{ item.url | default('#') }}"{{ extAttrs(item.url) }}>{{ item.title }}</a>
+          {% endfor %}
+        </nav>
+      {% endif %}
+
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var el = document.querySelector('#hy-footer-{{ id }} [data-hy-year]');
+    if (el) el.textContent = new Date().getFullYear();
+  })();
+</script>

@@ -1,0 +1,56 @@
+{
+  "name": "صفحة المدونة",
+  "icon": "book-open",
+  "settings": {
+    "columns": {
+      "type": "select",
+      "label": "عدد الأعمدة",
+      "default": "3",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    "display_layout": {
+      "type": "select",
+      "label": "نمط العرض",
+      "default": "grid",
+      "options": [
+        {
+          "value": "grid",
+          "label": "شبكة"
+        },
+        {
+          "value": "slider",
+          "label": "سلايدر"
+        }
+      ]
+    },
+    "show_date": {
+      "type": "boolean",
+      "label": "إظهار التاريخ",
+      "default": true
+    },
+    "show_excerpt": {
+      "type": "boolean",
+      "label": "إظهار المقتطف",
+      "default": true
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المدونة",
+      "name": "صفحة المدونة"
+    }
+  ]
+}

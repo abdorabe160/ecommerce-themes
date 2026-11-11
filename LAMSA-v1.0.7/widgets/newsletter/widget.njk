@@ -1,0 +1,322 @@
+{# ============================================================================
+   LAMSA NEWSLETTER
+   ----------------------------------------------------------------------------
+   ⚠️  Qumra has NO newsletter endpoint (see docs/store-ajax/). The previous
+   version faked it — a setTimeout flipped to "subscribed" and every address
+   was thrown away. This one posts to the merchant's own provider instead.
+
+   Submission uses a NATIVE form POST, not fetch(): Mailchimp / Klaviyo / Google
+   Forms don't send CORS headers, so a fetch() would always fail silently.
+   With `open_in_new_tab` the provider's page opens in a new tab and we show an
+   optimistic success state in place — the usual pattern for hosted lists.
+
+   If `action_url` is empty the form is NOT rendered; the section shows a setup
+   hint instead, so it can never look like it works when it doesn't.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+
+{% set action = d.action_url | default('') %}
+{% set emailField = d.email_field_name | default('EMAIL') %}
+{% set newTab = d.open_in_new_tab | default(true) %}
+
+{% set layout = d.layout | default('card') %}
+{% set isCard = layout == 'card' %}
+{% set isSplit = layout == 'split' %}
+
+{% set bg = d.background | default('sage') %}
+{% set img = d.image.fileUrl if d.image and d.image.fileUrl else '' %}
+
+{% set eyebrow = d.eyebrow | default('') %}
+{% set title = d.title | default('') %}
+{% set subtitle = d.subtitle | default('') %}
+{% set placeholder = d.placeholder | default(t('newsletter.placeholder'), true) %}
+{% set btnText = d.button_text | default(t('newsletter.button'), true) %}
+{% set successMsg = d.success_message | default(t('newsletter.success'), true) %}
+
+{% set showConsent = d.show_consent | default(false) %}
+{% set showNote = d.show_note | default(true) %}
+{% set noteText = d.note_text | default(t('newsletter.privacy'), true) %}
+
+{% set align = d.text_alignment | default('center') %}
+{% set isCenter = align == 'center' and not isSplit %}
+
+{% if bg == 'rose' %}{% set surface = 'var(--color-accent)' %}{% set onDark = true %}
+{% elif bg == 'ink' %}{% set surface = 'var(--color-text-primary)' %}{% set onDark = true %}
+{% elif bg == 'blush' %}{% set surface = 'var(--color-bg-primary)' %}{% set onDark = false %}
+{% elif bg == 'white' %}{% set surface = 'var(--color-surface)' %}{% set onDark = false %}
+{% else %}{% set surface = 'var(--color-sage)' %}{% set onDark = true %}{% endif %}
+
+{% set fg = '#FFFFFF' if onDark else 'var(--color-text-primary)' %}
+{% set fgSoft = 'rgba(255,255,255,0.86)' if onDark else 'var(--color-text-secondary)' %}
+
+
+<style>
+  .lamsa-nl-{{ id }}-box {
+    position: relative;
+    overflow: hidden;
+    background: {{ surface }};
+    {% if isCard %}border-radius: var(--radius-2xl);{% endif %}
+  }
+
+  .lamsa-nl-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  {% if isSplit %}
+  @media (min-width: 900px) { .lamsa-nl-{{ id }}-grid { grid-template-columns: 1fr 1fr; } }
+  {% endif %}
+
+  .lamsa-nl-{{ id }}-img {
+    position: relative;
+    min-height: 260px;
+    background: var(--color-bg-tertiary);
+  }
+  .lamsa-nl-{{ id }}-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  @media (min-width: 900px) { .lamsa-nl-{{ id }}-img { min-height: 100%; } }
+
+  .lamsa-nl-{{ id }}-inner {
+    display: flex;
+    align-items: center;
+    padding-block: 68px;
+    padding-inline: 40px;
+  }
+  @media (max-width: 767px) {
+    .lamsa-nl-{{ id }}-inner { padding-block: 46px; padding-inline: 22px; }
+    .lamsa-nl-{{ id }}-img { min-height: 210px; }
+  }
+
+  .lamsa-nl-{{ id }}-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+    max-width: {{ '560px' if isCenter else '520px' }};
+    {% if isCenter %}
+    align-items: center;
+    text-align: center;
+    margin-inline: auto;
+    {% else %}
+    align-items: flex-start;
+    text-align: start;
+    {% endif %}
+  }
+
+  .lamsa-nl-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.625rem, 3.6vw, 2.375rem);
+    font-weight: 700;
+    line-height: 1.22;
+    color: {{ fg }};
+  }
+  html[dir="ltr"] .lamsa-nl-{{ id }}-title { font-family: var(--font-display-en); }
+  html[dir="rtl"] .lamsa-nl-{{ id }}-title { line-height: 1.34; }
+  .lamsa-nl-{{ id }}-title p { margin: 0; }
+  .lamsa-nl-{{ id }}-title em {
+    font-style: normal;
+    color: {{ '#FFF' if onDark else 'var(--color-accent)' }};
+    {% if onDark %}
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
+    {% endif %}
+  }
+
+  .lamsa-nl-{{ id }}-sub {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: {{ fgSoft }};
+  }
+  @media (max-width: 767px) { .lamsa-nl-{{ id }}-sub { font-size: 0.9375rem; } }
+
+  .lamsa-nl-{{ id }}-note {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: {{ 'rgba(255,255,255,0.72)' if onDark else 'var(--color-text-tertiary)' }};
+  }
+
+  /* the inline pill form sits on a coloured panel, so it needs its own shell */
+  .lamsa-nl-{{ id }}-form {
+    width: 100%;
+    max-width: 460px;
+    {% if isCenter %}margin-inline: auto;{% endif %}
+  }
+  .lamsa-nl-{{ id }}-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+  .lamsa-nl-{{ id }}-field input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 16px;
+    border: 0;
+    background: transparent;
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+  }
+  .lamsa-nl-{{ id }}-field input:focus { box-shadow: none; outline: none; }
+  /* iOS zooms in on a focused field under 16px and never zooms back out.
+     Scoped here because the id makes this rule unreachable from style.css. */
+  @media (pointer: coarse) { .lamsa-nl-{{ id }}-field input { font-size: 1rem; } }
+  @media (max-width: 480px) {
+    .lamsa-nl-{{ id }}-field { flex-direction: column; padding: 10px; border-radius: var(--radius-lg); }
+    .lamsa-nl-{{ id }}-field input { width: 100%; text-align: center; }
+    .lamsa-nl-{{ id }}-field .lamsa-btn { width: 100%; }
+  }
+
+  /* consent + success + setup hint */
+  .lamsa-nl-{{ id }}-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: {{ fgSoft }};
+    cursor: pointer;
+  }
+  .lamsa-nl-{{ id }}-consent input {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    margin: 2px 0 0;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .lamsa-nl-{{ id }}-ok {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: var(--radius-pill);
+    background: {{ 'rgba(255,255,255,0.18)' if onDark else 'var(--color-sage-light)' }};
+    color: {{ fg if onDark else 'var(--color-sage-hover)' }};
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .lamsa-nl-{{ id }}-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 460px;
+    padding: 14px 18px;
+    border: 1.5px dashed {{ 'rgba(255,255,255,0.5)' if onDark else 'var(--color-border-strong)' }};
+    border-radius: var(--radius-lg);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: {{ fgSoft }};
+    text-align: start;
+  }
+</style>
+
+
+{#- No list-provider URL = no field, so the band would invite a signup the page
+    cannot take: hidden on the live store, kept in the editor with its setup
+    hint so the merchant sees what to fill in. -#}
+<section id="lamsa-nl-{{ id }}" class="{{ 'lamsa-section' if isCard }}"{% if not action %} data-lamsa-empty{% endif %}>
+  <div class="{{ 'lamsa-container' if isCard else 'w-full' }}">
+    <div class="lamsa-nl-{{ id }}-box">
+      <div class="lamsa-nl-{{ id }}-grid">
+
+        {% if isSplit %}
+          <div class="lamsa-nl-{{ id }}-img">
+            {% if img %}
+              <img src="{{ img }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% else %}
+              <img src="{{ 'lamsa-ph-spa.jpg' | assets }}" alt="{{ title | replace('<br>', ' ') | striptags }}" loading="lazy"/>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="lamsa-nl-{{ id }}-inner">
+          <div class="lamsa-nl-{{ id }}-content" x-data="{ sent: false }">
+
+            {% if eyebrow %}
+              <span class="lamsa-eyebrow {{ 'lamsa-eyebrow--light' if onDark }}">
+                <span class="lamsa-eyebrow-dot"></span>{{ eyebrow }}
+              </span>
+            {% endif %}
+
+            {% if title %}<div class="lamsa-nl-{{ id }}-title">{{ title | safe }}</div>{% endif %}
+            {% if subtitle %}<p class="lamsa-nl-{{ id }}-sub">{{ subtitle | safe }}</p>{% endif %}
+
+            {% if action %}
+              {# ---------- success ---------- #}
+              <div class="lamsa-nl-{{ id }}-ok" x-show="sent" x-cloak
+                   x-transition:enter="transition ease-out duration-300"
+                   x-transition:enter-start="opacity-0 scale-95"
+                   x-transition:enter-end="opacity-100 scale-100">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12.5 9.5 18 20 6.5"/>
+                </svg>
+                <span>{{ successMsg }}</span>
+              </div>
+
+              {# ---------- form ---------- #}
+              <form class="lamsa-nl-{{ id }}-form"
+                    action="{{ action }}"
+                    method="post"
+                    {% if newTab %}target="_blank" rel="noopener"{% endif %}
+                    x-show="!sent"
+                    @submit="{% if newTab %}sent = true{% endif %}">
+
+                <div class="lamsa-nl-{{ id }}-field">
+                  <input type="email"
+                         name="{{ emailField }}"
+                         required
+                         autocomplete="email"
+                         placeholder="{{ placeholder }}"
+                         aria-label="{{ t('common.email') }}"/>
+                  <button type="submit" class="lamsa-btn lamsa-btn--primary shrink-0">{{ btnText }}</button>
+                </div>
+
+                {# bots fill hidden fields; humans never see this one #}
+                <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                  <label>
+                    <span>Leave this field empty</span>
+                    <input type="text" name="lamsa_hp" tabindex="-1" autocomplete="off"/>
+                  </label>
+                </div>
+
+                {% if showConsent %}
+                  <label class="lamsa-nl-{{ id }}-consent">
+                    <input type="checkbox" name="consent" value="yes" required/>
+                    <span>{{ t('newsletter.consent') }}</span>
+                  </label>
+                {% endif %}
+              </form>
+
+            {% else %}
+              {# ---------- not configured yet ---------- #}
+              <div class="lamsa-nl-{{ id }}-hint">
+                <svg class="shrink-0 mt-0.5" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>
+                </svg>
+                <span>{{ t('newsletter.setup_hint') }}</span>
+              </div>
+            {% endif %}
+
+            {% if showNote and noteText %}
+              <span class="lamsa-nl-{{ id }}-note">{{ noteText }}</span>
+            {% endif %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

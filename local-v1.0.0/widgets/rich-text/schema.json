@@ -1,0 +1,314 @@
+{
+  "name": "نص منسق",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير (اختياري)",
+        "en": "Small line (optional)"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "▸ العنوان",
+        "en": "▸ Heading"
+      },
+      "default": "وصفات شهية"
+    },
+    "title_size": {
+      "type": "select",
+      "label": {
+        "ar": "حجم العنوان",
+        "en": "Heading size"
+      },
+      "default": "l",
+      "options": [
+        {
+          "value": "m",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "l",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        },
+        {
+          "value": "xl",
+          "label": {
+            "ar": "كبير جدًا",
+            "en": "Extra large"
+          }
+        }
+      ]
+    },
+    "text": {
+      "type": "text",
+      "label": {
+        "ar": "النص (منسّق)",
+        "en": "Text (rich)"
+      },
+      "default": ""
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "▸ نص الزر — فارغ = بدون زر",
+        "en": "▸ Button label — empty hides it"
+      },
+      "default": "استكشف الكل"
+    },
+    "button_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر · /blogs · /shop · /collections",
+        "en": "Button link · /blogs · /shop · /collections"
+      },
+      "default": "/blogs"
+    },
+    "button_style": {
+      "type": "select",
+      "label": {
+        "ar": "شكل الزر",
+        "en": "Button style"
+      },
+      "default": "outline",
+      "options": [
+        {
+          "value": "outline",
+          "label": {
+            "ar": "بإطار",
+            "en": "Outline"
+          }
+        },
+        {
+          "value": "solid",
+          "label": {
+            "ar": "ممتلئ",
+            "en": "Solid"
+          }
+        }
+      ]
+    },
+    "button2_text": {
+      "type": "string",
+      "label": {
+        "ar": "زر ثانٍ (اختياري)",
+        "en": "Second button (optional)"
+      },
+      "default": ""
+    },
+    "button2_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الثاني",
+        "en": "Second button link"
+      },
+      "default": "/shop"
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "▸ صورة خلفية (اختيارية) — بدونها يصبح القسم نصًا على لون",
+        "en": "▸ Background image (optional) — without it the section is text on a colour"
+      }
+    },
+    "image_mobile": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الجوال (اختيارية)",
+        "en": "Mobile image (optional)"
+      }
+    },
+    "bg_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الخلفية",
+        "en": "Background colour"
+      },
+      "default": ""
+    },
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "بعرض الشاشة كاملًا — أطفئه ليصبح بطاقة بزوايا مدوّرة",
+        "en": "Full width — switch off for a rounded card"
+      },
+      "default": true
+    },
+    "min_height": {
+      "type": "range",
+      "label": {
+        "ar": "أقل ارتفاع — كمبيوتر (٠ = حسب المحتوى)",
+        "en": "Minimum height — desktop (0 = fit content)"
+      },
+      "min": 0,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "default": 650
+    },
+    "min_height_mobile": {
+      "type": "range",
+      "label": {
+        "ar": "أقل ارتفاع — جوال",
+        "en": "Minimum height — mobile"
+      },
+      "min": 0,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 480
+    },
+    "v_align": {
+      "type": "select",
+      "label": {
+        "ar": "مكان المحتوى رأسيًا",
+        "en": "Vertical position"
+      },
+      "default": "bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": {
+            "ar": "أعلى",
+            "en": "Top"
+          }
+        },
+        {
+          "value": "middle",
+          "label": {
+            "ar": "وسط",
+            "en": "Middle"
+          }
+        },
+        {
+          "value": "bottom",
+          "label": {
+            "ar": "أسفل",
+            "en": "Bottom"
+          }
+        }
+      ]
+    },
+    "h_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة المحتوى",
+        "en": "Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        },
+        {
+          "value": "center",
+          "label": {
+            "ar": "المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "end",
+          "label": {
+            "ar": "نهاية السطر",
+            "en": "End"
+          }
+        }
+      ]
+    },
+    "text_width": {
+      "type": "range",
+      "label": {
+        "ar": "أقصى عرض للنص",
+        "en": "Text max width"
+      },
+      "min": 320,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    "title_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Text colour"
+      },
+      "default": ""
+    },
+    "button_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون الزر",
+        "en": "Button colour"
+      },
+      "default": ""
+    },
+    "button_text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الزر الممتلئ",
+        "en": "Solid button text colour"
+      },
+      "default": ""
+    },
+    "animate": {
+      "type": "boolean",
+      "label": {
+        "ar": "حركة دخول هادئة عند الوصول للقسم",
+        "en": "Calm entrance when the section scrolls into view"
+      },
+      "default": true
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "نص منسق"
+    }
+  ]
+}

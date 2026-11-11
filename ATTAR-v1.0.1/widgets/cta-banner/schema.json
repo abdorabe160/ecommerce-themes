@@ -1,0 +1,246 @@
+{
+  "name": "بانر ترويجي",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي صغير",
+        "en": "Eyebrow"
+      },
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "العنوان",
+        "en": "Title"
+      },
+      "default": ""
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان الفرعي",
+        "en": "Subtitle"
+      },
+      "default": ""
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الخلفية (اختياري)",
+        "en": "Background Image (optional)"
+      }
+    },
+    "scrim": {
+      "type": "select",
+      "label": {
+        "ar": "تعتيم الصورة",
+        "en": "Image Scrim"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "soft",
+          "label": {
+            "ar": "خفيف",
+            "en": "Soft"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "strong",
+          "label": {
+            "ar": "قوي",
+            "en": "Strong"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "الخلفية (بدون صورة)",
+        "en": "Background (no image)"
+      },
+      "default": "charcoal",
+      "options": [
+        {
+          "value": "ivory",
+          "label": {
+            "ar": "عاجي",
+            "en": "Ivory"
+          }
+        },
+        {
+          "value": "sand",
+          "label": {
+            "ar": "رملي",
+            "en": "Sand"
+          }
+        },
+        {
+          "value": "charcoal",
+          "label": {
+            "ar": "فحمي",
+            "en": "Charcoal"
+          }
+        }
+      ]
+    },
+    "show_countdown": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العد التنازلي",
+        "en": "Show Countdown"
+      },
+      "default": false
+    },
+    "countdown_date": {
+      "type": "string",
+      "label": {
+        "ar": "تاريخ الانتهاء (YYYY-MM-DD HH:MM)",
+        "en": "End Date (YYYY-MM-DD HH:MM)"
+      },
+      "default": "2026-12-31 23:59"
+    },
+    "countdown_days_label": {
+      "type": "string",
+      "label": {
+        "ar": "تسمية الأيام",
+        "en": "Days Label"
+      },
+      "default": ""
+    },
+    "countdown_hours_label": {
+      "type": "string",
+      "label": {
+        "ar": "تسمية الساعات",
+        "en": "Hours Label"
+      },
+      "default": ""
+    },
+    "countdown_minutes_label": {
+      "type": "string",
+      "label": {
+        "ar": "تسمية الدقائق",
+        "en": "Minutes Label"
+      },
+      "default": ""
+    },
+    "countdown_seconds_label": {
+      "type": "string",
+      "label": {
+        "ar": "تسمية الثواني",
+        "en": "Seconds Label"
+      },
+      "default": ""
+    },
+    "hide_on_expire": {
+      "type": "boolean",
+      "label": {
+        "ar": "إخفاء البانر عند انتهاء العد",
+        "en": "Hide Banner When Expired"
+      },
+      "default": true
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button Text"
+      },
+      "default": ""
+    },
+    "button_link": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر",
+        "en": "Button URL"
+      },
+      "default": "/collections"
+    },
+    "text_alignment": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "وسط",
+            "en": "Center"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "full_width": {
+      "type": "boolean",
+      "label": {
+        "ar": "عرض كامل",
+        "en": "Full Width"
+      },
+      "default": true
+    },
+    "height": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر",
+        "en": "Banner Height"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "ar": "صغير",
+            "en": "Small"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "بانر ترويجي"
+    }
+  ]
+}

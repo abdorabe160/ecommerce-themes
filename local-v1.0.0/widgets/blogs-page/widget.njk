@@ -1,0 +1,177 @@
+{# ============================================================================
+   LOCAL · BLOGS PAGE — /blogs
+   ----------------------------------------------------------------------------
+   Lists ARTICLES. The platform sends this route only the categories
+   (`context.blogs`), so the articles are gathered in the browser from each
+   category's own /blogs/<handle> page: same ui/article-card.njk markup, one card
+   and no JS twin. The categories become a filter above them, hidden when there
+   is only one.
+
+   Card styling: style.css → "15.18 POST GRID". The page around it: "15.27 BLOG".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blogs = context.blogs | default([], true) %}
+{% set handles = [] %}
+{% for b in blogs %}{% if b.handle or b.slug %}{% set _ = handles.push(b.handle or b.slug) %}{% endif %}{% endfor %}
+{% set count = handles | length %}
+
+{% set showHead = d.show_title | default(true) %}
+{% set eyebrow = d.eyebrow | default('', true) %}
+{% set title = d.title if (d.title | default('', true) | trim | length) > 0 else t('pages.blog.title') %}
+{% set subtitle = d.subtitle | default('', true) %}
+{% set cols = d.columns | default('3', true) %}
+
+{# No `background` select here on purpose — the page rides the theme's paper.
+   A per-section surface is still reachable through the custom-colours
+   switch below (`color_bg`), which is the one place a merchant changes it. #}
+<section id="lc-blogs-{{ id }}"
+         class="lc-blogpage"
+         style="--blog-cols: {{ cols }};">
+  <div class="lc-container">
+
+    <nav class="lc-crumbs" aria-label="{{ t('common.home') }}">
+      <a href="/">{{ t('common.home') }}</a>
+      <svg class="rtl-flip" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+      </svg>
+      <span aria-current="page">{{ title }}</span>
+    </nav>
+
+    {% if showHead %}
+      <div class="lc-blog-head">
+        {% if eyebrow %}<span class="lc-blog-eyebrow">{{ eyebrow }}</span>{% endif %}
+        <h1 class="lc-blog-title">{{ title }}</h1>
+        {# ⚠️  A <div>, NOT a <p>. A `text` field comes back from Qumra as block
+             HTML (`<p>…</p>`), and a <p> cannot contain a <p> — the browser closes
+             the outer one and the content becomes a SIBLING, so every style on
+             this class stops reaching the text. Inner margins are reset in the CSS. #}
+        {% if subtitle %}<div class="lc-blog-desc">{{ subtitle | safe }}</div>{% endif %}
+      </div>
+    {% else %}
+      <h1 class="sr-only">{{ title }}</h1>
+    {% endif %}
+
+    {% if count > 1 %}
+      <div class="lc-blog-chips" data-lc-blog-chips>
+        <a href="/blogs" class="lc-blog-chip" data-lc-blog-chip="" aria-current="true">{{ t('pages.blog.all') }}</a>
+        {% for b in blogs %}
+          {% if (b.handle or b.slug) and b.title %}
+            <a href="/blogs/{{ b.handle or b.slug }}" class="lc-blog-chip" data-lc-blog-chip="{{ b.handle or b.slug }}">{{ b.title }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if count > 0 %}
+      <div class="lc-blog-grid" data-lc-blogs-grid aria-busy="true">
+        {% for n in range(0, 3) %}
+          <div class="lc-post lc-post--stacked lc-post--ph" data-lc-placeholder aria-hidden="true">
+            <div class="lc-post-media lc-ph-media"></div>
+            <div class="lc-post-body">
+              <span class="lc-ph-line lc-ph-line--lg" style="width: 70%;"></span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="lc-builder-only">
+        <div class="lc-blog-grid">
+          {% ui "placeholder.njk", kind='article', count=cols %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="lc-empty lc-blog-empty" data-lc-blogs-empty{% if count > 0 %} hidden{% endif %}>
+      <span class="lc-empty-title">{{ t('pages.blog.no_articles_desc') }}</span>
+      <a href="/shop" class="lc-btn lc-btn--outline lc-btn--sm">{{ t('pages.shop.all_products') }}</a>
+    </div>
+
+  </div>
+</section>
+
+{% if count > 0 %}
+<script>
+  (function () {
+    var root = document.getElementById('lc-blogs-{{ id }}');
+    var grid = root.querySelector('[data-lc-blogs-grid]');
+    var empty = root.querySelector('[data-lc-blogs-empty]');
+    var bar = root.querySelector('[data-lc-blog-chips]');
+    var handles = {{ handles | dump | safe }};
+    var COLS = {{ cols | default('3', true) }};
+    var MAX_PAGES = 5;
+
+    function page(handle, n) {
+      return fetch('/blogs/' + encodeURIComponent(handle) + (n > 1 ? '?page=' + n : ''))
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .then(function (html) { return new DOMParser().parseFromString(html, 'text/html'); })
+        .catch(function () { return null; });
+    }
+    function cards(doc, handle) {
+      if (!doc) return [];
+      return [].map.call(doc.querySelectorAll('[data-lc-pages] .lc-post:not([data-lc-placeholder])'), function (el) {
+        var c = document.importNode(el, true);
+        c.setAttribute('data-blog', handle);
+        return c;
+      });
+    }
+    function load(handle) {
+      return page(handle, 1).then(function (doc) {
+        var first = cards(doc, handle);
+        var holder = doc && doc.querySelector('[data-lc-pages]');
+        var pages = Math.min(+(holder && holder.getAttribute('data-lc-pages')) || 1, MAX_PAGES);
+        var rest = [];
+        for (var i = 2; i <= pages; i++) rest.push(page(handle, i));
+        return Promise.all(rest).then(function (docs) {
+          return docs.reduce(function (all, dc) { return all.concat(cards(dc, handle)); }, first);
+        });
+      });
+    }
+    /* A last card still alone after this takes the row (style.css, data-lc-bc). */
+    function show(list, filter) {
+      var shown = list.filter(function (c) { return !filter || c.getAttribute('data-blog') === filter; });
+      var n = shown.length, c = COLS;
+      if (n > c && n % c === 1 && c > 2 && n % (c - 1) !== 1) c = c - 1;
+      else if (n < c) c = Math.max(n, 2);
+      root.style.setProperty('--blog-cols', c);
+      grid.setAttribute('data-lc-bc', c);
+      grid.innerHTML = '';
+      shown.forEach(function (card) { grid.appendChild(card); });
+      if (window.LocalLocaliseDates) window.LocalLocaliseDates(grid);
+    }
+
+    Promise.all(handles.map(load)).then(function (lists) {
+      var seen = {};
+      var all = lists.reduce(function (a, b) { return a.concat(b); }, []).filter(function (c) {
+        var href = c.getAttribute('href');
+        if (seen[href]) return false;
+        seen[href] = true;
+        return true;
+      }).sort(function (a, b) {
+        return String(b.getAttribute('data-date')).localeCompare(String(a.getAttribute('data-date')));
+      });
+      grid.removeAttribute('aria-busy');
+      if (!all.length) {
+        grid.hidden = true;
+        if (bar) bar.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+      show(all, '');
+      if (!bar) return;
+      bar.addEventListener('click', function (e) {
+        var chip = e.target.closest('[data-lc-blog-chip]');
+        if (!chip) return;
+        e.preventDefault();
+        bar.querySelectorAll('[data-lc-blog-chip]').forEach(function (c) { c.removeAttribute('aria-current'); });
+        chip.setAttribute('aria-current', 'true');
+        show(all, chip.getAttribute('data-lc-blog-chip'));
+      });
+    });
+  })();
+</script>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on. #}
+{% ui "section-colors.njk", scope='#lc-blogs-' ~ id, c=d %}

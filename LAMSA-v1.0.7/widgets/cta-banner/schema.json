@@ -1,0 +1,282 @@
+{
+  "name": "بانر ترويجي",
+  "settings": {
+    "layout": {
+      "type": "select",
+      "label": {
+        "ar": "التقسيم",
+        "en": "Layout"
+      },
+      "default": "card",
+      "options": [
+        {
+          "value": "card",
+          "label": {
+            "ar": "بطاقة داخل الصفحة",
+            "en": "Inset card"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "شريط ممتد بعرض الشاشة",
+            "en": "Full-width strip"
+          }
+        },
+        {
+          "value": "split",
+          "label": {
+            "ar": "صورة + نص",
+            "en": "Image + text"
+          }
+        }
+      ]
+    },
+    "background": {
+      "type": "select",
+      "label": {
+        "ar": "خلفية البانر",
+        "en": "Banner Background"
+      },
+      "default": "rose",
+      "options": [
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose"
+          }
+        },
+        {
+          "value": "ink",
+          "label": {
+            "ar": "غامق",
+            "en": "Ink"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج",
+            "en": "Sage"
+          }
+        },
+        {
+          "value": "blush",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Blush"
+          }
+        },
+        {
+          "value": "white",
+          "label": {
+            "ar": "أبيض",
+            "en": "White"
+          }
+        }
+      ]
+    },
+    "image": {
+      "type": "media",
+      "label": {
+        "ar": "صورة الخلفية (تتجاهل لون الخلفية)",
+        "en": "Background Image (overrides the background colour)"
+      }
+    },
+    "image_split": {
+      "type": "media",
+      "label": {
+        "ar": "صورة جانبية (لتقسيم «صورة + نص»)",
+        "en": "Side Image (split layout)"
+      }
+    },
+    "scrim": {
+      "type": "select",
+      "label": {
+        "ar": "تعتيم صورة الخلفية",
+        "en": "Background Image Scrim"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "none",
+          "label": {
+            "ar": "بدون",
+            "en": "None"
+          }
+        },
+        {
+          "value": "soft",
+          "label": {
+            "ar": "خفيف",
+            "en": "Soft"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "strong",
+          "label": {
+            "ar": "قوي",
+            "en": "Strong"
+          }
+        }
+      ]
+    },
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "نص تمهيدي (فوق العنوان)",
+        "en": "Eyebrow (above title)"
+      },
+      "default": "مختارات الموسم"
+    },
+    "title": {
+      "type": "text",
+      "label": {
+        "ar": "العنوان — استخدمي <em>كلمة</em> لتلوينها",
+        "en": "Title — wrap a word in <em> to accent it"
+      },
+      "default": "روتين <em>الموسم</em> جاهز"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "النص التوضيحي",
+        "en": "Subtitle"
+      },
+      "default": "سيرومات ومرطّبات مختارة تناسب الجو والموسم."
+    },
+    "text_alignment": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text Alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "وسط",
+            "en": "Center"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "height": {
+      "type": "select",
+      "label": {
+        "ar": "ارتفاع البانر",
+        "en": "Banner Height"
+      },
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "ar": "صغير",
+            "en": "Small"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "ar": "متوسط",
+            "en": "Medium"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "ar": "كبير",
+            "en": "Large"
+          }
+        }
+      ]
+    },
+    "show_countdown": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العدّاد التنازلي",
+        "en": "Show Countdown"
+      },
+      "default": false
+    },
+    "countdown_date": {
+      "type": "string",
+      "label": {
+        "ar": "تاريخ الانتهاء — بصيغة YYYY-MM-DD HH:MM (بتوقيت الزائر)",
+        "en": "End date — YYYY-MM-DD HH:MM (visitor's local time)"
+      },
+      "default": ""
+    },
+    "hide_on_expire": {
+      "type": "boolean",
+      "label": {
+        "ar": "إخفاء البانر بعد انتهاء العرض",
+        "en": "Hide the banner once the offer expires"
+      },
+      "default": false
+    },
+    "coupon_code": {
+      "type": "string",
+      "label": {
+        "ar": "كود الخصم (اتركيه فارغاً لإخفائه)",
+        "en": "Discount Code (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "button_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الرئيسي",
+        "en": "Primary Button Text"
+      },
+      "default": "تسوّقي المختارات"
+    },
+    "button_link": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الرئيسي",
+        "en": "Primary Button URL"
+      },
+      "default": "/shop"
+    },
+    "button2_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر الثانوي (اتركيه فارغاً لإخفائه)",
+        "en": "Secondary Button Text (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "button2_link": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر الثانوي",
+        "en": "Secondary Button URL"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "بانر ترويجي"
+    }
+  ]
+}

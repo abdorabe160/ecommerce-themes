@@ -1,0 +1,7 @@
+{
+  // إصلاح "Proxy error:" الفارغ في qumra theme dev: الشبكة لا تدعم IPv6 و Node 24 يجرب IPv4/IPv6 معاً فيفشل الاتصال.
+  // يُطبَّق على أي terminal جديد داخل هذا المشروع فقط (مثل dev/qumra-dev.ps1) — أعد فتح الـ terminal بعد التعديل.
+  "terminal.integrated.env.windows": {
+    "NODE_OPTIONS": "--no-network-family-autoselection --dns-result-order=ipv4first"
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "name": "آراء العملاء",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر التمهيدي",
+        "en": "Eyebrow"
+      },
+      "default": "ما يقوله عملاؤنا"
+    },
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم",
+        "en": "Section heading"
+      },
+      "default": "هدايا وصلت وفرّحت"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": {
+        "ar": "سطر وصف تحت العنوان (اختياري)",
+        "en": "Optional line under the heading"
+      },
+      "default": ""
+    },
+    "autoplay": {
+      "type": "range",
+      "label": {
+        "ar": "التنقّل التلقائي بين الآراء — بالثواني · ٠ لإيقافه",
+        "en": "Auto-advance between quotes — in seconds · 0 turns it off"
+      },
+      "default": 6,
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "s"
+    },
+    "star_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النجوم",
+        "en": "Star colour"
+      },
+      "default": ""
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to fall back to the theme palette"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_card": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية البطاقة",
+        "en": "Card background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العناوين",
+        "en": "Heading colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون نص الرأي",
+        "en": "Quote colour"
+      },
+      "default": ""
+    },
+    "color_accent": {
+      "type": "color",
+      "label": {
+        "ar": "اللون المميّز — الشارة وحلقة الصورة وعلامة الاقتباس",
+        "en": "Accent colour — the chip, the avatar ring and the quote mark"
+      },
+      "default": ""
+    },
+    "color_border": {
+      "type": "color",
+      "label": {
+        "ar": "لون حدود البطاقة",
+        "en": "Card border colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "quote": {
+      "name": "رأي",
+      "settings": {
+        "quote": {
+          "type": "text",
+          "label": {
+            "ar": "نص الرأي",
+            "en": "The quote"
+          },
+          "default": ""
+        },
+        "author": {
+          "type": "string",
+          "label": {
+            "ar": "اسم العميل",
+            "en": "Customer name"
+          },
+          "default": ""
+        },
+        "note": {
+          "type": "string",
+          "label": {
+            "ar": "سطر صغير تحت الاسم — المنتج أو «عملية شراء موثّقة»",
+            "en": "Small line under the name — the product, or \"verified buyer\""
+          },
+          "default": ""
+        },
+        "rating": {
+          "type": "range",
+          "label": {
+            "ar": "التقييم بالنجوم · ٠ لإخفائها",
+            "en": "Star rating · 0 hides them"
+          },
+          "default": 5,
+          "min": 0,
+          "max": 5,
+          "step": 1
+        },
+        "avatar": {
+          "type": "media",
+          "label": {
+            "ar": "صورة العميل (اختيارية) — بدونها يظهر أول حرف من الاسم",
+            "en": "Customer photo (optional) — without it the name's first letter shows"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المحتوى",
+      "name": "آراء العملاء"
+    }
+  ]
+}

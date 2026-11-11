@@ -1,0 +1,106 @@
+{#
+  ============================================================================
+  TEXT COLUMNS · أعمدة النص
+  ----------------------------------------------------------------------------
+  A strip of service lines — an icon tile and a bold line each — that steps
+  one item along every few seconds and loops forever (HxLoop, assets/hx.js).
+  Promises are the merchant's to make: an item with no typed text is a neutral
+  label (locales → columns.*) shown in the editor only, and a strip with no
+  typed text at all stays off the live store.
+
+  Styles: assets/sections.css → "TEXT COLUMNS".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+
+{% set items = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% set _ = items.push(b) %}
+{% endfor %}
+{% set layout = d.layout | default('loop') %}
+{% set isGrid = layout == 'grid' %}
+{% if (items | length) == 0 %}
+  {% if isGrid %}
+    {% set items = [{ icon: 'shield' }, { icon: 'truck' }, { icon: 'card' }, { icon: 'support' }] %}
+  {% else %}
+    {% set items = [{ icon: 'delivery' }, { icon: 'returns' }, { icon: 'truck' }, { icon: 'shield' }, { icon: 'card' }, { icon: 'hand' }] %}
+  {% endif %}
+{% endif %}
+
+{% set hasOwnText = [] %}
+{% for b in items %}{% if b.title or b.text %}{% set _ = hasOwnText.push(1) %}{% endif %}{% endfor %}
+{% set perD = d.columns_desktop | default(5) %}
+{% set perT = d.columns_tablet | default(3) %}
+{% set perM = d.columns_mobile | default('1.6') %}
+{% set auto = d.autoplay | default(true) %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% macro icon(k) %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if k == 'delivery' %}<path d="M14.5 3.5 19 5v3.6c0 2.9-1.9 5-4.5 5.9-2.6-.9-4.5-3-4.5-5.9V5l4.5-1.5Z"/><path d="m12.7 8.6 1.3 1.3 2.4-2.6"/><path d="M3 20.5v-6h2.5v6H3Z"/><path d="M5.5 15.5 8 13.6c.6-.5 1.4-.5 2 0l1.6 1.4h2.2c.7 0 1.2.5 1.2 1.2s-.5 1.2-1.2 1.2H10.5M5.5 19.5h7.3l4.8-3.4c.5-.4.6-1.1.2-1.6-.4-.5-1.1-.6-1.6-.3l-2.4 1.5"/>
+  {% elif k == 'returns' %}<circle cx="12" cy="12" r="5.2"/><path d="M13.6 10.4c-.3-.6-.9-.9-1.6-.9-.9 0-1.6.5-1.6 1.2 0 1.6 3.3.8 3.3 2.5 0 .7-.7 1.3-1.7 1.3-.8 0-1.4-.4-1.7-1M12 8.6v.9M12 14.5v.9"/><path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6"/><path d="M17.9 3.4v3.2h-3.2M6.1 20.6v-3.2h3.2"/>
+  {% elif k == 'truck' %}<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><path d="M4.5 9.5h4M4.5 12h2.5"/>
+  {% elif k == 'shield' %}<path d="M12 3 19 5.6v5.2c0 4.4-2.9 7.9-7 9.2-4.1-1.3-7-4.8-7-9.2V5.6L12 3Z"/><path d="M12 7.5a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"/><path d="m10.4 11.3 1.1 1.1 2.2-2.2"/>
+  {% elif k == 'card' %}<rect x="2.5" y="5.5" width="17" height="11" rx="2"/><path d="M2.5 9h17M5.5 13.5h4"/><circle cx="18" cy="16.5" r="3.6" fill="var(--tc-icon-bg, #fff)"/><path d="m16.5 16.5 1.1 1.1 1.9-2"/>
+  {% elif k == 'hand' %}<path d="M3 20.5v-6h2.5v6H3Z"/><path d="M5.5 15.5 8 13.6c.6-.5 1.4-.5 2 0l1.6 1.4h2.2c.7 0 1.2.5 1.2 1.2s-.5 1.2-1.2 1.2H10.5M5.5 19.5h7.3l4.8-3.4c.5-.4.6-1.1.2-1.6-.4-.5-1.1-.6-1.6-.3l-2.4 1.5"/><path d="M8.5 7.5S10.6 4 14.5 4s6 3.5 6 3.5-2.1 3.5-6 3.5-6-3.5-6-3.5Z"/><circle cx="14.5" cy="7.5" r="1.4"/>
+  {% elif k == 'support' %}<path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="3" y="12.5" width="4" height="5.5" rx="1.5"/><rect x="17" y="12.5" width="4" height="5.5" rx="1.5"/><path d="M19 18v.5a2.5 2.5 0 0 1-2.5 2.5H13"/>
+  {% elif k == 'gift' %}<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12M12 8.5S10.8 4 8.3 4.3C6.5 4.5 6.7 7 8.4 8.2M12 8.5s1.2-4.5 3.7-4.2c1.8.2 1.6 2.7-.1 3.9"/>
+  {% elif k == 'tag' %}<path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.4 1.4 0 0 1 0 2l-7.1 7.1a1.4 1.4 0 0 1-2 0l-8-8Z"/><circle cx="8" cy="8" r="1.4"/>
+  {% elif k == 'box' %}<path d="m12 3 8 4v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10M8 5l8 4"/>
+  {% elif k == 'clock' %}<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+  {% elif k == 'star' %}<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+<section id="hx-tc-{{ id }}"{% if (hasOwnText | length) == 0 %} data-hx-demo{% endif %}
+         class="hx-tc {{ 'has-dividers' if d.show_dividers }} {{ 'is-grid' if isGrid }}"
+         style="--tc-per: {{ perD }}; --tc-per-t: {{ perT }}; --tc-per-m: {{ perM }}; --tc-icon: {{ d.icon_size | default(44) }}px; --tc-icon-r: {{ d.icon_radius | default(8) }}px; --tc-icon-bg: {{ d.icon_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 25%, white)', true) }}; --tc-icon-fg: {{ d.icon_color | default('var(--hx-primary, var(--color-accent))', true) }}; --pt: {{ d.padding_top | default(32) }}px; --pb: {{ d.padding_bottom | default(32) }}px;">
+  <div class="hx-tc-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    <div class="hx-tc-viewport" {% if not isGrid %}data-hx-loop{% endif %}
+         data-autoplay="{{ 'true' if auto else 'false' }}"
+         data-interval="{{ d.interval | default(4) }}"
+         data-pause="{{ 'false' if d.pause_on_hover == false else 'true' }}">
+      <ul class="hx-tc-track" data-hx-loop-track role="list">
+        {% for b in items %}
+          {% set k = b.icon | default('delivery') %}
+          {% set img = mediaUrl(b.icon_image) | trim %}
+          {% set title = b.title or ((t('columns.g.' ~ k ~ '.title') if isGrid else t('columns.' ~ k)) if k != 'none' else '') %}
+          {% set sub = b.text or (t('columns.g.' ~ k ~ '.text') if (isGrid and k != 'none') else '') %}
+          {% set url = b.url | default('') %}
+          <li class="hx-tc-item"{% if not (b.title or b.text) %} data-hx-demo{% endif %}>
+            {% if url %}<a href="{{ url }}" class="hx-tc-link">{% else %}<div class="hx-tc-link">{% endif %}
+              {% if (img | length) > 0 %}
+                <span class="hx-tc-icon is-img"><img src="{{ img }}" alt="" loading="lazy"/></span>
+              {% elif k != 'none' %}
+                <span class="hx-tc-icon">{{ icon(k) }}</span>
+              {% endif %}
+              <span class="hx-tc-txt">
+                {% if title %}<span class="hx-tc-title">{{ title | safe }}</span>{% endif %}
+                {% if sub %}<span class="hx-tc-sub">{{ sub | safe }}</span>{% endif %}
+              </span>
+            {% if url %}</a>{% else %}</div>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function boot() {
+      var el = document.querySelector('#hx-tc-{{ id }} [data-hx-loop]');
+      if (el && window.HxLoop) HxLoop.init(el);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#hx-tc-' ~ id, c=d %}

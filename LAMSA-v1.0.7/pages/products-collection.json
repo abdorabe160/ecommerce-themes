@@ -1,0 +1,34 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة التصنيف",
+      "widget": "shop-page",
+      "settings": {
+        "title": "",
+        "description": "",
+        "show_breadcrumb": true,
+        "show_search": true,
+        "show_collection_rail": true,
+        "show_sidebar_collections": false,
+        "show_filters": true,
+        "show_sort": true,
+        "columns_desktop": "3",
+        "columns_mobile": "2",
+        "card_image_ratio": "1/1"
+      }
+    },
+    {
+      "name": "منتجات التصنيف",
+      "widget": "shop-products",
+      "settings": {
+        "columns_desktop": "3",
+        "columns_mobile": "2",
+        "card_image_ratio": "1/1"
+      }
+    }
+  ]
+}

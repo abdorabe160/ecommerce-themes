@@ -1,0 +1,257 @@
+{#
+  ============================================================================
+  MUHARRIK · PIT LANE · الأكثر طلبًا
+  ----------------------------------------------------------------------------
+     ┌────────────────┬──────────────────────────────────────────────────────┐
+     │ — PIT LANE     │   01        02        03        04        05   →     │
+     │ BEST           │ ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌────┐ │
+     │ SELLERS        │ │ img │  │ img │  │ img │  │ img │  │ img │  │VIEW│ │
+     │                │ │     │  │     │  │     │  │     │  │     │  │ALL │ │
+     │ [ VIEW ALL → ] │ └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └────┘ │
+     │ 03 / 12 ▬▬▬▭▭▭ │  name     name     name     name     name            │
+     └────────────────┴──────────────────────────────────────────────────────┘
+
+  A horizontal product rail. On desktop the section pins and the cards glide
+  sideways as the page scrolls (motion contract: `data-mh-hscroll` on the
+  section, `[data-mh-track]` inside — assets/mh-motion.js). The rail opens
+  with an intro panel: mono kicker, giant title, "view all", and a mono
+  progress readout "03 / 12" that CSS derives from `--mh-p` (set by the motion
+  script, 0→1). A giant hollow index number sits behind every card and the
+  rail closes with a "view all" end-cap tile.
+
+  Mobile (<1024): the intro panel sits ABOVE a normal swipeable snap row (the
+  intro is rendered twice — once above for phones, once as the first rail item
+  for desktop — each hidden at the other size). A tiny passive listener on the
+  row keeps `--mh-p` in step with the swipe so the readout still counts.
+
+  Products — same sources as featured-collection, in order:
+    1. `products` picked in the editor      → server-rendered hx-card
+    2. `use_demo` = always                  → the demo set (ui/mh-demo-products)
+    3. else the first `collection`          → /ajax/search/products?collectionId=
+    4. else the newest in the store         → HayatAuto.take() (main.js)
+    5. nothing came back                    → the demo set stays
+  Every product renders through ui/hx-card.njk (or its JS twin HxCard.build),
+  so quick view, quick add, variants and stock keep working untouched.
+
+  Styles: assets/mh-w-c.css → "PIT LANE".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% set picked = d.products | default([], true) %}
+{% set hasPicked = (picked | length) > 0 %}
+
+{# `collections` arrives as a list; it may hold objects or bare ids. #}
+{% set cols = d.collection | default([], true) %}
+{% set col = cols[0] if (cols | length) > 0 else null %}
+{% set colId = (col if col is string else (col._id | default('', true))) if col else '' %}
+{% set colHandle = (col.handle | default(col.slug, true) | default("", true)) if (col and not (col is string)) else "" %}
+
+{% set useDemo = d.use_demo | default('auto', true) %}
+{% set limit = d.limit | default(12, true) %}
+{% set limit = limit if limit <= 16 else 16 %}
+{# demo set is server-rendered unless the merchant picked products; with
+   `auto` it is hidden until the store answers (and stays if nothing comes) #}
+{# A collection the merchant picked ALWAYS wins over `always` too: otherwise
+   choosing a collection in the builder would silently keep showing the demo. #}
+{% set useDemo = 'auto' if colId else useDemo %}
+{% set fetches = (not hasPicked) and useDemo != 'always' %}
+
+{% set kicker = d.kicker or ('حارة الصيانة · الأكثر طلبًا' if isAr else 'Pit lane · Bestsellers') %}
+{% set title = d.title or ('الأكثر طلبًا' if isAr else 'Pit lane bestsellers') %}
+{% set text = d.text or ('قطع وإكسسوارات وعناية لعربيتك، جاهزة للطلب.' if isAr else 'Parts, accessories and care for your car, ready to order.') %}
+{% set viewOn = d.show_view_all != false %}
+{% set viewText = d.view_all_text or t('common.view_all') %}
+{% set viewUrl = d.view_all_url | default('', true) %}
+{% set viewUrl = viewUrl if viewUrl else (('/shop/' ~ colHandle) if colHandle else '/shop') %}
+{% set readoutOn = d.show_readout != false %}
+
+{% macro onoff(v) %}{{ 'off' if v == false else 'on' }}{% endmacro %}
+{% set fRating = onoff(d.show_rating) | trim %}
+{% set fStock  = onoff(d.show_stock) | trim %}
+{% set fQuick  = onoff(d.show_quick_view) | trim %}
+{% set fAtc    = onoff(d.show_atc) | trim %}
+{% set saleBadge = (d.sale_badge or t('featured.sale_badge')) if d.show_sale_badge != false else '' %}
+{% set lowBadge  = (d.low_badge or t('featured.low_badge')) if d.show_low_badge != false else '' %}
+
+{% set total = (picked | length) if hasPicked else limit %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{# The intro panel — rendered twice (phone: above the row · desktop: first
+   rail item). `tag` picks h2 for the desktop copy and a p for the phone one
+   so the page keeps a single heading. #}
+{% macro intro(cls) %}
+  <div class="mh-pl-intro {{ cls }}">
+    <p class="mh-kicker" data-mh-reveal="fade">{{ kicker | safe }}</p>
+    <h2 class="mh-pl-title mh-h mh-h--xl" data-mh-split>{{ title | safe }}</h2>
+    {% if text %}<p class="mh-pl-text" data-mh-reveal="up" data-mh-delay="0.2">{{ text | safe }}</p>{% endif %}
+    <div class="mh-pl-intro-foot" data-mh-reveal="up" data-mh-delay="0.3">
+      {% if viewOn %}
+        <a href="{{ viewUrl }}" class="mh-viewall">{{ viewText | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>
+      {% endif %}
+      {% if readoutOn %}
+        <div class="mh-pl-readout mh-mono" dir="ltr" aria-hidden="true">
+          <span class="mh-pl-cur"><span>01</span></span><i>/</i><span class="mh-pl-tot" data-pl-total>{{ pad(total) | trim }}</span>
+        </div>
+        <div class="mh-pl-bar" aria-hidden="true"><i></i></div>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+<section id="mh-pl-{{ id }}"
+         class="mh-pl is-fit-{{ d.image_fit | default('cover', true) }} is-w-{{ d.card_width | default('medium', true) }}{{ ' has-numbers' if d.show_numbers != false }}{{ ' is-demo-only' if (not hasPicked and useDemo == 'always') }}"
+         data-mh-hscroll
+         style="--pl-n: {{ total }}; --pt: {{ d.padding_top | default(48) }}px; --pb: {{ d.padding_bottom | default(48) }}px;">
+
+  {# phone: the intro above the row #}
+  {{ intro('mh-pl-intro--top') }}
+
+  <div class="mh-pl-stage">
+    <div class="mh-pl-track" data-mh-track
+         {% if fetches %}data-hx-fill data-col="{{ colId }}" data-limit="{{ limit }}"{% endif %}>
+
+      {# desktop: the intro as the first rail item #}
+      <div class="mh-pl-item mh-pl-item--intro">{{ intro('mh-pl-intro--rail') }}</div>
+
+      {% if hasPicked %}
+        {% for p in picked %}
+          <div class="mh-pl-item" data-n="{{ pad(loop.index) | trim }}">
+            {% ui "hx-card.njk", product=p, sale_badge=saleBadge, low_badge=lowBadge, rating=fRating, thumbs='off', stock=fStock, quick=fQuick, atc=fAtc, hover='on' %}
+          </div>
+        {% endfor %}
+      {% else %}
+        {# Car-accessory stand-ins with their own pictures (ui/mh-demo-products.njk).
+           With use_demo=auto they stay invisible (space kept) until the store
+           answers, and remain if nothing comes back. #}
+        {% ui "mh-demo-products.njk", mode='cards', from=0, count=limit, wrap='mh-pl-item', number='on', sale_badge=saleBadge, low_badge=lowBadge, rating=fRating, stock=fStock %}
+      {% endif %}
+
+      {% if viewOn %}
+        <a href="{{ viewUrl }}" class="mh-pl-item mh-pl-end mh-hud" data-pl-end>
+          <span class="mh-pl-end-n mh-mono" aria-hidden="true">+</span>
+          <span class="mh-pl-end-t">{{ viewText | safe }}</span>
+          <span class="mh-pl-end-sub mh-mono">{{ 'كل القطع في المتجر' if isAr else 'Every part in the shop' }}</span>
+          <span class="mh-arrow mh-pl-end-arrow" aria-hidden="true">→</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('mh-pl-{{ id }}');
+    if (!root) return;
+    var cardOpts = {
+      saleBadge: {{ saleBadge | dump | safe }}, lowBadge: {{ lowBadge | dump | safe }}, note: '',
+      rating: {{ 'false' if fRating == 'off' else 'true' }}, thumbs: false,
+      stock: {{ 'false' if fStock == 'off' else 'true' }}, quickView: {{ 'false' if fQuick == 'off' else 'true' }},
+      atc: {{ 'false' if fAtc == 'off' else 'true' }}, hoverImages: true,
+      t: {
+        quickView: {{ t('pages.product.quick_view') | dump | safe }}, addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+        image: {{ t('common.image') | dump | safe }}, inStock: {{ t('common.in_stock') | dump | safe }},
+        outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+        close: {{ t('common.close') | dump | safe }}, fullDetails: {{ t('pages.product.view_full_details') | dump | safe }},
+        compare: {{ t('compare.add') | dump | safe }}
+      }
+    };
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+    function setTotal(n) {
+      root.style.setProperty('--pl-n', n);
+      root.querySelectorAll('[data-pl-total]').forEach(function (el) { el.textContent = pad(n); });
+    }
+
+    /* The readout "03 / 12" and the bar read --mh-p. Two sources, no scroll
+       listener on the window:
+         · phone  — the row is a plain swipe; mirror its scroll position
+           (passive listener on the row itself).
+         · desktop — the motion script translates the track; mirror that
+           translate (observed on its style attribute, one read per frame).
+       The value lands on the stage (closest ancestor of the rail intro), so
+       whatever the motion script may also write on the section is left alone. */
+    function progressSync(track) {
+      var stage = track.parentElement || root;
+      var desk = window.matchMedia('(min-width: 1024px)');
+      function set(p) {
+        var v = Math.max(0, Math.min(1, p)).toFixed(4);
+        stage.style.setProperty('--mh-p', v);
+        root.style.setProperty('--mh-p', v);
+      }
+      function fromSwipe() {
+        // the rail scrolls natively at every width now (no pin), so the
+        // readout always follows the rail's own scroll position
+        var max = track.scrollWidth - track.clientWidth;
+        set(max > 0 ? Math.abs(track.scrollLeft) / max : 0);
+      }
+      var raf = 0;
+      function fromTransform() {
+        if (!desk.matches || raf) return;
+        raf = requestAnimationFrame(function () {
+          raf = 0;
+          var m = getComputedStyle(track).transform;
+          if (!m || m === 'none') { set(0); return; }
+          var parts = m.replace(/^matrix(3d)?\(/, '').split(',');
+          var tx = parseFloat(parts.length > 6 ? parts[12] : parts[4]) || 0;
+          var max = track.scrollWidth - stage.clientWidth;
+          set(max > 0 ? Math.abs(tx) / max : 0);
+        });
+      }
+      track.addEventListener('scroll', fromSwipe, { passive: true });
+      if ('MutationObserver' in window) {
+        new MutationObserver(fromTransform).observe(track, { attributes: true, attributeFilter: ['style'] });
+      }
+      fromSwipe();
+      fromTransform();
+    }
+
+    function boot() {
+      var track = root.querySelector('[data-mh-track]');
+      if (!track) return;
+      progressSync(track);
+
+      if (!track.hasAttribute('data-hx-fill')) return;      /* picked, or demo-only */
+      if (!window.HxCard) return;
+      var limit = Number(track.getAttribute('data-limit')) || 12;
+      var colId = track.getAttribute('data-col');
+
+      /* No `limit` on the request: the search endpoint rejects it (see
+         HayatAuto in main.js), so the list is cut here instead. */
+      var get = colId
+        ? fetch('/ajax/search/products?q=&collectionId=' + encodeURIComponent(colId), { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (d) { return (d && (d.products || d.data)) || []; })
+            .catch(function () { return []; })
+        : (window.HayatAuto ? HayatAuto.take(limit) : Promise.resolve([]));
+
+      /* Demo cards stay invisible (space kept) until the answer is in, so a
+         store WITH products never flashes them. Settled after 5s regardless. */
+      function settle() { track.classList.add('is-settled'); }
+      var guard = setTimeout(settle, 5000);
+      get.then(function (list) {
+        clearTimeout(guard);
+        if (list && list.length) {
+          var items = list.slice(0, limit);
+          var intro = track.querySelector('.mh-pl-item--intro');
+          var end = track.querySelector('[data-pl-end]');
+          track.querySelectorAll('.mh-pl-item:not(.mh-pl-item--intro):not(.mh-pl-end)').forEach(function (el) { el.remove(); });
+          var html = items.map(function (p, i) {
+            return '<div class="mh-pl-item" data-n="' + pad(i + 1) + '">' + HxCard.build(p, cardOpts) + '</div>';
+          }).join('');
+          if (end) end.insertAdjacentHTML('beforebegin', html);
+          else if (intro) intro.insertAdjacentHTML('afterend', html);
+          else track.insertAdjacentHTML('beforeend', html);
+          setTotal(items.length);
+        }
+        settle();
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-pl-' ~ id, c=d %}

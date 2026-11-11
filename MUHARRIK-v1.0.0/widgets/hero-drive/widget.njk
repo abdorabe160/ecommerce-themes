@@ -1,0 +1,221 @@
+{#
+  ============================================================================
+  MUHARRIK · HERO DRIVE · واجهة سينمائية
+  ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────────┐
+     │ ⌐                 (photo, zooms out as you scroll)      ● LIVE ⌐ │
+     │                                                                  │
+     │ — قطع غيار · إكسسوارات · عناية                                   │
+     │ كل ما تحتاجه                                                      │
+     │ عربيتك في مكان واحد            ← one word in yellow              │
+     │ short text                                                       │
+     │ [ تسوّق الآن → ]  [ التشكيلات ]                                  │
+     ├──────────────────────────────────────────────────────────────────┤
+     │ +12,000 │ 48H     │ 100%        │ 4.9        │     SCROLL  ┆    │
+     │ عميل راضٍ│ توصيل  │ قطع أصلية   │ تقييم      │             ┆    │
+     └──────────────────────────────────────────────────────────────────┘
+
+  The theme's first impression: one full-viewport scene (100svh minus the
+  header), the night-car photo (mh-hero-1.jpg, mh-hero-1-m.jpg on a phone,
+  both replaceable), a two-line headline with ONE word in the accent, a mono
+  kicker, a short sub, two CTAs, a HUD frame with corner ticks and a LIVE
+  readout, and a "dashboard" strip at the bottom with counting numbers and a
+  SCROLL cue. A light sweep crosses the photo once on load (CSS only).
+
+  Motion — contract only (assets/mh-motion.js), no scroll listeners here:
+    data-mh-progress   on the section → --mh-p; the scene darkens as it leaves
+    data-mh-zoom       the photo settles from 1.15 → 1 while the hero passes
+    data-mh-parallax   the copy drifts slower than the page
+    data-mh-split      each headline line is a word-mask reveal. The highlight
+                       word is its OWN split element, so the splitter never has
+                       to preserve a nested <span>.
+    data-mh-count      each numeric stat counts up once (prefix/suffix/decimals)
+  Nothing depends on the script: every element is visible without it and
+  every number is printed in full as fallback text.
+
+  `dash_lift` lifts the dashboard strip off the bottom edge so the photo runs
+  on beneath it: that apron is what widgets/vehicle-finder overlaps into
+  (its `overlap` should stay ≤ this). A missing photo falls back to the
+  carbon ground (the <picture> removes itself on error).
+
+  Copy fields left blank fall back to car-accessories demo copy in the
+  visitor's language. Stats come from `stat` blocks; no blocks → four demo
+  readouts.
+
+  Styles: assets/mh-w-a.css → "HERO DRIVE".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{# ---- Demo copy per language ---- #}
+{% if isAr %}
+  {% set DEMO = {
+    kicker: 'قطع غيار · إكسسوارات · عناية',
+    title: 'كل ما تحتاجه', hl: 'عربيتك', tail: 'في مكان واحد',
+    text: 'قطع وإكسسوارات وعناية لكل الماركات — اختار عربيتك ونعرض لك اللي يناسبها.',
+    b1: 'تسوّق الآن', b2: 'التشكيلات',
+    cue: 'مرّر لأسفل', live: 'مباشر',
+    stats: [
+      { value: '12000', prefix: '+', suffix: '', decimals: 0, label: 'عميل راضٍ' },
+      { value: '48', prefix: '', suffix: 'H', decimals: 0, label: 'توصيل سريع' },
+      { value: '100', prefix: '', suffix: '%', decimals: 0, label: 'قطع أصلية' },
+      { value: '4.9', prefix: '', suffix: '', decimals: 1, label: 'تقييم العملاء' }
+    ]
+  } %}
+{% else %}
+  {% set DEMO = {
+    kicker: 'Parts · Accessories · Care',
+    title: 'Everything your', hl: 'car', tail: 'needs, in one place',
+    text: 'Parts, accessories and care for every make — pick your car and see what fits it.',
+    b1: 'Shop now', b2: 'Collections',
+    cue: 'Scroll', live: 'Live',
+    stats: [
+      { value: '12000', prefix: '+', suffix: '', decimals: 0, label: 'Happy drivers' },
+      { value: '48', prefix: '', suffix: 'H', decimals: 0, label: 'Fast delivery' },
+      { value: '100', prefix: '', suffix: '%', decimals: 0, label: 'Genuine parts' },
+      { value: '4.9', prefix: '', suffix: '', decimals: 1, label: 'Customer rating' }
+    ]
+  } %}
+{% endif %}
+
+{# ---- Media: merchant upload → theme photo ---- #}
+{% set imgRaw = mediaUrl(d.image) | trim %}
+{% set imgMRaw = mediaUrl(d.image_mobile) | trim %}
+{% set img = imgRaw if (imgRaw | length) else ('mh-hero-1.jpg' | assets) %}
+{% set imgM = imgMRaw if (imgMRaw | length) else (('mh-hero-1-m.jpg' | assets) if not (imgRaw | length) else img) %}
+{% set overlay = d.overlay if d.overlay is defined and d.overlay !== '' else 55 %}
+
+{# ---- Copy: a blank headline switches the whole headline to the demo, so
+        the three parts always belong together ---- #}
+{% set useDemoTitle = not (d.title or d.title_hl or d.title_tail) %}
+{% set kicker = d.kicker | default(DEMO.kicker, true) %}
+{% set title = DEMO.title if useDemoTitle else (d.title | default('', true)) %}
+{% set hl = DEMO.hl if useDemoTitle else (d.title_hl | default('', true)) %}
+{% set tail = DEMO.tail if useDemoTitle else (d.title_tail | default('', true)) %}
+{% set text = d.text | default(DEMO.text, true) %}
+{% set b1 = d.button_text | default(DEMO.b1, true) %}
+{% set u1 = d.button_url | default('/shop', true) %}
+{% set b2 = d.button2_text | default(DEMO.b2, true) %}
+{% set u2 = d.button2_url | default('/collections', true) %}
+
+{# ---- Stats: blocks → readouts; none → demo ---- #}
+{% set stats = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set v = (bd.value | default('', true)) | string | trim %}
+  {% if v or bd.label %}
+    {% set _ = stats.push({
+      value: v,
+      prefix: bd.prefix | default('', true),
+      suffix: bd.suffix | default('', true),
+      decimals: bd.decimals if bd.decimals is defined and bd.decimals !== '' else 0,
+      label: bd.label | default('', true)
+    }) %}
+  {% endif %}
+{% endfor %}
+{#- No `stat` blocks → the demo readouts, but only in the editor: a shopper
+    must not read «+12,000 عميل راضٍ» or «4.9» that no store measured. -#}
+{% set demoStats = (stats | length) == 0 %}
+{% if demoStats %}{% set stats = DEMO.stats %}{% endif %}
+
+{% set showHud = d.show_hud != false %}
+{% set showDash = d.show_dash != false %}
+{% set showCue = d.show_scroll_cue != false %}
+{% set showSweep = d.show_sweep != false %}
+
+<section id="mh-hd-{{ id }}"
+         class="mh-hd mh-hd--{{ d.height | default('full', true) }}{{ ' has-sweep' if showSweep }}"
+         data-mh-progress
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 0 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 0 }}px; --hd-ov: {{ overlay }}%; --hd-pos: {{ d.image_position | default('center', true) }}; --hd-lift: {{ d.dash_lift if d.dash_lift is defined and d.dash_lift !== '' else 72 }}px;">
+
+  <div class="mh-hd-scene">
+
+    {# photo · scroll zoom · shade · dim · sweep #}
+    <div class="mh-hd-media mh-carbon" aria-hidden="true">
+      <picture>
+        {% if imgM != img %}<source media="(max-width: 880px)" srcset="{{ imgM }}"/>{% endif %}
+        <img src="{{ img }}" alt="" decoding="async" fetchpriority="high" data-mh-zoom onerror="this.closest('picture').remove()"/>
+      </picture>
+      <span class="mh-hd-shade"></span>
+      <span class="mh-hd-dim"></span>
+      {% if showSweep %}<span class="mh-hd-sweep"></span>{% endif %}
+    </div>
+
+    {# HUD viewfinder: four ticks + a LIVE readout #}
+    {% if showHud %}
+      <div class="mh-hd-frame mh-hud" aria-hidden="true">
+        <i class="mh-hd-tick mh-hd-tick--te"></i>
+        <i class="mh-hd-tick mh-hd-tick--bs"></i>
+        <span class="mh-hd-live mh-led">{{ DEMO.live }} · <span class="mh-hd-live-id">MH-01</span></span>
+      </div>
+    {% endif %}
+
+    {# copy #}
+    <div class="mh-hd-inner" data-mh-parallax="-0.12">
+      <div class="mh-hd-content">
+        {% if kicker %}
+          <p class="mh-kicker mh-hd-kicker" data-mh-reveal="up"><span class="mh-kicker-num">01</span><span class="mh-hd-kicker-sep">/</span>{{ kicker | safe }}</p>
+        {% endif %}
+
+        <h1 class="mh-h mh-h--xl mh-hd-title">
+          {% if title %}<span class="mh-hd-line" data-mh-split>{{ title | safe }}</span>{% endif %}
+          {% if hl or tail %}
+            <span class="mh-hd-line mh-hd-line--2">
+              {% if hl %}<span class="mh-hd-hl" data-mh-split data-mh-delay="0.18">{{ hl | safe }}</span>{% endif %}
+              {% if tail %}<span class="mh-hd-tail" data-mh-split data-mh-delay="0.3">{{ tail | safe }}</span>{% endif %}
+            </span>
+          {% endif %}
+        </h1>
+
+        {% if text %}<p class="mh-hd-text" data-mh-reveal="up" data-mh-delay="0.35">{{ text | safe }}</p>{% endif %}
+
+        {% if b1 or (b2 and u2) %}
+          <div class="mh-hd-ctas" data-mh-reveal="up" data-mh-delay="0.45">
+            {% if b1 %}<a href="{{ u1 }}" class="mh-btn hy-btn--solid">{{ b1 | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+            {% if b2 and u2 %}<a href="{{ u2 }}" class="mh-btn mh-btn--ghost hy-btn--outline mh-hd-ghost">{{ b2 | safe }}</a>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# dashboard strip #}
+    {% if showDash or showCue %}
+      <div class="mh-hd-dash">
+        {% if showDash and (stats | length) %}
+          <ul class="mh-hd-stats{{ ' hy-editor-only' if demoStats }}" data-mh-stagger>
+            {% for s in stats %}
+              {# digits only → counts up; anything else prints as typed #}
+              {% set sv = (s.value | string) | trim %}
+              {% set numeric = (sv | length) > 0 and ((sv | float) | string) == sv %}
+              <li class="mh-hd-stat" data-mh-item>
+                <span class="mh-hd-stat-v mh-mono">
+                  {%- if numeric -%}
+                    <span data-mh-count="{{ s.value }}"{% if s.prefix %} data-mh-prefix="{{ s.prefix }}"{% endif %}{% if s.suffix %} data-mh-suffix="{{ s.suffix }}"{% endif %}{% if s.decimals %} data-mh-decimals="{{ s.decimals }}"{% endif %}>{{ s.prefix }}{{ s.value }}{{ s.suffix }}</span>
+                  {%- else -%}
+                    <span>{{ s.prefix }}{{ s.value }}{{ s.suffix }}</span>
+                  {%- endif -%}
+                </span>
+                {% if s.label %}<span class="mh-hd-stat-k mh-mono">{{ s.label | safe }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if showCue %}
+          <a class="mh-hd-cue mh-mono" href="#mh-hd-end-{{ id }}" aria-label="{{ DEMO.cue }}">
+            <span class="mh-hd-cue-t">{{ DEMO.cue }}</span>
+            <span class="mh-hd-cue-line" aria-hidden="true"></span>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <span id="mh-hd-end-{{ id }}" class="mh-hd-end" aria-hidden="true"></span>
+</section>
+
+{% ui "section-colors.njk", scope='#mh-hd-' ~ id, c=d %}

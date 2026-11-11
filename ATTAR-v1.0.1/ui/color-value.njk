@@ -1,0 +1,19 @@
+{#- Prints one CSS colour for a swatch (JS twin: Utils.swatchColor). The platform may send a hex
+    or only the colour's name, so names (ar/en) go through this table instead of painting white. -#}
+{%- set _v = (data.value or '') | trim -%}
+{%- set _k = (data.label or _v) | trim | lower -%}
+{%- set _map = {
+  'أسود': '#111111', 'black': '#111111', 'أبيض': '#FFFFFF', 'white': '#FFFFFF',
+  'أحمر': '#C62828', 'red': '#C62828', 'أزرق': '#1E56A0', 'blue': '#1E56A0', 'كحلي': '#14213D', 'navy': '#14213D',
+  'أخضر': '#2E7D32', 'green': '#2E7D32', 'زيتي': '#556B2F', 'olive': '#556B2F',
+  'أصفر': '#F2C230', 'yellow': '#F2C230', 'برتقالي': '#E67E22', 'orange': '#E67E22',
+  'بنفسجي': '#6A3FA0', 'purple': '#6A3FA0', 'موف': '#8E6BBF', 'mauve': '#8E6BBF',
+  'وردي': '#E88FB0', 'pink': '#E88FB0', 'بيج': '#D9C7A8', 'beige': '#D9C7A8', 'كريمي': '#F1E7D2', 'cream': '#F1E7D2',
+  'بني': '#6D4C33', 'brown': '#6D4C33', 'رمادي': '#8A8A8A', 'gray': '#8A8A8A', 'grey': '#8A8A8A',
+  'ذهبي': '#C9A227', 'gold': '#C9A227', 'فضي': '#BFC3C7', 'silver': '#BFC3C7', 'عنابي': '#6E1F2F', 'burgundy': '#6E1F2F'
+} -%}
+{%- if _v and (_v.indexOf('#') == 0 or _v.indexOf('rgb') == 0 or _v.indexOf('hsl') == 0) -%}{{ _v }}
+{%- elif _map[_k] -%}{{ _map[_k] }}
+{%- elif _map[_v | lower] -%}{{ _map[_v | lower] }}
+{%- else -%}var(--color-bg-secondary)
+{%- endif -%}

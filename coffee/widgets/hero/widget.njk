@@ -1,0 +1,150 @@
+{#-
+  Home hero — owns the page <h1>. Sits under the transparent fixed header (data-hero-overlay).
+  Desktop: full-bleed photo (subject on the inline-end half; mirrored in LTR when flip_ltr), copy at inline-start.
+  Mobile: 4:5 photo on top fading into ink, copy below. Video control only when video_url is set;
+  social proof only when the merchant sets rating_value / customers_text (never invented numbers).
+  Settings may arrive empty → every value falls back to locale keys / bundled images.
+-#}
+{%- set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) -%}
+{%- set L = '_en' if localization.language != 'ar' else '' -%}
+{%- macro src(m) -%}{%- if m -%}{%- if m is string -%}{{ m }}{%- elif m.fileUrl -%}{{ m.fileUrl }}{%- elif m.url -%}{{ m.url }}{%- endif -%}{%- endif -%}{%- endmacro -%}
+
+{%- set eyebrow = (wd['eyebrow' + L] or wd.eyebrow) or t('hero.eyebrow') -%}
+{%- set title = (((wd['title' + L] or wd.title) or '') | trim) or t('hero.title') -%}
+{%- set text = wd['text' + L] or wd.text -%}
+{%- set btnText = (wd['button_text' + L] or wd.button_text) or t('hero.button') -%}
+{%- set btnUrl = wd.button_url or '/shop' -%}
+{%- set videoUrl = (wd.video_url or '') | trim -%}
+{%- set videoLabel = (wd['video_label' + L] or wd.video_label) or t('hero.video_label') -%}
+{%- set rating = (wd.rating_value or '') | string | trim -%}
+{%- set customers = ((wd['customers_text' + L] or wd.customers_text) or '') | trim -%}
+{%- set flip = wd.flip_ltr != false -%}
+{%- set strength = (wd.overlay_strength if (wd.overlay_strength is number) else (wd.overlay_strength | int if wd.overlay_strength else 60)) -%}
+{%- set strength = 0 if strength < 0 else (90 if strength > 90 else strength) -%}
+{%- set gFrom = ((strength * 1.5) | round) if strength * 1.5 < 96 else 96 -%}
+{%- set gVia = (strength * 0.85) | round -%}
+
+{#- media settings arrive as empty safe-strings from the platform: an empty value is truthy for
+    `{% if %}` but renders as "", which used to blank the whole banner — normalise on length so the
+    bundled fallback photos always show when no image is set -#}
+{%- set imgDesk = src(wd.image_desktop) | trim -%}
+{%- set imgMob = src(wd.image_mobile) | trim -%}
+{%- set imgDesk = imgDesk if (imgDesk and (imgDesk | length)) else '' -%}
+{%- set imgMob = imgMob if (imgMob and (imgMob | length)) else '' -%}
+{%- set uid = 'hero-' ~ (widget.id or widget._id or 'main') -%}
+
+<section class="surface-dark relative isolate overflow-hidden min-h-[640px] lg:flex lg:min-h-[min(90vh,820px)] lg:items-center"
+         data-hero-overlay aria-labelledby="{{ uid }}-title">
+
+  {#- media: in-flow 4:5 block on mobile, full-bleed layer on lg -#}
+  <div class="relative aspect-[4/5] max-h-[62vh] w-full overflow-hidden bg-espresso lg:absolute lg:inset-0 lg:aspect-auto lg:max-h-none">
+    <div class="absolute inset-0 {{ 'ltr:lg:-scale-x-100' if flip }}">
+      <picture>
+        {%- if imgMob or imgDesk %}
+        <source media="(max-width: 767px)" srcset="{{ imgMob or imgDesk }}">
+        {%- else %}
+        <source media="(max-width: 767px)" srcset="{{ 'hero-pour-mobile-800.webp' | assets }} 800w, {{ 'hero-pour-mobile-1200.webp' | assets }} 1200w" sizes="100vw">
+        {%- endif %}
+        {%- if imgDesk %}
+        <img src="{{ imgDesk }}" alt="" width="2400" height="1120"
+             fetchpriority="high" decoding="async"
+             class="hero-media-in absolute inset-0 h-full w-full object-cover object-center lg:object-[22%_50%]">
+        {%- else %}
+        <img src="{{ 'hero-pour-1600.webp' | assets }}"
+             srcset="{{ 'hero-pour-1600.webp' | assets }} 1600w, {{ 'hero-pour-2400.webp' | assets }} 2400w" sizes="100vw"
+             alt="{{ t('hero.image_alt') }}" width="2400" height="1120" fetchpriority="high" decoding="async"
+             class="hero-media-in absolute inset-0 h-full w-full object-cover object-center lg:object-[22%_50%]">
+        {%- endif %}
+      </picture>
+    </div>
+
+    {#- readability: copy-side gradient (lg), header scrim on top, fade into ink at the bottom -#}
+    {%- if strength > 0 %}
+    <div class="pointer-events-none absolute inset-0 hidden rtl:bg-gradient-to-l ltr:bg-gradient-to-r lg:block"
+         style="--tw-gradient-stops: color-mix(in srgb, var(--c-ink) {{ gFrom }}%, transparent) 0%, color-mix(in srgb, var(--c-ink) {{ gVia }}%, transparent) 38%, transparent 72%"></div>
+    {%- endif %}
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-ink/70 to-transparent"></div>
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-ink via-ink/60 to-transparent lg:h-48 lg:via-ink/40"></div>
+  </div>
+
+  {#- floating play control over the photo (lg only; mobile gets it inline in the CTA row) -#}
+  {%- if videoUrl %}
+  <div class="pointer-events-none absolute inset-x-0 bottom-[24%] z-10 hidden lg:block">
+    <div class="shell flex justify-end">
+      <button type="button" class="group pointer-events-auto inline-flex items-center gap-4 text-cream"
+              @click="openVideo({{ videoUrl | dump | escape }}, {{ videoLabel | dump | escape }})"
+              aria-label="{{ t('a11y.play_video') }}: {{ videoLabel }}">
+        <span class="font-display text-sm text-cream/90">{{ videoLabel }}</span>
+        <span class="grid h-16 w-16 place-items-center rounded-full border border-cream/50 bg-ink/30 transition-colors duration-300 ease-calm group-hover:border-caramel group-hover:bg-caramel group-hover:text-[color:var(--c-on-accent)]">
+          <span class="ms-0.5 inline-flex">{% ui "icon.njk", name="play", size=22, cls="fill-current" %}</span>
+        </span>
+      </button>
+    </div>
+  </div>
+  {%- endif %}
+
+  {#- copy -#}
+  <div class="shell relative z-10 -mt-24 pb-14 sm:-mt-28 lg:mt-0 lg:pb-28 lg:pt-[calc(var(--header-h)+2.5rem)]">
+    <div class="hero-in max-w-[34rem]">
+      {%- if eyebrow %}
+      <p class="eyebrow" style="--i:0">{{ eyebrow }}</p>
+      {%- endif %}
+      <h1 id="{{ uid }}-title" class="h-display mt-3 text-cream text-shadow-soft lg:mt-4" style="--i:1">{{ title | escape | replace('\n', '<br>') | replace('\\n', '<br>') | replace('&#92;n', '<br>') | safe }}</h1>
+
+      {%- if text %}
+      <div class="lead mt-5 max-w-[30rem] text-cream/80 [&_p+p]:mt-3" style="--i:2">{{ text | safe }}</div>
+      {%- else %}
+      <p class="lead mt-5 max-w-[30rem] text-cream/80" style="--i:2">{{ t('hero.text') }}</p>
+      {%- endif %}
+
+      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 lg:mt-10" style="--i:3">
+        <a href="{{ btnUrl }}" class="btn btn-primary btn-block sm:w-auto sm:min-w-[11rem]">
+          <span>{{ btnText }}</span>
+          {% ui "icon.njk", name="arrow", size=18, cls="btn-arrow" %}
+        </a>
+        {%- if videoUrl %}
+        <button type="button" class="group inline-flex min-h-[44px] items-center justify-center gap-3 text-cream lg:hidden"
+                @click="openVideo({{ videoUrl | dump | escape }}, {{ videoLabel | dump | escape }})"
+                aria-label="{{ t('a11y.play_video') }}: {{ videoLabel }}">
+          <span class="grid h-12 w-12 place-items-center rounded-full border border-cream/40 transition-colors duration-300 ease-calm group-hover:border-caramel group-hover:text-caramel">
+            <span class="ms-0.5 inline-flex">{% ui "icon.njk", name="play", size=18, cls="fill-current" %}</span>
+          </span>
+          <span class="font-display text-sm text-cream/90">{{ videoLabel }}</span>
+        </button>
+        {%- endif %}
+      </div>
+
+      {#- social proof: merchant-provided only -#}
+      {%- if rating or customers %}
+      {%- set avatars = [] -%}
+      {%- for k in ['avatar_1', 'avatar_2', 'avatar_3'] -%}
+        {%- set a = src(wd[k]) | trim -%}
+        {%- if a | length -%}{%- if avatars.push(a) -%}{%- endif -%}{%- endif -%}
+      {%- endfor %}
+      <div class="mt-10 flex items-center gap-4 border-t border-cream/10 pt-6 lg:mt-12" style="--i:4">
+        {%- if avatars.length %}
+        <div class="flex shrink-0" aria-hidden="true">
+          {%- for a in avatars %}
+          <img src="{{ a }}" alt="" width="44" height="44" loading="lazy" decoding="async"
+               class="h-11 w-11 rounded-full border-2 border-ink object-cover {{ '-ms-3' if not loop.first }}">
+          {%- endfor %}
+        </div>
+        {%- endif %}
+        <div class="leading-snug">
+          {%- if rating %}
+          <p class="flex items-center gap-2" aria-label="{{ t('a11y.rating_out_of') | replace('{rating}', rating) }}">
+            <span class="font-display text-base font-semibold text-cream" aria-hidden="true">{{ rating }}</span>
+            <span class="inline-flex gap-0.5 text-caramel" aria-hidden="true">
+              {%- for i in range(0, 5) %}{% ui "icon.njk", name="star", size=13, cls="fill-current" %}{% endfor -%}
+            </span>
+          </p>
+          {%- endif %}
+          {%- if customers %}
+          <p class="mt-1 text-sm text-muted">{{ customers }}</p>
+          {%- endif %}
+        </div>
+      </div>
+      {%- endif %}
+    </div>
+  </div>
+</section>

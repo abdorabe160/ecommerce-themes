@@ -1,0 +1,881 @@
+{
+  "name": "مؤقت العد التنازلي: لافتة",
+  "settings": {
+    "stage_width": {
+      "type": "select",
+      "label": {
+        "ar": "▸ عرض اللافتة",
+        "en": "▸ Band width"
+      },
+      "default": "inset",
+      "options": [
+        {
+          "value": "inset",
+          "label": {
+            "ar": "بهوامش وزوايا دائرية (موصى به)",
+            "en": "Inset with rounded corners (recommended)"
+          }
+        },
+        {
+          "value": "full",
+          "label": {
+            "ar": "عرض الشاشة بالكامل",
+            "en": "Edge to edge"
+          }
+        }
+      ]
+    },
+    "headline": {
+      "type": "string",
+      "label": {
+        "ar": "▸ العنوان القصير",
+        "en": "▸ Headline"
+      },
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": {
+        "ar": "الوصف (سطران على الأكثر)",
+        "en": "Description (two lines at most)"
+      },
+      "default": ""
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر (اتركه فارغاً للإخفاء)",
+        "en": "Button label (leave empty to hide)"
+      },
+      "default": ""
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر · الصفحات المتاحة: / · /shop · /collections · /blogs · /cart",
+        "en": "Button URL · available routes: / · /shop · /collections · /blogs · /cart"
+      },
+      "default": "/shop"
+    },
+    "mode": {
+      "type": "select",
+      "label": {
+        "ar": "طريقة تحديد نهاية العرض",
+        "en": "How the deadline is set"
+      },
+      "default": "visitor",
+      "options": [
+        {
+          "value": "visitor",
+          "label": {
+            "ar": "مدّة لكل زائر تبدأ من أول زيارة (موصى به)",
+            "en": "A per-visitor window starting at their first visit (recommended)"
+          }
+        },
+        {
+          "value": "fixed",
+          "label": {
+            "ar": "تاريخ ووقت محدّد للجميع",
+            "en": "One fixed date and time for everybody"
+          }
+        }
+      ]
+    },
+    "end_year": {
+      "type": "select",
+      "label": {
+        "ar": "السنة",
+        "en": "Year"
+      },
+      "default": "2026",
+      "options": [
+        {
+          "value": "2026",
+          "label": {
+            "ar": "٢٠٢٦",
+            "en": "2026"
+          }
+        },
+        {
+          "value": "2027",
+          "label": {
+            "ar": "٢٠٢٧",
+            "en": "2027"
+          }
+        },
+        {
+          "value": "2028",
+          "label": {
+            "ar": "٢٠٢٨",
+            "en": "2028"
+          }
+        },
+        {
+          "value": "2029",
+          "label": {
+            "ar": "٢٠٢٩",
+            "en": "2029"
+          }
+        },
+        {
+          "value": "2030",
+          "label": {
+            "ar": "٢٠٣٠",
+            "en": "2030"
+          }
+        },
+        {
+          "value": "2031",
+          "label": {
+            "ar": "٢٠٣١",
+            "en": "2031"
+          }
+        }
+      ]
+    },
+    "end_month": {
+      "type": "select",
+      "label": {
+        "ar": "الشهر",
+        "en": "Month"
+      },
+      "default": "12",
+      "options": [
+        {
+          "value": "01",
+          "label": {
+            "ar": "يناير",
+            "en": "January"
+          }
+        },
+        {
+          "value": "02",
+          "label": {
+            "ar": "فبراير",
+            "en": "February"
+          }
+        },
+        {
+          "value": "03",
+          "label": {
+            "ar": "مارس",
+            "en": "March"
+          }
+        },
+        {
+          "value": "04",
+          "label": {
+            "ar": "أبريل",
+            "en": "April"
+          }
+        },
+        {
+          "value": "05",
+          "label": {
+            "ar": "مايو",
+            "en": "May"
+          }
+        },
+        {
+          "value": "06",
+          "label": {
+            "ar": "يونيو",
+            "en": "June"
+          }
+        },
+        {
+          "value": "07",
+          "label": {
+            "ar": "يوليو",
+            "en": "July"
+          }
+        },
+        {
+          "value": "08",
+          "label": {
+            "ar": "أغسطس",
+            "en": "August"
+          }
+        },
+        {
+          "value": "09",
+          "label": {
+            "ar": "سبتمبر",
+            "en": "September"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "ar": "أكتوبر",
+            "en": "October"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "ar": "نوفمبر",
+            "en": "November"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "ar": "ديسمبر",
+            "en": "December"
+          }
+        }
+      ]
+    },
+    "end_day": {
+      "type": "select",
+      "label": {
+        "ar": "اليوم",
+        "en": "Day"
+      },
+      "default": "31",
+      "options": [
+        {
+          "value": "01",
+          "label": {
+            "ar": "١",
+            "en": "1"
+          }
+        },
+        {
+          "value": "02",
+          "label": {
+            "ar": "٢",
+            "en": "2"
+          }
+        },
+        {
+          "value": "03",
+          "label": {
+            "ar": "٣",
+            "en": "3"
+          }
+        },
+        {
+          "value": "04",
+          "label": {
+            "ar": "٤",
+            "en": "4"
+          }
+        },
+        {
+          "value": "05",
+          "label": {
+            "ar": "٥",
+            "en": "5"
+          }
+        },
+        {
+          "value": "06",
+          "label": {
+            "ar": "٦",
+            "en": "6"
+          }
+        },
+        {
+          "value": "07",
+          "label": {
+            "ar": "٧",
+            "en": "7"
+          }
+        },
+        {
+          "value": "08",
+          "label": {
+            "ar": "٨",
+            "en": "8"
+          }
+        },
+        {
+          "value": "09",
+          "label": {
+            "ar": "٩",
+            "en": "9"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "ar": "١٠",
+            "en": "10"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "ar": "١١",
+            "en": "11"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "ar": "١٢",
+            "en": "12"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "ar": "١٣",
+            "en": "13"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "ar": "١٤",
+            "en": "14"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "ar": "١٥",
+            "en": "15"
+          }
+        },
+        {
+          "value": "16",
+          "label": {
+            "ar": "١٦",
+            "en": "16"
+          }
+        },
+        {
+          "value": "17",
+          "label": {
+            "ar": "١٧",
+            "en": "17"
+          }
+        },
+        {
+          "value": "18",
+          "label": {
+            "ar": "١٨",
+            "en": "18"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "ar": "١٩",
+            "en": "19"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "ar": "٢٠",
+            "en": "20"
+          }
+        },
+        {
+          "value": "21",
+          "label": {
+            "ar": "٢١",
+            "en": "21"
+          }
+        },
+        {
+          "value": "22",
+          "label": {
+            "ar": "٢٢",
+            "en": "22"
+          }
+        },
+        {
+          "value": "23",
+          "label": {
+            "ar": "٢٣",
+            "en": "23"
+          }
+        },
+        {
+          "value": "24",
+          "label": {
+            "ar": "٢٤",
+            "en": "24"
+          }
+        },
+        {
+          "value": "25",
+          "label": {
+            "ar": "٢٥",
+            "en": "25"
+          }
+        },
+        {
+          "value": "26",
+          "label": {
+            "ar": "٢٦",
+            "en": "26"
+          }
+        },
+        {
+          "value": "27",
+          "label": {
+            "ar": "٢٧",
+            "en": "27"
+          }
+        },
+        {
+          "value": "28",
+          "label": {
+            "ar": "٢٨",
+            "en": "28"
+          }
+        },
+        {
+          "value": "29",
+          "label": {
+            "ar": "٢٩",
+            "en": "29"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "ar": "٣٠",
+            "en": "30"
+          }
+        },
+        {
+          "value": "31",
+          "label": {
+            "ar": "٣١",
+            "en": "31"
+          }
+        }
+      ]
+    },
+    "end_hour": {
+      "type": "select",
+      "label": {
+        "ar": "الساعة (٢٤ ساعة)",
+        "en": "Hour (24h)"
+      },
+      "default": "23",
+      "options": [
+        {
+          "value": "00",
+          "label": {
+            "ar": "٠٠",
+            "en": "00"
+          }
+        },
+        {
+          "value": "01",
+          "label": {
+            "ar": "٠١",
+            "en": "01"
+          }
+        },
+        {
+          "value": "02",
+          "label": {
+            "ar": "٠٢",
+            "en": "02"
+          }
+        },
+        {
+          "value": "03",
+          "label": {
+            "ar": "٠٣",
+            "en": "03"
+          }
+        },
+        {
+          "value": "04",
+          "label": {
+            "ar": "٠٤",
+            "en": "04"
+          }
+        },
+        {
+          "value": "05",
+          "label": {
+            "ar": "٠٥",
+            "en": "05"
+          }
+        },
+        {
+          "value": "06",
+          "label": {
+            "ar": "٠٦",
+            "en": "06"
+          }
+        },
+        {
+          "value": "07",
+          "label": {
+            "ar": "٠٧",
+            "en": "07"
+          }
+        },
+        {
+          "value": "08",
+          "label": {
+            "ar": "٠٨",
+            "en": "08"
+          }
+        },
+        {
+          "value": "09",
+          "label": {
+            "ar": "٠٩",
+            "en": "09"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "ar": "١٠",
+            "en": "10"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "ar": "١١",
+            "en": "11"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "ar": "١٢",
+            "en": "12"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "ar": "١٣",
+            "en": "13"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "ar": "١٤",
+            "en": "14"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "ar": "١٥",
+            "en": "15"
+          }
+        },
+        {
+          "value": "16",
+          "label": {
+            "ar": "١٦",
+            "en": "16"
+          }
+        },
+        {
+          "value": "17",
+          "label": {
+            "ar": "١٧",
+            "en": "17"
+          }
+        },
+        {
+          "value": "18",
+          "label": {
+            "ar": "١٨",
+            "en": "18"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "ar": "١٩",
+            "en": "19"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "ar": "٢٠",
+            "en": "20"
+          }
+        },
+        {
+          "value": "21",
+          "label": {
+            "ar": "٢١",
+            "en": "21"
+          }
+        },
+        {
+          "value": "22",
+          "label": {
+            "ar": "٢٢",
+            "en": "22"
+          }
+        },
+        {
+          "value": "23",
+          "label": {
+            "ar": "٢٣",
+            "en": "23"
+          }
+        }
+      ]
+    },
+    "end_minute": {
+      "type": "select",
+      "label": {
+        "ar": "الدقيقة",
+        "en": "Minute"
+      },
+      "default": "55",
+      "options": [
+        {
+          "value": "00",
+          "label": {
+            "ar": "٠٠",
+            "en": "00"
+          }
+        },
+        {
+          "value": "05",
+          "label": {
+            "ar": "٠٥",
+            "en": "05"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "ar": "١٠",
+            "en": "10"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "ar": "١٥",
+            "en": "15"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "ar": "٢٠",
+            "en": "20"
+          }
+        },
+        {
+          "value": "25",
+          "label": {
+            "ar": "٢٥",
+            "en": "25"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "ar": "٣٠",
+            "en": "30"
+          }
+        },
+        {
+          "value": "35",
+          "label": {
+            "ar": "٣٥",
+            "en": "35"
+          }
+        },
+        {
+          "value": "40",
+          "label": {
+            "ar": "٤٠",
+            "en": "40"
+          }
+        },
+        {
+          "value": "45",
+          "label": {
+            "ar": "٤٥",
+            "en": "45"
+          }
+        },
+        {
+          "value": "50",
+          "label": {
+            "ar": "٥٠",
+            "en": "50"
+          }
+        },
+        {
+          "value": "55",
+          "label": {
+            "ar": "٥٥",
+            "en": "55"
+          }
+        }
+      ]
+    },
+    "fallback_hours": {
+      "type": "range",
+      "label": {
+        "ar": "مدّة العدّاد لكل زائر (تُستخدم في وضع «مدّة لكل زائر» فقط)",
+        "en": "Per-visitor duration (used only in the per-visitor mode)"
+      },
+      "default": 24,
+      "min": 1,
+      "max": 168,
+      "step": 1,
+      "unit": "h"
+    },
+    "on_expire": {
+      "type": "select",
+      "label": {
+        "ar": "لما ينتهي العدّاد",
+        "en": "When the countdown ends"
+      },
+      "default": "hide",
+      "options": [
+        {
+          "value": "hide",
+          "label": {
+            "ar": "إخفاء القسم كله (موصى به)",
+            "en": "Hide the whole section (recommended)"
+          }
+        },
+        {
+          "value": "zeros",
+          "label": {
+            "ar": "إظهار أصفار",
+            "en": "Show zeros"
+          }
+        },
+        {
+          "value": "timer_only",
+          "label": {
+            "ar": "إخفاء العدّاد وإبقاء باقي القسم",
+            "en": "Hide the clock, keep the rest"
+          }
+        }
+      ]
+    },
+    "show_days": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الأيام",
+        "en": "Show Days"
+      },
+      "default": true
+    },
+    "show_seconds": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الثواني",
+        "en": "Show seconds"
+      },
+      "default": true
+    },
+    "show_labels": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسماء الوحدات تحت الأرقام (يوم · ساعة …)",
+        "en": "Show unit labels under the numbers (Days · Hours …)"
+      },
+      "default": false
+    },
+    "separator": {
+      "type": "select",
+      "label": {
+        "ar": "الفاصل بين الأرقام",
+        "en": "Separator between the numbers"
+      },
+      "default": ":",
+      "options": [
+        {
+          "value": ":",
+          "label": {
+            "ar": "نقطتان :",
+            "en": "Colon :"
+          }
+        },
+        {
+          "value": "·",
+          "label": {
+            "ar": "نقطة ·",
+            "en": "Dot ·"
+          }
+        },
+        {
+          "value": "/",
+          "label": {
+            "ar": "شرطة /",
+            "en": "Slash /"
+          }
+        },
+        {
+          "value": " ",
+          "label": {
+            "ar": "بدون فاصل",
+            "en": "None"
+          }
+        }
+      ]
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الأزرار",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الأزرار",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "مؤقت العد التنازلي: لافتة"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "name": "شريط المزايا",
+  "settings": {
+    "background_style": {
+      "type": "select",
+      "label": {
+        "ar": "نمط الخلفية",
+        "en": "Background Style"
+      },
+      "default": "transparent",
+      "options": [
+        {
+          "value": "transparent",
+          "label": {
+            "ar": "عاجي",
+            "en": "Ivory"
+          }
+        },
+        {
+          "value": "light",
+          "label": {
+            "ar": "رملي فاتح",
+            "en": "Sand"
+          }
+        },
+        {
+          "value": "dark",
+          "label": {
+            "ar": "فحمي",
+            "en": "Charcoal"
+          }
+        }
+      ]
+    },
+    "show_dividers": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار فواصل",
+        "en": "Show Dividers"
+      },
+      "default": true
+    },
+    "display_layout": {
+      "type": "select",
+      "label": {
+        "ar": "التخطيط",
+        "en": "Layout"
+      },
+      "default": "horizontal",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": {
+            "ar": "أفقي",
+            "en": "Horizontal"
+          }
+        },
+        {
+          "value": "grid",
+          "label": {
+            "ar": "شبكة",
+            "en": "Grid"
+          }
+        }
+      ]
+    }
+  },
+  "blocks": {
+    "feature": {
+      "name": "ميزة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "shipping",
+          "options": [
+            {
+              "value": "shipping",
+              "label": {
+                "ar": "شحن",
+                "en": "Shipping"
+              }
+            },
+            {
+              "value": "shield",
+              "label": {
+                "ar": "حماية",
+                "en": "Shield"
+              }
+            },
+            {
+              "value": "refresh",
+              "label": {
+                "ar": "إرجاع",
+                "en": "Return"
+              }
+            },
+            {
+              "value": "clock",
+              "label": {
+                "ar": "ساعة",
+                "en": "Clock"
+              }
+            },
+            {
+              "value": "heart",
+              "label": {
+                "ar": "قلب",
+                "en": "Heart"
+              }
+            },
+            {
+              "value": "star",
+              "label": {
+                "ar": "نجمة",
+                "en": "Star"
+              }
+            },
+            {
+              "value": "tag",
+              "label": {
+                "ar": "عرض",
+                "en": "Tag"
+              }
+            },
+            {
+              "value": "headphones",
+              "label": {
+                "ar": "دعم",
+                "en": "Support"
+              }
+            },
+            {
+              "value": "gift",
+              "label": {
+                "ar": "هدية",
+                "en": "Gift"
+              }
+            },
+            {
+              "value": "check",
+              "label": {
+                "ar": "ضمان",
+                "en": "Guarantee"
+              }
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (اختياري)",
+            "en": "Description (optional)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "شريط المزايا"
+    }
+  ]
+}

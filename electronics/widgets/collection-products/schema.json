@@ -1,0 +1,83 @@
+{
+  "name": "منتجات التصنيف",
+  "settings": {
+    "show_header": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار عنوان ووصف التصنيف",
+        "en": "Show collection header"
+      },
+      "default": true
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الفلاتر",
+        "en": "Show filters"
+      },
+      "default": true
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الترتيب",
+        "en": "Show sorting"
+      },
+      "default": true
+    },
+    "columns": {
+      "type": "select",
+      "label": {
+        "ar": "عدد الأعمدة (ديسكتوب)",
+        "en": "Columns (desktop)"
+      },
+      "default": "3",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ]
+    },
+    "shop_subtitle": {
+      "type": "string",
+      "label": {
+        "ar": "صفحة المتجر: وصف قصير تحت العنوان",
+        "en": "Shop page: short description under the title"
+      },
+      "default": ""
+    },
+    "shop_subtitle_en": {
+      "type": "string",
+      "label": {
+        "ar": "صفحة المتجر: الوصف (إنجليزي)",
+        "en": "Shop page: description (English)"
+      }
+    },
+    "show_shop_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "صفحة المتجر: مربع بحث داخل المنتجات",
+        "en": "Shop page: search box inside products"
+      },
+      "default": true
+    },
+    "shop_collections": {
+      "type": "collections",
+      "label": {
+        "ar": "صفحة المتجر: أزرار تصنيفات سريعة",
+        "en": "Shop page: quick category buttons"
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة التصنيف",
+      "name": "منتجات التصنيف"
+    }
+  ]
+}

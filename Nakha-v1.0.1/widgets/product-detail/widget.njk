@@ -1,0 +1,1081 @@
+{# ============================================================================
+   NAKHA PRODUCT DETAIL (PDP)
+   ----------------------------------------------------------------------------
+   ⚠️  DATA REALITY: Qumra products expose only _id, title, handle, description
+   (HTML), sku, quantity, pricing, images[], options[], variants[], tags[],
+   averageRating, reviewsCount — there are NO metafields. So:
+     · per-product copy (fabric, care, full spec sheet) lives in `description`
+       → a `panel` block with source="description" renders it
+     · store-wide copy (shipping, exchange, authenticity) → source="text"
+     · the six quick specs and the three training tips are WIDGET settings,
+       because they are per-product editorial and there is nowhere else to put them
+   Nothing here invents a data source that doesn't exist.
+
+   ⚠️  JS CONTRACT — preserved verbatim across every restyle:
+     · reads `context.product` (NOT the bare `product` global)
+     · exposes window['productPage_<widget.id>'] which x-data calls directly
+     · matches variants client-side against the dumped `variants` array,
+       comparing `variant.options` (array of option-VALUE ids)
+     · adds to cart via Qumra.cart.add(id, qty, optionIds)
+   Restyle the markup freely; do not change those four things.
+
+   ── The brief's three PDP jobs ────────────────────────────────────────────
+     أحجام       non-colour options render as .nakha-size swatches — the same
+                 control the product card uses — with a size-guide link beside
+                 the label, because "does it run small" is the blocking question
+     نصائح تدريب  three flat tip slots (.nakha-tips), for the editorial the
+                 description field cannot hold in a structured way
+     باقات       NOT built in here. `pages/product.json` has allowAdd:true, so
+                 the existing bundle-builder widget drops onto this page from
+                 the editor with its product pickers already solved. A second
+                 implementation would be two things to keep in sync.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set p = (context or {}).product or product %}
+{% set panels = widget.blocks | default([]) %}
+
+{% set galleryLayout = d.gallery_layout | default('thumbs-side', true) %}
+{% set thumbsSide = galleryLayout == 'thumbs-side' %}
+{% set thumbsBelow = galleryLayout == 'thumbs-below' %}
+{% set stacked = galleryLayout == 'stacked' %}
+
+{% set ratio = d.image_ratio | default('1x1', true) %}
+{% if ratio == '4x3' %}{% set ratioCls = 'nakha-ratio-4x3' %}
+{% elif ratio == '4x5' %}{% set ratioCls = 'nakha-ratio-4x5' %}
+{% elif ratio == '3x4' %}{% set ratioCls = 'nakha-ratio-3x4' %}
+{% else %}{% set ratioCls = 'nakha-ratio-1x1' %}{% endif %}
+
+{% set showZoom = d.show_zoom | default(true) %}
+{% set showBreadcrumb = d.show_breadcrumb | default(true) %}
+{% set showBrand = d.show_brand | default(true) %}
+{% set showRating = d.show_rating | default(true) %}
+{% set showVariantLabels = d.show_variant_labels | default(true) %}
+{% set showSavings = d.show_savings | default(true) %}
+{% set showStock = d.show_stock_status | default(true) %}
+{% set lowStock = d.low_stock_threshold | default(3, true) %}
+{# stores saved this as 3, the default: the theme-wide setting decides unless it was changed here #}
+{% if (lowStock | int) == 3 %}{% set lowStock = settings.lowStockThreshold | default(3, true) %}{% endif %}
+{% set baseSku = p.sku or (p.identification and p.identification.sku) or '' %}
+
+{% set sizeGuideUrl = d.size_guide_url | default('') %}
+{% set _guideShown = [] %}
+
+{# «interest-free instalments» is a payment promise — on only when the merchant offers it #}
+{% set showInstallment = d.show_installment == true %}
+{% set months = d.installment_months | default(4, true) %}
+{% set installmentText = d.installment_text | default(t('defaults.installment'), true) %}
+
+{% set showWarranty = d.show_warranty | default(true) %}
+{% set warrantyText = d.warranty_text | default('') %}
+
+{% set showSpecs = d.show_specs | default(true) %}
+{% set specs = [
+  { label: d.spec1_label | default(t('defaults.spec_ingredients'), true), value: d.spec1_value },
+  { label: d.spec2_label | default(t('defaults.spec_size'), true), value: d.spec2_value },
+  { label: d.spec3_label | default(t('defaults.spec_addons'), true), value: d.spec3_value },
+  { label: d.spec4_label | default(t('defaults.spec_suits'), true), value: d.spec4_value },
+  { label: d.spec5_label | default(t('defaults.spec_served'), true), value: d.spec5_value },
+  { label: d.spec6_label | default(t('defaults.spec_allergens'), true), value: d.spec6_value }
+] %}
+{% set hasSpecs = showSpecs and (d.spec1_value or d.spec2_value or d.spec3_value or d.spec4_value or d.spec5_value or d.spec6_value) %}
+
+{# ---- training tips: flat slots, same convention as the hero's stat strip ---- #}
+{% set showTips = d.show_tips | default(true) %}
+{% set tipsTitle = d.tips_title | default(t('defaults.before_you_order'), true) %}
+{% set tips = [
+  { title: d.tip1_title, text: d.tip1_text },
+  { title: d.tip2_title, text: d.tip2_text },
+  { title: d.tip3_title, text: d.tip3_text }
+] %}
+{% set hasTips = showTips and (d.tip1_title or d.tip2_title or d.tip3_title) %}
+
+{% set showQty = d.show_qty | default(true) %}
+{% set showBuyNow = d.show_buy_now | default(true) %}
+{% set showSku = d.show_sku | default(true) %}
+{% set showShare = d.show_share | default(true) %}
+{% set showSticky = d.show_sticky_bar | default(true) %}
+
+{% set showRelated = d.show_related | default(true) %}
+{% set relatedTitle = d.related_title | default(t('pages.product.related_products'), true) %}
+{% set relatedLimit = d.related_limit | default(5, true) %}
+{% set _rel = context.related_products | default([]) %}
+{# never recommend the product being viewed #}
+{% set related = [] %}
+{% for rp in _rel %}{% if rp and rp._id != p._id %}{% set _push = related.push(rp) %}{% endif %}{% endfor %}
+{# columns follow what is actually left once the open product is out, so 4 picks that
+   become 3 never leave a lone card (style.css spans the last one for the rest) #}
+{% set relCount = (related | length) if (related | length) < relatedLimit else relatedLimit %}
+{% set relCols = relCount if relCount < 5 else 5 %}
+
+{% set hasDiscount = p.pricing and p.pricing.compareAtPrice and p.pricing.compareAtPrice > p.pricing.price %}
+{% set canPurchase = p.allowBackorder or (not p.trackQuantity) or p.quantity > 0 %}
+{% set images = p.images | default([]) %}
+{% set imgCount = images | length %}
+{% set rating = p.averageRating | default(0) %}
+{% set reviews = p.reviewsCount | default(0) %}
+{% set full = rating | int %}
+{% set hasHalf = (rating - full) >= 0.25 %}
+{% set brand = p.brand | default(p.vendor) | default('') %}
+
+
+{# ============================ MACROS ============================ #}
+{% macro pdIcon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {% if name == 'ruler' %}
+    <rect x="2.2" y="8.5" width="19.6" height="7" rx="1.6"/>
+    <path d="M6.4 8.5v3M10 8.5v4.4M13.6 8.5v3M17.2 8.5v4.4"/>
+  {% elif name == 'box' %}
+    <path d="M3 7.6 12 3l9 4.6v8.8L12 21l-9-4.6z"/><path d="M3 7.6 12 12l9-4.4"/><path d="M12 12v9"/>
+  {% elif name == 'shipping' %}
+    <path d="M2.5 6h11v9.5h-11z"/><path d="M13.5 9.5h3.3l3.2 3v3h-6.5z"/>
+    <circle cx="6.5" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>
+  {% elif name == 'returns' %}
+    <path d="M3 12a9 9 0 1 0 9-9 9.7 9.7 0 0 0-6.7 2.7L3 8"/><path d="M3 3v5h5"/>
+  {% elif name == 'warranty' %}
+    <path d="M12 3l7.5 3v5.6c0 4.5-3.1 7.3-7.5 8.9-4.4-1.6-7.5-4.4-7.5-8.9V6z"/>
+    <path d="M9 12.2l2.2 2.2 4.3-4.4"/>
+  {% elif name == 'dumbbell' %}
+    <path d="M6.5 8v8M4 9.5v5M17.5 8v8M20 9.5v5M6.5 12h11"/>
+  {% elif name == 'bottle' %}
+    <path d="M10 2.8h4v2.4l1.6 2.2a4 4 0 0 1 .7 2.3v8.6a2.4 2.4 0 0 1-2.4 2.4h-3.8a2.4 2.4 0 0 1-2.4-2.4v-8.6a4 4 0 0 1 .7-2.3L10 5.2z"/>
+    <path d="M7.7 12.5h8.6"/>
+  {% elif name == 'support' %}
+    <path d="M4 13.5v-1.5a8 8 0 0 1 16 0v1.5"/>
+    <rect x="2.5" y="12.5" width="4" height="6" rx="1.8"/>
+    <rect x="17.5" y="12.5" width="4" height="6" rx="1.8"/>
+    <path d="M20 18.5v.6a2.4 2.4 0 0 1-2.4 2.4H13"/>
+  {% else %}
+    <circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{% macro pdStars(full, hasHalf) %}
+  {% set star = 'm12 2.6 2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45L2.6 9.45l6.5-.95L12 2.6Z' %}
+  <span class="nakha-stars">
+    {% for i in [1, 2, 3, 4, 5] %}
+      {% if i <= full %}
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+      {% elif i == full + 1 and hasHalf %}
+        <span class="nakha-star-half">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+        </span>
+      {% else %}
+        <svg class="nakha-star-empty" viewBox="0 0 24 24" fill="currentColor"><path d="{{ star }}"/></svg>
+      {% endif %}
+    {% endfor %}
+  </span>
+{% endmacro %}
+
+
+<style>
+  /* ================= layout ================= */
+  .nakha-pd-{{ id }}-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+  @media (min-width: 1024px) {
+    .nakha-pd-{{ id }}-row { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 48px; }
+    /* The photos stay in view while a long description scrolls. align-self:start
+       gives it room to travel (a stretched grid item never moves); a gallery taller
+       than the screen gets a negative top from main.js (data-sticky-fit) so its
+       bottom is reachable instead of trapped. */
+    .nakha-pd-{{ id }}-media {
+      position: sticky;
+      top: calc(var(--header-h, 132px) + 16px);
+      align-self: start;
+    }
+  }
+
+  /* ================= gallery ================= */
+  .nakha-pd-{{ id }}-gal {
+    display: grid;
+    gap: 10px;
+    {% if thumbsSide and imgCount > 1 %}grid-template-columns: 74px minmax(0, 1fr);{% else %}grid-template-columns: minmax(0, 1fr);{% endif %}
+  }
+  @media (max-width: 639px) {
+    .nakha-pd-{{ id }}-gal { grid-template-columns: minmax(0, 1fr); }
+    .nakha-pd-{{ id }}-thumbs { flex-direction: row !important; order: 2; }
+    /* a row of fixed squares, not one full-width strip */
+    .nakha-pd-{{ id }}-thumbs .nakha-gallery-thumb { width: 64px !important; height: 64px; flex: 0 0 64px; }
+  }
+
+  .nakha-pd-{{ id }}-thumbs {
+    display: flex;
+    gap: 8px;
+    {% if thumbsSide %}flex-direction: column;{% endif %}
+    overflow: auto;
+    scrollbar-width: none;
+  }
+  .nakha-pd-{{ id }}-thumbs::-webkit-scrollbar { display: none; }
+  .nakha-pd-{{ id }}-thumbs .nakha-gallery-thumb { width: 100%; }
+
+  /* main stage — the dish on the white plate, same as every card */
+  .nakha-pd-{{ id }}-main {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-media);
+    {% if showZoom %}cursor: zoom-in;{% endif %}
+  }
+  .nakha-pd-{{ id }}-main img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity var(--t-base) var(--ease-out);
+  }
+  .nakha-pd-{{ id }}-main img.is-active { opacity: 1; }
+
+  .nakha-pd-{{ id }}-stack { display: flex; flex-direction: column; gap: 10px; }
+  .nakha-pd-{{ id }}-stack a {
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-media);
+    overflow: hidden;
+  }
+  .nakha-pd-{{ id }}-stack img { width: 100%; height: auto; object-fit: cover; }
+
+  /* ================= info ================= */
+  .nakha-pd-{{ id }}-title {
+    margin: 0;
+    font-family: var(--font-display-ar);
+    font-size: clamp(1.375rem, 2.6vw, 2rem);
+    font-weight: 700;
+    line-height: 1.28;
+    letter-spacing: normal;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .nakha-pd-{{ id }}-title {
+    font-family: var(--font-display-en);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+  html[dir="rtl"] .nakha-pd-{{ id }}-title { line-height: 1.4; letter-spacing: normal; }
+
+  .nakha-pd-{{ id }}-brand {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-transform: var(--display-case);
+    color: var(--color-appetite);
+  }
+  html[dir="ltr"] .nakha-pd-{{ id }}-brand { letter-spacing: 0.12em; }
+
+  .nakha-pd-{{ id }}-divider { height: 1px; border: 0; margin: 0; background: var(--color-border); }
+
+  .nakha-pd-{{ id }}-pricerow {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* the quick-spec strip — a 2-column key/value board, the densest way to
+     answer "what am I actually buying" above the fold */
+  .nakha-pd-{{ id }}-specs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-border);
+    overflow: hidden;
+  }
+  @media (max-width: 480px) {
+    .nakha-pd-{{ id }}-specs { grid-template-columns: minmax(0, 1fr); }
+  }
+  .nakha-pd-{{ id }}-spec {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 11px 13px;
+    background: var(--color-surface);
+  }
+  .nakha-pd-{{ id }}-spec dt {
+    font-size: 0.625rem;
+    text-transform: var(--display-case);
+    color: var(--color-text-tertiary);
+  }
+  html[dir="ltr"] .nakha-pd-{{ id }}-spec dt { letter-spacing: 0.08em; }
+  .nakha-pd-{{ id }}-spec dd {
+    margin: 0;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  /* ================= installment + warranty ================= */
+  .nakha-pd-{{ id }}-inst,
+  .nakha-pd-{{ id }}-warranty {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+  .nakha-pd-{{ id }}-inst svg { flex: none; color: var(--color-appetite); }
+  .nakha-pd-{{ id }}-inst b { color: var(--color-text-primary); font-weight: 800; }
+  .nakha-pd-{{ id }}-warranty {
+    padding: 11px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    background: var(--color-bg-tertiary);
+  }
+  .nakha-pd-{{ id }}-warranty svg { flex: none; color: var(--color-basil); }
+
+  /* ================= tips ================= */
+  .nakha-pd-{{ id }}-tips {
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  /* ================= sticky bar ================= */
+  .nakha-pd-{{ id }}-sticky {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: opacity var(--t-base) var(--ease-out),
+                transform var(--t-base) var(--ease-out),
+                visibility var(--t-base) linear;
+  }
+  .nakha-pd-{{ id }}-sticky.is-on { opacity: 1; visibility: visible; transform: translateY(0); }
+  .nakha-pd-{{ id }}-sticky > .nakha-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+  }
+</style>
+
+
+{% if p and p._id %}
+<section id="nakha-pd-{{ id }}" class="nakha-section" x-data="productPage_{{ id }}()">
+  <div class="nakha-container">
+
+    {# ═════════════════ breadcrumb ═════════════════ #}
+    {% if showBreadcrumb %}
+      <nav class="nakha-crumbs mb-6" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a>
+        <svg class="nakha-crumbs-sep shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <a href="/shop">{{ t('pages.shop.title') }}</a>
+        <svg class="nakha-crumbs-sep shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+        </svg>
+        <span aria-current="page" class="nakha-clamp-1">{{ p.title }}</span>
+      </nav>
+    {% endif %}
+
+    <div class="nakha-pd-{{ id }}-row">
+
+      {# ═══════════════════════ GALLERY (sticky on desktop) ═══════════════════════ #}
+      <div class="nakha-pd-{{ id }}-media" data-sticky-fit>
+        {% if imgCount == 0 %}
+          <div class="nakha-pd-{{ id }}-main {{ ratioCls }}" style="cursor: default;">
+            <span class="nakha-noimg-art">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5.5"/><path d="M3.5 3v5.2a2 2 0 0 0 2 2V21M5.5 3v4M7.5 3v5.2a2 2 0 0 1-2 2M20.5 21v-7c-1.6 0-2.5-1.4-2.5-4.4 0-3.3 1-6.6 2.5-6.6Z"/>
+              </svg>
+            </span>
+          </div>
+
+        {% elif stacked %}
+          <div class="nakha-pd-{{ id }}-stack">
+            {% for image in images %}
+              <a {% if showZoom %}href="{{ image.fileUrl }}" class="glightbox" data-gallery="pd-{{ id }}"{% endif %}>
+                <img src="{{ image.fileUrl }}" alt="{{ p.title }}"
+                     {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </a>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="nakha-pd-{{ id }}-gal">
+            {% if thumbsSide and imgCount > 1 %}
+              <div class="nakha-pd-{{ id }}-thumbs" role="tablist">
+                {% for image in images %}
+                  <button type="button" role="tab"
+                          class="nakha-gallery-thumb"
+                          :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                          :aria-selected="activeImageIndex === {{ loop.index0 }}"
+                          @click="setImage({{ loop.index0 }})"
+                          aria-label="{{ p.title }} — {{ loop.index }}">
+                    <img src="{{ image.fileUrl }}" alt="" loading="lazy"/>
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="min-w-0">
+              <div class="nakha-pd-{{ id }}-main {{ ratioCls }}" {% if showZoom %}@click="openZoom()"{% endif %}>
+                {# ⚠️  :class MUST use the object form here, not `cond && 'is-active'`.
+                   The first image also carries a STATIC is-active (so the gallery
+                   is not blank before Alpine boots), and the string form only ever
+                   removes classes Alpine itself added — it would never strip the
+                   static one. The first image then stayed visible forever and every
+                   thumbnail click stacked another image on top of it. The object
+                   form removes the class on a falsy value no matter who set it. #}
+                {% for image in images %}
+                  <img src="{{ image.fileUrl }}" alt="{{ p.title }}"
+                       class="{% if loop.first %}is-active{% endif %}"
+                       :class="{ 'is-active': !variantImageUrl && activeImageIndex === {{ loop.index0 }} }"
+                       {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+                {% endfor %}
+
+                {# the chosen variant's own photo when it isn't one of the product images
+                   (server render only has its ID — URL from /ajax/product) #}
+                <img x-show="variantImageUrl" x-cloak :src="variantImageUrl" alt="{{ p.title }}" :class="{ 'is-active': !!variantImageUrl }"/>
+
+                <span class="nakha-badge nakha-badge--off absolute top-3 start-3 z-10"
+                      x-show="hasDiscount()" x-cloak
+                      x-text="'−' + discountPercent + '%'"></span>
+              </div>
+
+              {% if thumbsBelow and imgCount > 1 %}
+                <div class="nakha-pd-{{ id }}-thumbs mt-3" role="tablist">
+                  {% for image in images %}
+                    <button type="button" role="tab"
+                            class="nakha-gallery-thumb"
+                            :class="activeImageIndex === {{ loop.index0 }} && 'is-active'"
+                            :aria-selected="activeImageIndex === {{ loop.index0 }}"
+                            @click="setImage({{ loop.index0 }})"
+                            aria-label="{{ p.title }} — {{ loop.index }}">
+                      <img src="{{ image.fileUrl }}" alt="" loading="lazy"/>
+                    </button>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# hidden anchors give GLightbox a gallery for the zoom click #}
+          {% if showZoom %}
+            <div class="hidden">
+              {% for image in images %}
+                <a href="{{ image.fileUrl }}" class="glightbox" data-gallery="pd-{{ id }}"
+                   id="pdZoom-{{ id }}-{{ loop.index0 }}"></a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {# ═══════════════════════ INFO ═══════════════════════ #}
+      <div class="flex flex-col gap-4" id="pdInfo-{{ id }}">
+
+        {% if showBrand and brand %}
+          <span class="nakha-pd-{{ id }}-brand">{{ brand }}</span>
+        {% endif %}
+
+        <h1 class="nakha-pd-{{ id }}-title">{{ p.title }}</h1>
+
+        <div class="flex items-center gap-4 flex-wrap">
+          {% if showRating and reviews > 0 %}
+            <div class="flex items-center gap-2">
+              {{ pdStars(full, hasHalf) }}
+              <span class="nakha-rating-count">{{ rating }} · {% ui "count.njk", n=reviews, kind='review' %}</span>
+            </div>
+          {% endif %}
+          {% if showSku %}
+            <span class="nakha-caption" x-show="currentSku" {% if not baseSku %}x-cloak{% endif %}>{{ t('pages.product.sku') }}: <bdi dir="ltr" class="nakha-num" x-text="currentSku">{{ baseSku }}</bdi></span>
+          {% endif %}
+        </div>
+
+        {# ---- tags as spec chips ---- #}
+        {% if p.tags and (p.tags | length) > 0 %}
+          <div class="nakha-spec-row">
+            {% for tag in p.tags %}
+              {% if tag is string %}{% set tn = tag %}{% else %}{% set tn = tag.displayName or tag.name or tag.title or tag.label or tag.value or '' %}{% endif %}{% if loop.index <= 4 and tn %}<span class="nakha-spec">{{ tn }}</span>{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <hr class="nakha-pd-{{ id }}-divider"/>
+
+        {# ---- price ---- #}
+        <div class="flex flex-col gap-2.5">
+          <div class="nakha-pd-{{ id }}-pricerow">
+            <span class="nakha-price nakha-price--lg" :class="hasDiscount() && 'nakha-price--sale'" x-text="displayUnitPrice()">{{ p.pricing.price | money }}</span>
+            <span class="nakha-price-was" x-show="hasDiscount()" x-cloak x-text="displayComparePrice()"></span>
+            {% if showSavings %}
+              <span class="nakha-tag nakha-tag--sale" x-show="hasDiscount()" x-cloak>
+                {{ t('pages.cart.savings') }} <span x-text="displaySavings()"></span>
+              </span>
+            {% endif %}
+          </div>
+
+          {% if showInstallment and installmentText %}
+            <span class="nakha-pd-{{ id }}-inst" x-show="!isOutOfStock">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="4.5" width="18" height="15.5" rx="2.5"/><path d="M3 9.5h18"/>
+                <path stroke-linecap="round" d="M7.5 3v3M16.5 3v3"/>
+              </svg>
+              <span x-html="installmentLine()"></span>
+            </span>
+          {% endif %}
+        </div>
+
+        {# ---- stock: one line, four explicit states (Qumra.stock.cap → stockState) ----
+           soldout · incart (you already hold all of it) · low (1…threshold) · instock #}
+        {% if showStock %}
+          <div>
+            <span class="nakha-stock"
+                  :class="{ 'nakha-stock--out': stockState() === 'soldout' || stockState() === 'incart', 'nakha-stock--low': stockState() === 'low', 'nakha-stock--in': stockState() === 'instock' }">
+              <span class="nakha-stock-dot"></span><span x-text="stockLine()">{{ t('pages.product.in_stock') if canPurchase else t('pages.product.out_of_stock') }}</span>
+            </span>
+          </div>
+        {% endif %}
+
+        {# ---- quick specs ---- #}
+        {% if hasSpecs %}
+          <dl class="nakha-pd-{{ id }}-specs">
+            {% for s in specs %}
+              {% if s.value %}
+                <div class="nakha-pd-{{ id }}-spec">
+                  <dt>{{ s.label }}</dt>
+                  <dd>{{ s.value }}</dd>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </dl>
+        {% endif %}
+
+        {# ---- options: colour → swatches, everything else → size swatches ----
+           Non-colour options use the SAME .nakha-size control as the product
+           card, so picking a size looks identical wherever it happens. #}
+        {% if p.options and (p.options | length) > 0 %}
+          <div class="flex flex-col gap-5">
+            {% for option in p.options %}
+              <div class="nakha-variant">
+                <div class="nakha-variant-head">
+                  <span class="nakha-variant-name">{{ option.name }}</span>
+                  <span class="flex items-center gap-3">
+                    {% if showVariantLabels %}
+                      <span class="nakha-variant-value"
+                            x-text="selectedLabels['{{ option.name | replace("'", "\\'") }}'] || ''"></span>
+                    {% endif %}
+                    {# The size guide belongs beside the size, not buried in an
+                       accordion — "does it run small" is the blocking question. #}
+                    {# once per product — next to the first option it fits, not on every group #}
+                    {% if sizeGuideUrl and option.type != 'color' and not (_guideShown | length) %}
+                      {% set _gs = _guideShown.push(1) %}
+                      <a href="{{ sizeGuideUrl }}" class="nakha-variant-guide">{{ t('pages.product.size_guide') }}</a>
+                    {% endif %}
+                  </span>
+                </div>
+
+                {% if option.type == 'color' %}
+                  <div class="nakha-size-row">
+                    {% for value in option.values %}
+                      <button type="button"
+                              class="nakha-swatch"
+                              data-swatch="{{ value.value or value.label }}" data-swatch-label="{{ value.label }}"
+                              :class="selectedOptions['{{ option.name | replace("'", "\\'") }}'] === '{{ value._id }}' && 'is-active'"
+                              :aria-pressed="selectedOptions['{{ option.name | replace("'", "\\'") }}'] === '{{ value._id }}'"
+                              @click="selectOption('{{ option.name | replace("'", "\\'") }}', '{{ value._id }}', '{{ value.label | replace("'", "\\'") }}')"
+                              title="{{ value.label }}"
+                              aria-label="{{ value.label }}"></button>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="nakha-size-row">
+                    {% for value in option.values %}
+                      <button type="button"
+                              class="nakha-size nakha-size--lg"
+                              :class="selectedOptions['{{ option.name | replace("'", "\\'") }}'] === '{{ value._id }}' && 'is-active'"
+                              :aria-pressed="selectedOptions['{{ option.name | replace("'", "\\'") }}'] === '{{ value._id }}'"
+                              @click="selectOption('{{ option.name | replace("'", "\\'") }}', '{{ value._id }}', '{{ value.label | replace("'", "\\'") }}')">
+                        {{ value.label }}
+                      </button>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# ---- qty + add to cart ---- #}
+        <div class="flex items-center gap-3 flex-wrap">
+          {% if showQty %}
+            <div class="nakha-qty shrink-0">
+              <button type="button" @click="qty > 1 && qty--" :disabled="qty <= 1" aria-label="-">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M5 12h14"/>
+                </svg>
+              </button>
+              <span class="nakha-qty-value" x-text="qty">1</span>
+              <button type="button" @click="qty < maxQty() && qty++" :disabled="qty >= maxQty()" aria-label="+">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+
+          <button type="button"
+                  @click="addToCart()"
+                  :disabled="!canBuy() || addingToCart"
+                  class="nakha-btn nakha-btn--primary nakha-btn--lg flex-1"
+                  style="min-width: 200px;">
+            <span x-show="addingToCart" class="nakha-spinner" style="width:17px;height:17px;border-width:2px;"></span>
+            <span x-show="addedSuccess && !addingToCart" x-cloak class="inline-flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12.5 9.5 18 20 6.5"/>
+              </svg>
+              {{ t('pages.product.added') }}
+            </span>
+            <span x-show="!addingToCart && !addedSuccess">
+              <span x-show="canBuy()">{{ t('pages.product.add_to_cart') }}</span>
+              <span x-show="!canBuy()" x-cloak x-text="stockLine()"></span>
+            </span>
+          </button>
+        </div>
+
+        {% if showBuyNow %}
+          <button type="button"
+                  @click="buyNow()"
+                  :disabled="!canBuy() || addingToCart"
+                  class="nakha-btn nakha-btn--light nakha-btn--lg nakha-btn--block">
+            {{ t('pages.product.buy_now') }}
+          </button>
+        {% endif %}
+
+        {# ---- running total once qty > 1 ---- #}
+        <div class="nakha-summary-row is-total" x-show="qty > 1" x-cloak style="margin-top: 0;">
+          <span>{{ t('pages.cart.total') }}</span>
+          <span x-text="displayPrice()"></span>
+        </div>
+
+        {# ---- warranty ---- #}
+        {% if showWarranty and warrantyText %}
+          <span class="nakha-pd-{{ id }}-warranty">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 3l7.5 3v5.6c0 4.5-3.1 7.3-7.5 8.9-4.4-1.6-7.5-4.4-7.5-8.9V6z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.2l2.2 2.2 4.3-4.4"/>
+            </svg>
+            {{ warrantyText }}
+          </span>
+        {% endif %}
+
+        {# ---- training tips ---- #}
+        {% if hasTips %}
+          <div class="nakha-pd-{{ id }}-tips">
+            {% if tipsTitle %}
+              <span class="nakha-micro" style="display:block; margin-bottom:14px; color: var(--color-appetite);">{{ tipsTitle }}</span>
+            {% endif %}
+            <div class="nakha-tips">
+              {% for tip in tips %}
+                {% if tip.title %}
+                  <div class="nakha-tip">
+                    <span class="nakha-tip-num">{{ loop.index }}</span>
+                    <span class="flex flex-col gap-1 min-w-0">
+                      <span class="nakha-tip-title">{{ tip.title }}</span>
+                      {% if tip.text %}<span class="nakha-tip-text">{{ tip.text }}</span>{% endif %}
+                    </span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {# ---- share ---- #}
+        {% if showShare %}
+          <div class="flex items-center justify-end">
+            <button type="button" @click="share()" class="nakha-btn nakha-btn--ghost nakha-btn--sm">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/>
+                <path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>
+              </svg>
+              {# ⚠️  Both strings come from the Alpine factory, never inlined here:
+                 `| dump` emits DOUBLE quotes, and the first one would close this
+                 x-text attribute and silently kill the whole component. #}
+              <span x-text="shared ? copiedText : shareText">{{ t('pages.product.share') }}</span>
+            </button>
+          </div>
+        {% endif %}
+
+        {# ---- detail panels (accordion) ---- #}
+        {% if (panels | length) > 0 %}
+          <div class="nakha-acc mt-1">
+            {% for block in panels %}
+              {% set b = block.data %}
+              {% set body = p.description if (b.source | default('description')) == 'description' else b.text %}
+              {% if body %}
+                <div class="nakha-acc-item"
+                     x-data="{ open: {{ 'true' if b.open_by_default else 'false' }} }"
+                     :class="open && 'is-open'">
+                  <button type="button" class="nakha-acc-head" @click="open = !open" :aria-expanded="open">
+                    <span class="flex items-center gap-2.5 min-w-0">
+                      <span class="shrink-0" style="color: var(--color-appetite);">{{ pdIcon(b.icon | default('info'), 18) }}</span>
+                      <span>{{ b.title }}</span>
+                    </span>
+                    <span class="nakha-acc-icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </span>
+                  </button>
+                  <div x-show="open" x-collapse class="nakha-acc-body">
+                    <div class="nakha-rte">{{ body | safe }}</div>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════════════ RELATED ═══════════════════════ #}
+  {% if showRelated and (related | length) > 0 %}
+    <div class="nakha-container" style="margin-top: var(--section-py);">
+      <div class="nakha-head">
+        <div class="nakha-head-inner">
+          <h2 class="nakha-h2">{{ relatedTitle }}</h2>
+          <span class="nakha-rule"></span>
+        </div>
+      </div>
+      <div class="nakha-grid"
+           style="--cols-desktop: {{ relCols }}; --cols-tablet: {{ 3 if relCols > 3 else relCols }}; --cols-mobile: {{ 1 if relCount == 1 else 2 }};{% if relCount < 4 %} max-width: {{ relCount * 320 }}px;{% endif %}">
+        {% for rp in related %}
+          {% if loop.index <= relatedLimit %}
+            {% ui "product-card.njk", product=rp %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {# ═══════════════════════ STICKY BUY BAR ═══════════════════════ #}
+  {% if showSticky %}
+    <div class="nakha-buybar nakha-pd-{{ id }}-sticky" :class="showBar && 'is-on'">
+      <div class="nakha-container">
+        <div class="flex flex-col min-w-0 flex-1">
+          <span class="nakha-caption nakha-clamp-1">{{ p.title }}</span>
+          <span class="nakha-price" :class="hasDiscount() && 'nakha-price--sale'" x-text="displayPrice()">{{ p.pricing.price | money }}</span>
+        </div>
+        <button type="button"
+                @click="addToCart()"
+                :disabled="!canBuy() || addingToCart"
+                class="nakha-btn nakha-btn--primary shrink-0">
+          <span x-show="addingToCart" class="nakha-spinner" style="width:16px;height:16px;border-width:2px;"></span>
+          <span x-show="!addingToCart">
+            <span x-show="canBuy()">{{ t('pages.product.add_to_cart') }}</span>
+            <span x-show="!canBuy()" x-cloak x-text="stockLine()"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+
+<script>
+  /* ==========================================================================
+     Factory hung on `window` (NOT Alpine.data) — the x-data above calls
+     productPage_<id>() directly. Same contract as every previous version.
+     ======================================================================= */
+  (function () {
+    var wid = '{{ id }}';
+
+    window['productPage_' + wid] = function () {
+      /* stock/cap/4-state logic is shared with quick view: Qumra.stock.cap in main.js */
+      return Object.assign(Qumra.stock.cap('{{ p._id }}', {
+        quantity: {{ p.quantity | default(0, true) }},
+        trackQuantity: {{ 'true' if p.trackQuantity else 'false' }},
+        allowBackorder: {{ 'true' if p.allowBackorder else 'false' }}
+      }, {{ (p.slug or p.handle or '') | dump | safe }}, {{ lowStock | int }}), {
+        qty: 1,
+        baseSku: {{ baseSku | dump | safe }},
+        currentSku: {{ baseSku | dump | safe }},
+        variantImageUrl: null,
+        activeImageIndex: 0,
+        addingToCart: false,
+        addedSuccess: false,
+        variantSelected: false,
+        selectedOptions: {},
+        selectedLabels: {},
+        shared: false,
+        showBar: false,
+        /* strings the markup binds to — safe to `| dump` in here, this is a script */
+        shareText: {{ t('pages.product.share') | dump | safe }},
+        copiedText: {{ t('pages.blog.copied') | dump | safe }},
+        currentVariantId: null,
+        currentVariantQuantity: {{ p.quantity | default(0, true) }},
+        unitPrice: {{ p.pricing.price | default(0, true) }},
+        unitComparePrice: {{ p.pricing.compareAtPrice | default(0, true) }},
+        discountPercent: {% if hasDiscount %}{{ (((p.pricing.compareAtPrice - p.pricing.price) / p.pricing.compareAtPrice) * 100) | int }}{% else %}0{% endif %},
+        isOutOfStock: {{ 'false' if canPurchase else 'true' }},
+
+        /* ---- money: window.formatMoney is Utils.formatMoney, which mirrors
+                the server-side `| money` filter (same separators & symbol) ---- */
+        displayPrice()        { return window.formatMoney ? window.formatMoney(this.unitPrice * this.qty) : ''; },
+        displayUnitPrice()    { return window.formatMoney ? window.formatMoney(this.unitPrice) : ''; },
+        displayComparePrice() {
+          if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+          return window.formatMoney ? window.formatMoney(this.unitComparePrice * this.qty) : '';
+        },
+        displaySavings() {
+          if (!this.unitComparePrice || this.unitComparePrice <= this.unitPrice) return '';
+          return window.formatMoney ? window.formatMoney((this.unitComparePrice - this.unitPrice) * this.qty) : '';
+        },
+        hasDiscount() { return !!(this.unitComparePrice && this.unitComparePrice > this.unitPrice); },
+
+        /* The installment sentence is a merchant STRING with {amount}/{months}
+           placeholders, not a locale key — that way the wording can name the
+           actual provider ("تابي", "تمارا") without a code change. The amount
+           is derived from the live unit price, so it follows variant switches. */
+        installmentLine() {
+          var months = {{ months | default(4, true) }};
+          if (!months || months < 2) return '';
+          var per = window.formatMoney ? window.formatMoney(Math.round(this.unitPrice / months)) : '';
+          return {{ installmentText | dump | safe }}
+            .replace('{months}', months)
+            .replace('{amount}', '<b>' + per + '</b>');
+        },
+
+        /* ---- variants dumped server-side; `options` holds option-VALUE ids ---- */
+        variants: [
+          {% for variant in p.variants %}
+          {# a variant with empty `pricing` inherits the parent's price (it was 0);
+             variant.images are raw IDs in the server render — compare as strings #}
+          {% set vp = variant.pricing if (variant.pricing and variant.pricing.price) else ({ price: variant.price, compareAtPrice: variant.compareAtPrice | default(0, true) } if variant.price else p.pricing) %}
+          {% set vImg = variant.images[0] if (variant.images and variant.images | length) else null %}
+          {% set vid = ((vImg._id if vImg._id else vImg) | string) if vImg else '' %}
+          {% set idx = [] %}
+          {% if vid %}{% for g in images %}{% if (g._id | string) == vid %}{% set _ = idx.push(loop.index0) %}{% endif %}{% endfor %}{% endif %}
+          {
+            id: '{{ variant._id }}',
+            isVariant: true,
+            price: {{ vp.price | default(0, true) }},
+            compareAtPrice: {{ vp.compareAtPrice | default(0, true) }},
+            quantity: {{ variant.quantity | default(0, true) }},
+            inventoryLevel: { available: {% if variant.inventoryLevel and (variant.inventoryLevel.available or variant.inventoryLevel.available == 0) %}{{ variant.inventoryLevel.available }}{% else %}null{% endif %} },
+            trackQuantity: {{ 'true' if variant.trackQuantity else 'false' }},
+            allowBackorder: {{ 'true' if variant.allowBackorder else 'false' }},
+            sku: {{ (variant.sku or (variant.identification and variant.identification.sku) or '') | dump | safe }},
+            imageIndex: {{ idx[0] if idx | length else -1 }},
+            options: {{ (variant.options or []) | dump | safe }}
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ],
+
+        init() {
+          var self = this;
+
+          {% for option in p.options %}
+            {% if (option.values | length) > 0 %}
+              this.selectedOptions[{{ (option.name or '') | dump | safe }}] = '{{ option.values[0]._id }}';
+              this.selectedLabels[{{ (option.name or '') | dump | safe }}] = {{ (option.values[0].label or '') | dump | safe }};
+            {% endif %}
+          {% endfor %}
+
+          {% if (p.options | length) > 0 %}
+            this.variantSelected = true;
+            this.matchVariant();
+            /* the first values are sold out: open on the first variant that can be bought */
+            if (this.isOutOfStock) {
+              var inStockV = this.variants.find(function (v) { return v.options && v.options.length && Qumra.stock.limit(v) !== 0; });
+              if (inStockV) {
+                {% for option in p.options %}{% for value in option.values %}
+                if (inStockV.options.indexOf('{{ value._id }}') !== -1) {
+                  this.selectedOptions[{{ (option.name or '') | dump | safe }}] = '{{ value._id }}';
+                  this.selectedLabels[{{ (option.name or '') | dump | safe }}] = {{ (value.label or '') | dump | safe }};
+                }
+                {% endfor %}{% endfor %}
+                this.matchVariant();
+                if (inStockV.imageIndex >= 0) this.setImage(inStockV.imageIndex);
+              }
+            }
+          {% endif %}
+
+          /* the shopper's cart feeds availableNow() — every number they read subtracts it */
+          this._watchCart();
+
+          {% if showSticky %}
+          /* the sticky bar appears only once the real buy button is off-screen */
+          var anchor = document.getElementById('pdInfo-' + wid);
+          if (anchor && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              self.showBar = !entries[0].isIntersecting;
+            }, { rootMargin: '-140px 0px 0px 0px' }).observe(anchor);
+          }
+          {% endif %}
+        },
+
+        setImage(idx) { this.activeImageIndex = idx; this.variantImageUrl = null; },
+
+        openZoom() {
+          {% if showZoom and imgCount > 0 and not stacked %}
+          var link = document.getElementById('pdZoom-' + wid + '-' + this.activeImageIndex);
+          if (link) link.click();
+          {% endif %}
+        },
+
+        selectOption(name, valueId, label) {
+          this.selectedOptions[name] = valueId;
+          this.selectedLabels[name] = label;
+          this.variantSelected = true;
+          this.matchVariant();
+          /* the gallery follows the chosen variant; -1 = no photo of its own → leave it */
+          var self = this, v = this.variants.find(function (x) { return x.id === self.currentVariantId; });
+          if (!v) return;
+          if (v.imageIndex >= 0) { this.setImage(v.imageIndex); return; }
+          Qumra.stock.variantImage({{ (p.slug or p.handle or '') | dump | safe }}, v.id).then(function (url) {
+            if (url && self.currentVariantId === v.id) self.variantImageUrl = url;
+          });
+        },
+
+        matchVariant() {
+          var selectedIds = Object.values(this.selectedOptions);
+
+          var matched = this.variants.find(function (v) {
+            if (!v.options || !v.options.length) return false;
+            if (v.options.length !== selectedIds.length) return false;
+            for (var i = 0; i < selectedIds.length; i++) {
+              if (v.options.indexOf(selectedIds[i]) === -1) return false;
+            }
+            return true;
+          });
+
+          if (!matched) return;
+
+          this.currentVariantId = matched.id;
+          this.unitPrice = matched.price;
+          this.currentVariantQuantity = matched.quantity;
+
+          /* measured: a VARIANT is capped by its own stock unless it allows backorders */
+          this.stockEntity = matched;
+          this.isOutOfStock = Qumra.stock.limit(matched) === 0;
+          this.currentSku = matched.sku || this.baseSku;
+          this._clampQty();
+
+          if (matched.compareAtPrice && matched.compareAtPrice > matched.price) {
+            this.unitComparePrice = matched.compareAtPrice;
+            this.discountPercent = Math.floor(((matched.compareAtPrice - matched.price) / matched.compareAtPrice) * 100);
+          } else {
+            this.unitComparePrice = 0;
+            this.discountPercent = 0;
+          }
+        },
+
+        async addToCart() {
+          if (!this.canBuy() || this.addingToCart) return;
+          this.addingToCart = true;
+          try {
+            var optionIds = Object.values(this.selectedOptions);
+            await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+            this.addedSuccess = true;
+            var self = this;
+            setTimeout(function () { self.addedSuccess = false; }, 2000);
+          } catch (err) {
+            /* CartManager already toasted the reason */
+          } finally {
+            this.addingToCart = false;
+          }
+        },
+
+        async buyNow() {
+          if (!this.canBuy() || this.addingToCart) return;
+          this.addingToCart = true;
+          try {
+            var optionIds = Object.values(this.selectedOptions);
+            await Qumra.cart.add('{{ p._id }}', this.qty, optionIds.length ? optionIds : null);
+            window.location.href = '/cart';
+          } catch (err) {
+            this.addingToCart = false;
+          }
+        },
+
+        async share() {
+          var url = window.location.href;
+          /* native share sheet on mobile, clipboard on desktop */
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: {{ (p.title or '') | dump | safe }}, url: url });
+              return;
+            } catch (e) { /* dismissed — fall through to copy */ }
+          }
+          try { await navigator.clipboard.writeText(url); } catch (e) { return; }
+          this.shared = true;
+          var self = this;
+          setTimeout(function () { self.shared = false; }, 2000);
+        }
+      });
+    };
+  })();
+
+  {% if showZoom and imgCount > 0 %}
+  (function () {
+    if (typeof GLightbox === 'undefined') return;
+    GLightbox({ selector: '.glightbox[data-gallery="pd-{{ id }}"]', touchNavigation: true, loop: true });
+  })();
+  {% endif %}
+</script>
+
+{# Search-engine product data. Prices are passed through as the store holds
+   them (the same number `| money` prints) — never divided. #}
+{% set _ldImgs = [] %}
+{% for im in images %}{% if im.fileUrl %}{% set _li = _ldImgs.push(im.fileUrl) %}{% endif %}{% endfor %}
+<script type="application/ld+json">
+{{ {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": p.title | default('', true),
+  "image": _ldImgs,
+  "description": (p.description | default('', true) | replace('</p>', ' ') | replace('</li>', ' ') | replace('</h2>', ' ') | replace('<br>', ' ') | striptags | truncate(300)),
+  "sku": baseSku,
+  "offers": {
+    "@type": "Offer",
+    "price": (p.pricing.price if p.pricing else 0),
+    "priceCurrency": (localization.currency.currencyCode if localization and localization.currency else 'SAR') | default('SAR'),
+    "availability": ("https://schema.org/InStock" if canPurchase else "https://schema.org/OutOfStock"),
+    "url": "/products/" ~ (p.slug or p.handle or '')
+  }
+} | dump | replace("<", "\\u003c") | safe }}
+</script>
+{% else %}
+{# No product in the page data (deleted / unpublished link): a real page with
+   one H1 and a way back, instead of a crashing Alpine component. #}
+<section id="nakha-pd-{{ id }}" class="nakha-section">
+  <div class="nakha-container text-center" style="max-width: 640px;">
+    <h1 class="nakha-h2">{{ t('pages.404.title') }}</h1>
+    <p class="nakha-lead mt-3">{{ t('pages.404.message') }}</p>
+    <div class="flex items-center gap-3 flex-wrap justify-center mt-6">
+      <a href="/shop" class="nakha-btn nakha-btn--primary">{{ t('pages.404.browse_shop') }}</a>
+      <a href="/" class="nakha-btn nakha-btn--outline">{{ t('pages.404.back_home') }}</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#nakha-pd-' ~ id, c=d %}

@@ -1,0 +1,31 @@
+{# صفحة المقال — العنوان والصورة والمحتوى من بيانات الصفحة (article) أو من المقال المختار في المحرر #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# قمرة بتبعت بيانات الصفحة جوه context (context.product …) مش كمتغير مباشر زي التوثيق — بنقرا الاتنين #}
+{% set ctx = context or {} %}
+{% set a = article or ctx.article or wd.article or {} %}
+{% set aimg = (a.image.fileUrl if (a.image and a.image.fileUrl) else '') or a.imageUrl or (a.image if (a.image is string) else '') or (a.images[0].fileUrl if (a.images and a.images[0] and a.images[0].fileUrl) else '') %}
+{% set bl = blog or ctx.blog %}
+{% set adate = a.publishedAt or a.createdAt %}
+{% set aauthor = a.author if (a.author is string) else (a.author.name if a.author else '') %}
+{% set body = a.content or a.body or a.html or a.description %}
+<article class="mw-page">
+  <div class="container container--narrow">
+    <nav class="mw-breadcrumb" aria-label="{{ t('common.breadcrumb') }}">
+      <a href="/">{{t('common.home') | default('Home') }}</a>
+      <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      {% if bl and bl.title %}<a href="/blogs/{{ bl.handle or bl.slug }}">{{ bl.title }}</a><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{% endif %}
+      <span>{{ a.title }}</span>
+    </nav>
+    {% if a.title %}
+      <h1 class="mw-article__title" dir="auto">{{ a.title }}</h1>
+      {% if adate or aauthor %}
+        <p class="mw-post__date">{% if adate %}{{ (adate | string).slice(0, 10) }}{% endif %}{% if adate and aauthor %} — {% endif %}{{ aauthor }}</p>
+      {% endif %}
+      {% if aimg %}<div class="mw-article__media"><img src="{{ aimg }}" alt="{{ a.title }}" width="1200" height="750"/></div>{% endif %}
+      {% if body %}<div class="mw-rte" dir="auto">{{ body | safe }}</div>{% endif %}
+    {% else %}
+      <h1 class="mw-collection-hero__title">{{ t('blog.not_found') }}</h1>
+      <a href="/blogs" class="mw-link">{{ t('blog.title') }}</a>
+    {% endif %}
+  </div>
+</article>

@@ -1,0 +1,56 @@
+{# =========================================================
+   Dark Blood - صفحة 404 (الصفحة مش موجودة)
+   زرار الرجوع: لو العميل جاي من صفحة في المتجر بيرجّعه لها، وإلا بيوديه الرئيسية (التفاعل في pages.js)
+   النصوص من locales/*.json، والتاجر يقدر يغيّر العنوان والوصف من الإعدادات
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{% set title = s.title or t('not_found.title') %}
+{% set text = s.text or t('not_found.text') %}
+{% set limit = (s.products_limit | default(4)) | int %}
+
+<div class="blk-404-page" id="blk404-{{ widget.id }}" data-blk-404>
+  <section class="blk-section blk-404">
+    <div class="blk-404-ambience" aria-hidden="true">
+      <div class="blk-orb blk-orb-1"></div>
+      <div class="blk-orb blk-orb-2"></div>
+    </div>
+
+    <div class="blk-container blk-404-inner">
+      <p class="blk-404-code blk-anim-fade-up" data-text="404" aria-hidden="true">404</p>
+      <h1 class="blk-404-title blk-anim-fade-up" style="--anim-delay: 0.1s;">{{ title }}</h1>
+      <p class="blk-404-text blk-anim-fade-up" style="--anim-delay: 0.2s;">{{ text | safe }}</p>
+
+      <div class="blk-404-actions blk-anim-fade-up" style="--anim-delay: 0.3s;">
+        {# من غير JS اللينك بيروح للرئيسية؛ مع JS بيرجع خطوة لو الصفحة اللي قبلها من المتجر #}
+        <a href="/" class="blk-btn blk-btn-primary blk-btn-shine" data-404-back>
+          <svg class="blk-404-back-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span>{{t('not_found.back')}}</span>
+        </a>
+        <a href="/" class="blk-btn blk-btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+          <span>{{t('not_found.home')}}</span>
+        </a>
+      </div>
+
+      {% if s.show_search !== false %}
+        <form class="blk-search-form blk-404-search blk-anim-fade-up" style="--anim-delay: 0.4s;" action="/search" method="get" role="search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.9-3.9"/></svg>
+          <input type="search" name="q" class="blk-search-form-input" placeholder="{{t('not_found.search_placeholder')}}" aria-label="{{t('not_found.search_placeholder')}}" autocomplete="off" required>
+          <button type="submit" class="blk-btn blk-btn-primary">{{t('not_found.search')}}</button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if s.show_products !== false and limit > 0 %}
+    {# منتجات من المتجر (pages.js بيملاها). مخفية لحد ما المنتجات توصل، ولو المتجر فاضي بتفضل مخفية #}
+    <section class="blk-section blk-404-products" data-404-products hidden>
+      <div class="blk-container">
+        <h2 class="blk-section-title">{{ s.products_title or t('not_found.products_title') }}</h2>
+        <div class="blk-prod-grid" style="--grid-cols: 4;"
+          data-blk-store-products data-limit="{{ limit }}" data-sort="created-desc"
+          data-hide-if-empty data-hide-quickview></div>
+      </div>
+    </section>
+  {% endif %}
+</div>

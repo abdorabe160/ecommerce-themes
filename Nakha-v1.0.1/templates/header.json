@@ -1,0 +1,100 @@
+{
+  "title": "Header",
+  "allowAdd": false,
+  "allowRemove": false,
+  "allowReorder": false,
+  "widgets": [
+    {
+      "name": "الهيدر الرئيسي",
+      "widget": "header",
+      "settings": {
+        "logo_height": 36,
+        "sticky": true,
+        "search_style": "icon",
+        "search_placeholder": "دوّر على طبق، مشروب، حلو…",
+        "show_cart": true,
+        "show_language_switcher": true,
+        "show_announcement": true,
+        "claim_1": "خبز ومعجنات",
+        "claim_2": "كيك وحلو شرقي",
+        "claim_3": "اطلب أونلاين",
+        "claim_4": "سندوتشات ووجبات",
+        "claim_5": "تصفّح المنيو كامل",
+        "announcement_tone": "appetite",
+        "marquee_speed": 34,
+        "header_menu": "header-menu",
+        "deal_link_text": "عروض اليوم",
+        "deal_link_url": "/shop",
+        "show_goals_row": true,
+        "goals_label": "الأكثر طلباً",
+        "goals_menu": "header-menu"
+      },
+      "blocks": [
+        {
+          "block": "mega",
+          "name": "الوجبات",
+          "settings": {
+            "nav_label": "الوجبات",
+            "nav_url": "/shop",
+            "col1_title": "ساندويتشات",
+            "col1_menu": "",
+            "col2_title": "أطباق رئيسية",
+            "col2_menu": "",
+            "col3_title": "وجبات العيلة",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "المخبوزات",
+          "settings": {
+            "nav_label": "المخبوزات",
+            "nav_url": "/shop",
+            "col1_title": "خبز طازة",
+            "col1_menu": "",
+            "col2_title": "معجنات",
+            "col2_menu": "",
+            "col3_title": "",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "الحلويات",
+          "settings": {
+            "nav_label": "الحلويات",
+            "nav_url": "/shop",
+            "col1_title": "كيك وتشيز كيك",
+            "col1_menu": "",
+            "col2_title": "حلو شرقي",
+            "col2_menu": "",
+            "col3_title": "",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        },
+        {
+          "block": "mega",
+          "name": "المشروبات",
+          "settings": {
+            "nav_label": "المشروبات",
+            "nav_url": "/shop",
+            "col1_title": "قهوة",
+            "col1_menu": "",
+            "col2_title": "عصائر وبارد",
+            "col2_menu": "",
+            "col3_title": "",
+            "col3_menu": "",
+            "col4_title": "",
+            "col4_menu": ""
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "common": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "search": "Search",
+    "cart": "Cart",
+    "view_all": "View All",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "load_more": "Load More",
+    "no_results": "No results found",
+    "on_sale": "Sale",
+    "new": "New",
+    "best_seller": "Best Seller",
+    "share": "Share",
+    "menu": "Menu",
+    "add_to_cart": "Add to Cart",
+    "remove": "Remove",
+    "continue_shopping": "Continue Shopping",
+    "language": "Language",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds",
+    "subscribe": "Subscribe",
+    "email": "Email",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "faq": "FAQ",
+    "prev": "Previous",
+    "next": "Next",
+    "back_to_top": "Back to top",
+    "count_product_one": "1 product",
+    "count_product_two": "2 products",
+    "count_product_few": "products",
+    "count_product_many": "products",
+    "count_article_one": "1 article",
+    "count_article_two": "2 articles",
+    "count_article_few": "articles",
+    "count_article_many": "articles",
+    "count_collection_one": "1 collection",
+    "count_collection_two": "2 collections",
+    "count_collection_few": "collections",
+    "count_collection_many": "collections"
+  },
+  "header": {
+    "cart": "Cart",
+    "search": "Search",
+    "wishlist": "Wishlist",
+    "menu": "Menu",
+    "search_title": "Search",
+    "search_placeholder": "What are you looking for?",
+    "no_results": "No results found",
+    "latest_products": "Latest products",
+    "browse_categories": "Browse by category",
+    "browse_collections": "Explore collections",
+    "remove": "Remove",
+    "announcement_text": "Discover our new fragrance collection"
+  },
+  "products": {
+    "title": "Featured Products",
+    "subtitle": "Carefully curated selections to match your taste",
+    "view_all": "View all",
+    "no_products": "No products yet"
+  },
+  "categories": {
+    "title": "Shop by Category",
+    "subtitle": "Explore our diverse collections",
+    "products_count": "products",
+    "no_categories": "No categories yet",
+    "no_categories_desc": "Collections will appear here once added.",
+    "view_all": "View all",
+    "explore": "Explore"
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "no_reviews": "No reviews yet"
+  },
+  "newsletter": {
+    "setup_hint": "Customers do not see this section until you add the sign-up link from your newsletter service in its settings.",
+    "title": "Subscribe to Our Newsletter",
+    "subtitle": "Be the first to know about new products and exclusive offers",
+    "placeholder": "Enter your email",
+    "button": "Subscribe Now",
+    "success": "Subscribed successfully!",
+    "privacy": "We respect your privacy and won't share your email"
+  },
+  "features": {
+    "shipping_desc": "On all orders",
+    "payment_desc": "Complete data protection"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know"
+  },
+  "articles": {
+    "title": "Latest Articles",
+    "add_articles": "Add articles from the builder"
+  },
+  "brands": {
+    "title": "Brands We're Proud Of"
+  },
+  "iwt": {
+    "crafted_with_love": "Crafted with Love",
+    "stat_products": "Creative Products",
+    "stat_rating": "Customer Rating"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  },
+  "appBanner": {
+    "download_now": "Download now"
+  },
+  "pages": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "Sorry, the page you're looking for doesn't exist or has been moved.",
+      "back_home": "Back to Home",
+      "browse_shop": "Browse Shop",
+      "eyebrow": "Error 404"
+    },
+    "collections": {
+      "title": "Collections",
+      "count": "collections",
+      "eyebrow": "Collections"
+    },
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "added_to_cart": "Added to Cart",
+      "buy_now": "Buy Now",
+      "out_of_stock": "Out of Stock",
+      "in_stock": "In Stock",
+      "low_stock": "Only {{count}} left!",
+      "quantity": "Quantity",
+      "price": "Price",
+      "description": "Description",
+      "specifications": "Specifications",
+      "reviews": "Reviews",
+      "reviews_count": "reviews",
+      "shipping_info": "Shipping Info",
+      "color": "Color",
+      "size": "Size",
+      "sku": "SKU",
+      "share": "Share Product",
+      "new": "New",
+      "sale": "Sale",
+      "discount": "{{percent}}% OFF",
+      "related_products": "You May Also Like",
+      "no_reviews": "No reviews yet",
+      "select_option": "Select {{option}}",
+      "choose_options": "Choose Options",
+      "added": "Added!",
+      "view_full_details": "View full details",
+      "quick_view": "Quick View",
+      "notes": "Scent Notes",
+      "in_stock_count": "In stock · {{count}} left",
+      "max_in_cart": "All available stock is already in your cart",
+      "not_found": "This product is no longer available",
+      "almost_gone": "Almost gone",
+      "free": "Free",
+      "view_product": "View product"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty": "Your cart is empty",
+      "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+      "empty_title": "Your cart is empty",
+      "empty_subtitle": "Discover something you love",
+      "browse": "Explore collections",
+      "continue_shopping": "Continue Shopping",
+      "checkout": "Checkout",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "discount": "Discount",
+      "savings": "You saved",
+      "items": "{{count}} items",
+      "remove_item": "Remove Item",
+      "remove": "Remove",
+      "coupon_placeholder": "Enter discount code",
+      "apply_coupon": "Apply",
+      "coupon_applied": "Coupon applied",
+      "coupon": "Discount code",
+      "clear": "Clear Cart",
+      "update": "Update",
+      "quantity": "Quantity",
+      "product": "Product",
+      "price": "Price",
+      "order_summary": "Order Summary",
+      "view_cart": "View Cart",
+      "needs_variant": "This item has options — open its page and choose one",
+      "only_available": "Only {{count}} available",
+      "stock_blocked": "Some items are not available in the requested quantity — adjust or remove them to continue"
+    },
+    "collection": {
+      "all_products": "All Products",
+      "filter": "Filter",
+      "sort": "Sort",
+      "products_count": "{{count}} products",
+      "no_products": "No products in this category",
+      "price_range": "Price Range",
+      "clear_filters": "Clear Filters",
+      "show_results": "Show Results"
+    },
+    "shop": {
+      "title": "Shop",
+      "search_placeholder": "Search products...",
+      "all_products": "All Products",
+      "collections": "Collections"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search for products...",
+      "suggestions": "Search Suggestions",
+      "products": "Products",
+      "view_all": "View All",
+      "no_results": "No results found",
+      "try_different": "Try different search terms",
+      "results_for": "Search results for",
+      "results": "{{count}} results",
+      "sort_by": "Sort by",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "newest": "Newest",
+      "highest_rated": "Highest Rated",
+      "min_price": "Min Price",
+      "max_price": "Max Price",
+      "apply": "Apply",
+      "filter": "Filter"
+    },
+    "features": {
+      "support_desc": "Round-the-clock customer service"
+    },
+    "about": {
+      "title": "About Us",
+      "story_label": "Our Story",
+      "mission_label": "Our Mission",
+      "values_label": "Our Values"
+    },
+    "order": {
+      "can_edit_or_delete_your_review_within": "You can edit or delete your review within",
+      "edit_period_ended": "The period to edit the review has ended",
+      "delete_period_ended": "The period to delete the review has ended",
+      "days_since_added": "days since it was added"
+    },
+    "blog": {
+      "title": "Blog",
+      "subtitle": "Discover the latest articles and tips",
+      "articles_count": "articles",
+      "read_blog": "Browse articles",
+      "read_more": "Read more",
+      "no_blogs": "No blogs yet",
+      "no_blogs_desc": "Blogs will appear here soon",
+      "no_articles": "No articles yet",
+      "no_articles_desc": "Articles will appear here soon",
+      "back_to_blogs": "Back to blogs",
+      "back_to_articles": "Back to articles",
+      "views": "views",
+      "share_article": "Share this article",
+      "related_articles": "Related Articles",
+      "copied": "Copied",
+      "author": "Author",
+      "all": "All",
+      "article_not_found": "Article not found"
+    }
+  },
+  "collection": {
+    "no_products": "No products in this collection",
+    "clear_filters": "Clear all",
+    "results_for": "Results for"
+  },
+  "cart": {
+    "free_shipping_left": "Add {amount} to get free shipping",
+    "free_shipping_reached": "Your order qualifies for free shipping",
+    "empty": "Your cart is empty",
+    "empty_message": "You haven't added any products yet. Browse our products and discover what suits you!",
+    "empty_title": "Your cart is empty",
+    "empty_subtitle": "Discover something you love",
+    "browse": "Explore collections",
+    "continue_shopping": "Continue Shopping",
+    "out_of_stock": "Can't add to cart — this product is out of stock"
+  },
+  "search": {
+    "filter": "Filter",
+    "sort_by": "Sort by",
+    "newest": "Newest",
+    "price_low_high": "Price: Low to High",
+    "price_high_low": "Price: High to Low",
+    "highest_rated": "Highest Rated"
+  },
+  "product": {
+    "sale": "Sale"
+  },
+  "cta": {
+    "expired": "Offer ended"
+  },
+  "hero": {
+    "scroll_hint": "Find your scent",
+    "builder_hint": "Add banner slides from the widget settings: bottle image, title and description."
+  }
+}

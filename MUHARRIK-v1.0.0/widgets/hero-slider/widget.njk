@@ -1,0 +1,279 @@
+{#
+  ============================================================================
+  MUHARRIK · HERO SLIDER · سلايدر الواجهة
+  ----------------------------------------------------------------------------
+     ┌──────────────────────────────────────────────────────────────────┐
+     │ ⌐  full-bleed image · gradient from the text side          01   │
+     │                                                       (outline) │
+     │ — 01 / PERFORMANCE · CAR CARE                                   │
+     │ BUILT FOR THE ROAD                   ┌ 0–100 │ GRIP  │ SHIP ┐   │
+     │ text                                 │ 4.2S  │ +18%  │ 48H  │   │
+     │ [ SHOP NOW → ]  [ COLLECTIONS ]      └──────────────────────┘   │
+     ├──────────────────────────────────────────────────────────────────┤
+     │ 01 / 03   ▬▬▬▬ ▭▭▭▭ ▭▭▭▭                            ❚❚  ←  →   │
+     └──────────────────────────────────────────────────────────────────┘
+
+  Ported from morva/widgets/hero-slider and re-voiced for the garage: one
+  block = one slide; a mono kicker numbered per slide, a huge uppercase title
+  with ONE highlighted word (yellow or hollow), a mono spec readout (three
+  editable label/value pairs — text only, nothing is computed), a mono
+  counter and SQUARE progress bars instead of dots.
+
+  Engine: Swiper (loaded in <head>, see layouts/layout.njk) initialised from
+  the inline <script> below, the same boot() pattern every hx widget uses.
+  Swiper reads the page's `dir`, so RTL slides, swipes and keys the right way;
+  the glyph arrows flip through .mh-arrow.
+
+  No image → the slide stands on the carbon ground with the yellow line field
+  (ui/mh-topo.njk) behind the HUD frame, so a fresh store never looks empty.
+  Copy fields left blank fall back to car-accessories demo copy in the
+  visitor's language (see DEMO below).
+
+  Styles: assets/mh-hero.css → "HERO SLIDER".
+  ============================================================================
+#}
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([], true) %}
+{% set isAr = (localization.language | default('ar', true)) != 'en' %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+{% macro pad(v) %}{{ ('0' ~ v) if v < 10 else v }}{% endmacro %}
+
+{# ---- Demo copy: car accessories & care, per language. Used when a slide's
+        copy is blank, and for the three default slides when there are no
+        blocks at all. ---- #}
+{% if isAr %}
+  {% set DEMO = [
+    { kicker: 'الأداء · العناية بالسيارة', title: 'جهّز سيارتك', hl: 'للطريق',
+      text: 'إكسسوارات وعناية احترافية — من الإطارات إلى لوحة القيادة، كل ما تحتاجه سيارتك في مكان واحد.',
+      b1: 'تسوّق الآن', b2: 'التشكيلات', u2: '/collections',
+      specs: [['التسارع', '0–100 · 4.2S'], ['الثبات', '+18%'], ['التوصيل', '48 ساعة']] },
+    { kicker: 'الإضاءة · LED', title: 'أضئ', hl: 'الليل',
+      text: 'مصابيح LED وشرائط إضاءة داخلية بتركيب سهل.',
+      b1: 'تسوّق الإضاءة', b2: '', u2: '',
+      specs: [['الإضاءة', '12 000 LM'], ['درجة اللون', '6500K'], ['الضمان', 'سنتان']] },
+    { kicker: 'العناية · التلميع', title: 'لمعة', hl: 'المعرض',
+      text: 'سيراميك حماية، شامبو، وأدوات تلميع احترافية لنتيجة تدوم.',
+      b1: 'تسوّق العناية', b2: '', u2: '',
+      specs: [['الحماية', '9H'], ['اللمعان', '+40%'], ['يدوم', '12 شهرًا']] }
+  ] %}
+{% else %}
+  {% set DEMO = [
+    { kicker: 'Performance · Car Care', title: 'Built for the', hl: 'Road',
+      text: 'Pro-grade accessories and care, from the tyres to the dash. Everything your car needs, in one garage.',
+      b1: 'Shop now', b2: 'Collections', u2: '/collections',
+      specs: [['0–100', '4.2S'], ['Grip', '+18%'], ['Shipping', '48H']] },
+    { kicker: 'Lighting · LED', title: 'Own the', hl: 'Night',
+      text: 'LED headlamps and interior strips. Plug-in fitting.',
+      b1: 'Shop lighting', b2: '', u2: '',
+      specs: [['Lumens', '12 000'], ['Colour', '6500K'], ['Warranty', '2 YRS']] },
+    { kicker: 'Detailing · Ceramic', title: 'Showroom', hl: 'Shine',
+      text: 'Ceramic coats, shampoos and pro detailing kits. Results that last.',
+      b1: 'Shop detailing', b2: '', u2: '',
+      specs: [['Protection', '9H'], ['Gloss', '+40%'], ['Lasts', '12 MO']] }
+  ] %}
+{% endif %}
+
+{# ---- Normalise blocks → slides ---- #}
+{% set slides = [] %}
+{% for b in blocks %}
+  {% set bd = b.data | default(b.settings, true) | default({}, true) %}
+  {% set dm = DEMO[loop.index0 % 3] %}
+  {# `| length` on purpose: the macro returns a SafeString, and an EMPTY one
+     is still a truthy object — `{% if img %}` would paint a blank <img>. #}
+  {% set imgRaw = mediaUrl(bd.image) | trim %}
+  {% set imgMRaw = mediaUrl(bd.image_mobile) | trim %}
+  {% set img = imgRaw if (imgRaw | length) else '' %}
+  {% set imgM = imgMRaw if (imgMRaw | length) else '' %}
+  {% set useDemo = not (bd.title or bd.kicker or bd.text) %}
+  {% set specs = [] %}
+  {% if bd.spec_1_label or bd.spec_1_value %}{% set _ = specs.push([bd.spec_1_label | default('', true), bd.spec_1_value | default('', true)]) %}{% endif %}
+  {% if bd.spec_2_label or bd.spec_2_value %}{% set _ = specs.push([bd.spec_2_label | default('', true), bd.spec_2_value | default('', true)]) %}{% endif %}
+  {% if bd.spec_3_label or bd.spec_3_value %}{% set _ = specs.push([bd.spec_3_label | default('', true), bd.spec_3_value | default('', true)]) %}{% endif %}
+  {% set demoSpecs = (specs | length) == 0 and useDemo %}
+  {% if demoSpecs %}{% set specs = dm.specs %}{% endif %}
+  {% set _ = slides.push({
+    img: img, imgM: imgM if (imgM | length) else img,
+    pos: bd.image_position | default('center', true),
+    overlay: bd.overlay if bd.overlay is defined and bd.overlay !== '' else 55,
+    kicker: dm.kicker if useDemo else (bd.kicker | default('', true)),
+    title: dm.title if useDemo else (bd.title | default('', true)),
+    hl: dm.hl if useDemo else (bd.title_hl | default('', true)),
+    text: dm.text if useDemo else (bd.text | default('', true)),
+    b1: bd.button_text | default(dm.b1, true), u1: bd.button_url | default('/shop', true),
+    b2: dm.b2 if useDemo and not bd.button2_text else (bd.button2_text | default('', true)),
+    u2: dm.u2 if useDemo and not bd.button2_text else (bd.button2_url | default('', true)),
+    specs: specs, demoSpecs: demoSpecs,
+    align: bd.align | default('start', true)
+  }) %}
+{% endfor %}
+{% if (slides | length) == 0 %}
+  {% for dm in DEMO %}
+    {% set _ = slides.push({
+      img: '', imgM: '', pos: 'center', overlay: 55,
+      kicker: dm.kicker, title: dm.title, hl: dm.hl, text: dm.text,
+      b1: dm.b1, u1: '/shop', b2: dm.b2, u2: dm.u2, specs: dm.specs, demoSpecs: true, align: 'start'
+    }) %}
+  {% endfor %}
+{% endif %}
+
+{% set n = slides | length %}
+{% set autoplay = d.autoplay != false %}
+{% set interval = d.interval | default(6, true) %}
+{% set showIndex = d.show_index != false %}
+{% set showSpecs = d.show_specs != false %}
+{% set showHud = d.show_hud != false %}
+{% set hlStyle = d.hl_style | default('yellow', true) %}
+
+<section id="mh-hs-{{ id }}"
+         class="mh-hs mh-hs--{{ d.height | default('full', true) }} is-hl-{{ hlStyle }}{{ ' is-single' if n < 2 }}{{ ' is-paused' if not autoplay }}"
+         aria-roledescription="carousel"
+         style="--pt: {{ d.padding_top if d.padding_top is defined else 0 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 0 }}px; --hs-interval: {{ interval }}s;">
+
+  <div class="mh-hs-stage swiper" data-mh-hs dir="{{ 'rtl' if isAr else 'ltr' }}">
+    <div class="swiper-wrapper">
+      {% for s in slides %}
+        {% set i = loop.index0 %}
+        <div class="swiper-slide mh-hs-slide mh-hs-slide--{{ s.align }}{{ ' has-img' if s.img else ' no-img' }}"
+             role="group" aria-roledescription="slide" aria-label="{{ pad(i + 1) }} / {{ pad(n) }}"
+             style="--hs-ov: {{ s.overlay }}%; --hs-pos: {{ s.pos }};">
+
+          <div class="mh-hs-media{{ '' if s.img else ' mh-carbon' }}">
+            {% if s.img %}
+              <picture>
+                {% if s.imgM != s.img %}<source media="(max-width: 880px)" srcset="{{ s.imgM }}"/>{% endif %}
+                <img src="{{ s.img }}" alt="{{ (s.title ~ ' ' ~ s.hl) | default('', true) | replace('</', ' </') | replace('<br', ' <br') | striptags | trim }}" decoding="async"
+                     {% if i == 0 %}fetchpriority="high"{% else %}loading="lazy"{% endif %}/>
+              </picture>
+            {% else %}
+              {% ui "mh-topo.njk", uid=id ~ '-' ~ i %}
+            {% endif %}
+          </div>
+
+          {% if showHud %}<div class="mh-hs-frame mh-hud" aria-hidden="true"></div>{% endif %}
+
+          {% if showIndex %}
+            <span class="mh-hs-num" aria-hidden="true">{{ pad(i + 1) }}</span>
+          {% endif %}
+
+          <div class="mh-hs-inner">
+            <div class="mh-hs-content">
+              {% if s.kicker %}
+                <p class="mh-kicker mh-hs-kicker" style="--d: 0"><span class="mh-kicker-num">{{ pad(i + 1) }}</span><span class="mh-hs-kicker-sep">/</span>{{ s.kicker | safe }}</p>
+              {% endif %}
+              {% if s.title or s.hl %}
+                {% if i == 0 %}<h1 class="mh-h mh-h--xl mh-hs-title" style="--d: 1">{{ s.title | safe }}{% if s.hl %} <span class="mh-hs-hl">{{ s.hl | safe }}</span>{% endif %}</h1>
+                {% else %}<h2 class="mh-h mh-h--xl mh-hs-title" style="--d: 1">{{ s.title | safe }}{% if s.hl %} <span class="mh-hs-hl">{{ s.hl | safe }}</span>{% endif %}</h2>{% endif %}
+              {% endif %}
+              {% if s.text %}<p class="mh-hs-text" style="--d: 2">{{ s.text | safe }}</p>{% endif %}
+              {% if s.b1 or (s.b2 and s.u2) %}
+                <div class="mh-hs-ctas" style="--d: 3">
+                  {% if s.b1 %}<a href="{{ s.u1 }}" class="mh-btn hy-btn--solid">{{ s.b1 | safe }} <span class="mh-arrow" aria-hidden="true">→</span></a>{% endif %}
+                  {% if s.b2 and s.u2 %}<a href="{{ s.u2 }}" class="mh-btn mh-btn--ghost hy-btn--outline mh-hs-ghost">{{ s.b2 | safe }}</a>{% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+            {% if showSpecs and (s.specs | length) %}
+              <ul class="mh-hs-specs mh-panel{{ ' hy-editor-only' if s.demoSpecs }}" style="--d: 4">
+                {% for sp in s.specs %}
+                  <li class="mh-hs-spec">
+                    <span class="mh-hs-spec-k mh-mono">{{ sp[0] | safe }}</span>
+                    <span class="mh-hs-spec-v mh-mono">{{ sp[1] | safe }}</span>
+                  </li>
+                {% endfor %}
+                <li class="mh-hs-spec-led" aria-hidden="true"><span class="mh-led"></span></li>
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if n > 1 %}
+    <div class="mh-hs-bar">
+      <div class="mh-hs-count mh-mono" aria-hidden="true">
+        <span class="mh-hs-cur" data-hs-cur>01</span><span class="mh-hs-count-sep">/</span><span class="mh-hs-tot">{{ pad(n) }}</span>
+      </div>
+
+      {# Swiper fills this with one square <button class="mh-hs-seg"> per slide
+         (renderBullet below); the active one fills from --hs-p while the
+         autoplay timer runs. #}
+      <div class="mh-hs-progress" data-hs-progress></div>
+
+      <div class="mh-hs-nav">
+        {% if autoplay %}
+          <button type="button" class="mh-hs-btn mh-hs-toggle" data-hs-toggle aria-label="{{ t('common.pause') }}" data-label-pause="{{ t('common.pause') }}" data-label-play="{{ t('common.play') }}">
+            <svg class="mh-hs-ico-pause" width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><rect width="3" height="12"/><rect x="7" width="3" height="12"/></svg>
+            <svg class="mh-hs-ico-play mh-arrow" width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg>
+          </button>
+        {% endif %}
+        {# DOM order is always [prev, next]; RTL flex flips them visually and
+           .mh-arrow mirrors the glyphs — same rule as the rest of the theme. #}
+        <button type="button" class="mh-hs-btn" data-hs-prev aria-label="{{ t('common.prev') }}"><span class="mh-arrow" aria-hidden="true">←</span></button>
+        <button type="button" class="mh-hs-btn" data-hs-next aria-label="{{ t('common.next') }}"><span class="mh-arrow" aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<script>
+  (function () {
+    function pad(v) { return v < 10 ? '0' + v : String(v); }
+    function boot() {
+      var root = document.getElementById('mh-hs-{{ id }}');
+      var el = root && root.querySelector('[data-mh-hs]');
+      if (!el || el.swiper || typeof Swiper === 'undefined') return;
+      var n = el.querySelectorAll('.swiper-slide').length;
+      var reduce = document.documentElement.classList.contains('hx-no-anim') || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      var wantAuto = {{ 'true' if autoplay else 'false' }} && n > 1 && !reduce;
+      var cur = root.querySelector('[data-hs-cur]');
+      var toggle = root.querySelector('[data-hs-toggle]');
+
+      var sw = new Swiper(el, {
+        slidesPerView: 1,
+        speed: reduce ? 0 : 900,
+        loop: n > 1,
+        grabCursor: n > 1,
+        keyboard: { enabled: n > 1, onlyInViewport: true },
+        a11y: { prevSlideMessage: {{ t('common.prev') | dump | safe }}, nextSlideMessage: {{ t('common.next') | dump | safe }}, paginationBulletMessage: '{' + '{index}} / ' + pad(n) },
+        autoplay: wantAuto ? { delay: {{ interval }} * 1000, disableOnInteraction: false, pauseOnMouseEnter: true } : false,
+        navigation: n > 1 ? { prevEl: root.querySelector('[data-hs-prev]'), nextEl: root.querySelector('[data-hs-next]') } : false,
+        pagination: n > 1 ? {
+          el: root.querySelector('[data-hs-progress]'),
+          clickable: true,
+          bulletClass: 'mh-hs-seg',
+          bulletActiveClass: 'is-active',
+          renderBullet: function (i, cls) {
+            return '<button type="button" class="' + cls + '" aria-label="' + pad(i + 1) + ' / ' + pad(n) + '"><span class="mh-hs-seg-fill"></span></button>';
+          }
+        } : false,
+        on: {
+          slideChange: function (s) {
+            if (cur) cur.textContent = pad(s.realIndex + 1);
+            root.style.setProperty('--hs-p', wantAuto && !root.classList.contains('is-paused') ? '0' : '1');
+          },
+          autoplayTimeLeft: function (s, time, progress) {
+            root.style.setProperty('--hs-p', String(Math.min(1, Math.max(0, 1 - progress))));
+          }
+        }
+      });
+
+      if (!wantAuto) { root.classList.add('is-paused'); root.style.setProperty('--hs-p', '1'); }
+      if (toggle) {
+        if (!wantAuto) toggle.hidden = true;
+        toggle.addEventListener('click', function () {
+          var paused = root.classList.toggle('is-paused');
+          if (paused) { sw.autoplay.stop(); root.style.setProperty('--hs-p', '1'); }
+          else { sw.autoplay.start(); }
+          toggle.setAttribute('aria-label', paused ? toggle.getAttribute('data-label-play') : toggle.getAttribute('data-label-pause'));
+        });
+      }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+</script>
+
+{% ui "section-colors.njk", scope='#mh-hs-' ~ id, c=d %}

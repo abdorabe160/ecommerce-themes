@@ -1,0 +1,297 @@
+{
+  "name": "الهيدر الرئيسي",
+  "settings": {
+    "header_logo": {
+      "type": "media",
+      "label": {
+        "ar": "شعار المتجر (اتركيه فارغاً لاستخدام شعار المتجر الأساسي)",
+        "en": "Store Logo (leave empty to use the store's own logo)"
+      }
+    },
+    "header_logo_light": {
+      "type": "media",
+      "label": {
+        "ar": "شعار فاتح (يظهر فوق البانر الشفاف)",
+        "en": "Light Logo (shown over transparent hero)"
+      }
+    },
+    "logo_height": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع الشعار",
+        "en": "Logo Height"
+      },
+      "default": 34,
+      "min": 20,
+      "max": 64,
+      "step": 2,
+      "unit": "px"
+    },
+    "nav_layout": {
+      "type": "select",
+      "label": {
+        "ar": "توزيع الهيدر",
+        "en": "Header Layout"
+      },
+      "default": "logo-start",
+      "options": [
+        {
+          "value": "logo-start",
+          "label": {
+            "ar": "الشعار في البداية والقائمة في الوسط",
+            "en": "Logo start · nav center"
+          }
+        },
+        {
+          "value": "logo-center",
+          "label": {
+            "ar": "الشعار في الوسط والقائمة في البداية",
+            "en": "Logo center · nav start"
+          }
+        }
+      ]
+    },
+    "header_menu": {
+      "type": "menu",
+      "label": {
+        "ar": "روابط بسيطة (بدون ميجا) — تظهر بعد أقسام الميجا",
+        "en": "Simple links (no mega) — rendered after the mega sections"
+      },
+      "default": "header-menu"
+    },
+    "sticky": {
+      "type": "boolean",
+      "label": {
+        "ar": "تثبيت الهيدر عند التمرير",
+        "en": "Sticky on Scroll"
+      },
+      "default": true
+    },
+    "overlay_hero": {
+      "type": "boolean",
+      "label": {
+        "ar": "هيدر شفاف فوق البانر",
+        "en": "Transparent Over Hero"
+      },
+      "default": false
+    },
+    "show_announcement": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الشريط العلوي",
+        "en": "Show Announcement Bar"
+      },
+      "default": true
+    },
+    "announcement_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الشريط العلوي",
+        "en": "Announcement Text"
+      },
+      "default": ""
+    },
+    "announcement_link_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص رابط الشريط (اختياري)",
+        "en": "Announcement Link Text (optional)"
+      },
+      "default": ""
+    },
+    "announcement_link_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الشريط",
+        "en": "Announcement Link URL"
+      },
+      "default": ""
+    },
+    "announcement_tone": {
+      "type": "select",
+      "label": {
+        "ar": "لون الشريط العلوي",
+        "en": "Announcement Colour"
+      },
+      "default": "rose",
+      "options": [
+        {
+          "value": "rose",
+          "label": {
+            "ar": "وردي",
+            "en": "Rose"
+          }
+        },
+        {
+          "value": "sage",
+          "label": {
+            "ar": "سيج",
+            "en": "Sage"
+          }
+        },
+        {
+          "value": "soft",
+          "label": {
+            "ar": "وردي فاتح",
+            "en": "Soft blush"
+          }
+        },
+        {
+          "value": "ink",
+          "label": {
+            "ar": "غامق",
+            "en": "Ink"
+          }
+        }
+      ]
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار البحث",
+        "en": "Show Search"
+      },
+      "default": true
+    },
+    "show_cart": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السلة",
+        "en": "Show Cart"
+      },
+      "default": true
+    },
+    "show_language_switcher": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار تبديل اللغة",
+        "en": "Show Language Switcher"
+      },
+      "default": true
+    }
+  },
+  "blocks": {
+    "mega": {
+      "name": "قسم بقائمة ميجا",
+      "settings": {
+        "nav_label": {
+          "type": "string",
+          "label": {
+            "ar": "اسم القسم في القائمة",
+            "en": "Nav Label"
+          },
+          "default": "قائمة جديدة"
+        },
+        "nav_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط القسم",
+            "en": "Nav URL"
+          },
+          "default": "/shop"
+        },
+        "col1_title": {
+          "type": "string",
+          "label": {
+            "ar": "العمود ١ — العنوان (اتركه فارغاً لإخفاء العمود)",
+            "en": "Column 1 — Title (leave empty to hide)"
+          },
+          "default": ""
+        },
+        "col1_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "العمود ١ — القائمة",
+            "en": "Column 1 — Menu"
+          },
+          "default": "header-menu"
+        },
+        "col2_title": {
+          "type": "string",
+          "label": {
+            "ar": "العمود ٢ — العنوان",
+            "en": "Column 2 — Title"
+          },
+          "default": ""
+        },
+        "col2_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "العمود ٢ — القائمة",
+            "en": "Column 2 — Menu"
+          },
+          "default": "header-menu"
+        },
+        "col3_title": {
+          "type": "string",
+          "label": {
+            "ar": "العمود ٣ — العنوان",
+            "en": "Column 3 — Title"
+          },
+          "default": ""
+        },
+        "col3_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "العمود ٣ — القائمة",
+            "en": "Column 3 — Menu"
+          },
+          "default": "header-menu"
+        },
+        "col4_title": {
+          "type": "string",
+          "label": {
+            "ar": "العمود ٤ — العنوان",
+            "en": "Column 4 — Title"
+          },
+          "default": ""
+        },
+        "col4_menu": {
+          "type": "menu",
+          "label": {
+            "ar": "العمود ٤ — القائمة",
+            "en": "Column 4 — Menu"
+          },
+          "default": "header-menu"
+        },
+        "promo_image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة البطاقة الترويجية (اختياري)",
+            "en": "Promo Card Image (optional)"
+          }
+        },
+        "promo_eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "البطاقة الترويجية — النص التمهيدي",
+            "en": "Promo — Eyebrow"
+          },
+          "default": ""
+        },
+        "promo_title": {
+          "type": "string",
+          "label": {
+            "ar": "البطاقة الترويجية — العنوان",
+            "en": "Promo — Title"
+          },
+          "default": ""
+        },
+        "promo_url": {
+          "type": "string",
+          "label": {
+            "ar": "البطاقة الترويجية — الرابط",
+            "en": "Promo — URL"
+          },
+          "default": "/shop"
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الهيدر",
+      "name": "الهيدر الرئيسي"
+    }
+  ]
+}

@@ -1,0 +1,376 @@
+{
+  "name": "البانر الرئيسي",
+  "settings": {
+    "overlap_header": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ البانر يمتد تحت الهيدر — شغّله فقط إذا كان أول قسم في الصفحة",
+        "en": "▸ Run the stage up under the header — only when this is the first section"
+      },
+      "default": true
+    },
+    "height": {
+      "type": "range",
+      "label": {
+        "ar": "▸ ارتفاع البانر",
+        "en": "▸ Stage height"
+      },
+      "default": 750,
+      "min": 480,
+      "max": 900,
+      "step": 10,
+      "unit": "px"
+    },
+    "height_mobile": {
+      "type": "range",
+      "label": {
+        "ar": "ارتفاع البانر على الموبايل",
+        "en": "Stage height on mobile"
+      },
+      "default": 560,
+      "min": 380,
+      "max": 720,
+      "step": 10,
+      "unit": "px"
+    },
+    "sheet_radius": {
+      "type": "range",
+      "label": {
+        "ar": "استدارة القسم الذي يليه — يغطي أسفل البانر بزوايا دائرية · ٠ = إيقاف",
+        "en": "Radius of the section below — it laps over the stage with rounded corners · 0 = off"
+      },
+      "default": 0,
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px"
+    },
+    "parallax": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ حركة الخلفية مع التمرير (Parallax)",
+        "en": "▸ Background drifts as the page scrolls"
+      },
+      "default": true
+    },
+    "parallax_strength": {
+      "type": "range",
+      "label": {
+        "ar": "قوة الحركة",
+        "en": "Drift strength"
+      },
+      "default": 18,
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "unit": "%"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "▸ التنقل التلقائي بين الشرائح",
+        "en": "▸ Autoplay slides"
+      },
+      "default": true
+    },
+    "autoplay_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدة عرض الشريحة",
+        "en": "Seconds per slide"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s"
+    },
+    "show_arrows": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أسهم التنقل",
+        "en": "Show arrows"
+      },
+      "default": true
+    },
+    "show_counter": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار العدّاد وشريط التقدّم",
+        "en": "Show the counter and progress bar"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية (تُستخدم للشرائح التي لم تختر لونًا)",
+        "en": "Background (used by slides with no colour of their own)"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الأزرار",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الأزرار",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "bg_color": {
+          "type": "color",
+          "label": {
+            "ar": "▸ لون الخلفية — يظهر قبل تحميل الصورة وخلف أطرافها",
+            "en": "▸ Background colour — shows before the image loads and behind its edges"
+          },
+          "default": ""
+        },
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الخلفية — تملأ البانر بالكامل",
+            "en": "Background image — fills the whole stage"
+          }
+        },
+        "image_fit": {
+          "type": "select",
+          "label": {
+            "ar": "طريقة عرض الصورة",
+            "en": "How the picture sits"
+          },
+          "default": "cover",
+          "options": [
+            {
+              "value": "cover",
+              "label": {
+                "ar": "تملأ البانر (تُقصّ عند اللزوم)",
+                "en": "Fills the stage — cropped as needed"
+              }
+            },
+            {
+              "value": "contain",
+              "label": {
+                "ar": "الصورة كاملة بدون قصّ — يظهر لون الخلفية حولها",
+                "en": "The whole picture, never cropped — the background colour shows around it"
+              }
+            }
+          ]
+        },
+        "image_mobile": {
+          "type": "media",
+          "label": {
+            "ar": "صورة الموبايل (اختيارية)",
+            "en": "Mobile image (optional)"
+          }
+        },
+        "image_focus": {
+          "type": "select",
+          "label": {
+            "ar": "تركيز القصّ — الجزء الذي يبقى ظاهرًا عند قصّ الصورة",
+            "en": "Crop focus — the part of the picture that survives the crop"
+          },
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": {
+                "ar": "المنتصف — للوجوه (موصى به)",
+                "en": "Centre — for faces (recommended)"
+              }
+            },
+            {
+              "value": "top",
+              "label": {
+                "ar": "الأعلى",
+                "en": "Top"
+              }
+            },
+            {
+              "value": "bottom",
+              "label": {
+                "ar": "الأسفل",
+                "en": "Bottom"
+              }
+            }
+          ]
+        },
+        "scrim": {
+          "type": "select",
+          "label": {
+            "ar": "تعتيم خلف الكتابة — يجعل النص مقروءًا فوق الصورة",
+            "en": "Veil behind the copy — keeps the words readable over the picture"
+          },
+          "default": "soft",
+          "options": [
+            {
+              "value": "none",
+              "label": {
+                "ar": "بدون",
+                "en": "None"
+              }
+            },
+            {
+              "value": "soft",
+              "label": {
+                "ar": "خفيف (موصى به)",
+                "en": "Soft (recommended)"
+              }
+            },
+            {
+              "value": "medium",
+              "label": {
+                "ar": "متوسط",
+                "en": "Medium"
+              }
+            },
+            {
+              "value": "strong",
+              "label": {
+                "ar": "قوي",
+                "en": "Strong"
+              }
+            }
+          ]
+        },
+        "text_tone": {
+          "type": "select",
+          "label": {
+            "ar": "لون الكتابة",
+            "en": "Copy colour"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "فاتحة — للخلفيات الغامقة",
+                "en": "Light — for dark grounds"
+              }
+            },
+            {
+              "value": "dark",
+              "label": {
+                "ar": "غامقة — للخلفيات الفاتحة",
+                "en": "Dark — for pale grounds"
+              }
+            }
+          ]
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير فوق العنوان",
+            "en": "The small line above the title"
+          },
+          "default": ""
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "description": {
+          "type": "text",
+          "label": {
+            "ar": "النص",
+            "en": "Body text"
+          },
+          "default": ""
+        },
+        "cta_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر",
+            "en": "Button label"
+          },
+          "default": ""
+        },
+        "cta_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر — / · /shop · /collections · /blogs",
+            "en": "Button link — / · /shop · /collections · /blogs"
+          },
+          "default": "/shop"
+        },
+        "cta_style": {
+          "type": "select",
+          "label": {
+            "ar": "شكل الزر",
+            "en": "Button style"
+          },
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": {
+                "ar": "أبيض بسهم (مثل التصميم)",
+                "en": "White with an arrow"
+              }
+            },
+            {
+              "value": "solid",
+              "label": {
+                "ar": "بلون العلامة",
+                "en": "Brand colour"
+              }
+            },
+            {
+              "value": "light-outline",
+              "label": {
+                "ar": "محدّد فقط",
+                "en": "Outline only"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "البانر الرئيسي"
+    }
+  ]
+}

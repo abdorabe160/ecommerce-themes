@@ -1,0 +1,71 @@
+{
+  "name": "بانر عرض - Promo Banner",
+  "description": "بانر عرض عريض لنص الصفحة: عنوان ضخم، كود خصم بيتنسخ بضغطة، عداد تنازلي، وخلفية بتتحرك",
+  "settings": {
+    "image": {
+      "type": "media",
+      "label": "صورة الخلفية"
+    },
+    "badge_text": {
+      "type": "string",
+      "label": "الشارة",
+      "default": "جديد الموسم"
+    },
+    "big_text": {
+      "type": "string",
+      "label": "الرقم/الكلمة الضخمة",
+      "default": "NEW"
+    },
+    "title": {
+      "type": "string",
+      "label": "العنوان",
+      "default": "تشكيلة التمرين الجديدة"
+    },
+    "subtitle": {
+      "type": "text",
+      "label": "الوصف",
+      "default": "جهّز نفسك للموسم الجديد بقطع بتتحرك معاك في كل تمرين."
+    },
+    "coupon_code": {
+      "type": "string",
+      "label": "كود الخصم (اختياري)",
+      "default": ""
+    },
+    "end_date": {
+      "type": "string",
+      "label": "نهاية العرض للعداد (مثال: 2026-12-31 23:59) - سيبه فاضي لو مش عايز عداد",
+      "default": ""
+    },
+    "hide_when_ended": {
+      "type": "boolean",
+      "label": "إخفاء البانر بعد ما العرض يخلص",
+      "default": false
+    },
+    "button_text": {
+      "type": "string",
+      "label": "نص الزرار",
+      "default": "تسوق التشكيلة"
+    },
+    "button_url": {
+      "type": "string",
+      "label": "لينك الزرار",
+      "default": "/collections"
+    },
+    "show_marquee": {
+      "type": "boolean",
+      "label": "إظهار الشريط المتحرك فوق وتحت البانر",
+      "default": true
+    },
+    "marquee_text": {
+      "type": "string",
+      "label": "نص الشريط المتحرك",
+      "default": "اتمرّن بقوة • البس بثقة • خليك على مستوى تاني"
+    }
+  },
+  "presets": [
+    {
+      "name": "بانر عرض (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

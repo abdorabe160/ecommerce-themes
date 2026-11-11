@@ -1,0 +1,103 @@
+{# =========================================================
+   Dark Blood - كل التصنيفات (نفس كروت Categories Strip)
+   ========================================================= #}
+{% set s = widget.data or widget.settings or {} %}
+{# صفحة /collections: المنصة بتبعت المجموعات في context.collections (الشكل الحقيقي على المتجر) #}
+{% set allCollections = s.collections or collections or (context.collections if (context and context.collections) else []) or [] %}
+{# المجموعات المتعطّل عنها البيع مابتظهرش (نفس شروط blkIsCollectionVisible في pages.js) #}
+{% set list = [] %}
+{% for c in allCollections %}
+  {% set colHidden = c and (c.active === false or c.isActive === false or c.published === false or c.isPublished === false or c.visible === false or c.isVisible === false or c.availableForSale === false or c.enabled === false or c.salesEnabled === false or c.hidden === true or c.deleted === true or (c.salesChannels and c.salesChannels.onlineStore === false) or c.isHidden === true or (((c.status or '') | string | lower) in ['inactive', 'disabled', 'draft', 'hidden', 'archived', 'unpublished'])) %}
+  {#- home-page: مجموعة نظام من المنصة («Home Page»)، مش قسم للعميل (نفس blkFetchStoreCollections) -#}
+  {#- قسم ناقص (من غير عنوان أو رابط) مايترسمش كارت فاضي -#}
+  {% if c and not colHidden and c.title and (c.slug or c.handle or c._id) and (c.slug or c.handle) != 'home-page' %}{% if list.push(c) %}{% endif %}{% endif %}
+{% endfor %}
+
+<section class="blk-section blk-cats-strip" id="blkCollections-{{ widget.id }}" style="--blk-cat-h: {{ s.card_height | default('340px') }};">
+  <div class="blk-container">
+    {% if s.title %}
+      <div class="blk-section-head text-center">
+        <h2 class="blk-section-title blk-anim-fade-up">{% ui "blk-t.njk", text=s.title %}</h2>
+        {% if s.subtitle %}
+          <p class="blk-section-desc blk-anim-fade-up" style="--anim-delay: 0.15s;">{% ui "blk-t.njk", text=s.subtitle %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if (list | length) == 0 and (allCollections | length) > 0 %}
+      {% set emptyTitle = t('collection.none_available') %}{% set emptyText = t('common.coming_soon') %}{% set emptyBtn = t('common.back_home') %}
+      {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/", icon="box" %}
+    {% elif list | length > 0 %}
+      <div class="blk-cats-strip-grid" data-store-collections>
+        {% for cat in list %}
+          <a href="/collections/{{ cat.slug or cat.handle or cat._id }}{% if cat._id %}?cid={{ cat._id }}&amp;ct={{ cat.title | urlencode }}{% endif %}"
+             class="blk-cat-strip-card blk-has-glow blk-anim-fade-up"
+             style="--anim-delay: {{ (loop.index0 % 6) * 0.1 }}s;">
+            <div class="blk-cat-strip-img-wrap">
+              {% if cat.image and cat.image.fileUrl %}
+                <img src="{{ cat.image.fileUrl }}" alt="{{ cat.title }}" loading="lazy" decoding="async" width="800" height="1000" class="blk-cat-strip-img">
+              {% else %}
+                <div class="blk-cat-strip-placeholder"></div>
+              {% endif %}
+              <div class="blk-cat-strip-overlay"></div>
+            </div>
+
+            <div class="blk-cat-strip-content">
+              {% if s.show_product_count and cat.productCount %}
+                <span class="blk-cat-badge">{% ui "blk-count.njk", n=cat.productCount %}</span>
+              {% endif %}
+              <h3 class="blk-cat-strip-title">{{ cat.title }}</h3>
+              <div class="blk-cat-strip-link">
+                <span>{{t('common.shop_now')}}</span>
+                <svg class="blk-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="blk-glow-border"></div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      {# مفيش تصنيفات: أقسام تجريبية للمعاينة، كل واحد بيفتح صفحته بمنتجاته #}
+      {# الـ slugs لازم تفضل زي BLK_DEMO_CATALOG في assets/pages.js #}
+      {% set demoCats = [
+        { slug: "men", title: t('demo.cat_men'), count: 10, img: "https://images.pexels.com/photos/1480530/pexels-photo-1480530.jpeg?auto=compress&cs=tinysrgb&w=800" },
+        { slug: "tshirts", title: t('demo.cat_tshirts'), count: 4, img: "https://images.pexels.com/photos/30451501/pexels-photo-30451501.jpeg?auto=compress&cs=tinysrgb&w=800" },
+        { slug: "shoes", title: t('demo.cat_shoes'), count: 5, img: "https://images.pexels.com/photos/9501459/pexels-photo-9501459.jpeg?auto=compress&cs=tinysrgb&w=800" },
+        { slug: "hoodies", title: t('demo.cat_hoodies'), count: 3, img: "https://images.pexels.com/photos/17883716/pexels-photo-17883716.jpeg?auto=compress&cs=tinysrgb&w=800" },
+        { slug: "pants", title: t('demo.cat_pants'), count: 3, img: "https://images.pexels.com/photos/11327771/pexels-photo-11327771.jpeg?auto=compress&cs=tinysrgb&w=800" },
+        { slug: "accessories", title: t('demo.cat_accessories'), count: 3, img: "https://images.pexels.com/photos/12738154/pexels-photo-12738154.jpeg?auto=compress&cs=tinysrgb&w=800" }
+      ] %}
+      {# أقسام المتجر بتتجاب بالـ JS؛ التجريبي بيفضل في المعاينة بس، وللعميل رسالة مهذّبة لو مفيش أقسام (EDGE-01) #}
+      <div class="blk-cats-strip-grid blk-store-loading" data-store-collections{% if s.show_product_count %} data-show-count{% endif %}>
+        {% for cat in demoCats %}
+          <a href="/shop?category={{ cat.slug }}" data-demo-cat
+             class="blk-cat-strip-card blk-has-glow blk-anim-fade-up"
+             style="--anim-delay: {{ loop.index0 * 0.12 }}s;">
+            <div class="blk-cat-strip-img-wrap">
+              <img src="{{ cat.img }}" alt="{{ cat.title }}" loading="lazy" decoding="async" width="800" height="1000" class="blk-cat-strip-img">
+              <div class="blk-cat-strip-overlay"></div>
+            </div>
+            <div class="blk-cat-strip-content">
+              <span class="blk-cat-badge">{% ui "blk-count.njk", n=cat.count %}</span>
+              <h3 class="blk-cat-strip-title">{{ cat.title }}</h3>
+              <div class="blk-cat-strip-link">
+                <span>{{t('common.shop_now')}}</span>
+                <svg class="blk-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </div>
+            </div>
+            <div class="blk-glow-border"></div>
+          </a>
+        {% endfor %}
+      </div>
+      <div data-blk-cats-empty hidden>
+        {% set emptyTitle = t('collection.none_available') %}{% set emptyText = t('common.coming_soon') %}{% set emptyBtn = t('common.back_home') %}
+        {% ui "blk-empty.njk", title=emptyTitle, text=emptyText, btn_text=emptyBtn, btn_url="/", icon="box" %}
+      </div>
+    {% endif %}
+  </div>
+</section>

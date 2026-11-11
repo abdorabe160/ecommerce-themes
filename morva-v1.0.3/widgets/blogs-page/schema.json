@@ -1,0 +1,11 @@
+{
+  "name": "صفحة المدونات",
+  "settings": {
+    "kicker": { "type": "string", "label": { "ar": "العنوان الصغير", "en": "Kicker" }, "default": "اليوميات" },
+    "title": { "type": "string", "label": { "ar": "العنوان", "en": "Title" }, "default": "المدونة" },
+    "subtitle": { "type": "string", "label": { "ar": "نص جانبي قصير", "en": "Short side note" }, "default": "" }
+  },
+  "presets": [
+    { "category": "المدونة", "name": "صفحة المدونات" }
+  ]
+}

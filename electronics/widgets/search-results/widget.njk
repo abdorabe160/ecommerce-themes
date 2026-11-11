@@ -1,0 +1,82 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set trending = wd.trending | default([]) %}
+{% set i18n = { priceInvalid: t('collection.price_invalid') } %}
+<section class="lg-section !pt-6" x-data="lgSearchPage({{ { limit: wd.limit | default(24), i18n: i18n } | dump | escape }})">
+  <div class="lg-container">
+
+    {# النموذج — الاستعلام يُعرض عبر x-text فقط (آمن ضد XSS — SRCH-04) #}
+    <form class="glass p-2.5 flex items-center gap-2 mb-5" @submit.prevent="q = q.trim(); fetch()" role="search">
+      <div class="lg-search-field" @click="$refs.q.focus()">
+        <span class="lg-search-field__icon">{% ui "icon.njk", name="search", cls="w-[18px] h-[18px]" %}</span>
+        <label for="lg-search-page-input" class="sr-only">{{t('header.search')}}</label>
+        <input id="lg-search-page-input" x-ref="q" type="search" class="lg-search-field__input" x-model="q" placeholder="{{t('header.search_placeholder')}}" autocomplete="off">
+        <button type="button" class="lg-search-field__clear" x-show="q" x-cloak @click.stop="q = ''; $refs.q.focus()" aria-label="{{t('search.clear')}}">
+          <span>{% ui "icon.njk", name="close", cls="w-3.5 h-3.5" %}</span>
+        </button>
+      </div>
+      <button type="submit" class="btn btn-primary shrink-0 !min-h-[52px] !px-6">{{t('header.search')}}</button>
+    </form>
+
+    <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+      <h1 class="lg-title">
+        <span x-show="q">{{t('search.results_for')}} {{t('common.quote_open')}}<bdi x-text="q"></bdi>{{t('common.quote_close')}}</span>
+        <span x-show="!q">{{t('search.title')}}</span>
+      </h1>
+      <p class="text-sm text-muted" x-show="q && !loading" x-cloak><span x-text="all.length"></span> {{t('search.results_count')}}</p>
+    </div>
+
+    {# فرز وفلترة داخل نتائج البحث بدون فقد كلمة البحث (SRCH-07) #}
+    <div class="lg-search-filters flex flex-wrap items-center gap-2 mb-5" x-show="q" x-cloak>
+      <select class="lg-input !w-auto !min-h-[44px] !py-2" x-model="sort" @change="fetch()" aria-label="{{t('collection.sort_by')}}">
+        <option value="">{{t('collection.sort_default')}}</option>
+        <option value="created-desc">{{t('collection.sort_newest')}}</option>
+        <option value="price-asc">{{t('collection.sort_price_asc')}}</option>
+        <option value="price-desc">{{t('collection.sort_price_desc')}}</option>
+        <option value="rating-desc">{{t('collection.sort_rating')}}</option>
+      </select>
+      <input type="number" min="0" inputmode="numeric" class="lg-input !w-28 !min-h-[44px]" x-model="minPrice" placeholder="{{t('collection.min')}}" aria-label="{{t('collection.min')}}">
+      <input type="number" min="0" inputmode="numeric" class="lg-input !w-28 !min-h-[44px]" x-model="maxPrice" placeholder="{{t('collection.max')}}" aria-label="{{t('collection.max')}}">
+      <button type="button" class="btn btn-soft" @click="fetch()">{{t('collection.apply')}}</button>
+      <button type="button" class="btn btn-glass" x-show="sort || minPrice || maxPrice" @click="clearFilters()">{{t('collection.clear_all')}}</button>
+      <p class="w-full text-xs text-[color:var(--color-danger)]" x-show="priceError" x-text="priceError"></p>
+    </div>
+
+    {# "هل تقصد؟" — البحث الذكي وجد النتائج بتصحيح الكلمة #}
+    <p class="lg-search-hint glass !rounded-2xl mb-5" x-show="corrected && !loading" x-cloak>
+      <span class="lg-search-hint__icon">{% ui "icon.njk", name="bolt", cls="w-4 h-4" %}</span>
+      <span>{{t('search.did_you_mean')}} <button type="button" class="lg-did-you-mean" @click="useCorrected()">{{t('common.quote_open')}}<bdi x-text="corrected"></bdi>{{t('common.quote_close')}}</button>{{t('common.question_mark')}}</span>
+    </p>
+
+    {# تحميل #}
+    <div class="lg-grid" data-cols="4" x-show="loading" x-cloak aria-hidden="true">
+      <template x-for="i in 8" :key="i"><div class="lg-skeleton h-[340px]"></div></template>
+    </div>
+
+    {# النتائج — نفس بنية كارت المنتج ونفس منطق التوفر (REG-13) #}
+    <div class="lg-grid" data-cols="4" x-show="!loading && results.length" x-cloak>
+      <template x-for="p in results" :key="p._id">{% ui "card-js.njk" %}</template>
+    </div>
+    <div class="text-center mt-6" x-show="!loading && all.length > results.length" x-cloak>
+      <button type="button" class="btn btn-glass" @click="more()">{{t('search.load_more')}} <span class="text-muted" x-text="'(' + (all.length - results.length) + ')'"></span></button>
+    </div>
+
+    {# بدون نتائج / بدون استعلام (SRCH-03) #}
+    <div x-show="!loading && !results.length" x-cloak class="space-y-8">
+      <div x-show="q">
+        {% ui "empty.njk", icon="search", title=t('search.no_results'), text=t('search.no_results_hint'), url="/collections", button=t('collection.all_collections') %}
+      </div>
+      <div x-show="!q">
+        {% ui "empty.njk", icon="search", title=t('search.empty_query') %}
+      </div>
+      {% if trending | length %}
+        <div>
+          <h2 class="lg-title mb-4">{{t('search.trending')}}</h2>
+          <div class="lg-grid" data-cols="4">
+            {% for item in trending %}{% ui "product-card.njk", product=item %}{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

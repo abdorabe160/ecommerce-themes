@@ -1,0 +1,140 @@
+{#
+  ============================================================================
+  COLLECTION GROUP · مجموعة المجموعات
+  ----------------------------------------------------------------------------
+  A row of coloured category cards: "save up to" + a big number (a discount
+  with "% off", or an amount with the currency), a product cut-out, a title,
+  a line and a link. Each card is one block; the whole card is a link.
+
+  With no blocks yet it shows six demo cards — their own pictures
+  (assets/hx-cg-N.webp, cut out of CC0 photos) and texts in the visitor's
+  language (locales → cgroup.*) — so the section is never blank.
+
+  Styles: assets/sections.css → "COLLECTION GROUP".
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set blocks = widget.blocks | default([]) %}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+{% set cur = localization.currency.currencySymbol | default('ج.م') %}
+
+{% set layout = d.layout | default('cards') %}
+{# Two block types; a block's type is read from `block.type`, or inferred from
+   its keys when Qumra does not expose it (same approach as the header). #}
+{% set cards = [] %}
+{% set cols = [] %}
+{% for block in blocks %}
+  {% set b = block.data | default(block.settings) | default({}) %}
+  {% set kind = block.type | default(block.block) | default('') %}
+  {% if not kind %}{% set kind = 'column' if (b.heading is defined or b.feature_title is defined or b.item1_label is defined) else 'card' %}{% endif %}
+  {% if kind == 'column' %}{% set _ = cols.push(b) %}{% else %}{% set _ = cards.push(b) %}{% endif %}
+{% endfor %}
+{% set isDemo = (cards | length) == 0 %}
+{% set colsDemo = (cols | length) == 0 %}
+{% if colsDemo %}
+  {% set cols = [
+    { heading: t('cgroup.col1.heading'), feature_title: t('cgroup.col1.feature'), fimg: 'hx-cg-5.webp', items: [[t('cgroup.col1.i1'), 'hx-cg-6.webp'], [t('cgroup.col1.i2'), 'hx-demo-1.jpg'], [t('cgroup.col1.i3'), 'hx-demo-6.jpg']] },
+    { heading: t('cgroup.col2.heading'), feature_title: t('cgroup.col2.feature'), feature_bg: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 70%, black)', fimg: 'hx-cg-1.webp', items: [[t('cgroup.col2.i1'), 'hx-cg-2.webp'], [t('cgroup.col2.i2'), 'hx-cg-3.webp'], [t('cgroup.col2.i3'), 'pg-demo-5.jpg']] },
+    { heading: t('cgroup.col3.heading'), feature_title: t('cgroup.col3.feature'), feature_bg: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 55%, black)', fimg: 'hx-cg-4.webp', items: [[t('cgroup.col3.i1'), 'pg-demo-2.jpg'], [t('cgroup.col3.i2'), 'hx-demo-2.jpg'], [t('cgroup.col3.i3'), 'hx-demo-6.jpg']] },
+    { heading: t('cgroup.col4.heading'), feature_title: t('cgroup.col4.feature'), feature_bg: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 62%, black)', fimg: 'hx-demo-3.jpg', items: [[t('cgroup.col4.i1'), 'hx-demo-4.jpg'], [t('cgroup.col4.i2'), 'hx-demo-5.jpg'], [t('cgroup.col4.i3'), 'hx-demo-3.jpg']] }
+  ] %}
+{% endif %}
+{% if isDemo %}
+  {# no made-up discounts: the big "save up to" number only ever comes from the merchant #}
+  {% set cards = [
+    { text_tone: 'light', title: t('cgroup.c1.title'), text: t('cgroup.c1.text') },
+    { bg_color: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 62%, black)', text_tone: 'light', title: t('cgroup.c2.title'), text: t('cgroup.c2.text') },
+    { bg_color: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 15%, white)', text_tone: 'dark', accent_color: 'var(--hx-primary, var(--color-accent))', title: t('cgroup.c3.title'), text: t('cgroup.c3.text') },
+    { bg_color: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 25%, white)', text_tone: 'dark', accent_color: 'var(--hx-primary, var(--color-accent))', title: t('cgroup.c4.title'), text: t('cgroup.c4.text') },
+    { bg_color: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 70%, black)', text_tone: 'light', title: t('cgroup.c5.title'), text: t('cgroup.c5.text') },
+    { bg_color: 'color-mix(in srgb, var(--hx-primary, var(--color-accent)) 55%, black)', text_tone: 'light', title: t('cgroup.c6.title'), text: t('cgroup.c6.text') }
+  ] %}
+{% endif %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="hx-cg-{{ id }}"
+         class="hx-cg is-l-{{ layout }} {{ 'is-zoom' if d.hover_zoom != false }} is-m-{{ d.mobile_layout | default('slider') }}"
+         style="--cg-per: {{ d.columns_desktop | default(6) }}; --cg-per-t: {{ d.columns_tablet | default(3) }}; --cg-h: {{ d.card_height | default(320) }}px; --cg-gap: {{ d.gap if d.gap is defined else 8 }}px; --cg-r: {{ d.radius if d.radius is defined else 6 }}px; --pt: {{ d.padding_top if d.padding_top is defined else 32 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 32 }}px;">
+  <div class="hx-cg-wrap {{ 'is-full' if d.full_width | default(true) }}">
+    {% if layout == 'columns' %}
+    <ul class="hx-cg-grid hx-cg-cols" role="list">
+      {% for c in cols %}
+        {% set curl = '/shop' if colsDemo else (c.url | default('/shop')) %}
+        {% set furl = curl if colsDemo else (c.feature_url or curl) %}
+        {% set fsrc = (c.fimg | assets) if colsDemo else (mediaUrl(c.feature_image) | trim) %}
+        {% set fbg = ('linear-gradient(120deg, ' ~ (c.feature_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 78%, black)', true)) ~ ', ' ~ c.feature_bg_2 ~ ')') if c.feature_bg_2 else (c.feature_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 78%, black)', true)) %}
+        <li class="hx-cgc" style="--cgc-tile: {{ c.tile_bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 15%, white)', true) }};">
+          <div class="hx-cgc-head">
+            {% if c.heading %}<a href="{{ curl }}" class="hx-cgc-title">{{ c.heading | safe }}</a>{% endif %}
+            <a href="{{ curl }}" class="hx-cgc-more" aria-label="{{ (c.heading or '') | replace('<', ' <') | striptags }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 7 5 5-5 5M13 7l5 5-5 5"/></svg></a>
+          </div>
+          <a href="{{ furl }}" class="hx-cgc-feature is-{{ c.feature_tone | default('light') }}" style="--cgc-bg: {{ fbg }};">
+            {% if c.feature_title %}<span class="hx-cgc-ftitle">{{ c.feature_title | safe }}</span>{% endif %}
+            {% if (fsrc | length) > 0 %}<img class="hx-cgc-fimg" src="{{ fsrc }}" alt="" loading="lazy"/>{% endif %}
+          </a>
+          <div class="hx-cgc-items">
+            {% for n in [1, 2, 3] %}
+              {% if colsDemo %}
+                {% set lbl = c.items[n - 1][0] %}{% set isrc = c.items[n - 1][1] | assets %}{% set iurl = '/shop' %}
+              {% else %}
+                {% set lbl = c['item' ~ n ~ '_label'] | default('') %}{% set isrc = mediaUrl(c['item' ~ n ~ '_image']) | trim %}{% set iurl = c['item' ~ n ~ '_url'] | default('/shop') %}
+              {% endif %}
+              {% if lbl or (isrc | length) > 0 %}
+                <a href="{{ iurl }}" class="hx-cgc-item">
+                  <span class="hx-cgc-iimg">{% if (isrc | length) > 0 %}<img src="{{ isrc }}" alt="" loading="lazy"/>{% endif %}</span>
+                  {% if lbl %}<span class="hx-cgc-label">{{ lbl | safe }}</span>{% endif %}
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <ul class="hx-cg-grid" role="list">
+      {% for b in cards %}
+        {% set src = mediaUrl(b.image) | trim %}
+        {% set demo = b.demo_image | default('auto') %}
+        {% if demo == 'auto' %}{% set demo = (loop.index | string) if loop.index <= 6 else 'none' %}{% endif %}
+        {% if (src | length) == 0 and demo != 'none' %}{% set src = ('hx-cg-' ~ demo ~ '.webp') | assets %}{% endif %}
+        {% set bg1 = b.bg_color | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 78%, black)', true) %}
+        {% set bg = ('linear-gradient(135deg, ' ~ bg1 ~ ', ' ~ b.bg_color_2 ~ ')') if b.bg_color_2 else bg1 %}
+        {% set vt = b.value_type | default('percent') %}
+        {% set eyebrow = b.eyebrow or (t('cgroup.save_up_to') if b.value else '') %}
+        {% set linkText = b.link_text or t('cgroup.shop_now') %}
+        {% set url = '/shop' if isDemo else (b.url | default('/shop')) %}
+        <li class="hx-cg-card is-{{ b.text_tone | default('light') }}"
+            style="--cg-bg: {{ bg }};{% if b.accent_color %} --cg-accent: {{ b.accent_color }};{% endif %}">
+          <div class="hx-cg-top">
+            {% if eyebrow %}<p class="hx-cg-eyebrow">{{ eyebrow | safe }}</p>{% endif %}
+            {% if b.value %}
+              <p class="hx-cg-value is-{{ vt }}" dir="ltr">
+                {% if vt == 'amount' and not isAr %}<sup class="hx-cg-cur">{{ cur }}</sup>{% endif %}
+                <b>{{ b.value }}</b>
+                {% if vt == 'amount' and isAr %}<sup class="hx-cg-cur">{{ cur }}</sup>{% endif %}
+                {% if vt == 'percent' %}<span class="hx-cg-pct"><i>%</i><small>{{ t('cgroup.off') }}</small></span>{% endif %}
+              </p>
+            {% endif %}
+          </div>
+          {% if (src | length) > 0 %}
+            <div class="hx-cg-media"><img src="{{ src }}" alt="{{ b.title | default('') | replace('<', ' <') | striptags }}" loading="lazy"/></div>
+          {% else %}
+            <div class="hx-cg-media is-empty" aria-hidden="true"></div>
+          {% endif %}
+          <div class="hx-cg-body">
+            {% if b.title %}<h3 class="hx-cg-title">{{ b.title | safe }}</h3>{% endif %}
+            {% if b.text %}<p class="hx-cg-text">{{ b.text | safe }}</p>{% endif %}
+            {% if linkText %}<span class="hx-cg-link" aria-hidden="true">{{ linkText | safe }}</span>{% endif %}
+          </div>
+          <a href="{{ url }}" class="hx-cg-hit" aria-label="{{ (b.title or linkText) | replace('<', ' <') | striptags }}"></a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#hx-cg-' ~ id, c=d %}

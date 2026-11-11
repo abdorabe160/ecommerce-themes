@@ -1,0 +1,158 @@
+{# ============================================================================
+   HYPER · عرض ترويجي متحرك  (scrolling promo strip)
+   ----------------------------------------------------------------------------
+     Cross Chair  🪑  Lounge Chairs  🪑  Bow Chairs  🪑  Cross Chair …
+
+   Phrases come from `message` blocks and repeat forever. What sits BETWEEN them
+   is either a glyph or the block's own image — a cut-out product reads as part
+   of the sentence rather than as decoration, which a repeated star cannot do.
+
+   ⚠️  A block's image REPLACES the glyph after that block; it is not an extra
+   element. Rendering both put two separators between every pair and the strip
+   read as a list with gaps in it.
+
+   The looping is measured, not guessed — and the measuring is shared: this
+   widget and the countdown banner both call HayatMarquee() in assets/main.js.
+   See the note there for why a percentage-based duplicate leaves a marching
+   gap, and why the duration is derived from the width rather than fixed.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set msgs = widget.blocks | default([]) %}
+{% set count = msgs | length %}
+
+{% set bg = d.background_color | default('var(--color-accent)', true) %}
+{% set fg = d.text_color | default('var(--color-text-on-accent)', true) %}
+{% set font = d.font | default('display') %}
+{% set size = d.size | default('medium') %}
+{% set upper = d.uppercase | default(false) %}
+{% set sep = d.separator | default('star') %}
+{% set gap = d.gap | default(40) %}
+{% set imgH = d.image_height | default(56) %}
+{% set pause = d.pause_on_hover | default(true) %}
+
+{% if size == 'small' %}{% set fs = '0.875rem' %}{% set py = '11px' %}
+{% elif size == 'large' %}{% set fs = '1.375rem' %}{% set py = '18px' %}
+{% elif size == 'xlarge' %}{% set fs = 'clamp(1.5rem, 2.6vw, 2.125rem)' %}{% set py = '22px' %}
+{% else %}{% set fs = '1.0625rem' %}{% set py = '14px' %}{% endif %}
+
+{# Pixels per second, not seconds per lap — the duration is computed from the
+   measured width so the text travels at the same speed whatever it says. #}
+{% set speed = d.speed | default('normal') %}
+{% if speed == 'slow' %}{% set pxs = 34 %}
+{% elif speed == 'fast' %}{% set pxs = 96 %}
+{% else %}{% set pxs = 60 %}{% endif %}
+
+
+{% macro glyph(kind) %}
+  {% if kind == 'star' %}
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 1.5c.7 6.1 4.4 9.8 10.5 10.5-6.1.7-9.8 4.4-10.5 10.5-.7-6.1-4.4-9.8-10.5-10.5C7.6 11.3 11.3 7.6 12 1.5Z"/>
+    </svg>
+  {% elif kind == 'diamond' %}
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 1.5 22.5 12 12 22.5 1.5 12Z"/>
+    </svg>
+  {% elif kind == 'dot' %}
+    <svg width="6" height="6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="12"/>
+    </svg>
+  {% elif kind == 'slash' %}
+    <svg width="12" height="16" viewBox="0 0 24 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" d="M18 4 6 28"/>
+    </svg>
+  {% endif %}
+{% endmacro %}
+
+
+{# A `media` setting arrives as an object once uploaded through the Theme
+   Editor, but a plain URL string is what a hand-written page JSON can express.
+   Accept both, plus `url` as well as `fileUrl`. #}
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% if count == 0 %}
+  {# Added from the builder and not filled in yet.
+
+     A preset carries only a category and a name — Qumra cannot seed blocks —
+     so this section arrives with ZERO messages. The whole thing used to sit
+     inside `{% if count > 0 %}`, which meant adding it rendered NOTHING AT ALL:
+     no band, no gap, no error. The merchant adds a section, the page does not
+     change, and there is no way to tell whether it failed or is simply theirs
+     to fill.
+
+     So the strip is drawn at its real height, in its real colours, with the
+     hint in place of the messages. Same toolkit every other section uses —
+     style.css → "15.29.1 EMPTY-SECTION SKELETON". #}
+  <section class="hy-mq" data-hy-placeholder aria-hidden="true"
+           style="--mq-bg: {{ bg }}; --mq-fg: {{ fg }}; --mq-fs: {{ fs }}; --mq-py: {{ py }};">
+    <div class="hy-ph-center" style="padding-block: var(--mq-py);">
+      <span class="hy-ph-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+        </svg>
+        {{ t('common.placeholder_add') }}
+      </span>
+    </div>
+  </section>
+{% endif %}
+
+{% if count > 0 %}
+<section id="hy-mq-{{ id }}"
+         class="hy-mq hy-mq--{{ font }} {{ 'hy-mq--upper' if upper }} {{ 'is-pausable' if pause }}"
+         style="--mq-bg: {{ bg }};
+                --mq-fg: {{ fg }};
+                --mq-fs: {{ fs }};
+                --mq-py: {{ py }};
+                --mq-gap: {{ gap }}px;
+                --mq-img-h: {{ imgH }}px;">
+
+  <div class="hy-mq-track" id="hy-mqTrack-{{ id }}">
+    {# One group. The script clones it as many times as the screen needs. #}
+    <div class="hy-mq-group">
+      {% for block in msgs %}
+        {% set m = block.data %}
+        {% set mImg = mediaUrl(m.image) | trim %}
+        {# `| length`, not truthiness — a macro returns a SafeString OBJECT, and
+           an object is truthy even when it holds an empty string. #}
+        {% set hasImg = (mImg | length) > 0 %}
+
+        {% if m.text or hasImg %}
+          {% if m.text %}
+            {% if m.url %}
+              <a href="{{ m.url }}" class="hy-mq-item">{{ m.text }}</a>
+            {% else %}
+              <span class="hy-mq-item">{{ m.text }}</span>
+            {% endif %}
+          {% endif %}
+
+          {# A separator after EVERY item, including the last — it is what sits
+             between the last phrase and the first phrase of the next group.
+             The block's own image takes that slot when it has one. #}
+          {% if hasImg %}
+            <span class="hy-mq-img" aria-hidden="true">
+              <img src="{{ mImg }}" alt="" loading="lazy"/>
+            </span>
+          {% else %}
+            <span class="hy-mq-sep" aria-hidden="true">{{ glyph(sep) }}</span>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  /* All the measuring lives in HayatMarquee() in assets/main.js — see the note
+     there for why a percentage-based duplicate leaves a marching gap. */
+  (function () {
+    var strip = document.getElementById('hy-mq-{{ id }}');
+    var track = document.getElementById('hy-mqTrack-{{ id }}');
+    /* This runs while the body is still parsing, and main.js (which defines
+       HayatMarquee) loads at the END of the body — so without the fallback the
+       strip was never measured and scrolled itself off-screen on phones. */
+    function go() { if (window.HayatMarquee) window.HayatMarquee(strip, track, {{ pxs | int }}); }
+    if (window.HayatMarquee) go(); else document.addEventListener('DOMContentLoaded', go);
+  })();
+</script>
+{% endif %}

@@ -1,0 +1,107 @@
+{
+  "name": "مجموعة مميزة - Collection Showcase",
+  "description": "بانر كبير لمجموعة واحدة بصورة بتتحرك مع السكرول، وجنبه منتجات من المجموعة بتظهر متتابعة",
+  "settings": {
+    "collection": {
+      "type": "collections",
+      "label": "اختر المجموعة",
+      "limit": 1
+    },
+    "image": {
+      "type": "media",
+      "label": "صورة البانر (لو فاضية بتستخدم صورة المجموعة)"
+    },
+    "badge_text": {
+      "type": "string",
+      "label": "الشارة فوق العنوان",
+      "default": "مجموعة الموسم"
+    },
+    "title": {
+      "type": "string",
+      "label": "العنوان (لو فاضي بيستخدم اسم المجموعة)",
+      "default": ""
+    },
+    "description": {
+      "type": "text",
+      "label": "الوصف",
+      "default": "تصميمات اتعملت للي بيتمرن بجد: خامات بتتنفس، قصّات بتتحرك معاك، وشكل يليق بيك."
+    },
+    "button_text": {
+      "type": "string",
+      "label": "نص الزرار",
+      "default": "اكتشف المجموعة"
+    },
+    "products": {
+      "type": "products",
+      "label": "منتجات تظهر جنب البانر"
+    },
+    "use_store_products": {
+      "type": "boolean",
+      "label": "اعرض منتجات المتجر بدل المنتجات الافتراضية (لو مقفول بتظهر المنتجات الافتراضية)",
+      "default": false
+    },
+    "store_sort": {
+      "type": "select",
+      "label": "ترتيب منتجات المجموعة/المتجر",
+      "options": [
+        {
+          "label": "الافتراضي",
+          "value": ""
+        },
+        {
+          "label": "الأحدث أولاً",
+          "value": "created-desc"
+        },
+        {
+          "label": "الأعلى تقييماً",
+          "value": "rating-desc"
+        },
+        {
+          "label": "السعر: من الأقل للأعلى",
+          "value": "price-asc"
+        },
+        {
+          "label": "السعر: من الأعلى للأقل",
+          "value": "price-desc"
+        }
+      ],
+      "default": ""
+    },
+    "products_limit": {
+      "type": "select",
+      "label": "عدد المنتجات",
+      "options": [
+        {
+          "label": "2 منتج",
+          "value": "2"
+        },
+        {
+          "label": "4 منتجات",
+          "value": "4"
+        }
+      ],
+      "default": "4"
+    },
+    "banner_side": {
+      "type": "select",
+      "label": "مكان البانر",
+      "options": [
+        {
+          "label": "في البداية",
+          "value": "start"
+        },
+        {
+          "label": "في النهاية",
+          "value": "end"
+        }
+      ],
+      "default": "start"
+    }
+  },
+  "presets": [
+    {
+      "name": "مجموعة مميزة (Dark Blood)",
+      "category": "homepage"
+    }
+  ]
+}

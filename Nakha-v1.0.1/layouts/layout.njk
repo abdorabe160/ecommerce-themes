@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+{#
+  ============================================================================
+  NAKHA · نكهة — Root layout
+  Restaurant · bakery · food ordering — "Warm Appetite" design language
+  شهي · سريع · دافئ
+  ----------------------------------------------------------------------------
+  Order matters here:
+    1. Fonts (preconnect early)      2. {% seo %} + {% qumra_head %}
+    3. style.css (the design system) 4. :root overrides from Theme Editor
+    5. Tailwind CDN + config mapped onto the CSS vars
+    6. Swiper / GLightbox CSS + JS
+  Body:
+    header template → {% content %} → footer template → global overlays
+    → __QUMRA_CONFIG__ → {% qumra_scripts %} → main.js → Alpine
+  NOTE: {% qumra_head %} / {% qumra_scripts %} do NOT ship Tailwind, fonts,
+        Alpine, Swiper or GLightbox — they are all loaded manually below.
+  ============================================================================
+#}
+{% set lang = localization.language | default('ar') %}
+{% set isRtl = lang != 'en' %}
+
+{# ---- Fonts: display + body per script ---- #}
+{% set fontDisplayAr = settings.fontDisplayArabic | default('Baloo Bhaijaan 2', true) %}
+{% set fontDisplayEn = settings.fontDisplayLatin  | default('Nunito', true) %}
+{% set fontBodyAr    = settings.fontBodyArabic    | default('Cairo', true) %}
+{% set fontBodyEn    = settings.fontBodyLatin     | default('Cairo', true) %}
+
+{#
+  ---- Per-family weight axes ------------------------------------------------
+  Google Fonts v2 is inconsistent about weights a family does not publish:
+  some (Anton) reject the WHOLE request with a 400, others (Lalezar) silently
+  clamp. One combined `family=…&family=…` URL therefore risks taking every font
+  on the site down with it, so each family gets its own <link> and its own axis
+  list. Identical URLs dedupe in the browser, so picking the same face twice
+  still costs one request.
+
+  Every family below is variable or multi-weight — checked against the API — so
+  nothing here currently trips the 400. The map stays anyway: the moment
+  somebody adds a single-weight display face to the options in
+  settings/settings-schema.json, it is the only thing standing between that and
+  a site with no fonts.
+
+  Keep this map in sync with the font `options` in settings/settings-schema.json.
+#}
+{% set fontWeights = {
+  'Baloo Bhaijaan 2': '400;500;600;700;800',
+  'Nunito': '300;400;500;600;700;800;900',
+  'Cairo': '300;400;500;600;700;800;900',
+  'Fredoka': '300;400;500;600;700',
+  'Quicksand': '300;400;500;600;700',
+  'Marhey': '300;400;500;600;700',
+  'Lalezar': '400',
+  'Changa': '300;400;500;600;700;800',
+  'Tajawal': '300;400;500;700;800;900',
+  'Almarai': '300;400;700;800',
+  'Alexandria': '300;400;500;600;700;800',
+  'Readex Pro': '300;400;500;600;700',
+  'IBM Plex Sans Arabic': '300;400;500;600;700',
+  'Plus Jakarta Sans': '300;400;500;600;700;800',
+  'DM Sans': '300;400;500;600;700;800',
+  'Inter': '300;400;500;600;700;800',
+  'Manrope': '300;400;500;600;700;800',
+  'Poppins': '300;400;500;600;700;800',
+  'Rubik': '300;400;500;600;700;800'
+} %}
+{% set wDisplayAr = fontWeights[fontDisplayAr] | default('400;700') %}
+{% set wDisplayEn = fontWeights[fontDisplayEn] | default('400;700') %}
+{% set wBodyAr    = fontWeights[fontBodyAr]    | default('400;700') %}
+{% set wBodyEn    = fontWeights[fontBodyEn]    | default('400;700') %}
+
+{# Latin display case. NAKHA is Title Case by default — "Order Now", not
+   "ORDER NOW". Warmth is the brand read, and all-caps is a shout. A merchant
+   who wants the caps CTA turns this on, or uses .nakha-btn--caps per button. #}
+{% set displayCase = 'uppercase' if (settings.latinHeadingCase | default('normal', true)) == 'uppercase' else 'none' %}
+
+{# ---- Shape knobs: corner style → card / input / media radii ---- #}
+{% set cornerStyle = settings.cornerStyle | default('rounded', true) %}
+{% if cornerStyle == 'tight' %}
+  {% set rCard = '8px' %}{% set rInput = '8px' %}{% set rMedia = '8px' %}
+{% elif cornerStyle == 'soft' %}
+  {% set rCard = '14px' %}{% set rInput = '12px' %}{% set rMedia = '12px' %}
+{% elif cornerStyle == 'plush' %}
+  {% set rCard = '26px' %}{% set rInput = '18px' %}{% set rMedia = '20px' %}
+{% else %}
+  {% set rCard = '18px' %}{% set rInput = '14px' %}{% set rMedia = '14px' %}
+{% endif %}
+
+{% set buttonStyle = settings.buttonStyle | default('pill', true) %}
+{% if buttonStyle == 'square' %}{% set rBtn = '6px' %}
+{% elif buttonStyle == 'soft' %}{% set rBtn = '10px' %}
+{% elif buttonStyle == 'rounded' %}{% set rBtn = '14px' %}
+{% else %}{% set rBtn = '999px' %}{% endif %}
+
+{#
+  ---- Card style ------------------------------------------------------------
+  Unlike a dark theme, elevation is REAL on a cream ground — a warm shadow
+  actually reads. So "raised" is the default and the honest one: a menu is a
+  stack of tappable rows, and a row that lifts off the page says "tap me".
+  "outline" and "flat" are for merchants with busy food photography who want
+  the page quieter.
+#}
+{% set cardStyle = settings.cardStyle | default('raised', true) %}
+{% if cardStyle == 'outline' %}
+  {% set shCard = 'none' %}{% set shCardHover = 'none' %}{% set cardHoverBorder = 'var(--color-appetite)' %}
+{% elif cardStyle == 'flat' %}
+  {% set shCard = 'none' %}{% set shCardHover = 'var(--shadow-sm)' %}{% set cardHoverBorder = 'var(--color-border)' %}
+{% else %}
+  {% set shCard = 'var(--shadow-sm)' %}{% set shCardHover = 'var(--shadow-md)' %}{% set cardHoverBorder = 'var(--color-border-strong)' %}
+{% endif %}
+
+{# ---- Motion ----
+   Ordering food is an impulse. "brisk" is the default for the same reason the
+   brief says سريع — the UI should answer before the appetite cools. #}
+{% set motionSpeed = settings.motionSpeed | default('brisk', true) %}
+{% if motionSpeed == 'relaxed' %}
+  {% set tFast = '200ms' %}{% set tBase = '300ms' %}{% set tSlow = '460ms' %}
+{% else %}
+  {% set tFast = '150ms' %}{% set tBase = '220ms' %}{% set tSlow = '340ms' %}
+{% endif %}
+
+{# ---- Section rhythm ----
+   Tighter than a fashion theme on purpose: a menu is a list, and generous
+   whitespace between menu sections just means more scrolling to the dish. #}
+{% set spacing = settings.sectionSpacing | default('normal', true) %}
+{% if spacing == 'compact' %}{% set secPy = '52px' %}{% set secPySm = '36px' %}
+{% elif spacing == 'roomy' %}{% set secPy = '96px' %}{% set secPySm = '64px' %}
+{% else %}{% set secPy = '72px' %}{% set secPySm = '48px' %}{% endif %}
+
+{% set containerWidth = settings.containerWidth | default('1280', true) %}
+
+{# ---- Ordering & service ---- #}
+{% set floatCart = settings.floatingCart | default('bar', true) %}
+{% set hasFloatCart = floatCart != 'off' %}
+{% set pageType = page.type | default('') %}
+
+<html lang="{{ lang }}" dir="{{ 'rtl' if isRtl else 'ltr' }}"{% if settings.enableAnimations == false %} class="nakha-no-motion"{% endif %}>
+  <head>
+    <meta charset="UTF-8"/>
+    {# Editor vs. live storefront. Set before first paint so nothing flashes.
+       Sample content (bundled demo dishes/categories, unfilled bundle slots, a
+       newsletter with no provider URL, block-less sections) marks itself
+       [data-nakha-demo]: the merchant sees it in the editor, shoppers never do. #}
+    <script>(function(){var d=document.documentElement,q=location.search,ed=false;try{ed=window.self!==window.top}catch(e){ed=true}if(/[?&](theme|theme_id|preview|preview_theme_id|editor)=/.test(q)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))ed=true;if(/[?&]nakha_live\b/.test(q))ed=false;d.classList.add(ed?'nakha-editor':'nakha-live')})();</script>
+    <style>html.nakha-live [data-nakha-demo]{display:none!important}[hidden]{display:none!important}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="{{ settings.headerColor | default('#FFFFFF', true) }}"/>
+    <meta name="color-scheme" content="light"/>
+
+    {# ===== Google Fonts — one <link> per family, see the note above ===== #}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayAr | replace(' ', '+') }}:wght@{{ wDisplayAr }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontDisplayEn | replace(' ', '+') }}:wght@{{ wDisplayEn }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyAr | replace(' ', '+') }}:wght@{{ wBodyAr }}&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fontBodyEn | replace(' ', '+') }}:wght@{{ wBodyEn }}&display=swap"/>
+
+    {% seo %}
+    {% qumra_head %}
+
+    {% if settings.favicon and settings.favicon.fileUrl %}
+      <link rel="icon" href="{{ settings.favicon.fileUrl }}"/>
+    {% endif %}
+
+    {# ===== NAKHA design system ===== #}
+    {% set assetv = 'b616af05' %}
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+    {# ===== Theme Editor overrides — always applied, no gate ===== #}
+    <style>
+      :root {
+        /* Appetite · the accent — the tap target and nothing else.
+           On this LIGHT ground hover goes DARKER and the wash goes LIGHTER —
+           the inverse of a dark theme. `.nakha-invert` flips it back for a
+           charcoal section. */
+        --color-appetite:       {{ settings.primaryColor | default('#D7392F', true) }};
+        --color-appetite-hover: {{ settings.primaryColorHover | default('#BE2E25', true) }};
+        --color-appetite-dark:  {{ settings.primaryColorDark | default('#A02019', true) }};
+        --color-appetite-wash:  {{ settings.primaryColorWash | default('#FDECE9', true) }};
+        --color-appetite-line:  {{ settings.primaryColorLine | default('#F6C9C4', true) }};
+
+        /* Surfaces · the cream ladder */
+        --color-bg-primary:   {{ settings.backgroundColor | default('#FFF7EF', true) }};
+        --color-bg-secondary: {{ settings.surfaceColor | default('#FFFFFF', true) }};
+        --color-bg-tertiary:  {{ settings.wellColor | default('#F7EADC', true) }};
+        --color-surface:      {{ settings.surfaceColor | default('#FFFFFF', true) }};
+        --color-surface-alt:  {{ settings.surfaceAltColor | default('#FDF3E8', true) }};
+        --color-media:        {{ settings.mediaColor | default('#FFFFFF', true) }};
+        --color-cream:        {{ settings.backgroundColor | default('#FFF7EF', true) }};
+        --color-char:         {{ settings.charColor | default('#2C2A28', true) }};
+        --color-section-a:    {{ settings.backgroundColor | default('#FFF7EF', true) }};
+        --color-section-b:    {{ settings.sectionAltColor | default('#FBEFE2', true) }};
+
+        /* Text */
+        --color-text-primary:   {{ settings.textColor | default('#2C2A28', true) }};
+        --color-text-secondary: {{ settings.textSecondaryColor | default('#6B635C', true) }};
+        --color-text-tertiary:  {{ settings.textTertiaryColor | default('#6E655E', true) }};
+
+        /* Lines */
+        --color-border:        {{ settings.borderColor | default('#EEE1D2', true) }};
+        --color-border-strong: {{ settings.borderStrongColor | default('#DFCCB6', true) }};
+        --color-border-hover:  {{ settings.borderHoverColor | default('#C9B29A', true) }};
+        --color-border-focus:  {{ settings.primaryColor | default('#D7392F', true) }};
+
+        /* Header */
+        --color-header:            {{ settings.headerColor | default('#FFFFFF', true) }};
+        --color-header-text:       {{ settings.headerTextColor | default('#2C2A28', true) }};
+        --color-header-border:     {{ settings.headerBorderColor | default('#EEE1D2', true) }};
+        --color-announcement:      {{ settings.announcementColor | default('#D7392F', true) }};
+        --color-announcement-text: {{ settings.announcementTextColor | default('#FFFFFF', true) }};
+
+        /* Footer */
+        --color-footer:            {{ settings.footerColor | default('#2C2A28', true) }};
+        --color-footer-text:       {{ settings.footerTextColor | default('#B5ABA1', true) }};
+        --color-footer-text-muted: {{ settings.footerMutedColor | default('#A39A91', true) }};
+        --color-footer-heading:    {{ settings.footerHeadingColor | default('#FFF7EF', true) }};
+        --color-footer-border:     {{ settings.footerBorderColor | default('#443F3A', true) }};
+
+        /* Typography */
+        --font-display-ar: '{{ fontDisplayAr }}', '{{ fontDisplayEn }}', system-ui, sans-serif;
+        --font-display-en: '{{ fontDisplayEn }}', '{{ fontDisplayAr }}', system-ui, -apple-system, sans-serif;
+        --font-body-ar:    '{{ fontBodyAr }}', system-ui, -apple-system, sans-serif;
+        --font-body-en:    '{{ fontBodyEn }}', system-ui, -apple-system, sans-serif;
+        --font-num:        '{{ fontBodyAr }}', '{{ fontBodyEn }}', system-ui, sans-serif;
+        --font-stat:       '{{ fontDisplayEn }}', '{{ fontDisplayAr }}', system-ui, sans-serif;
+        --font-size-base:  {{ settings.baseFontSize | default(16, true) }}px;
+        --display-case:    {{ displayCase }};
+
+        /* Shape */
+        --radius-card:  {{ rCard }};
+        --radius-input: {{ rInput }};
+        --radius-media: {{ rMedia }};
+        --radius-btn:   {{ rBtn }};
+
+        /* Elevation */
+        --shadow-card:       {{ shCard }};
+        --shadow-card-hover: {{ shCardHover }};
+        --card-hover-border: {{ cardHoverBorder }};
+
+        /* Motion */
+        --t-fast: {{ tFast }};
+        --t-base: {{ tBase }};
+        --t-slow: {{ tSlow }};
+
+        /* Rhythm */
+        --section-py:    {{ secPy }};
+        --section-py-sm: {{ secPySm }};
+        --container-max: {{ containerWidth }}px;
+
+        /* Optional colours: nothing is printed while they are empty, so style.css keeps its own */
+        {% if settings.successColor %}--color-success: {{ settings.successColor }}; --color-success-text: color-mix(in srgb, {{ settings.successColor }} 72%, #000);{% endif %}
+        {# Text on cream, hence a little darker than the picked colour; the dot and the badge follow the text #}
+        {% if settings.warningColor %}--color-warning: {{ settings.warningColor }}; --color-warning-text: color-mix(in srgb, {{ settings.warningColor }} 80%, #000);{% endif %}
+        {% if settings.saleColor %}--color-sale: {{ settings.saleColor }}; --color-sale-text: color-mix(in srgb, {{ settings.saleColor }} 84%, #000); --color-sale-wash: color-mix(in srgb, {{ settings.saleColor }} 10%, #fff);{% endif %}
+        {# One colour re-skins every appetite token; empty keeps the primary colours above #}
+        {% if settings.brandColor %}
+        --color-appetite:       {{ settings.brandColor }};
+        --color-appetite-hover: color-mix(in srgb, {{ settings.brandColor }} 88%, #000);
+        --color-appetite-dark:  color-mix(in srgb, {{ settings.brandColor }} 74%, #000);
+        --color-appetite-wash:  color-mix(in srgb, {{ settings.brandColor }} 10%, #fff);
+        --color-appetite-line:  color-mix(in srgb, {{ settings.brandColor }} 28%, #fff);
+        --color-border-focus:   {{ settings.brandColor }};
+        --shadow-appetite: 0 8px 20px color-mix(in srgb, {{ settings.brandColor }} 28%, transparent);
+        --shadow-focus:    0 0 0 3px color-mix(in srgb, {{ settings.brandColor }} 22%, transparent);
+        {% if (settings.announcementColor | default('#D7392F', true)) == '#D7392F' %}--color-announcement: {{ settings.brandColor }};{% endif %}
+        {% endif %}
+      }
+      {% if settings.brandColor %}
+      /* Charcoal sections set these three for themselves, so they follow here */
+      .nakha-invert {
+        --color-appetite-hover: color-mix(in srgb, {{ settings.brandColor }} 82%, #fff);
+        --color-appetite-wash:  color-mix(in srgb, {{ settings.brandColor }} 22%, var(--color-char));
+        --color-appetite-line:  color-mix(in srgb, {{ settings.brandColor }} 42%, var(--color-char));
+      }
+      {% endif %}
+    </style>
+
+    {# ===== Tailwind CDN — config maps utilities onto the CSS vars ===== #}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          container: {
+            center: true,
+            padding: { DEFAULT: '20px', sm: '16px', lg: '20px' },
+            screens: { '2xl': '{{ containerWidth }}px' },
+          },
+          extend: {
+            colors: {
+              appetite: {
+                DEFAULT: 'var(--color-appetite)',
+                hover: 'var(--color-appetite-hover)',
+                dark: 'var(--color-appetite-dark)',
+                wash: 'var(--color-appetite-wash)',
+                line: 'var(--color-appetite-line)',
+              },
+              cream: 'var(--color-cream)',
+              char: {
+                DEFAULT: 'var(--color-char)',
+                soft: 'var(--color-char-soft)',
+              },
+              plate: 'var(--color-media)',
+              /* Kitchen semantics — see style.css §01 */
+              basil: {
+                DEFAULT: 'var(--color-basil)',
+                wash: 'var(--color-basil-wash)',
+                line: 'var(--color-basil-line)',
+              },
+              honey: {
+                DEFAULT: 'var(--color-honey)',
+                wash: 'var(--color-honey-wash)',
+                line: 'var(--color-honey-line)',
+              },
+              chili: 'var(--color-chili)',
+              success: 'var(--color-success)',
+              error: 'var(--color-error)',
+              warning: 'var(--color-warning)',
+              info: 'var(--color-info)',
+              header: 'var(--color-header)',
+              footer: {
+                DEFAULT: 'var(--color-footer)',
+                text: 'var(--color-footer-text)',
+                muted: 'var(--color-footer-text-muted)',
+                heading: 'var(--color-footer-heading)',
+                border: 'var(--color-footer-border)',
+              },
+            },
+            backgroundColor: {
+              primary: 'var(--color-bg-primary)',
+              secondary: 'var(--color-bg-secondary)',
+              tertiary: 'var(--color-bg-tertiary)',
+              canvas: 'var(--color-bg-primary)',
+              surface: 'var(--color-surface)',
+              'surface-alt': 'var(--color-surface-alt)',
+              well: 'var(--color-bg-tertiary)',
+              media: 'var(--color-media)',
+              'section-a': 'var(--color-section-a)',
+              'section-b': 'var(--color-section-b)',
+            },
+            textColor: {
+              primary: 'var(--color-text-primary)',
+              secondary: 'var(--color-text-secondary)',
+              tertiary: 'var(--color-text-tertiary)',
+              'on-appetite': 'var(--color-text-on-appetite)',
+              'on-char': 'var(--color-text-on-char)',
+              'on-light': 'var(--color-text-on-light)',
+            },
+            borderColor: {
+              DEFAULT: 'var(--color-border)',
+              soft: 'var(--color-border)',
+              strong: 'var(--color-border-strong)',
+              hover: 'var(--color-border-hover)',
+              focus: 'var(--color-border-focus)',
+            },
+            fontFamily: {
+              display: ['{{ fontDisplayAr }}', '{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              'display-en': ['{{ fontDisplayEn }}', 'system-ui', 'sans-serif'],
+              body: ['{{ fontBodyAr }}', 'system-ui', 'sans-serif'],
+              'body-en': ['{{ fontBodyEn }}', 'system-ui', 'sans-serif'],
+              num: ['{{ fontBodyAr }}', '{{ fontBodyEn }}', 'system-ui', 'sans-serif'],
+            },
+            borderRadius: {
+              none: '0px',
+              xs: 'var(--radius-xs)',
+              sm: 'var(--radius-sm)',
+              DEFAULT: 'var(--radius-md)',
+              md: 'var(--radius-md)',
+              lg: 'var(--radius-lg)',
+              xl: 'var(--radius-xl)',
+              '2xl': 'var(--radius-2xl)',
+              '3xl': 'var(--radius-2xl)',
+              card: 'var(--radius-card)',
+              btn: 'var(--radius-btn)',
+              input: 'var(--radius-input)',
+              media: 'var(--radius-media)',
+              full: '9999px',
+            },
+            boxShadow: {
+              xs: 'var(--shadow-xs)',
+              sm: 'var(--shadow-sm)',
+              DEFAULT: 'var(--shadow-sm)',
+              md: 'var(--shadow-md)',
+              lg: 'var(--shadow-lg)',
+              xl: 'var(--shadow-xl)',
+              appetite: 'var(--shadow-appetite)',
+              card: 'var(--shadow-card)',
+              focus: 'var(--shadow-focus)',
+              none: 'none',
+            },
+            transitionTimingFunction: {
+              out: 'cubic-bezier(0.16, 0.84, 0.32, 1)',
+              soft: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            },
+            fontSize: {
+              display: ['clamp(2.1rem, 5.6vw, 3.9rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+              headline: ['clamp(1.45rem, 3vw, 2.1rem)', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+              stat: ['clamp(1.75rem, 4vw, 2.5rem)', { lineHeight: '1' }],
+            },
+            spacing: {
+              section: 'var(--section-py)',
+              'section-sm': 'var(--section-py-sm)',
+              header: 'var(--header-h)',
+            },
+          },
+        },
+      }
+    </script>
+
+    {# ===== Swiper.js CSS ===== #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css"/>
+
+    {# ===== Swiper.js =====
+       MUST load in <head>, synchronously. Widgets init their sliders from an
+       inline <script> that runs while the body is parsed — i.e. BEFORE the end
+       of <body>. If Swiper were loaded at the bottom, `typeof Swiper` would be
+       'undefined' at that moment and every slider would silently skip init. #}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+
+    {# ===== GLightbox CSS + JS ===== (same reason as Swiper: inline widget init) #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+
+    {# Search Console: accepts the whole <meta> tag or only its content value #}
+    {% set gv = (settings.googleVerification or '') | trim %}
+    {% if gv %}
+      {% set _gvI = gv.indexOf('content=') %}{% set _gvTail = gv.slice(_gvI + 8) | trim if _gvI > -1 else '' %}{% set gvm = [gv, _gvTail.slice(1).split(_gvTail.slice(0, 1))[0]] if _gvTail else false %}
+      <meta name="google-site-verification" content="{{ gvm[1] if gvm else gv }}"/>
+    {% endif %}
+
+    {% if settings.customCSS %}
+      <style>{{ settings.customCSS | safe }}</style>
+    {% endif %}
+  </head>
+
+  {#
+    `data-page` mirrors `page.type` so widgets can scope behaviour without
+    re-reading it. NOTE: page.type's vocabulary is not documented in docs/ and
+    nothing in this theme compares against it yet, so do NOT make it the only
+    gate on anything — see the paired `:has()` rule in style.css §14, which is
+    what actually keeps the floating cart off the cart page.
+
+    `.nakha-has-floatcart` adds the mobile floor so the bar never lands on the
+    last dish's Add button.
+  #}
+  <body data-page="{{ pageType }}"{% if hasFloatCart %} class="nakha-has-floatcart"{% endif %}>
+    {# ===== Header ===== #}
+    {% template "header" %}
+
+    {# ===== Page content ===== #}
+    <main id="nakha-main">{% content %}</main>
+
+    {# ===== Footer ===== #}
+    {% template "footer" %}
+
+    {# A page with no H1 (home without a hero, or a hero with no title) gets the store
+       name as a visually hidden one. It only runs when none exists, so never two. #}
+    <script>
+      (function () {
+        if (document.querySelector('h1')) return;
+        var name = {{ (store.name | default('', true)) | dump | safe }} || document.title, main = document.getElementById('nakha-main');
+        if (!name || !main) return;
+        var h = document.createElement('h1');
+        h.className = 'nakha-sr-only';
+        h.textContent = name;
+        main.insertBefore(h, main.firstChild);
+      })();
+    </script>
+
+    {# =====================================================================
+       Floating cart — the brief's "سلة عائمة"
+       ---------------------------------------------------------------------
+       Self-contained on purpose: it seeds from the SSR cart so it is correct
+       on first paint, then tracks the `cart:updated` event that CartManager
+       already dispatches. No main.js change needed.
+
+       `formatMoney` is exported by main.js; the SSR text inside the span is
+       the pre-hydration value and Alpine replaces it with the same string.
+       ===================================================================== #}
+    {% if hasFloatCart %}
+      <div x-data="{
+             qty: {{ cart.totalQuantity | default(0, true) }},
+             total: {{ cart.totalPrice | default(0, true) }},
+             money(v) { return (window.formatMoney ? window.formatMoney(v) : v); }
+           }"
+           @cart:updated.window="qty = $event.detail.totalQuantity || 0; total = $event.detail.totalPrice || 0"
+           x-cloak>
+        <button type="button"
+                x-show="qty > 0 && !/^\/cart\b/.test(location.pathname)"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-3"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0 translate-y-3"
+                @click="$store.modal.open('cart')"
+                aria-label="{{ t('pages.cart.title') }}"
+                class="nakha-floatcart{% if floatCart == 'bubble' %} nakha-floatcart--bubble{% endif %}">
+          <span class="nakha-floatcart-count" x-text="qty"></span>
+          <span class="nakha-floatcart-label">{{t('pages.cart.title')}}</span>
+          <span class="nakha-floatcart-total" x-text="money(total)">{{ cart.totalPrice | default(0, true) | money }}</span>
+        </button>
+      </div>
+    {% endif %}
+
+    {# =====================================================================
+       Quick View modal — content is fetched and injected by main.js
+       (Alpine `quickView()` + #quick-view-content-dynamic are contractual)
+       ===================================================================== #}
+    <div x-data="quickView()" @quick-view.window="openQuickView($event.detail.slug)" x-cloak>
+      <div x-show="$store.modal.current === 'quick-view'"
+           @click="$store.modal.close()"
+           class="nakha-overlay"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"></div>
+
+      <div x-show="$store.modal.current === 'quick-view'"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-[0.98]"
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="nakha-modal">
+        <div class="nakha-modal-panel" @click.outside="$store.modal.close()">
+          <button @click="$store.modal.close()"
+                  type="button"
+                  aria-label="{{ t('common.close') }}"
+                  class="nakha-btn-icon nakha-btn-icon--filled nakha-btn-icon--sm nakha-modal-close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          <div class="p-6 max-sm:p-4">
+            {# Loading #}
+            <div x-show="loading" class="flex items-center justify-center py-24">
+              <span class="nakha-spinner" style="width: 28px; height: 28px;"></span>
+            </div>
+
+            {# Error #}
+            <div x-show="error && !loading" class="nakha-empty">
+              <span class="nakha-empty-icon">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+              </span>
+              <p class="nakha-text-sm">{{t('common.error')}}</p>
+            </div>
+
+            {# Injected product markup — Alpine.initTree() runs on it #}
+            <div x-show="!loading && !error" id="quick-view-content-dynamic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ===== Toast host (id is contractual with main.js) ===== #}
+    <div id="toast-container"
+         class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+
+    {# ===== Alpine.js =====
+       Stays at the bottom and deferred: main.js registers the stores and
+       components on `alpine:init`, so Alpine must boot after main.js is parsed.
+       Swiper/GLightbox are in <head> instead — see the note there.
+       Alpine plugins MUST be deferred before the Alpine core script. #}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.17.5/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
+
+    {# ===== Runtime config consumed by main.js ===== #}
+    <script>
+      window.__QUMRA_CONFIG__ = {
+        currency: '{{ localization.currency.currencyCode | default("SAR") }}',
+        currencySymbol: '{{ localization.currency.currencySymbol | default("ر.س") }}',
+        language: '{{ lang }}',
+        exchangeRate: {{ localization.market.exchangeRate | default(1, true) }},
+        moneyFormatSample: '{{ 123456789 | money }}',   {# measured probe — main.js reads scale, decimals, separators #}
+        lowStockAt: {{ settings.lowStockThreshold | default(3, true) | int }},   {# the ONE "only N left" threshold (a product widget set to other than 3 keeps its own) #}
+        demoImages: [{% for i in range(1, 9) %}'{{ ('demo-product-' ~ i ~ '.jpg') | assets }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        cartTotalQuantity: {{ cart.totalQuantity | default(0, true) }},
+        cartTotalPrice: {{ cart.totalPrice | default(0, true) }},
+        pageType: '{{ pageType }}',
+        wishlistIds: [{% for p in wishlist.products %}'{{ p._id }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        messages: {
+          addedToCart: '{{t("pages.product.added_to_cart")}}',
+          addError: '{{t("common.error")}}',
+          outOfStock: '{{t("cart.out_of_stock")}}',
+          stock: {
+            soldOut: {{ t('pages.product.out_of_stock') | dump | safe }},
+            allInCart: {{ t('pages.product.max_in_cart') | dump | safe }},
+            low: {{ t('pages.product.low_stock') | dump | safe }},
+            inStock: {{ t('pages.product.in_stock') | dump | safe }},
+            inStockCount: {{ t('pages.product.in_stock_count') | dump | safe }},
+            onlyAvailable: {{ t('pages.cart.only_available') | dump | safe }},
+            needsVariant: {{ t('pages.cart.needs_variant') | dump | safe }},
+            checkoutBlocked: {{ t('pages.cart.stock_blocked') | dump | safe }}
+          }
+        },
+        {# Single source of truth for the AJAX card renderer — widgets must NOT
+           dump their own copies of these strings. #}
+        card: {
+          addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+          added: {{ t('pages.product.added') | dump | safe }},
+          chooseOptions: {{ t('pages.product.choose_options') | dump | safe }},
+          viewProduct: {{ t('pages.product.view_product') | dump | safe }},
+          chooseSize: {{ t('pages.product.choose_size') | dump | safe }},
+          outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+          quickView: {{ t('pages.product.quick_view') | dump | safe }},
+          compare: {{ t('pages.product.compare') | dump | safe }},
+          inStock: {{ t('pages.product.in_stock') | dump | safe }},
+          lowStock: {{ t('pages.product.low_stock') | dump | safe }},
+          noProducts: {{ t('products.no_products') | dump | safe }},
+          noResults: {{ t('pages.search.no_results') | dump | safe }},
+          tryDifferent: {{ t('pages.search.try_different') | dump | safe }},
+          products: {{ t('pages.search.products') | dump | safe }},
+          resultsFor: {{ t('pages.search.results_for') | dump | safe }},
+          home: {{ t('common.home') | dump | safe }},
+          prev: {{ t('common.prev') | dump | safe }},
+          next: {{ t('common.next') | dump | safe }}
+        },
+        {# Twin of ui/count.njk for counts that change in the browser #}
+        counts: {
+          one: {{ t('counts.product_one') | dump | safe }},
+          two: {{ t('counts.product_two') | dump | safe }},
+          few: {{ t('counts.product_few') | dump | safe }},
+          many: {{ t('counts.product_many') | dump | safe }}
+        },
+        {# Strings for the AJAX cart-line renderer — same single-source rule. #}
+        cart: {
+          remove: {{ t('pages.cart.remove_item') | dump | safe }},
+          unitPrice: {{ t('pages.cart.unit_price') | dump | safe }}
+        },
+        {# Service / ordering context. Widgets read these instead of each
+           re-deriving the mode from their own settings, so the header toggle,
+           the hero buttons and the cart all agree on one answer. #}
+        service: {
+          defaultMode: '{{ settings.defaultServiceMode | default("delivery", true) }}',
+          showToggle: {{ 'true' if settings.showServiceToggle | default(true) else 'false' }},
+          showPrepTime: {{ 'true' if settings.showPrepTime | default(true) else 'false' }},
+          prepTime: {{ (settings.prepTimeLabel | default('', true)) | dump | safe }},
+          showBranch: {{ 'true' if settings.showBranch | default(true) else 'false' }},
+          floatingCart: '{{ floatCart }}'
+        },
+        {# Dish-card defaults, mirrored from the theme settings so the AJAX
+           renderer matches the SSR partial without extra plumbing. #}
+        cardDefaults: {
+          layout: '{{ settings.dishCardLayout | default("horizontal", true) }}',
+          imageRatio: '{{ settings.dishImageRatio | default("1x1", true) }}',
+          showDesc: {{ 'true' if settings.dishShowDesc | default(true) else 'false' }},
+          descLines: {{ settings.dishDescLines | default(2, true) }},
+          showTags: {{ 'true' if settings.dishShowTags | default(true) else 'false' }},
+          showSpice: {{ 'true' if settings.dishShowSpice | default(true) else 'false' }},
+          showCalories: {{ 'true' if settings.dishShowCalories | default(false, true) else 'false' }},
+          showRating: {{ 'true' if settings.dishShowRating | default(true) else 'false' }},
+          showSecondImage: {{ 'true' if settings.dishShowSecondImage | default(false, true) else 'false' }},
+          showQuickView: {{ 'true' if settings.dishShowQuickView | default(true) else 'false' }},
+          addStyle: '{{ settings.dishAddStyle | default("circle", true) }}'
+        }
+      };
+    </script>
+
+    {% qumra_scripts %}
+
+    {# main.js registers the Alpine stores/components — must run before Alpine boots #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+
+    {% if settings.customJS %}
+      <script>{{ settings.customJS | safe }}</script>
+    {% endif %}
+  </body>
+</html>

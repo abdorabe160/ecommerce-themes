@@ -1,0 +1,97 @@
+{# ============================================================================
+   LOCAL · ICON COLUMNS — أعمدة نصية مع أيقونات
+   ----------------------------------------------------------------------------
+     Shop By Lifestyle
+        ( ❦ )        ( ⊘ )        ( ♣ )        ( ◉ )        ( ⁂ )
+        Vegan     Gluten-Free     Paleo         Keto      Plant-Based
+      one line     one line     one line     one line      one line
+
+   Each column: a tinted shape with an icon, a title, a line, and an optional
+   link (the whole column becomes it). The icon is either one of the built-in
+   line icons (ui/lc-icon.njk — keep its keys in step with the `icon` select)
+   or the merchant's own image, which wins when set.
+
+   `mobile_layout: slider` → LocalSlider (locked on desktop when every column
+   fits, so desktop is simply a row); `grid` → two columns on phones.
+
+   Styling: assets/style.css → "15.5.7 ICON COLUMNS · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set cols = widget.blocks | default([], true) %}
+{% set count = cols | length %}
+
+{% set perView = d.columns | default(5, true) %}
+{% set circle = d.circle_size | default(92) %}
+{% set iconPx = (circle * (d.icon_scale | default(58)) / 100) | round %}
+{# The icons are drawn on a 24px grid and scaled, so a fixed stroke would
+   thicken with the icon. This keeps the drawn line at ~1.5px at any size. #}
+{% set iconStroke = ((36 / iconPx) * 100) | round / 100 %}
+{% set shape = d.shape | default('circle') %}
+{% set isSlider = (d.mobile_layout | default('slider')) == 'slider' %}
+
+<section id="lc-icn-{{ id }}"
+         class="lc-icn lc-icn--{{ shape }}"
+         style="--lc-icn-size: {{ circle }}px; --lc-icn-n: {{ perView }}; padding-block: {{ d.padding_top | default(48) }}px {{ d.padding_bottom | default(48) }}px;">
+  <div class="lc-hwrap">
+    {% if d.title %}<h2 class="lc-sec-title">{{ d.title }}</h2>{% endif %}
+
+    {% if count == 0 %}
+      <p class="lc-icols-empty">{{ t('common.placeholder_add') }}</p>
+    {% else %}
+      {% if isSlider %}<div class="swiper" id="lc-icnSw-{{ id }}"><div class="swiper-wrapper">{% else %}<div class="lc-icn-grid">{% endif %}
+
+      {% for block in cols %}
+        {% set b = block.data %}
+        {% set custom = b.custom_icon.fileUrl if b.custom_icon and b.custom_icon.fileUrl else (b.custom_icon if b.custom_icon is string else '') %}
+        {% set tag = 'a' if b.url else 'div' %}
+        <{{ tag }} class="lc-icn-col {{ 'swiper-slide' if isSlider }}"{% if b.url %} href="{{ b.url }}"{% endif %}
+             style="--lc-icn-bg: {{ b.circle_color | default('color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-tertiary))', true) }}; --lc-icn-fg: {{ b.icon_color | default('var(--color-text-primary)', true) }};">
+          <span class="lc-icn-badge">
+            {% if custom %}
+              <img src="{{ custom }}" alt="" loading="lazy" style="width: {{ iconPx }}px; height: {{ iconPx }}px;"/>
+            {% else %}
+              {% ui "lc-icon.njk", name=b.icon | default('leaf'), size=iconPx, stroke=iconStroke %}
+            {% endif %}
+          </span>
+          {% if b.title %}<span class="lc-icn-title">{{ b.title }}</span>{% endif %}
+          {% if b.text %}<span class="lc-icn-text">{{ b.text }}</span>{% endif %}
+        </{{ tag }}>
+      {% endfor %}
+
+      {% if isSlider %}</div></div>{% else %}</div>{% endif %}
+
+      {% if isSlider %}
+        <div class="lc-pager lc-icn-pager">
+          <button type="button" class="lc-pager-arrow" id="lc-icnPrev-{{ id }}" aria-label="{{ t('common.prev') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 5-7 7 7 7"/></svg>
+          </button>
+          <div class="lc-pager-dots" id="lc-icnDots-{{ id }}"></div>
+          <button type="button" class="lc-pager-arrow" id="lc-icnNext-{{ id }}" aria-label="{{ t('common.next') }}">
+            <svg class="lc-flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></svg>
+          </button>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+
+{% if isSlider and count > 0 %}
+<script>
+  LocalReady(function () {
+    LocalSlider({
+      root: 'lc-icn-{{ id }}',
+      el: 'lc-icnSw-{{ id }}',
+      prev: '#lc-icnPrev-{{ id }}',
+      next: '#lc-icnNext-{{ id }}',
+      dots: '#lc-icnDots-{{ id }}',
+      desk: {{ perView | default(5, true) }},
+      mob: 2.4,
+      gap: 24
+    });
+  });
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#lc-icn-' ~ id, c=d %}

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+{#
+  ============================================================================
+  MORVA · Root layout
+  ----------------------------------------------------------------------------
+  Order matters:
+    head  → fonts → {% seo %} + {% qumra_head %} → style.css → :root overrides
+          → Swiper / GLightbox (deferred — only ever called after Alpine boots)
+    body  → header template → <main>{% content %}</main> → footer template
+          → quick-view modal → toast host → __QUMRA_CONFIG__
+          → {% qumra_scripts %} → main.js → Alpine plugins → Alpine core
+  NOTE: {% qumra_head %} / {% qumra_scripts %} ship none of the libraries, so
+        every one of them is loaded by hand below. There is NO Tailwind — the
+        whole design system is assets/style.css.
+  ============================================================================
+#}
+{% set lang = localization.language | default('ar') %}
+{% set isAr = lang != 'en' %}
+
+{# ---- Theme Editor values (colours + fonts only) ---- #}
+{% set C_BG     = settings.colorBackground | default('#0a0306', true) %}
+{% set C_PANEL  = settings.colorPanel      | default('#15040a', true) %}
+{% set C_FG     = settings.colorText       | default('#f5f0eb', true) %}
+{% set C_ACCENT = settings.colorAccent     | default('#d11c3c', true) %}
+{# The global brand colour, when set, takes the accent's place everywhere. #}
+{% set C_ACCENT = settings.brandColor      | default(C_ACCENT, true) %}
+{% set C_ON     = settings.colorOnAccent   | default('#ffffff', true) %}
+{% set C_FOOT   = settings.colorFooter     | default('', true) %}
+
+{% set fDisplay = settings.fontDisplay | default('Space Grotesk', true) %}
+{% set fBody    = settings.fontBody    | default('Manrope', true) %}
+{% set fArabic  = settings.fontArabic  | default('IBM Plex Sans Arabic', true) %}
+{% set motionOn = settings.enableAnimations | default(true) %}
+
+<html lang="{{ lang }}" dir="{{ 'rtl' if isAr else 'ltr' }}" class="{{ 'lang-ar' if isAr else 'lang-en' }}{{ ' mv-no-motion' if not motionOn }}">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="{{ C_BG }}"/>
+    <meta name="color-scheme" content="dark"/>
+    {# ===== Live store vs Theme Editor =====
+       The editor previews in an iframe (the same test main.js uses for the
+       motion layer). On the live store — the top window — anything marked
+       for the merchant only (`[data-mv-live-hide]`: demo products, an
+       unconnected newsletter) is removed before first paint; `.mv-live-only`
+       is its counterpart for the shopper. `[hidden]` is forced so a class
+       with its own `display` can never beat the attribute. #}
+    <script>if (window.self === window.top) document.documentElement.classList.add('mv-live');</script>
+    <style>.mv-live [data-mv-live-hide] { display: none !important; } html:not(.mv-live) .mv-live-only { display: none !important; } [hidden] { display: none !important; }{% if not (settings.pageTransitions | default(true)) %} .mv-main { animation: none !important; }{% endif %}</style>
+
+    {# ===== Google Fonts =====
+       One link per family: the CSS2 API fails the WHOLE request when any one
+       family lacks a requested weight, so a combined URL can silently drop
+       every face. Split, a family that cannot serve a weight fails alone. #}
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    {% set WGHT = {
+      'Space Grotesk': '400;500;600;700',
+      'Archivo': '400;500;600;700;800',
+      'Syne': '400;500;600;700;800',
+      'Unbounded': '400;500;600;700;800',
+      'Oswald': '400;500;600;700',
+      'Manrope': '400;500;600;700;800',
+      'Inter': '400;500;600;700',
+      'DM Sans': '400;500;600;700',
+      'IBM Plex Sans Arabic': '400;500;600;700',
+      'Cairo': '400;500;600;700;800',
+      'Tajawal': '400;500;700;800',
+      'Almarai': '400;700;800',
+      'Rubik': '400;500;600;700;800',
+      'Noto Kufi Arabic': '400;500;600;700;800'
+    } %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fArabic | replace(' ', '+') }}:wght@{{ WGHT[fArabic] | default('400;700') }}&display=swap"/>
+    {% if not isAr %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fDisplay | replace(' ', '+') }}:wght@{{ WGHT[fDisplay] | default('400;700') }}&display=swap"/>
+    {% if fBody != fDisplay %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ fBody | replace(' ', '+') }}:wght@{{ WGHT[fBody] | default('400;700') }}&display=swap"/>
+    {% endif %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"/>
+    {% endif %}
+
+    {% seo %}
+    {% qumra_head %}
+
+    {# After qumra_head: the platform prints its own /favicon.ico, and the last icon wins #}
+    {% set favUrl = settings.favicon.fileUrl if settings.favicon and settings.favicon.fileUrl else (settings.favicon if settings.favicon is string else '') %}
+    {% if favUrl %}<link rel="icon" href="{{ favUrl }}"/>{% endif %}
+
+    {# Google Search Console — accepts the full <meta …> tag or just its content value #}
+    {% set gv = (settings.googleVerification or '') | trim %}
+    {% if gv %}
+      {% set _gvI = gv.indexOf('content=') %}{% set _gvTail = gv.slice(_gvI + 8) | trim if _gvI > -1 else '' %}{% set gvMatch = [gv, _gvTail.slice(1).split(_gvTail.slice(0, 1))[0]] if _gvTail else false %}
+      <meta name="google-site-verification" content="{{ gvMatch[1] if gvMatch else gv }}"/>
+    {% endif %}
+
+    {# ===== MORVA design system ===== #}
+    {% set assetv = 'e041b1d3' %}
+    <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+    {# ===== Theme Editor overrides =====
+       FIVE pickers drive the palette. Everything else is derived with
+       color-mix() so a merchant who changes the crimson never has to hand-pick
+       its hover, its border tint or its contour colour to match. #}
+    {# When every picker still holds its default the derived block is not
+       printed at all — assets/style.css already carries the exact hand-tuned
+       palette (the pink-tinted hairlines, the hotter hover red), which a
+       formula can only approximate. #}
+    {% set paletteChanged = (C_BG | lower) != '#0a0306' or (C_PANEL | lower) != '#15040a'
+                         or (C_FG | lower) != '#f5f0eb' or (C_ACCENT | lower) != '#d11c3c' %}
+    <style>
+      :root {
+      {% if paletteChanged %}
+        --bg: {{ C_BG }};
+        --bg-2: {{ C_PANEL }};
+        --panel: {{ C_PANEL }};
+        --panel-2: color-mix(in srgb, {{ C_PANEL }} 95%, {{ C_ACCENT }});
+        --fg: {{ C_FG }};
+        --fg-muted: color-mix(in srgb, {{ C_FG }} 62%, transparent);
+        --fg-soft: color-mix(in srgb, {{ C_FG }} 85%, transparent);
+        --accent: {{ C_ACCENT }};
+        --accent-hot: color-mix(in srgb, {{ C_ACCENT }} 80%, #ffffff);
+        --border: color-mix(in srgb, color-mix(in srgb, {{ C_FG }} 80%, {{ C_ACCENT }}) 14%, transparent);
+        --border-strong: color-mix(in srgb, color-mix(in srgb, {{ C_FG }} 80%, {{ C_ACCENT }}) 22%, transparent);
+        --topo: color-mix(in srgb, {{ C_ACCENT }} 40%, transparent);
+      {% endif %}
+        --on-accent: {{ C_ON }};
+        {% if C_FOOT %}--footer-bg: {{ C_FOOT }};{% endif %}
+        {# Status colours print nothing until set. As text they lean a quarter
+           toward --fg, the way --accent-text does, so any pick stays readable. #}
+        {% if settings.saleColor %}--sale: {{ settings.saleColor }}; --sale-text: color-mix(in srgb, {{ settings.saleColor }} 75%, var(--fg)); --on-sale: oklch(from {{ settings.saleColor }} clamp(0, (0.62 - l) * 100, 1) 0 0);{% endif %}
+        {% if settings.successColor %}--success: color-mix(in srgb, {{ settings.successColor }} 75%, var(--fg));{% endif %}
+        {% if settings.warningColor %}--warn: color-mix(in srgb, {{ settings.warningColor }} 75%, var(--fg));{% endif %}
+        {# The Arabic face is the second slot everywhere: an Arabic product name
+           on the English storefront must not drop to a system font. #}
+        --font-display: '{{ fDisplay }}', '{{ fArabic }}', system-ui, sans-serif;
+        --font-sans: '{{ fBody }}', '{{ fArabic }}', 'Helvetica Neue', system-ui, sans-serif;
+        --font-mono: 'JetBrains Mono', '{{ fArabic }}', ui-monospace, monospace;
+        --font-arabic: '{{ fArabic }}', system-ui, sans-serif;
+      }
+    </style>
+
+    {# ===== Swiper + GLightbox =====
+       Deferred. Nothing calls either library at parse time: the product page
+       and quick view build their gallery inside Alpine's init(), and Alpine
+       itself is deferred AFTER these, so both are guaranteed to exist by then.
+       The CSS loads non-blocking (media=print swap). #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css"
+          media="print" onload="this.media='all'; this.onload=null;"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css"
+          media="print" onload="this.media='all'; this.onload=null;"/>
+    <noscript>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css"/>
+    </noscript>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+    {% if motionOn and (settings.smoothScroll | default(true)) %}
+    <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+    {% endif %}
+    {# Merchant CSS last in <head>, so it wins over the theme at equal specificity #}
+    {% if settings.customCSS %}<style>{{ settings.customCSS | safe }}</style>{% endif %}
+  </head>
+
+  <body>
+    <a href="#main" class="mv-skip">{{ t('morva.skip') }}</a>
+
+    {% template "header" %}
+
+    <main id="main" class="mv-main">{% content %}</main>
+
+    {# Exactly one H1, whatever sections the merchant kept. A template can't see
+       which sections a page has, so this runs right after them, before paint:
+       none (hero removed, or a page title switched off) gets a hidden store
+       name; a second hero's H1 becomes an H2 that looks the same. #}
+    <script>
+      (function () {
+        var hs = document.querySelectorAll('h1');
+        if (!hs.length) {
+          var logo = document.querySelector('.mv-logo');
+          var h = document.createElement('h1');
+          h.className = 'mv-sr';
+          h.textContent = (logo && logo.getAttribute('aria-label')) || document.title;
+          var main = document.getElementById('main');
+          main.insertBefore(h, main.firstChild);
+          return;
+        }
+        for (var i = 1; i < hs.length; i++) {
+          var n = document.createElement('h2');
+          for (var j = 0; j < hs[i].attributes.length; j++) n.setAttribute(hs[i].attributes[j].name, hs[i].attributes[j].value);
+          n.innerHTML = hs[i].innerHTML;
+          hs[i].parentNode.replaceChild(n, hs[i]);
+        }
+      })();
+    </script>
+
+    {% template "footer" %}
+
+    {# =====================================================================
+       Quick View — opened by a card's "+" when the product has options.
+       main.js fetches /products/<slug>?widgetKey=quick-view-product and
+       injects it into #quick-view-content-dynamic (both contractual).
+       ===================================================================== #}
+    <div x-data="quickView()" @quick-view.window="openQuickView($event.detail.slug)" x-cloak>
+      <div class="mv-backdrop" :class="$store.modal.current === 'quick-view' && 'is-open'"
+           @click="$store.modal.close()"></div>
+      <div class="mv-qv" x-show="$store.modal.current === 'quick-view'" x-transition.opacity.duration.250ms>
+        <div class="mv-qv-panel" role="dialog" aria-modal="true" data-lenis-prevent
+             @click.outside="$store.modal.current === 'quick-view' && $store.modal.close()">
+          <button type="button" class="mv-close mv-qv-close" @click="$store.modal.close()"
+                  aria-label="{{ t('common.close') }}">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <div class="mv-qv-pad">
+            <div x-show="loading" class="mv-qv-loading"><span class="mv-spinner" style="width:28px;height:28px;"></span></div>
+            <div x-show="error && !loading" class="mv-empty">{{ t('common.error') }}</div>
+            <div x-show="!loading && !error" id="quick-view-content-dynamic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Toast host — the id is the contract with Toast._show() in main.js #}
+    <div id="toast-container" role="status" aria-live="polite"></div>
+
+    {# ===== Runtime config consumed by main.js ===== #}
+    <script>
+      window.__QUMRA_CONFIG__ = {
+        currency: {{ (localization.currency.currencyCode | default('EGP')) | dump | safe }},
+        currencySymbol: {{ (localization.currency.currencySymbol | default('ج.م')) | dump | safe }},
+        language: '{{ lang }}',
+        exchangeRate: {{ localization.market.exchangeRate | default(1, true) }},
+        {# probe for main.js _moneyFormat — keep in sync with MONEY_PROBE #}
+        moneyFormatSample: {{ (1234567 | money) | dump | safe }},
+        cartTotalQuantity: {{ cart.totalQuantity | default(0, true) }},
+        cartTotalPrice: {{ cart.totalPrice | default(0, true) }},
+        wishlistIds: [{% for p in wishlist.products %}'{{ p._id }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        morva: {
+          smoothScroll: {{ 'true' if (motionOn and (settings.smoothScroll | default(true))) else 'false' }},
+          transitions: {{ 'true' if (motionOn and (settings.pageTransitions | default(true))) else 'false' }},
+          lowStock: {{ settings.lowStockThreshold | default(3, true) | dump | safe }}
+        },
+        messages: {
+          addedToCart: {{ t('pages.product.added_to_cart') | dump | safe }},
+          addError: {{ t('common.error') | dump | safe }},
+          outOfStock: {{ t('cart.out_of_stock') | dump | safe }}
+        },
+        {# Single source of truth for HayatCard.build() and the hero/search
+           renderers — widgets never dump their own copies of these strings. #}
+        card: {
+          buy: {{ t('morva.buy') | dump | safe }},
+          view: {{ t('morva.view_product') | dump | safe }},
+          lowStock: {{ t('morva.low_stock_short') | dump | safe }},
+          add: {{ t('morva.add_to_bag') | dump | safe }},
+          addToCart: {{ t('pages.product.add_to_cart') | dump | safe }},
+          added: {{ t('pages.product.added') | dump | safe }},
+          chooseOptions: {{ t('pages.product.choose_options') | dump | safe }},
+          outOfStock: {{ t('pages.product.out_of_stock') | dump | safe }},
+          soldOut: {{ t('morva.sold_out') | dump | safe }},
+          quickView: {{ t('pages.product.quick_view') | dump | safe }},
+          onSale: {{ t('common.on_sale') | dump | safe }},
+          isNew: {{ t('products.new') | dump | safe }},
+          free: {{ t('common.free') | dump | safe }},
+          noProducts: {{ t('products.no_products') | dump | safe }},
+          countOne: {{ t('morva.count_one') | dump | safe }},
+          countTwo: {{ t('morva.count_two') | dump | safe }},
+          countFew: {{ t('morva.count_few') | dump | safe }},
+          countMany: {{ t('morva.count_many') | dump | safe }},
+          noResults: {{ t('pages.search.no_results') | dump | safe }},
+          tryDifferent: {{ t('pages.search.try_different') | dump | safe }},
+          priceNegative: {{ t('pages.search.price_negative') | dump | safe }},
+          priceSwapped: {{ t('pages.search.price_swapped') | dump | safe }},
+          clearAll: {{ t('pages.search.clear_all') | dump | safe }},
+          products: {{ t('pages.search.products') | dump | safe }},
+          resultsFor: {{ t('pages.search.results_for') | dump | safe }},
+          home: {{ t('common.home') | dump | safe }},
+          prev: {{ t('common.prev') | dump | safe }},
+          next: {{ t('common.next') | dump | safe }}
+        },
+        {# Strings for the JS cart-line renderer — same single-source rule. #}
+        cart: {
+          remove: {{ t('pages.cart.remove_item') | dump | safe }},
+          removeConfirm: {{ t('pages.cart.remove_confirm') | dump | safe }},
+          unitPrice: {{ t('pages.cart.unit_price') | dump | safe }},
+          freeShipLeft: {{ t('pages.cart.free_shipping_left') | dump | safe }},
+          freeShipDone: {{ t('pages.cart.free_shipping_done') | dump | safe }},
+          deleteLabel: {{ t('common.delete') | dump | safe }},
+          cancel: {{ t('common.cancel') | dump | safe }}
+        }
+      };
+    </script>
+
+    {% qumra_scripts %}
+
+    {# main.js registers the Alpine stores/components on `alpine:init`, so it
+       must be parsed before Alpine boots. Alpine plugins load before core. #}
+    <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+    {% if settings.customJS %}<script>{{ settings.customJS | safe }}</script>{% endif %}
+    {# Keep 3.17.5: on 3.14.1 the manual Alpine.initTree() calls in main.js double-init injected
+       markup, so one click on an AJAX card sent 2 cart adds and quick view sent 3. #}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.17.5/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+{
+  "name": "شبكة المنتجات",
+  "description": "منتجات التصنيف، أو منتجات تختارها، أو كل منتجات المتجر أوتوماتيك (صفحة كل المنتجات) في شبكة مع ترتيب وعرض المزيد",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": "عنوان فوق الشبكة (اختياري)",
+      "default": ""
+    },
+    "products": {
+      "type": "products",
+      "label": "منتجات مختارة (بتستخدم بس لو الصفحة مش صفحة تصنيف)"
+    },
+    "load_all_products": {
+      "type": "boolean",
+      "label": "لو مفيش منتجات (زي صفحة كل المنتجات) اعرض كل منتجات المتجر",
+      "default": true
+    },
+    "remote_sort": {
+      "type": "select",
+      "label": "ترتيب منتجات المتجر لما تتعرض أوتوماتيك",
+      "options": [
+        {
+          "label": "الافتراضي",
+          "value": ""
+        },
+        {
+          "label": "الأحدث أولاً",
+          "value": "created-desc"
+        },
+        {
+          "label": "السعر: من الأقل للأعلى",
+          "value": "price-asc"
+        },
+        {
+          "label": "السعر: من الأعلى للأقل",
+          "value": "price-desc"
+        }
+      ],
+      "default": ""
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": "عدد الأعمدة على الكمبيوتر",
+      "options": [
+        {
+          "label": "3 أعمدة",
+          "value": "3"
+        },
+        {
+          "label": "4 أعمدة",
+          "value": "4"
+        }
+      ],
+      "default": "4"
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": "إظهار الترتيب",
+      "default": true
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": "إظهار الفلاتر (فلاتر لوحة التحكم، وإلا الوسوم + التوفر + السعر)",
+      "default": true
+    },
+    "show_price_filter": {
+      "type": "boolean",
+      "label": "إظهار فلتر السعر",
+      "default": true
+    },
+    "show_quick_view": {
+      "type": "boolean",
+      "label": "إظهار زر المعاينة السريعة",
+      "default": true
+    },
+    "empty_title": {
+      "type": "string",
+      "label": "رسالة لو مفيش منتجات",
+      "default": "مفيش منتجات هنا لسه"
+    }
+  },
+  "presets": [
+    {
+      "name": "شبكة المنتجات (Dark Blood)",
+      "category": "التصنيف"
+    }
+  ]
+}

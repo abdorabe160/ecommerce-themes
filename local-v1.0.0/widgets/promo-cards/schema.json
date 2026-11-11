@@ -1,0 +1,250 @@
+{
+  "name": "بطاقات ترويجية",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان القسم (اختياري)",
+        "en": "Section heading (optional)"
+      },
+      "default": ""
+    },
+    "columns": {
+      "type": "range",
+      "label": {
+        "ar": "عدد البطاقات في الصف — كمبيوتر",
+        "en": "Cards per row — desktop"
+      },
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "شكل البطاقة",
+        "en": "Card shape"
+      },
+      "default": "3x4",
+      "options": [
+        {
+          "value": "2x3",
+          "label": {
+            "ar": "طولية ٢:٣",
+            "en": "Portrait 2:3"
+          }
+        },
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "طولية ٣:٤",
+            "en": "Portrait 3:4"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "طولية ٤:٥",
+            "en": "Portrait 4:5"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        }
+      ]
+    },
+    "text_align": {
+      "type": "select",
+      "label": {
+        "ar": "محاذاة النص",
+        "en": "Text alignment"
+      },
+      "default": "center",
+      "options": [
+        {
+          "value": "center",
+          "label": {
+            "ar": "في المنتصف",
+            "en": "Centre"
+          }
+        },
+        {
+          "value": "start",
+          "label": {
+            "ar": "بداية السطر",
+            "en": "Start"
+          }
+        }
+      ]
+    },
+    "mobile_layout": {
+      "type": "select",
+      "label": {
+        "ar": "على الجوال",
+        "en": "On mobile"
+      },
+      "default": "slider",
+      "options": [
+        {
+          "value": "slider",
+          "label": {
+            "ar": "شريط قابل للسحب",
+            "en": "Swipeable row"
+          }
+        },
+        {
+          "value": "stack",
+          "label": {
+            "ar": "بطاقات تحت بعضها",
+            "en": "Stacked"
+          }
+        }
+      ]
+    },
+    "padding_top": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أعلى القسم",
+        "en": "Space above the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    "padding_bottom": {
+      "type": "range",
+      "label": {
+        "ar": "المسافة أسفل القسم",
+        "en": "Space below the section"
+      },
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية القسم",
+        "en": "Section background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون عنوان القسم",
+        "en": "Section heading colour"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "card": {
+      "name": "بطاقة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "▸ الصورة — تملأ البطاقة، واترك أسفلها هادئًا للنص",
+            "en": "▸ Image — fills the card; keep its lower part quiet for the copy"
+          }
+        },
+        "bg_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون البطاقة (يظهر بدون صورة أو قبل تحميلها)",
+            "en": "Card colour (shows without an image or before it loads)"
+          },
+          "default": ""
+        },
+        "fade": {
+          "type": "boolean",
+          "label": {
+            "ar": "تدرّج بلون البطاقة أسفل الصورة — يحمي النص على الصور المزدحمة",
+            "en": "Fade in the card colour under the copy — keeps text readable on busy photos"
+          },
+          "default": true
+        },
+        "eyebrow": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الصغير",
+            "en": "Small line"
+          },
+          "default": "طازج كل يوم"
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "المخبوزات"
+        },
+        "button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر — فارغ = بدون زر (البطاقة كلها تبقى رابطًا)",
+            "en": "Button label — empty hides it (the whole card stays a link)"
+          },
+          "default": "اكتشف المزيد"
+        },
+        "url": {
+          "type": "string",
+          "label": {
+            "ar": "الرابط · /shop · /collections · /blogs",
+            "en": "Link · /shop · /collections · /blogs"
+          },
+          "default": "/collections"
+        },
+        "text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون النص",
+            "en": "Text colour"
+          },
+          "default": ""
+        },
+        "button_bg": {
+          "type": "color",
+          "label": {
+            "ar": "لون الزر",
+            "en": "Button colour"
+          },
+          "default": ""
+        },
+        "button_text_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون نص الزر",
+            "en": "Button text colour"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "البانرات",
+      "name": "بطاقات ترويجية"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{# صفحة منتج توضيحية — المعاينة فقط (/?demo_product=<id>). نفس تصميم ومنطق widgets/product-detail (pickerMixin). البيانات من assets/demo-data.js #}
+<div class="mw-demo-page" x-data="mwDemoProduct()">
+  <template x-if="p">
+    <section class="mw-pdp">
+      <div class="container">
+        <nav class="mw-pdp__crumbs" aria-label="Breadcrumb">
+          <a href="/">{{t('common.home') | default('Home') }}</a><span aria-hidden="true">/</span><span x-text="product.title"></span>
+        </nav>
+        <div class="mw-pdp__grid">
+          <div class="mw-pdp__gallery">
+            <div class="mw-pdp__media"><img :src="p.images[gallery]" :alt="product.title" width="900" height="1200"/></div>
+            <div class="mw-pdp__thumbs" x-show="p.images.length > 1">
+              <template x-for="(src, i) in p.images" :key="src">
+                <button type="button" class="mw-pdp__thumb" :class="{ 'is-active': gallery === i }" @click="gallery = i"><img :src="src" alt=""/></button>
+              </template>
+            </div>
+          </div>
+          <div class="mw-pdp__info">
+            {% set promo = (settings.promo_badge if settings else '') or '' %}
+            {% if promo %}<span class="mw-pdp__badge">{{ promo }}</span>{% endif %}
+            <div class="mw-pdp__title" role="heading" aria-level="1" x-text="product.title"></div>
+            <div class="mw-pdp__meta">
+              <div class="mw-pdp__price">
+                <s x-show="onSale" x-text="money(compareAt)"></s>
+                <span :class="{ 'is-sale': onSale }" x-text="money(price)"></span>
+              </div>
+              <template x-if="p.reviews > 0">
+                <div class="mw-rating"><svg viewBox="0 0 24 24" fill="#f0b743" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1l-5.9 3.2 1.3-6.5L2.5 9.3l6.6-.8L12 2.5Z"/></svg><span class="mw-rating__value" x-text="p.rating"></span><span class="mw-rating__count" x-text="'(' + p.reviews + ')'"></span></div>
+              </template>
+            </div>
+            <template x-for="(opt, oi) in options" :key="oi">
+              <template x-if="!isColor(opt) || opt.values.length > 1">
+              <fieldset class="mw-pdp__option" :class="{ 'has-error': optionError && selected[oi] == null }">
+                <legend class="mw-pdp__label"><span x-text="opt.name"></span><span class="mw-pdp__label-value" x-text="selectedLabel(oi)"></span></legend>
+                <div :class="isColor(opt) ? 'mw-pdp__swatches' : 'mw-pdp__sizes'">
+                  <template x-for="(v, vi) in opt.values" :key="vi">
+                    <button type="button" :class="[isColor(opt) ? 'mw-pdp__swatch' : 'mw-pdp__size', isSelected(oi, vi) ? 'is-active' : '', isAvailable(oi, vi) ? '' : 'is-unavailable']"
+                            :disabled="!isAvailable(oi, vi)" @click="choose(oi, vi)" :title="valueLabel(v)" :aria-label="valueLabel(v)">
+                      <template x-if="isColor(opt)"><span :style="'--sw:' + swatchColor(v)"></span></template>
+                      <template x-if="!isColor(opt)"><span x-text="valueLabel(v)"></span></template>
+                    </button>
+                  </template>
+                </div>
+              </fieldset>
+              </template>
+            </template>
+            <p class="mw-pdp__opt-error" x-show="optionError" x-text="optionError" role="alert"></p>
+            <p class="mw-stockmsg" :class="'mw-stockmsg--' + stockMessage.kind" x-show="stockMessage.text" x-text="stockMessage.text"></p>
+            <p class="mw-stockmsg mw-stockmsg--note" x-show="inCart > 0 && available > 0" x-text="inCartText"></p>
+            <div class="mw-pdp__buy">
+              <div class="mw-qty mw-pdp__qty" :class="{ 'is-disabled': soldOut }">
+                <button type="button" @click="dec()" :disabled="quantity <= 1" aria-label="-">−</button>
+                <span x-text="quantity"></span>
+                <button type="button" @click="inc()" :disabled="soldOut || atMax" aria-label="+">+</button>
+              </div>
+              <div class="mw-pdp__buttons">
+                <button type="button" class="mw-pdp__btn mw-pdp__btn--add" @click="submit(false)" :disabled="soldOut || available <= 0">
+                  <span x-show="!soldOut">{{t('product.add_to_cart') | default('Add to cart') }}</span>
+                  <span x-show="soldOut">{{t('product.sold_out') | default('Sold out') }}</span>
+                </button>
+                <button type="button" class="mw-pdp__btn mw-pdp__btn--buy" @click="submit(true)" :disabled="soldOut">{{t('product.buy_now') | default('Buy now') }}</button>
+              </div>
+            </div>
+            <div class="mw-pdp__payments"><span>valU</span><span>Apple Pay</span><span>meeza</span><span>AMEX</span><span>Mastercard</span><span>VISA</span></div>
+            <div class="mw-pdp__ship" x-data="mwDeliveryDates(1, 2, 6)">
+              <p class="mw-pdp__ship-title">{{t('product.standard_shipping') | default('Standard Shipping') }}</p>
+              <div class="mw-pdp__ship-steps">
+                <div><strong>{{t('product.order_placed') | default('Order placed') }}</strong><span x-text="placed"></span></div>
+                <div><strong>{{t('product.dispatched') | default('Dispatched') }}</strong><span x-text="dispatched"></span></div>
+                <div><strong>{{t('product.delivered') | default('Delivered') }}</strong><span x-text="delivered"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </template>
+</div>

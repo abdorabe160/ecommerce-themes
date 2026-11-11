@@ -1,0 +1,144 @@
+{#
+  ============================================================================
+  ARTICLE MAIN · صفحة المقال
+  ----------------------------------------------------------------------------
+  /articles/<handle>: breadcrumb, a wide rounded picture, then two columns —
+  a sidebar of boxes (blocks: plain text on grey, or a coloured card with a
+  picture and a link) and the article itself (centred title, meta, rich text,
+  tags, share). Related articles below reuse the BLOG GRID card (.hx-bg-card).
+
+  No blocks → one text box and one promo card in the visitor's language.
+  No article (template preview) → a demo article, so it never arrives blank.
+  Media fields not uploaded through the editor arrive empty → demo picture.
+
+  Styles: assets/sections.css → "ARTICLE MAIN" (+ "BLOG GRID" for the cards).
+  ============================================================================
+#}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set a = context.article | default({}) %}
+{% set isDemo = (a.title | default('') | length) == 0 %}
+{% set related = a.relatedArticles | default(a.related) | default([]) %}
+{% set side = d.sidebar | default('start') %}
+
+{% macro mediaUrl(m) %}{% if m %}{% if m is string %}{{ m }}{% elif m.fileUrl %}{{ m.fileUrl }}{% elif m.url %}{{ m.url }}{% endif %}{% endif %}{% endmacro %}
+
+{% set title = t('posts.a2.title') if isDemo else a.title %}
+{% set heroImg = ('pg-demo-5.jpg' | assets) if isDemo else (a.image.fileUrl if (a.image and a.image.fileUrl) else '') %}
+{% set blogTitle = a.blog.title if a.blog and a.blog.title else t('bx.blog') %}
+{% set blogUrl = ('/blogs/' ~ (a.blog.handle | default(a.blog.slug))) if a.blog and (a.blog.handle or a.blog.slug) else '/blogs' %}
+{% set catName = (t('bx.demo_cat') if isDemo else (a.category.title | default(a.category.name) | default('') if a.category else '')) %}
+{% set author = t('bx.demo_author') if isDemo else ((a.author if a.author is string else (a.author.name | default(''))) if a.author else '') %}
+{% set date = '2026-10-01' if isDemo else (a.createdAt | default('')) %}
+{% set tags = ['tech', 'tips'] if isDemo else (a.tags | default([])) %}
+
+<article id="hx-am-{{ id }}"
+         class="hx-am is-side-{{ side }}"
+         style="--am-h: {{ d.hero_height | default(420) }}px; --pt: {{ d.padding_top if d.padding_top is defined else 16 }}px; --pb: {{ d.padding_bottom if d.padding_bottom is defined else 48 }}px;"
+         x-data="{ copied: false, share() { var u = location.href; if (navigator.share) { navigator.share({ title: document.title, url: u }).catch(function () {}); return; } var s = this; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { s.copied = true; setTimeout(function () { s.copied = false; }, 2000); }).catch(function () {}); } }">
+  <div class="hx-am-wrap">
+    {% if d.show_breadcrumb != false %}
+      <nav class="hx-crumbs" aria-label="breadcrumb">
+        <a href="/">{{ t('common.home') }}</a><span aria-hidden="true">/</span>
+        <a href="{{ blogUrl }}">{{ blogTitle }}</a><span aria-hidden="true">/</span>
+        <span aria-current="page">{{ title }}</span>
+      </nav>
+    {% endif %}
+
+    {% if d.show_hero != false %}
+      <div class="hx-am-hero">{% if heroImg %}<img src="{{ heroImg }}" alt="{{ title }}" fetchpriority="high"/>{% else %}<span class="hx-bg-noimg"></span>{% endif %}</div>
+    {% endif %}
+
+    <div class="hx-am-grid">
+      <div class="hx-am-main">
+        <header class="hx-am-head">
+          {% if d.show_meta != false and catName %}<p class="hx-am-cat">{{ catName }}</p>{% endif %}
+          <h1 class="hx-am-title" dir="auto">{{ title }}</h1>
+          {% if d.show_meta != false and (author or date or a.views) %}
+            <p class="hx-am-meta">
+              {% if author %}<span>{{ t('bx.by') }} {{ author }}</span><span class="hx-bg-dot" aria-hidden="true">·</span>{% endif %}
+              {% if date %}<time datetime="{{ date }}" data-hy-date>{{ (date | string).slice(0, 10) }}</time>{% endif %}
+              {% if a.views %}<span class="hx-bg-dot" aria-hidden="true">·</span><span><bdi>{{ a.views }}</bdi> {{ t('pages.blog.views') }}</span>{% endif %}
+            </p>
+          {% endif %}
+        </header>
+
+        <div class="taqa-prose hx-am-body" dir="auto">{{ (t('bx.demo_body') if isDemo else a.content) | safe }}</div>
+
+        {% if (d.show_tags != false and (tags | length) > 0) or d.show_share != false %}
+          <div class="hx-am-foot">
+            {% if d.show_tags != false and (tags | length) > 0 %}
+              <div class="hx-am-tags"><span class="hx-am-lbl">{{ t('bx.tags') }}</span>{% for tg in tags %}{% if tg is string %}{% set tgx = tg %}{% elif tg %}{% set tgx = tg.displayName or tg.name or tg.title or tg.label or tg.value or "" %}{% else %}{% set tgx = "" %}{% endif %}{% if tgx %}<span class="hx-am-tag">{{ tgx }}</span>{% endif %}{% endfor %}</div>
+            {% endif %}
+            {% if d.show_share != false %}
+              <div class="hx-am-share">
+                <span class="hx-am-lbl">{{ t('bx.share') }}</span>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="Facebook" :href="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href)" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8.1v3h2.5V21h2.9Z"/></svg></a>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="X" :href="'https://twitter.com/intent/tweet?url=' + encodeURIComponent(location.href)" href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.5l11.2 14.5Z"/></svg></a>
+                <a class="hx-am-sbtn" target="_blank" rel="noopener" aria-label="WhatsApp" :href="'https://wa.me/?text=' + encodeURIComponent(location.href)" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3c-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.4-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.3Z"/></svg></a>
+                <button type="button" class="hx-am-sbtn" @click="share()" :aria-label="copied ? '{{ t('pages.blog.copied') }}' : '{{ t('common.share') }}'"><svg x-show="!copied" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><svg x-show="copied" x-cloak width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if side != 'none' %}
+        <aside class="hx-am-side">
+          {% set blocks = widget.blocks | default([]) %}
+          {% if (blocks | length) > 0 %}
+            {% for b in blocks %}
+              {% set bd = b.data | default(b.settings) | default({}) %}
+              {% set bimg = mediaUrl(bd.image) | trim %}
+              {% if bd.style == 'promo' %}
+                <div class="hx-am-box is-promo" style="--box-bg: {{ bd.bg | default('color-mix(in srgb, var(--hx-primary, var(--color-accent)) 15%, white)', true) }};">
+                  <p class="hx-am-bt">{{ (bd.title or t('bx.promo_title')) | safe }}</p>
+                  {% if bd.text %}<div class="hx-am-bx">{{ bd.text | safe }}</div>{% endif %}
+                  <a href="{{ bd.url | default('/shop') }}" class="hx-am-link">{{ (bd.button or t('bx.promo_btn')) | safe }}</a>
+                  <img class="hx-am-pimg" src="{{ bimg if (bimg | length) else ('hx-cg-4.webp' | assets) }}" alt="" loading="lazy"/>
+                </div>
+              {% else %}
+                <div class="hx-am-box">
+                  <p class="hx-am-bt">{{ (bd.title or t('bx.side_title')) | safe }}</p>
+                  <div class="hx-am-bx">{{ (bd.text or t('bx.side_text')) | safe }}</div>
+                  {% if bd.button %}<a href="{{ bd.url | default('/shop') }}" class="hx-am-link">{{ bd.button | safe }}</a>{% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="hx-am-box">
+              <p class="hx-am-bt">{{ t('bx.side_title') }}</p>
+              <div class="hx-am-bx">{{ t('bx.side_text') }}</div>
+            </div>
+            <div class="hx-am-box is-promo" style="--box-bg: color-mix(in srgb, var(--hx-primary, var(--color-accent)) 15%, white);">
+              <p class="hx-am-bt">{{ t('bx.promo_title') }}</p>
+              <div class="hx-am-bx">{{ t('bx.promo_text') }}</div>
+              <a href="/shop" class="hx-am-link">{{ t('bx.promo_btn') }}</a>
+              <img class="hx-am-pimg" src="{{ 'hx-cg-4.webp' | assets }}" alt="" loading="lazy"/>
+            </div>
+          {% endif %}
+        </aside>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if d.show_related != false and (related | length) > 0 %}
+    <div class="hx-am-related">
+      <div class="hx-am-wrap">
+        <h2 class="hx-am-rh">{{ d.related_title if (d.related_title | default('') | trim | length) else t('bx.related') }}</h2>
+        <div class="hx-bg hx-bgc3 hx-bg-grid is-r-wide is-zoom" style="--bg-cols: 3;">
+          {% for ra in related %}{% if loop.index <= 3 %}
+            {% set rurl = '/articles/' ~ (ra.handle | default(ra.slug) | default(ra._id)) %}
+            <article class="hx-bg-card">
+              <a href="{{ rurl }}" class="hx-bg-media" tabindex="-1" aria-hidden="true">{% if ra.image and ra.image.fileUrl %}<img src="{{ ra.image.fileUrl }}" alt="" loading="lazy"/>{% else %}<span class="hx-bg-noimg"></span>{% endif %}</a>
+              {% if ra.category and ra.category.title %}<p class="hx-bg-cat">{{ ra.category.title }}</p>{% endif %}
+              <h3 class="hx-bg-title" dir="auto"><a href="{{ rurl }}">{{ ra.title }}</a></h3>
+              {% if ra.createdAt %}<p class="hx-bg-meta"><time datetime="{{ ra.createdAt }}" data-hy-date>{{ (ra.createdAt | string).slice(0, 10) }}</time></p>{% endif %}
+            </article>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</article>

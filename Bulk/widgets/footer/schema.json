@@ -1,0 +1,146 @@
+{
+  "name": "الفوتر - Bulck",
+  "description": "فوتر بهوية Dark Blood: مميزات المتجر، روابط، تواصل وسوشيال",
+  "settings": {
+    "store_name": {
+      "type": "string",
+      "label": "اسم المتجر (سيبه فاضي عشان يتاخد من المتجر)",
+      "default": ""
+    },
+    "logo_image": {
+      "type": "media",
+      "label": "شعار (اختياري)"
+    },
+    "about_text": {
+      "type": "text",
+      "label": "نبذة عن المتجر",
+      "default": "ملابس ومعدات رياضية مصممة لأعلى مستويات الأداء. اتمرّن بقوة والبس اللي يليق بتمرينك."
+    },
+    "show_features": {
+      "type": "boolean",
+      "label": "إظهار شريط المميزات فوق الفوتر",
+      "default": true
+    },
+    "feature_1_title": {
+      "type": "string",
+      "label": "الميزة 1 - العنوان",
+      "default": "الشحن والتوصيل"
+    },
+    "feature_1_text": {
+      "type": "string",
+      "label": "الميزة 1 - الوصف",
+      "default": "المصاريف بتظهر قبل الدفع"
+    },
+    "feature_2_title": {
+      "type": "string",
+      "label": "الميزة 2 - العنوان",
+      "default": "الاستبدال والاسترجاع"
+    },
+    "feature_2_text": {
+      "type": "string",
+      "label": "الميزة 2 - الوصف",
+      "default": "حسب سياسة المتجر"
+    },
+    "feature_3_title": {
+      "type": "string",
+      "label": "الميزة 3 - العنوان",
+      "default": "طرق الدفع"
+    },
+    "feature_3_text": {
+      "type": "string",
+      "label": "الميزة 3 - الوصف",
+      "default": "الطرق المتاحة بتظهر في الدفع"
+    },
+    "feature_4_title": {
+      "type": "string",
+      "label": "الميزة 4 - العنوان",
+      "default": "دعم فني"
+    },
+    "feature_4_text": {
+      "type": "string",
+      "label": "الميزة 4 - الوصف",
+      "default": "اسألنا عن أي حاجة"
+    },
+    "menu_1_title": {
+      "type": "string",
+      "label": "عنوان القائمة الأولى",
+      "default": "تسوق"
+    },
+    "menu_1": {
+      "type": "menu",
+      "label": "القائمة الأولى",
+      "default": "footer-menu"
+    },
+    "menu_2_title": {
+      "type": "string",
+      "label": "عنوان القائمة التانية",
+      "default": "المساعدة"
+    },
+    "menu_2": {
+      "type": "menu",
+      "label": "القائمة التانية (اختار قائمة غير الأولى)",
+      "default": "footer-menu"
+    },
+    "contact_title": {
+      "type": "string",
+      "label": "عنوان عمود التواصل",
+      "default": "تواصل معانا"
+    },
+    "phone": {
+      "type": "string",
+      "label": "رقم التليفون",
+      "default": ""
+    },
+    "email": {
+      "type": "string",
+      "label": "الإيميل",
+      "default": ""
+    },
+    "address": {
+      "type": "string",
+      "label": "العنوان",
+      "default": ""
+    },
+    "facebook_url": {
+      "type": "string",
+      "label": "رابط فيسبوك",
+      "default": ""
+    },
+    "instagram_url": {
+      "type": "string",
+      "label": "رابط إنستجرام",
+      "default": ""
+    },
+    "tiktok_url": {
+      "type": "string",
+      "label": "رابط تيك توك",
+      "default": ""
+    },
+    "whatsapp_url": {
+      "type": "string",
+      "label": "رابط واتساب (https://wa.me/20...)",
+      "default": ""
+    },
+    "copyright_year": {
+      "type": "string",
+      "label": "سنة حقوق النشر (فاضي = السنة الحالية)",
+      "default": ""
+    },
+    "copyright_text": {
+      "type": "string",
+      "label": "نص حقوق النشر",
+      "default": "كل الحقوق محفوظة."
+    },
+    "payment_text": {
+      "type": "string",
+      "label": "نص طرق الدفع (اختياري)",
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "name": "الفوتر (Dark Blood)",
+      "category": "الفوتر"
+    }
+  ]
+}

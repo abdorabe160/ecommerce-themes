@@ -1,0 +1,161 @@
+{# ============================================================================
+   LOCAL · EVENTS — الفعاليات
+   ----------------------------------------------------------------------------
+     Upcoming events                                      View all events
+     ┌────────────┬───────────────────────────────────────────┬──────────┐
+     │ (31)       │  Pasta From Scratch                        │          │
+     │ 2026       │  ( $110 ) ( MASTERCLASS ) ( VIRTUAL )      │  image   │
+     │ 08 Oct     │  Learn how to mix, knead, roll…            │          │
+     │ Thursday   │  ( VIEW EVENT )                            │          │
+     │ ─────      │                                            │          │
+     │ (◷) 03:30 – 06:30                                       │          │
+     └────────────┴───────────────────────────────────────────┴──────────┘
+
+   ── Date entry: three dropdowns, nothing to type ──
+   Qumra's editor has no `date` setting type (docs/theme-structure/widgets.md
+   lists none), so the date is DAY · MONTH (by name) · YEAR selects, and both
+   times are selects in 30-minute steps — nothing for the merchant to mistype.
+   If the editor ever gains a date picker, only the schema and the three
+   lines that read y/m/dd below need to change. The weekday and month names
+   are worked out HERE from the date (Zeller's congruence), in the storefront
+   language, and printed server-side: no flash, no JS needed to read them.
+   An impossible date (31 February) still prints; the weekday is computed
+   from it the way a calendar would roll it over.
+
+   `hide_past` removes events whose end (or start) is already behind the
+   visitor's clock — that has to be the browser, the page may be cached.
+
+   Qumra has no events route, so "view event" links wherever the merchant
+   points it (typically a blog article).
+
+   Styling: assets/style.css → "15.5.12 EVENTS · LOCAL".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set events = widget.blocks | default([], true) %}
+{% set count = events | length %}
+{% set isAr = (localization.language | default('ar')) != 'en' %}
+{% set h12 = (d.time_format | default('24')) == '12' %}
+{% set imgSide = d.image_side | default('end') %}
+{% set btnStyle = d.button_style | default('outline') %}
+
+{% set MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'] if isAr else ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+{# Zeller order: 0 = Saturday … 6 = Friday #}
+{% set DAYS = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'] if isAr else ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'] %}
+
+{% macro clock(tm, twelve, ar) %}{% if tm %}{% set hh = tm.split(':')[0] | int %}{% set mm = tm.split(':')[1] | default('00') %}{% if twelve %}{{ (hh % 12) or 12 }}:{{ mm }} {{ ('ص' if hh < 12 else 'م') if ar else ('AM' if hh < 12 else 'PM') }}{% else %}{{ tm }}{% endif %}{% endif %}{% endmacro %}
+
+<section id="lc-ev-{{ id }}" class="lc-ev lc-ev--img-{{ imgSide }}"
+         style="padding-block: {{ d.padding_top | default(48) }}px {{ d.padding_bottom | default(48) }}px;">
+  <div class="lc-hwrap">
+    {% if d.title or d.view_all_text %}
+      <div class="lc-sec-head">
+        {% if d.title %}<h2 class="lc-sec-title">{{ d.title }}</h2>{% endif %}
+        {% if d.view_all_text %}<a href="{{ d.view_all_url | default('/blogs', true) }}" class="lc-sec-link">{{ d.view_all_text }}</a>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="lc-ev-list">
+      {% for block in events %}
+        {% set b = block.data %}
+        {# Day / month / year dropdowns (Qumra's editor has no date type).
+           An older block that still carries a single `date` string (YYYY-MM-DD)
+           is read from that instead. #}
+        {% if b.year and b.month and b.day %}
+          {% set y = b.year | int %}
+          {% set m = b.month | int %}
+          {% set dd = b.day | int %}
+        {% else %}
+          {% set parts = (((b.date | default('', true)) ~ '').slice(0, 10)).split('-') %}
+          {% set y = parts[0] | int %}
+          {% set m = (parts[1] | default('1')) | int %}
+          {% set dd = (parts[2] | default('1')) | int %}
+        {% endif %}
+        {% set valid = y > 1900 and m >= 1 and m <= 12 and dd >= 1 and dd <= 31 %}
+        {% set raw = (y ~ '-' ~ ('0' if m < 10 else '') ~ m ~ '-' ~ ('0' if dd < 10 else '') ~ dd) if valid else '' %}
+
+        {% if valid %}
+          {# Zeller's congruence — Jan/Feb count as months 13/14 of the year before #}
+          {% set zm = m + 12 if m < 3 else m %}
+          {% set zy = y - 1 if m < 3 else y %}
+          {% set K = zy % 100 %}
+          {% set J = zy // 100 %}
+          {% set wd = (dd + ((13 * (zm + 1)) // 5) + K + (K // 4) + (J // 4) + 5 * J) % 7 %}
+        {% endif %}
+
+        {% set img = b.image.fileUrl if b.image and b.image.fileUrl else (b.image if b.image is string else '') %}
+        {# Arabic comma or Latin comma — `replace` would only catch the first one #}
+        {% set tags = (((b.tags | default('', true)).split('،')) | join(',')).split(',') %}
+
+        <article class="lc-ev-card {{ 'has-img' if img and imgSide != 'none' }}"
+                 data-lc-ev-date="{{ raw }}" data-lc-ev-end="{{ b.end_time | default(b.start_time) | default('23:59', true) }}">
+
+          <div class="lc-ev-when">
+            <div class="lc-ev-date">
+              <span class="lc-ev-cal" aria-hidden="true">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path stroke-linecap="round" d="M8 3v4M16 3v4"/></svg>
+                <span class="lc-ev-cal-day">{{ dd if valid else '' }}</span>
+              </span>
+              {% if valid %}
+                <span class="lc-ev-year">{{ y }}</span>
+                <span class="lc-ev-day"><time datetime="{{ raw }}">{{ ('0' if dd < 10 else '') ~ dd }} {{ MONTHS[m - 1] }}</time></span>
+                <span class="lc-ev-wd">{{ DAYS[wd] }}</span>
+              {% else %}
+                <span class="lc-ev-day">{{ raw }}</span>
+              {% endif %}
+            </div>
+            {% if b.start_time %}
+              <div class="lc-ev-time">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4.2l-2.2 1.6"/></svg>
+                <span dir="ltr">{{ clock(b.start_time, h12, isAr) }}{% if b.end_time %} – {{ clock(b.end_time, h12, isAr) }}{% endif %}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="lc-ev-body">
+            {% if b.title %}<h3 class="lc-ev-title">{{ b.title }}</h3>{% endif %}
+            {% if b.tags %}
+              <ul class="lc-ev-tags">
+                {% for tg in tags %}{% if tg | trim %}<li>{{ tg | trim }}</li>{% endif %}{% endfor %}
+              </ul>
+            {% endif %}
+            {% if b.description %}<div class="lc-ev-desc">{{ b.description | safe }}</div>{% endif %}
+            {% if b.button_text %}
+              <a href="{{ b.button_url | default('#', true) }}" class="lc-ev-btn lc-ev-btn--{{ btnStyle }}">{{ b.button_text }}</a>
+            {% endif %}
+          </div>
+
+          {% if img and imgSide != 'none' %}
+            <div class="lc-ev-media"><img src="{{ img }}" alt="{{ b.title | default('', true) }}" loading="lazy"/></div>
+          {% endif %}
+        </article>
+      {% else %}
+        <p class="lc-icols-empty">{{ t('common.placeholder_add') }}</p>
+      {% endfor %}
+    </div>
+
+    <p class="lc-ev-none" hidden>{{ t('events.none') }}</p>
+  </div>
+</section>
+
+{% if (d.hide_past | default(true)) and count > 0 %}
+<script>
+  (function () {
+    var root = document.getElementById('lc-ev-{{ id }}');
+    if (!root) return;
+    var now = new Date(), left = 0;
+    root.querySelectorAll('[data-lc-ev-date]').forEach(function (card) {
+      var dt = card.getAttribute('data-lc-ev-date'), end = card.getAttribute('data-lc-ev-end') || '23:59';
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dt)) { left++; return; }
+      /* local time on purpose: an event "ends at 20:00" where the shopper is */
+      var p = dt.split('-'), t = end.split(':');
+      var ends = new Date(+p[0], +p[1] - 1, +p[2], +t[0] || 23, +t[1] || 59);
+      if (ends < now) card.hidden = true; else left++;
+    });
+    if (!left) root.querySelector('.lc-ev-none').hidden = false;
+  })();
+</script>
+{% endif %}
+
+{% ui "section-colors.njk", scope='#lc-ev-' ~ id, c=d %}

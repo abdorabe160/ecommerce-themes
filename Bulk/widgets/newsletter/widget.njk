@@ -1,0 +1,470 @@
+<!-- =========================================================
+     QMRA THEME (NUNJUCKS) - NEWSLETTER WIDGET
+     فورم اشتراك بإطار نيون بيلف + أنيميشن نجاح
+     المنصة مفيهاش endpoint للنشرة في الدوكس، فالفورم بيبعت لـ form_action من الإعدادات
+     ========================================================= -->
+{% set s = widget.data or widget.settings or {} %}
+{# النص الافتراضي بيتترجم، واللي التاجر كتبه بيفضل زي ما هو #}
+{% set perks = s.perks if (s.perks and s.perks != 'خصم 10% على أول أوردر, عروض حصرية للمشتركين, بدون سبام' and s.perks != 'عروض المشتركين, التشكيلات الجديدة أول بأول, بدون سبام') else t('defaults.nl_perks') %}
+
+{#- من غير رابط اشتراك (form_action) الفورم مش هيشتغل: بيظهر في معاينة المحرر بس، والعميل مايشوفش فورم بايظ -#}
+<section class="blk-section blk-nl" id="blkNl-{{ widget.id }}"{% if not s.form_action %} data-blk-demo-only{% endif %} data-msg-invalid="{{t('newsletter.invalid_email')}}" data-msg-unavailable="{{t('newsletter.unavailable')}}" data-msg-error="{{t('newsletter.error')}}">
+  <div class="blk-container">
+    <div class="blk-nl-frame blk-nl-reveal" style="--d: 0;">
+      <div class="blk-nl-card">
+        <span class="blk-nl-orb blk-nl-orb--a"></span>
+        <span class="blk-nl-orb blk-nl-orb--b"></span>
+
+        <div class="blk-nl-copy">
+          {% if s.badge_text | default('انضم للفريق') %}
+            <span class="blk-badge-glow blk-nl-reveal" style="--d: 1;">
+              <span class="blk-badge-dot"></span>
+              {% ui "blk-t.njk", text=s.badge_text, key="defaults.nl_badge" %}
+            </span>
+          {% endif %}
+          <h2 class="blk-nl-title blk-nl-reveal" style="--d: 2;">{% ui "blk-t.njk", text=s.title, key="defaults.nl_title" %}</h2>
+          {% if s.subtitle %}
+            <p class="blk-nl-sub blk-nl-reveal" style="--d: 3;">{% ui "blk-t.njk", text=s.subtitle, html=true %}</p>
+          {% endif %}
+
+          {% if perks %}
+            <ul class="blk-nl-perks">
+              {% for perk in perks.split(',') %}
+                {% if perk | trim %}
+                  <li class="blk-nl-reveal" style="--d: {{ 3 + loop.index }};">
+                    <span class="blk-nl-check">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg>
+                    </span>
+                    {{ perk | trim }}
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        <div class="blk-nl-side blk-nl-reveal" style="--d: 3;">
+          <div class="blk-nl-envelope" aria-hidden="true">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m2 7 10 7 10-7"/></svg>
+            <span class="blk-nl-ping"></span>
+          </div>
+
+          <form class="blk-nl-form" action="{{ s.form_action }}" method="post" novalidate>
+            <div class="blk-nl-field">
+              <svg class="blk-nl-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+              <input
+                type="email"
+                name="email"
+                class="blk-nl-input"
+                placeholder="{% ui "blk-t.njk", text=s.placeholder, key="defaults.nl_placeholder" %}"
+                autocomplete="email"
+                required
+                aria-label="{{t('newsletter.email')}}"
+                dir="ltr">
+              {# فخ للبوتات: البني آدم مش بيشوفه #}
+              <input type="text" name="_gotcha" class="blk-nl-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+              <button type="submit" class="blk-btn blk-btn-primary blk-nl-btn">
+                <span class="blk-nl-btn-label">{% ui "blk-t.njk", text=s.button_text, key="defaults.nl_button" %}</span>
+                <span class="blk-nl-spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p class="blk-nl-error" role="alert" aria-live="polite"></p>
+            {% if s.privacy_text | default('بياناتك في أمان، وتقدر تلغي الاشتراك في أي وقت.') %}
+              <p class="blk-nl-privacy">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                {% ui "blk-t.njk", text=s.privacy_text, key="defaults.nl_privacy" %}
+              </p>
+            {% endif %}
+          </form>
+
+          <div class="blk-nl-success" hidden>
+            <svg class="blk-nl-success-icon" width="72" height="72" viewBox="0 0 52 52" aria-hidden="true">
+              <circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" stroke-width="2.5"/>
+              <path d="M15 27l7 7 15-15" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="blk-nl-sparks" aria-hidden="true">
+              {% for i in range(10) %}<span style="--a: {{ i * 36 }}deg;"></span>{% endfor %}
+            </div>
+            <h3 class="blk-nl-success-title">{% ui "blk-t.njk", text=s.success_title, key="defaults.nl_success_title" %}</h3>
+            <p class="blk-nl-success-text">{% ui "blk-t.njk", text=s.success_text, key="defaults.nl_success_text" %}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .blk-nl { --nl-ease: cubic-bezier(0.16, 1, 0.3, 1); }
+  .blk-nl [hidden] { display: none !important; }
+
+  /* ---------- إطار نيون بيلف ---------- */
+  .blk-nl-frame {
+    position: relative;
+    padding: 1.5px;
+    border-radius: var(--blk-radius-lg);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--blk-border);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 60px color-mix(in srgb, var(--blk-accent) 10%, transparent);
+  }
+
+  .blk-nl-frame::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200vmax;
+    height: 200vmax;
+    z-index: -1;
+    background: conic-gradient(from 0deg, transparent 0 70%, var(--blk-accent) 82%, var(--blk-accent-light) 88%, transparent 96%);
+    transform: translate(-50%, -50%);
+    animation: blkNlSpin 6s linear infinite;
+  }
+
+  @keyframes blkNlSpin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .blk-nl-card {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 48px;
+    padding: 56px;
+    border-radius: calc(var(--blk-radius-lg) - 1.5px);
+    background:
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--blk-accent) 14%, transparent), transparent 45%),
+      linear-gradient(160deg, var(--blk-bg-elevated), var(--blk-bg-alt) 60%);
+  }
+
+  .blk-nl-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    animation: blkOrbFloat 12s ease-in-out infinite alternate;
+  }
+
+  .blk-nl-orb--a { width: 260px; height: 260px; background: color-mix(in srgb, var(--blk-accent) 22%, transparent); bottom: -120px; inset-inline-start: -80px; }
+  .blk-nl-orb--b { width: 180px; height: 180px; background: color-mix(in srgb, var(--blk-primary) 15%, transparent); top: -60px; inset-inline-end: 20%; animation-delay: -6s; }
+
+  /* ---------- Copy ---------- */
+  .blk-nl-copy {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .blk-nl-title { margin: 0; font-size: clamp(28px, 3.4vw, 44px); color: #fff; }
+  .blk-nl-sub { margin: 0; max-width: 460px; }
+
+  .blk-nl-perks {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .blk-nl-perks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--blk-font-ar);
+    font-weight: 600;
+    color: var(--blk-text);
+  }
+
+  .blk-nl-check {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--blk-accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--blk-accent) 50%, transparent);
+  }
+
+  /* ---------- Form side ---------- */
+  .blk-nl-side {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .blk-nl-envelope {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    color: #fff;
+    background: radial-gradient(circle, color-mix(in srgb, var(--blk-accent) 35%, transparent), color-mix(in srgb, var(--blk-accent) 8%, transparent) 70%);
+    border: 1px solid color-mix(in srgb, var(--blk-accent) 40%, transparent);
+    animation: blkBadgeFloat 4s ease-in-out infinite;
+  }
+
+  .blk-nl-ping {
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 2px solid var(--blk-accent-light);
+    animation: blkNlPing 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes blkNlPing {
+    75%, 100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .blk-nl-form { width: 100%; }
+
+  .blk-nl-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    padding-inline-start: 18px;
+    background: rgba(10, 10, 10, 0.7);
+    border: 1.5px solid var(--blk-border-strong);
+    border-radius: var(--blk-radius-full);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .blk-nl-field:focus-within {
+    border-color: var(--blk-accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--blk-accent) 18%, transparent), 0 0 30px color-mix(in srgb, var(--blk-accent) 20%, transparent);
+  }
+
+  .blk-nl-field.is-invalid { border-color: var(--blk-sale); animation: blkShake 0.45s ease; }
+
+  .blk-nl-field-icon { flex: none; color: var(--blk-text-faint); }
+
+  .blk-nl-input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 4px;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: #fff;
+    font-family: var(--blk-font-body);
+    font-size: 15px;
+    text-align: start;
+  }
+
+  [dir="rtl"] .blk-nl-input:placeholder-shown { direction: rtl; }
+  .blk-nl-input::placeholder { color: var(--blk-text-faint); font-family: var(--blk-font-ar); }
+
+  .blk-nl-hp { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+
+  .blk-nl-btn { position: relative; flex: none; padding: 12px 26px; }
+
+  .blk-nl-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2.5px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .blk-nl-form.is-loading .blk-nl-btn-label { opacity: 0; }
+  .blk-nl-form.is-loading .blk-nl-spinner { opacity: 1; animation: blkNlSpinner 0.7s linear infinite; }
+  .blk-nl-form.is-loading .blk-nl-btn { pointer-events: none; }
+
+  @keyframes blkNlSpinner { to { transform: rotate(360deg); } }
+
+  .blk-nl-error {
+    min-height: 20px;
+    margin: 8px 18px 0;
+    font-size: 13px;
+    color: var(--blk-sale);
+  }
+
+  .blk-nl-privacy {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 18px 0;
+    font-size: 12px;
+    color: var(--blk-text-faint);
+  }
+
+  /* ---------- Success ---------- */
+  .blk-nl-success {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    animation: blkNlIn 0.6s var(--nl-ease);
+  }
+
+  @keyframes blkNlIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } }
+
+  .blk-nl-success-icon { color: var(--blk-success); filter: drop-shadow(0 0 16px color-mix(in srgb, var(--blk-success) 45%, transparent)); }
+  .blk-nl-success-icon circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: blkNlDraw 0.7s var(--nl-ease) forwards; }
+  .blk-nl-success-icon path { stroke-dasharray: 36; stroke-dashoffset: 36; animation: blkNlDraw 0.45s var(--nl-ease) 0.55s forwards; }
+
+  @keyframes blkNlDraw { to { stroke-dashoffset: 0; } }
+
+  .blk-nl-sparks { position: absolute; top: 36px; left: 50%; }
+
+  .blk-nl-sparks span {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    margin: -3px;
+    border-radius: 50%;
+    background: var(--blk-accent-light);
+    opacity: 0;
+    animation: blkNlSpark 0.9s var(--nl-ease) 0.6s;
+  }
+
+  .blk-nl-sparks span:nth-child(even) { background: var(--blk-success); }
+
+  @keyframes blkNlSpark {
+    0%   { opacity: 1; transform: rotate(var(--a)) translateY(0); }
+    100% { opacity: 0; transform: rotate(var(--a)) translateY(-70px) scale(0.4); }
+  }
+
+  .blk-nl-success-title { margin: 8px 0 0; font-size: 26px; color: #fff; }
+  .blk-nl-success-text { margin: 0; }
+
+  /* ---------- Reveal ---------- */
+  .blk-nl.is-armed .blk-nl-reveal { transform: translateY(24px); }
+  .blk-nl.is-armed .blk-nl-frame.blk-nl-reveal { transform: scale(0.98); }
+
+  .blk-nl.is-visible .blk-nl-reveal {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s var(--nl-ease), transform 0.8s var(--nl-ease);
+    transition-delay: calc(var(--d, 0) * 0.1s);
+  }
+
+  .blk-nl.is-visible .blk-nl-frame.blk-nl-reveal { transform: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .blk-nl-card { grid-template-columns: minmax(0, 1fr); padding: 40px 28px; gap: 32px; }
+    .blk-nl-copy { align-items: center; text-align: center; }
+    .blk-nl-envelope { display: none; }
+  }
+
+  @media (max-width: 480px) {
+    .blk-nl-card { padding: 32px 18px; }
+    .blk-nl-field { flex-wrap: wrap; border-radius: var(--blk-radius-md); padding-inline-start: 14px; }
+    .blk-nl-input { flex-basis: calc(100% - 30px); }
+    .blk-nl-btn { width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blk-nl.is-armed .blk-nl-reveal { opacity: 1; transform: none; }
+    .blk-nl-frame::before { animation: none; }
+    .blk-nl-success-icon circle,
+    .blk-nl-success-icon path { stroke-dashoffset: 0; }
+  }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('blkNl-{{ widget.id }}');
+  if (!root || root.hasAttribute('data-nl-ready')) return;
+  root.setAttribute('data-nl-ready', '');
+
+  var form = root.querySelector('.blk-nl-form');
+  var field = root.querySelector('.blk-nl-field');
+  var input = root.querySelector('.blk-nl-input');
+  var errorEl = root.querySelector('.blk-nl-error');
+  var success = root.querySelector('.blk-nl-success');
+  var envelope = root.querySelector('.blk-nl-envelope');
+  // فحص الإيميل من غير regex (ملفات القوالب بيقراها محرّك قمرة): حاجة@حاجة.امتداد من حرفين أو أكتر ومن غير مسافات
+  function isEmail(v) {
+    var at = v.indexOf('@');
+    var dot = v.lastIndexOf('.');
+    return v.indexOf(' ') === -1 && at > 0 && at === v.lastIndexOf('@') && dot > at + 1 && dot < v.length - 2;
+  }
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    field.classList.remove('is-invalid');
+    void field.offsetWidth;
+    field.classList.add('is-invalid');
+    input.focus();
+  }
+
+  function showSuccess() {
+    form.hidden = true;
+    if (envelope) envelope.hidden = true;
+    success.hidden = false;
+  }
+
+  input.addEventListener('input', function () {
+    field.classList.remove('is-invalid');
+    errorEl.textContent = '';
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = input.value.trim();
+
+    if (!isEmail(email)) return showError(root.getAttribute('data-msg-invalid'));
+    if (form.querySelector('.blk-nl-hp').value) return showSuccess(); // بوت
+
+    var action = form.getAttribute('action');
+    if (!action) {
+      console.warn('[newsletter] set the subscription endpoint in the widget settings (form_action)');
+      return showError(root.getAttribute('data-msg-unavailable'));
+    }
+
+    var data = new FormData();
+    data.append('email', email);
+    data.append('EMAIL', email); // Mailchimp بيستخدم EMAIL
+
+    form.classList.add('is-loading');
+    errorEl.textContent = '';
+
+    fetch(action, { method: 'POST', body: data, headers: { Accept: 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        showSuccess();
+      }, function () {
+        // خدمات زي Mailchimp مش بتسمح بـ CORS، فبنبعت من غير ما نقرا الرد
+        return fetch(action, { method: 'POST', body: data, mode: 'no-cors' }).then(showSuccess);
+      })
+      .catch(function () {
+        showError(root.getAttribute('data-msg-error'));
+      })
+      .finally(function () {
+        form.classList.remove('is-loading');
+      });
+  });
+
+  /* ===== Scroll reveal ===== */
+  if (!('IntersectionObserver' in window)) return;
+  root.classList.add('is-armed');
+  var io = new IntersectionObserver(function (entries) {
+    if (!entries.some(function (e) { return e.isIntersecting; })) return;
+    root.classList.add('is-visible');
+    io.disconnect();
+  }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
+  io.observe(root);
+})();
+</script>

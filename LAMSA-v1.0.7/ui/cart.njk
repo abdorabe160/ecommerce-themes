@@ -1,0 +1,271 @@
+{# ============================================================================
+   LAMSA CART — drawer AND the cart page's row list, in one file
+   ----------------------------------------------------------------------------
+   ⚠️  Why one file: the row markup exists exactly once (the `row` macro below).
+   Splitting it out meant `{% ui %}` calling `{% ui %}` — a construct with NO
+   precedent anywhere in this theme, so it is avoided everywhere now.
+   Do not reintroduce nested {% ui %} here.
+
+   ⚠️  THE ROW HAS A JS TWIN: LamsaCartItem.build() in assets/main.js renders the
+   same markup when CartManager appends a row to an already-open drawer.
+   Change the `row` macro → change that too. Styling is all in style.css →
+   "CART ITEM", so they cannot drift visually.
+
+   ⚠️  Every data-* below is read by CartManager._refreshDrawer():
+       data-cart-container · data-cart-list · data-cart-footer · data-cart-empty
+       data-cart-count-bar · data-cart-count · data-cart-total
+       data-cart-savings-row · data-cart-savings
+       data-cart-item · data-item-total · data-item-compare
+
+   Locals:
+     data.variant   'drawer' (header mini-cart) | 'list' (cart page rows only)
+   ========================================================================= #}
+
+{% set variant = data.variant | default('drawer') %}
+{% set isDrawer = variant == 'drawer' %}
+{% set itemCount = cart.items | length %}
+
+
+{# ============================ THE ROW ============================
+   Written once. Both variants call it.
+   =============================================================== #}
+{% macro row(item, compact, onClick) %}
+  {% set pd = item.productData %}
+  {% set url = '/products/' ~ (pd.slug | default(pd.handle) | default('')) %}
+  {% set img = pd.image.fileUrl if pd.image and pd.image.fileUrl else '' %}
+  {% set hasCompare = item.compareAtPrice and item.compareAtPrice > item.price %}
+
+<div class="lamsa-citem{% if compact %} lamsa-citem--compact{% endif %}"
+     data-cart-item="{{ item._id }}"
+     x-show="activeItems.includes('{{ item._id }}')"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 translate-y-2"
+     x-transition:enter-end="opacity-100 translate-y-0"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     :class="removingId === '{{ item._id }}' && 'is-removing'">
+
+  <a href="{{ url }}" class="lamsa-citem-media"{% if onClick %} @click="{{ onClick }}"{% endif %}>
+    {% if img %}
+      <img src="{{ img }}" alt="{{ pd.title }}" loading="lazy"/>
+    {% else %}
+      <span class="absolute inset-0 flex items-center justify-center" style="color: var(--color-accent-soft);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.75" cy="9" r="1.75"/>
+          <path d="m4 17 5-4.5 4.5 4 3-2.5L21 18"/>
+        </svg>
+      </span>
+    {% endif %}
+  </a>
+
+  <div class="lamsa-citem-body">
+
+    <div class="flex items-start justify-between gap-2">
+      <a href="{{ url }}" class="lamsa-citem-name line-clamp-2"{% if onClick %} @click="{{ onClick }}"{% endif %}>
+        {{ pd.title }}
+      </a>
+      <button type="button" @click="removeItem('{{ item._id }}')" class="lamsa-citem-remove"
+              aria-label="{{ t('pages.cart.remove_item') }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {% if item.variantData and item.variantData.options and (item.variantData.options | length) > 0 %}
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        {% for opt in item.variantData.options %}
+          <span class="lamsa-citem-opt">
+            {{ opt.option.name }}:
+            {% if opt.option.type == 'color' %}
+              <span class="lamsa-citem-dot" style="background: {{ opt.value | default('#E7C6CE') }};"></span>
+            {% endif %}
+            <span style="color: var(--color-text-secondary);">{{ opt.label }}</span>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="lamsa-citem-foot">
+      <div class="lamsa-qty lamsa-qty--sm">
+        <button type="button" @click="decrement('{{ item._id }}')" aria-label="-">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M5 12h14"/>
+          </svg>
+        </button>
+        <span class="lamsa-qty-value">
+          <span x-show="updating !== '{{ item._id }}'" x-text="quantities['{{ item._id }}']">{{ item.quantity }}</span>
+          <span x-show="updating === '{{ item._id }}'" x-cloak class="lamsa-spinner"
+                style="width: 13px; height: 13px; border-width: 1.5px;"></span>
+        </span>
+        <button type="button" @click="increment('{{ item._id }}')" aria-label="+">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="text-end">
+        {# Unit price × quantity. Rendered unconditionally — gating it on
+           quantity > 1 server-side means it never appears when the shopper
+           raises the quantity from 1 in the same session. The price is static
+           (per-unit never changes); only the multiplier is Alpine-reactive, so
+           it tracks +/- instantly without waiting for the cart round trip. #}
+        <span class="lamsa-citem-unit" title="{{ t('pages.cart.unit_price') }}">
+          <bdi>{{ item.price | money }}</bdi>
+          <span aria-hidden="true">×</span>
+          <bdi x-text="quantities['{{ item._id }}']">{{ item.quantity }}</bdi>
+        </span>
+        <span class="lamsa-price block" data-item-total="{{ item._id }}"
+              :class="updating === '{{ item._id }}' && 'opacity-50'">{{ item.totalPrice | money }}</span>
+        <span class="lamsa-price-was block" data-item-compare="{{ item._id }}"
+              {% if not hasCompare %}style="display: none;"{% endif %}>{{ item.totalCompareAtPrice | money }}</span>
+      </div>
+    </div>
+
+    {# shown only when the host passed confirmRemove: true (the cart page) #}
+    <div class="lamsa-citem-confirm" x-show="confirmRemoveId === '{{ item._id }}'" x-cloak>
+      <span>{{ t('pages.cart.remove_item') }}؟</span>
+      <div class="flex items-center gap-2">
+        <button type="button" @click="removeItem('{{ item._id }}')" class="lamsa-btn lamsa-btn--primary lamsa-btn--sm">
+          {{ t('common.delete') }}
+        </button>
+        <button type="button" @click="confirmRemoveId = null" class="lamsa-btn lamsa-btn--ghost lamsa-btn--sm">
+          {{ t('common.cancel') }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endmacro %}
+
+
+{# ============================ VARIANTS ============================ #}
+
+{% if not isDrawer %}
+
+  {# ---------- rows only — the cart page supplies its own chrome ---------- #}
+  <div class="flex flex-col gap-1" data-cart-list>
+    {% for item in cart.items %}
+      {{ row(item, false, '') }}
+    {% endfor %}
+  </div>
+
+{% else %}
+
+  {# ---------- header mini-cart drawer ---------- #}
+  <div x-data="cartInteraction({
+         items: [{% for item in cart.items %}{ id: '{{ item._id }}', qty: {{ item.quantity }} }{% if not loop.last %},{% endif %}{% endfor %}]
+       })" x-cloak>
+
+    <div x-show="$store.modal.current === 'cart'"
+         @click="$store.modal.close()"
+         class="lamsa-overlay"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"></div>
+
+    <div class="lamsa-drawer drawer-end"
+         :class="{ 'open': $store.modal.current === 'cart' }"
+         role="dialog"
+         aria-label="{{ t('pages.cart.title') }}">
+
+      {# ===== head ===== #}
+      <div class="lamsa-drawer-head">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="lamsa-eyebrow">
+            <span class="lamsa-eyebrow-dot"></span>{{ t('pages.cart.title') }}
+          </span>
+          <span class="lamsa-caption" data-cart-count-bar
+                {% if itemCount == 0 %}style="display: none;"{% endif %}>
+            {{ t('pages.cart.items_label') }} <span data-cart-count>{{ cart.totalQuantity | default(0, true) }}</span>
+          </span>
+        </div>
+        <button type="button" @click="$store.modal.close()"
+                class="lamsa-btn-icon lamsa-btn-icon--sm"
+                aria-label="{{ t('common.close') }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      {# ===== items ===== #}
+      <div class="lamsa-drawer-body custom-scrollbar"
+           data-cart-container
+           style="padding: 12px;{% if itemCount == 0 %} display: none;{% endif %}">
+        {# data-cart-list marks where _refreshDrawer appends new rows #}
+        <div class="space-y-4 flex flex-col gap-1" data-cart-list>
+          {% for item in cart.items %}
+            {{ row(item, true, '$store.modal.close()') }}
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ===== footer ===== #}
+      <div class="lamsa-drawer-foot flex flex-col gap-4"
+           data-cart-footer
+           {% if itemCount == 0 %}style="display: none;"{% endif %}>
+
+        <div class="flex flex-col gap-2">
+          <div class="lamsa-csum-row" data-cart-savings-row
+               {% if not cart.totalSavings or cart.totalSavings <= 0 %}style="display: none;"{% endif %}>
+            <span>{{ t('pages.cart.savings') }}</span>
+            <span style="color: var(--color-accent); font-weight: 700;" data-cart-savings>
+              -{{ cart.totalSavings | money }}
+            </span>
+          </div>
+
+          <div class="lamsa-csum-row lamsa-csum-row--total">
+            <span>{{ t('pages.cart.total') }}</span>
+            <span class="lamsa-price" data-cart-total>{{ cart.totalPrice | money }}</span>
+          </div>
+        </div>
+
+        <div class="lamsa-cart-actions">
+          <a href="/checkout" class="lamsa-btn lamsa-btn--primary lamsa-btn--lg lamsa-btn--block">
+            {{ t('pages.cart.checkout') }}
+          </a>
+          <a href="/cart" class="lamsa-btn lamsa-btn--outline lamsa-btn--lg lamsa-btn--block lamsa-cart-view"
+             @click="$store.modal.close()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+              <path d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+            </svg>
+            {{ t('pages.cart.view_cart') }}
+          </a>
+        </div>
+      </div>
+
+      {# ===== empty ===== #}
+      <div class="flex-1 flex items-center justify-center px-6"
+           data-cart-empty
+           {% if itemCount > 0 %}style="display: none;"{% endif %}>
+        <div class="lamsa-empty" style="padding-block: 0;">
+          <span class="lamsa-empty-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7h16l-1.2 12.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 7Z"/>
+              <path d="M8.75 7V5.75a3.25 3.25 0 0 1 6.5 0V7"/>
+            </svg>
+          </span>
+          <h4 class="m-0">{{ t('cart.empty_title') }}</h4>
+          <p class="lamsa-text-sm m-0">{{ t('cart.empty_subtitle') }}</p>
+          <a href="/shop" class="lamsa-btn lamsa-btn--primary lamsa-btn--sm mt-1"
+             @click="$store.modal.close()">
+            {{ t('cart.continue_shopping') }}
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+{% endif %}

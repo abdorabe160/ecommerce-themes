@@ -1,0 +1,363 @@
+<!DOCTYPE html>{#- اللون العام: لون واحد يتلوّن منه الثيم كله (style.css ← html.lg-brand). القيمة الافتراضية = بدون تأثير #}
+{%- set brand = settings.brandColor if (settings.brandColor and (settings.brandColor | lower) != '#3b82f6') else '' %}
+{%- set mainColor = brand or (settings.primaryColor | default('#3b82f6', true)) %}
+<html lang="{{ localization.language | default('ar') }}"
+      dir="{% if localization.language == 'en' or localization.language == 'fr' %}ltr{% else %}rtl{% endif %}"
+      {% if brand or settings.enableAnimations == false %}class="{{ 'lg-brand' if brand }}{{ ' lg-no-motion' if settings.enableAnimations == false }}" {% endif %}data-scheme="{{ 'dark' if settings.colorScheme == 'dark' else 'light' }}"
+      data-scheme-default="{{ settings.colorScheme | default('light') }}"
+      data-scheme-toggle="{{ 'off' if settings.schemeToggle == false else 'on' }}">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="{{ mainColor }}">
+  {# الوضع الداكن/الفاتح قبل أول رسم (بلا وميض): اختيار الزائر المحفوظ ← إعداد التاجر ← تفضيل الجهاز إذا كان "تلقائي" #}
+  <script>
+    (function () {
+      var d = document.documentElement, def = d.getAttribute('data-scheme-default'), s = null;
+      if (d.getAttribute('data-scheme-toggle') !== 'off') { try { s = localStorage.getItem('lg-scheme'); } catch (e) { /* ignore */ } }
+      if (s !== 'light' && s !== 'dark') s = def === 'auto' ? (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : (def === 'dark' ? 'dark' : 'light');
+      d.setAttribute('data-scheme', s);
+    })();
+  </script>
+
+  {# اللغات: الثيم بلغتين فقط (العربية والإنجليزية). qumra CLI لا يحذف ملفات اللغات من السيرفر أبداً، فملف fr.json قديم
+     ما زال يفعّل /fr بنصوص ناقصة ومختلطة — أي لغة أخرى تُحوَّل فوراً لنفس الصفحة بالإنجليزية ولا تُفهرس. #}
+  {# بادئة لغة مكررة (/en/en/shop أو /ar/en/shop) من مبدّل قديم أو رابط منسوخ ← الصفحة الصحيحة بآخر لغة بدل 404 #}
+  <script>
+    (function () {
+      var l = window.location, m = l.pathname.match(/^((?:\/(?:ar|en))+)(?=\/|$)/);
+      if (m && m[1].length > 3) l.replace(m[1].slice(-3) + l.pathname.slice(m[1].length) + l.search + l.hash);
+    })();
+  </script>
+  {% set lang = localization.language | default('ar') %}
+  {% if lang != 'ar' and lang != 'en' %}
+  <meta name="robots" content="noindex, follow">
+  <script>
+    (function () {
+      // fr (ببادئة /fr أو بكوكي lang=fr) ← نفس الصفحة بالإنجليزية بكوكي lang=en (قمرة تحدد اللغة من الكوكي ويغلب البادئة،
+      // فالتحويل إلى /en وحده يدور في حلقة مع كوكي lang=fr). محاولة واحدة لكل رابط في الجلسة — بلا حلقات.
+      var l = window.location, path = l.pathname.replace(/^\/[a-z]{2}(?:-[A-Za-z]{2})?(?=\/|$)/, '') || '/', v = null;
+      try { if (sessionStorage.getItem('lg-lang-fix') === l.href) return; sessionStorage.setItem('lg-lang-fix', l.href); } catch (e) { /* ignore */ }
+      document.cookie = 'lang=; path=/; max-age=0';
+      document.cookie = 'lang=en; path=/; max-age=31536000; SameSite=Lax' + (l.protocol === 'https:' ? '; Secure' : '');
+      document.cookie.split(';').forEach(function (c) { var i = c.indexOf('='); if (i > -1 && c.slice(0, i).trim() === 'lang') v = c.slice(i + 1).trim(); });
+      if (v !== 'en') l.replace('/en' + (path === '/' ? '' : path) + l.search + l.hash); // الكوكيز معطلة: البادئة
+      else if (path === l.pathname) l.reload();
+      else l.replace(path + l.search + l.hash);
+    })();
+  </script>
+  {% endif %}
+
+  {# 0. حارس سكربتات التحليلات: مانع الإعلانات في متصفح الزائر يحظرها فتظهر ERR_BLOCKED_BY_CLIENT في Console و Network.
+     مع مانع لا تُطلب أصلاً (كانت ستُحظر على أي حال فلا تضيع إحصائيات)، وبدونه تُحمَّل طبيعياً (ما يُضاف أول الصفحة بعد ~0.4 ثانية).
+     كشف المانع بلا أي طلب شبكة:
+       1) Brave (navigator.brave): درع Shields يحظرها افتراضياً.
+       2) عنصر "إعلاني" وهمي يخفيه مانع الإعلانات التجميلي (uBlock / AdBlock / AdGuard).
+       3) ذاكرة: إذا فشل تحميل أي سكربت تتبع مرة بسبب مانع غير مكشوف، تُمنع البقية في نفس الصفحة ولا تُطلب مجدداً لمدة 30 يوماً.
+     الاعتراض يبقى طول عمر الصفحة (وليس أول 0.4 ثانية فقط): أكواد التتبع التي تُشغَّل لاحقاً — Google Tag Manager، أكواد آخر الصفحة،
+     بكسل يُحمَّل بعد التفاعل (تظهر في Console كـ VM123) — تمر بنفس القاعدة.
+     - Microsoft Clarity / Facebook / TikTok التي تُضاف بالـ JS: نحجز عنصر السكربت بدل إضافته.
+     - بكسلات لوحة التحكم (Facebook / TikTok / Clarity...): PixelManager من قمرة يحمّل كل بكسل داخل iframe مخفي معزول
+       (id يبدأ بـ web-pixel-sandbox-) فلا نصل لسكربتاته — نحجز الـ iframe نفسه. بدونه يحفظ PixelManager الأحداث في طابوره بلا أخطاء.
+     - Cloudflare Insights (يحقنه Cloudflare قبل </body>): يقع داخل #lg-edge-sink آخر الصفحة كمحتوى خامل، ونعيد بناءه هنا.
+     يجب أن يبقى أول سكربت في الصفحة. #}
+  <script>
+    (function () {
+      var TRACKER = /^https:\/\/([a-z0-9-]+\.)*(clarity\.ms|cloudflareinsights\.com|connect\.facebook\.net|analytics\.tiktok\.com)\//i;
+      var isTracker = function (n) { return !!n && n.tagName === 'SCRIPT' && TRACKER.test(n.src || ''); };
+      var isPixelFrame = function (n) { return !!n && n.tagName === 'IFRAME' && /^web-pixel-sandbox-/.test(n.id || ''); };
+      var MEMORY = 'lg-trackers-blocked', MEMORY_DAYS = 30;
+      var remembered = false;
+      try { var at = +localStorage.getItem(MEMORY); remembered = at > 0 && Date.now() - at < MEMORY_DAYS * 864e5; } catch (e) { /* ignore */ }
+      // pending: لم نعرف بعد هل يوجد مانع (نحجز) ← blocked (نُسقط) أو allowed (نضيف مع مراقبة الفشل)
+      var state = remembered ? 'blocked' : 'pending', held = [];
+      var proto = Node.prototype, insertBefore = proto.insertBefore, appendChild = proto.appendChild;
+      // فشل سكربت تتبع = مانع غير مكشوف: نمنع البقية الآن ونتذكر 30 يوماً
+      var remember = function () {
+        state = 'blocked';
+        try { localStorage.setItem(MEMORY, String(Date.now())); } catch (e) { /* ignore */ }
+      };
+      // السكربت يُضاف للـ head (مكانه لا يهم) والـ iframe لحاويته الأصلية
+      var release = function (parent, n) {
+        if (n.tagName === 'SCRIPT') { n.addEventListener('error', remember); parent = document.head; }
+        appendChild.call(parent, n);
+      };
+      var hold = function (parent, n) {
+        if (state === 'pending') held.push([parent, n]);
+        else if (state === 'allowed') release(parent, n);
+        return n; // blocked: لا يُضاف
+      };
+      proto.insertBefore = function (n, ref) { return isTracker(n) || isPixelFrame(n) ? hold(this, n) : insertBefore.call(this, n, ref); };
+      proto.appendChild = function (n) { return isTracker(n) || isPixelFrame(n) ? hold(this, n) : appendChild.call(this, n); };
+      document.addEventListener('DOMContentLoaded', function () {
+        var bait = document.createElement('div');
+        bait.className = 'adsbox ad-banner pub_300x250 pub_728x90 text-ad textAd text_ads';
+        bait.setAttribute('aria-hidden', 'true');
+        bait.style.cssText = 'position:absolute;left:-10000px;top:-1000px;width:1px;height:1px;';
+        document.body.appendChild(bait);
+        setTimeout(function () {
+          var cs = window.getComputedStyle(bait);
+          var blocked = state === 'blocked' || !!navigator.brave ||
+            !bait.isConnected || bait.offsetHeight === 0 || cs.display === 'none' || cs.visibility === 'hidden';
+          if (bait.parentNode) bait.parentNode.removeChild(bait);
+          state = blocked ? 'blocked' : 'allowed';
+          var list = held;
+          held = [];
+          if (!blocked) list.forEach(function (h) { release(h[0], h[1]); });
+          // ما ابتلعه #lg-edge-sink (نص خام لم يُحمَّل): نعيد بناء كل سكربت — وما بداخله من أكواد تتبع يمر بنفس الحارس
+          var sink = document.getElementById('lg-edge-sink');
+          if (sink && sink.content) {
+            sink.parentNode.removeChild(sink);
+            Array.prototype.forEach.call(sink.content.querySelectorAll('script'), function (old) {
+              if (blocked && isTracker(old)) return;
+              var s = document.createElement('script');
+              Array.prototype.forEach.call(old.attributes, function (a) { s.setAttribute(a.name, a.value); });
+              s.text = old.text;
+              document.body.appendChild(s);
+            });
+          }
+        }, 400);
+      });
+    })();
+  </script>
+
+  {# رسائل محرر قمرة الفارغة: البيلدر يرسل "active-widget" بلا widgetId عند اختيار عنصر ليس ويدجت (الهيدر/الفوتر/البلوك/الإعدادات)،
+     فيكتب سكربت المعاينة (qumraBridge) "لا يوجد widgetId في الرسالة" في Console ولا يفعل بها شيئاً آخر — نوقف هذه الرسالة وحدها قبله.
+     داخل المحرر فقط (iframe)، وكل الرسائل الأخرى (ومنها active-widget بمعرّف) تمر كما هي. #}
+  <script>
+    (function () {
+      if (window.self === window.top) return;
+      window.addEventListener('message', function (e) {
+        var m = e.data;
+        if (typeof m === 'string') { try { m = JSON.parse(m); } catch (err) { return; } }
+        if (m && m.type === 'active-widget' && !(m.data && m.data.widgetId)) e.stopImmediatePropagation();
+      });
+    })();
+  </script>
+
+  {# 1. Google Fonts (أولاً) — أوزان مستخدمة فقط #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {# خطوط العربية من الإعدادات (الخطوط والحركة) — يُحمَّل الخط المختار فقط؛ الإنجليزية Poppins دائماً #}
+  {% set fontMap = { 'ibm-plex': ['IBM Plex Sans Arabic', 'IBM+Plex+Sans+Arabic:wght@400;500;600;700'], 'tajawal': ['Tajawal', 'Tajawal:wght@400;500;700'], 'cairo': ['Cairo', 'Cairo:wght@400;500;600;700'], 'almarai': ['Almarai', 'Almarai:wght@400;700'], 'noto-kufi': ['Noto Kufi Arabic', 'Noto+Kufi+Arabic:wght@400;500;600;700'], 'readex': ['Readex Pro', 'Readex+Pro:wght@400;500;600;700'] } %}
+  {% set fBody = fontMap[settings.fontBody] or fontMap['ibm-plex'] %}
+  {% set fHead = fontMap[settings.fontHeading] if (settings.fontHeading and settings.fontHeading != 'same' and fontMap[settings.fontHeading]) else fBody %}
+  <link href="https://fonts.googleapis.com/css2?family={{ fBody[1] }}{% if fHead[0] != fBody[0] %}&family={{ fHead[1] }}{% endif %}&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  {# 2. SEO & Qumra #}
+  {% seo %}
+  {% qumra_head %}
+
+  {# تحقق Google Search Console (إعدادات الثيم ← محركات البحث): يقبل الوسم كاملاً أو قيمة content فقط، ويُكتب في الـ head لكل الصفحات #}
+  {% set gsv = (settings.googleVerification or '') | trim %}
+  {% if 'content=' in gsv %}{% set gsv = gsv.split('content=')[1] | replace('"', '') | replace("'", '') | replace('/>', '') | replace('>', '') | trim %}{% set gsv = gsv.split(' ')[0] %}{% endif %}
+  {% if gsv %}<meta name="google-site-verification" content="{{ gsv }}">{% endif %}
+
+  {# عنوان التبويب بالإنجليزية: {% seo %} يكتب أسماء الصفحات الثابتة بالعربي دائماً ("متجري - السلة") حتى على /en.
+     صفحات المنتج/التصنيف/المقال عنوانها من بيانات المتجر فلا تُلمس. #}
+  {% if lang == 'en' %}
+    {% set enTitles = { index: t('common.home'), shop: t('nav.shop'), latest: t('nav.latest'), collections: t('header.categories'), cart: t('header.cart'), search: t('search.title'), blogs: t('blog.title'), wishlist: t('header.wishlist') } %}
+    <script>
+      (function () {
+        var titles = {{ enTitles | dump | replace('</', '<\\/') | safe }};
+        var store = {{ (store.name or '') | dump | replace('</', '<\\/') | safe }};
+        var run = function () {
+          var ctx = window.__QUMRA_CONTEXT__ || {};
+          var h = ctx.page && ctx.page.handle;
+          if (!h || !titles[h]) return;
+          var q = h === 'search' && ctx.query && ctx.query.q ? ' - "' + ctx.query.q + '"' : '';
+          document.title = (store ? store + ' - ' : '') + titles[h] + q;
+        };
+        if (window.__QUMRA_CONTEXT__) run(); else document.addEventListener('DOMContentLoaded', run);
+      })();
+    </script>
+  {% endif %}
+
+  {# الفافيكون (GEN-07): من إعدادات الثيم، وإلا أيقونة SVG مضمّنة بلون الثيم بلا أي طلب شبكة —
+     {% seo %} يشير إلى /favicon.ico الذي يرجع 404 لو المتجر بلا أيقونة (GEN-01). الرابط الأخير هو المعتمد. #}
+  {% if settings.favicon and settings.favicon.fileUrl %}
+    <link rel="icon" href="{{ settings.favicon.fileUrl }}">
+    <link rel="apple-touch-icon" href="{{ settings.favicon.fileUrl }}">
+  {% else %}
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='{{ mainColor | replace('#', '%23') }}'/%3E%3Cpath d='M10 12h12l-1 11a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M13 12v-1a3 3 0 0 1 6 0v1' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  {% endif %}
+  {# المتصفح يطلب /favicon.ico من روابط {% seo %} رغم وجود أيقونتنا بعدها — نزيلها قبل أن يختار الأيقونة #}
+  <script>document.querySelectorAll('link[rel~="icon"][href$="/favicon.ico"]').forEach(function (l) { l.parentNode.removeChild(l); });</script>
+
+  {# 4. متغيرات الثيم من الإعدادات — الألوان/الظلال/التوهج تُكتب كـ --set-* فقط إن حددها التاجر،
+     والقيم الافتراضية في style.css (var(--set-x, افتراضي)) فلا يتغير الشكل بدون تعديل #}
+  {# القيمة المساوية للافتراضي لا تُكتب (البيلدر قد يحفظ الافتراضيات) — فيبقى الشكل الأصلي بالضبط، ومنه درجات الوضع الداكن #}
+  {% macro setVar(name, value, def) %}{% if value and (value | lower) != def %}{{ name }}: {{ value }}; {% endif %}{% endmacro %}
+  {% macro statusVar(name, value, def) %}{% if value and (value | lower) != def %}--set-{{ name }}: {{ value }}; --set-{{ name }}-dk: color-mix(in srgb, {{ value }} 62%, #fff); {% endif %}{% endmacro %}
+  <style>
+    html:root {
+      --color-primary: {{ settings.primaryColor | default('#3b82f6', true) }};{% if brand %} --brand: {{ brand }};{% endif %}
+      --color-secondary: {{ settings.secondaryColor | default('#8b5cf6', true) }};
+      --color-accent: {{ settings.accentColor | default('#ec4899', true) }};
+      --glass-blur: {{ settings.glassBlur | default(16) }}px;
+      --glass-alpha: {{ (settings.glassOpacity | default(50)) / 100 }};
+      --radius: {{ settings.borderRadius | default(24) }}px;
+      {% if fBody[0] != 'IBM Plex Sans Arabic' %}--font-arabic: '{{ fBody[0] }}', system-ui, sans-serif;{% endif %}{% if fHead[0] != fBody[0] %} --font-heading-ar: '{{ fHead[0] }}', system-ui, sans-serif;{% endif %}
+      {% if settings.saleColor %}--set-sale: {{ settings.saleColor }};{% endif %}
+      {{ setVar('--set-on-primary', settings.onPrimaryColor, '#ffffff') }}{{ setVar('--set-bg', settings.bgColor, '#eef2fb') }}{{ setVar('--set-bg-2', settings.bgColor2, '#f6f2fb') }}{{ setVar('--set-text', settings.textColor, '#0e1733') }}{{ setVar('--set-muted', settings.mutedColor, '#5a6582') }}
+      {{ setVar('--set-dark-bg', settings.darkBgColor, '#070b18') }}{{ setVar('--set-dark-bg-2', settings.darkBgColor2, '#0e1430') }}{{ setVar('--set-dark-text', settings.darkTextColor, '#eef2ff') }}{{ setVar('--set-dark-muted', settings.darkMutedColor, '#a3acc7') }}
+      {{ statusVar('success', settings.successColor, '#15803d') }}{{ statusVar('warning', settings.warningColor, '#b45309') }}{{ statusVar('danger', settings.dangerColor, '#dc2626') }}{{ setVar('--set-star', settings.starColor, '#f5a524') }}
+      {{ setVar('--set-shadow', settings.shadowColor, '#0e1733') }}{{ setVar('--set-dark-shadow', settings.darkShadowColor, '#000000') }}--set-shadow-k: {{ (settings.shadowStrength | default(100)) / 100 }};
+      {% if settings.glowFollowPrimary == false %}{{ setVar('--set-glow', settings.glowColor, '') }}{% endif %}--set-glow-k: {{ (settings.glowStrength | default(100)) / 100 }};
+      {{ setVar('--set-shine', settings.shineColor, '#ffffff') }}--set-shine-k: {{ (settings.shineStrength | default(100)) / 100 }}; {{ setVar('--set-glass', settings.glassColor, '#ffffff') }}
+      {#- الأزرار: عند تفعيل التخصيص تُكتب كل القيم (وإلا تتبع اللون الرئيسي)؛ النصوص على الزجاج والروابط لها درجة أفتح للداكن (-dk) #}
+      {% if settings.customButtons == true %}{{ setVar('--set-btn-bg', settings.btnBgColor, '') }}{{ setVar('--set-btn-bg-2', settings.btnBgColor2, '') }}{{ setVar('--set-btn-text', settings.btnTextColor, '') }}{{ setVar('--set-btn-soft', settings.btnSoftColor, '') }}{{ setVar('--set-btn-soft-on', settings.btnSoftHoverText, '') }}{{ statusVar('btn-glass-text', settings.btnGlassText, '') }}{{ statusVar('link', settings.linkColor, '') }}{{ setVar('--set-link-hover', settings.linkHoverColor, '') }}{{ setVar('--set-cart-bg', settings.cartBtnColor, '') }}{{ setVar('--set-cart-icon', settings.cartIconColor, '') }}{% endif %}
+      {% if settings.customIcons == true %}{{ statusVar('icon', settings.iconColor, '') }}{% endif %}
+    }
+  </style>
+
+  {# الصفحات التوضيحية (?demo_product= / ?demo_collection=) — إخفاء محتوى الصفحة مبكراً لتفادي الوميض؛ main.js يلغيه خارج المعاينة #}
+  <script>if (/[?&]demo_(product|collection)=/.test(location.search)) document.documentElement.classList.add('is-demo-page');</script>
+
+  {# بصمة ملفات الثيم (CSS/JS) لكسر الكاش: cdn.qumra.cloud يرسلها بـ "max-age=سنة, immutable" ورابطها ثابت بعد كل رفع،
+     فبدون البصمة يظل المتصفح والمحرر على نسخة قديمة من CSS/JS فوق HTML جديد (عناصر مبعثرة وأحجام خاطئة).
+     تتحدّث تلقائياً من محتوى الملفات عبر dev/stamp-assets.js (يعمل مع dev/qumra-dev.cmd و npm run build:css) — لا تعدّلها يدوياً. #}
+  {% set assetv = 'c1c8cb3d' %}
+
+  {# 5. Custom CSS (قبل Tailwind حتى تتغلب الـ utilities مثل hidden على مكوّنات الثيم) #}
+  <link rel="stylesheet" href="{{ 'style.css' | assets }}?v={{ assetv }}"/>
+
+  {# 6. Tailwind CSS — نسخة مبنية مسبقاً (أخف بكثير من CDN الذي يترجم في المتصفح). المصدر في dev/ #}
+  <link rel="stylesheet" href="{{ 'tailwind.css' | assets }}?v={{ assetv }}"/>
+
+  {# جلب مبكر للسكربتات بالتوازي مع CSS (تُنفَّذ في مكانها آخر الصفحة) — الأجزاء التفاعلية والمنتجات التلقائية تظهر أسرع.
+     الروابط يجب أن تطابق وسوم <script> أسفل الصفحة حرفياً وإلا تُحمَّل مرتين #}
+  <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js">
+  <link rel="preload" as="script" href="{{ 'main.js' | assets }}?v={{ assetv }}">
+
+  {# 7. Swiper و GLightbox CSS — آخر الـ head (نفس موضع الحقن السابق من loadLib) حتى لا يتغير ترتيب الـ cascade.
+     الروابط يجب أن تطابق LIBS في main.js حرفياً #}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.6/swiper-bundle.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css">
+
+  {# JSON-LD للمتجر (Organization + WebSite مع البحث) — بيانات المتجر فقط #}
+  {% if store.url %}
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ (store.name or '') | dump | replace('</', '<\\/') | safe }},
+    "url": {{ (store.url + '/') | dump | replace('</', '<\\/') | safe }}{% if store.logo and store.logo.fileUrl %},
+    "logo": {{ store.logo.fileUrl | dump | replace('</', '<\\/') | safe }}{% endif %}
+  }, {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {{ (store.name or '') | dump | replace('</', '<\\/') | safe }},
+    "url": {{ (store.url + '/') | dump | replace('</', '<\\/') | safe }},
+    "potentialAction": { "@type": "SearchAction", "target": {{ (store.url + '/search?q={search_term_string}') | dump | replace('</', '<\\/') | safe }}, "query-input": "required name=search_term_string" }
+  }]
+  </script>
+  {% endif %}
+
+  {# كود CSS المخصص من إعدادات الثيم — آخر شيء في الـ head ليغلب كل ما قبله #}
+  {% if settings.customCSS %}
+  <style>{{ settings.customCSS | safe }}</style>
+  {% endif %}
+</head>
+<body x-data="qumraApp()" @keydown.escape.window="closeModal()" class="lg-body {% if settings.showBlobs == false %}lg-body--flat{% endif %} {% if settings.customIcons == true and settings.iconColor %}lg-icons-custom{% endif %}{% if settings.showCardButtons == false %} lg-no-card-btns{% endif %}">
+
+  {% template "header" %}
+
+  <main class="relative min-h-[60vh]">
+    {% content %}
+    {% ui "demo-pages.njk" %}
+    {# صفحة من غير أي H1 (مثلاً الرئيسية بعد حذف الهيرو): عنوان مخفي باسم المتجر، ولو فيه H1 مايتضافش تاني #}
+    <script>
+      (function () {
+        var name = {{ (store.name or '') | dump | replace('</', '<\\/') | safe }}, m = document.querySelector('main');
+        if (!name || !m || document.querySelector('h1')) return;
+        var h = document.createElement('h1');
+        h.className = 'sr-only';
+        h.textContent = name;
+        m.insertBefore(h, m.firstChild);
+      })();
+    </script>
+  </main>
+
+  {% template "footer" %}
+
+
+  {# مكونات UI العامة #}
+  {% ui "search.njk" %}
+  {% ui "cart.njk" %}
+  {% ui "toast.njk" %}
+
+  {# بيانات أولية للـ JavaScript #}
+  <script type="application/json" id="lg-initial-cart">{{ cart | dump | replace('</', '<\\/') | safe }}</script>
+  <script type="application/json" id="lg-initial-wishlist">{{ wishlist | dump | replace('</', '<\\/') | safe }}</script>
+  <script>
+    window.__theme = {
+      language: {{ localization.language | default('ar') | dump | replace('</', '<\\/') | safe }},
+      languages: {{ localization.availableLanguages | default(['ar', 'en']) | dump | replace('</', '<\\/') | safe }},
+      moneySample: {{ 123456 | money | dump | replace('</', '<\\/') | safe }},
+      // المخزون: إعدادات التتبع/الطلب المسبق لكل منتج تُتّبع فقط إذا فعّلها التاجر (افتراضياً الحالة من الكمية — PRD-22..28)
+      followStock: {{ 'true' if settings.followProductStock == true else 'false' }},
+      // حد تحذير المخزون القليل (1..الحد = أوشك على النفاد) — نفس الحد في البطاقات المرسومة على السيرفر
+      lowStock: {{ (settings.lowStockThreshold | default(3, true)) | int }},
+      // فتح السلة الجانبية بعد الإضافة (إعدادات الثيم ← المنتجات والسلة)
+      cartOpenOnAdd: {{ 'false' if settings.cartOpenOnAdd == false else 'true' }},
+      i18n: {
+        added: {{ t('toast.added_to_cart') | dump | replace('</', '<\\/') | safe }},
+        updated: {{ t('toast.cart_updated') | dump | replace('</', '<\\/') | safe }},
+        removed: {{ t('toast.removed_from_cart') | dump | replace('</', '<\\/') | safe }},
+        wishAdded: {{ t('toast.added_to_wishlist') | dump | replace('</', '<\\/') | safe }},
+        wishRemoved: {{ t('toast.removed_from_wishlist') | dump | replace('</', '<\\/') | safe }},
+        error: {{ t('toast.error') | dump | replace('</', '<\\/') | safe }},
+        select: {{ t('product.select') | dump | replace('</', '<\\/') | safe }},
+        selectOptions: {{ t('product.select_options') | dump | replace('</', '<\\/') | safe }},
+        maxQty: {{ t('product.max_quantity') | dump | replace('</', '<\\/') | safe }},
+        stockInCart: {{ t('cart.stock_in_cart') | dump | replace('</', '<\\/') | safe }},
+        stockLimited: {{ t('cart.stock_limited') | dump | replace('</', '<\\/') | safe }},
+        stockOver: {{ t('cart.stock_over') | dump | replace('</', '<\\/') | safe }},
+        linkCopied: {{ t('product.link_copied') | dump | replace('</', '<\\/') | safe }},
+        add: {{ t('product.add_to_cart') | dump | replace('</', '<\\/') | safe }},
+        buy: {{ t('product.buy_now') | dump | replace('</', '<\\/') | safe }},
+        out: {{ t('product.out_of_stock') | dump | replace('</', '<\\/') | safe }},
+        choose: {{ t('product.choose_options') | dump | replace('</', '<\\/') | safe }},
+        viewProduct: {{ t('product.view_product') | dump | replace('</', '<\\/') | safe }},
+        count: { one: {{ t('collection.count_one') | dump | replace('</', '<\\/') | safe }}, two: {{ t('collection.count_two') | dump | replace('</', '<\\/') | safe }}, few: {{ t('collection.count_few') | dump | replace('</', '<\\/') | safe }}, many: {{ t('collection.count_many') | dump | replace('</', '<\\/') | safe }} },
+        free: {{ t('product.free') | dump | replace('</', '<\\/') | safe }},
+        wish: {{ t('product.add_to_wishlist') | dump | replace('</', '<\\/') | safe }},
+        best: {{ t('product.best_seller') | dump | replace('</', '<\\/') | safe }},
+        new: {{ t('product.new') | dump | replace('</', '<\\/') | safe }},
+        hot: {{ t('product.hot') | dump | replace('</', '<\\/') | safe }},
+        demo: {{ t('preview.demo_toast') | dump | replace('</', '<\\/') | safe }},
+        demoCheckout: {{ t('preview.demo_checkout') | dump | replace('</', '<\\/') | safe }},
+        langFailed: {{ t('toast.language_failed') | dump | replace('</', '<\\/') | safe }},
+        lowLeft: {{ t('product.low_stock_left') | dump | replace('</', '<\\/') | safe }},
+        currencySwitch: {{ t('currency.switch') | dump | replace('</', '<\\/') | safe }}
+      }
+    };
+  </script>
+
+  {# 1. Swiper و GLightbox (قبل qumra_scripts) — defer وقبل Alpine في الترتيب: سكربتات defer تُنفَّذ بترتيبها،
+     فيكون window.Swiper / window.GLightbox جاهزين قبل تهيئة مكوّنات Alpine و DOMContentLoaded،
+     و loadLib() في main.js يرجعهما مباشرة بلا تحميل ثانٍ. الروابط يجب أن تطابق LIBS في main.js حرفياً #}
+  <script defer src="https://cdn.jsdelivr.net/npm/swiper@11.2.6/swiper-bundle.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+
+  {# 2. Alpine.js (قبل qumra_scripts) — إصدار مثبّت لتفادي إعادة التوجيه #}
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+  {# 3. Qumra Scripts #}
+  {% qumra_scripts %}
+
+  {# 4. Custom JS #}
+  <script src="{{ 'main.js' | assets }}?v={{ assetv }}"></script>
+
+  {% if settings.customJS %}
+  <script>{{ settings.customJS | safe }}</script>
+  {% endif %}
+
+  {# 5. مصيدة حقن Cloudflare — مفتوحة عمداً بدون إغلاق ويجب أن تبقى آخر شيء قبل </body>.
+     Cloudflare يحقن سكربت Insights قبل </body> مباشرة، فيقع داخل هذا العنصر كنص خام (text/plain)
+     ولا يحمّله المتصفح؛ وإغلاق سكربته </script> هو الذي يغلق هذا العنصر. حارس أعلى الـ head يعيد بناءه
+     فقط إذا لم يوجد مانع إعلانات. #}
+  <template id="lg-edge-sink">
+</body>
+</html>

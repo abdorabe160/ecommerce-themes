@@ -1,0 +1,336 @@
+{# إعدادات الويدجت: widget.settings (حسب docs.qumra.cloud) مع دعم widget.data للتوافق #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# نصوص الإعدادات: الحقل *_en يظهر في الإنجليزية، وإلا النص الأصلي #}
+{% set L = '_en' if localization.language == 'en' else '' %}
+{# المنتج الحالي: قمرة تمرّر بيانات الصفحة للويدجت داخل context (context.product) وليس كمتغير product كما في التوثيق —
+   نقرأ الاثنين. وإعدادات الويدجت قد تصل فارغة ({})، فالخيارات الافتراضية "مفعّل" تُقرأ بـ != false. #}
+{% set ctx = context or {} %}
+{% set p = product or ctx.product %}
+{% set showShare = wd.show_share != false %}
+{% set showBuyNow = wd.show_buy_now != false %}
+{% set showSku = wd.show_sku != false %}
+{% set stickyMobile = wd.sticky_mobile != false %}
+{% if p and p._id %}
+{% set images = p.images | default([]) %}
+{% set price = p.pricing.price | default(0, true) %}
+{% set compare = p.pricing.compareAtPrice | default(0, true) %}
+{# مميزات المنتج: البلوك بلا نص لا يُعرض #}
+{% set blocks = [] %}
+{% for b in widget.blocks | default([]) %}{% if b.settings and (b.settings['text' + L] or b.settings.text) and blocks.push(b) %}{% endif %}{% endfor %}
+{% set crumbs = [] %}
+{% for c in p.collections | default([]) %}
+  {% if c and c.title and c.status != 'inactive' and c.status != 'draft' and c.published != false and c.active != false and c.isActive != false and c.deleted != true and not (c.salesChannels and c.salesChannels.onlineStore == false) %}{% if crumbs.push(c) %}{% endif %}{% endif %}
+{% endfor %}
+{% set crumbCol = crumbs[0] if (crumbs | length) else null %}
+{% set hasDescription = p.description and (p.description | replace('</p>', ' </p>') | striptags | trim | length) %}
+{% set firstTab = 'desc' %}
+
+{# JSON-LD Product (PRD-21 / QLT-11) — خيار متوفر يكفي، حتى لو كمية المنتج الأب 0 #}
+{% set ldVars = [] %}
+{% for v in p.variants or [] %}{% if not ((v.quantity or v.quantity == 0) and v.quantity <= 0) %}{% if ldVars.push(v) %}{% endif %}{% endif %}{% endfor %}
+{% if p.variants and (p.variants | length) %}{% set ldOut = (ldVars | length) == 0 %}{% else %}{% set ldOut = (p.quantity or p.quantity == 0) and p.quantity <= 0 %}{% endif %}
+<script type="application/ld+json" id="lg-jsonld-{{ p._id }}">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ p.title | dump | replace('</', '<\\/') | safe }},
+  "sku": {{ (p.sku or p._id) | dump | replace('</', '<\\/') | safe }},
+  {% if images | length %}"image": [{% for img in images %}{{ img.fileUrl | dump | replace('</', '<\\/') | safe }}{% if not loop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": {{ (p.description | default('', true) | replace('</p>', ' </p>') | replace('</li>', ' </li>') | replace('<br', ' <br') | striptags | truncate(300)) | dump | replace('</', '<\\/') | safe }},
+  {% if p.reviewsCount and p.reviewsCount > 0 %}"aggregateRating": { "@type": "AggregateRating", "ratingValue": {{ p.averageRating | default(0, true) }}, "reviewCount": {{ p.reviewsCount }} },{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "url": {{ (store.url + '/products/' + (p.slug or p.handle)) | dump | replace('</', '<\\/') | safe }},
+    "priceCurrency": {{ localization.currency.currencyCode | default('', true) | dump | replace('</', '<\\/') | safe }},
+    {#- Prices arrive in MAJOR units on live stores (123456 | money → «123,456ج.م»), so no division. -#}
+    "price": "{{ p.pricing.price | default(0, true) }}",
+    "availability": "{% if not (settings.followProductStock == true and (p.trackQuantity == false or p.allowBackorder)) and ldOut %}https://schema.org/OutOfStock{% else %}https://schema.org/InStock{% endif %}"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": {{ t('common.home') | dump | replace('</', '<\\/') | safe }}, "item": {{ (store.url + '/') | dump | replace('</', '<\\/') | safe }} }
+    {% if crumbCol %},{ "@type": "ListItem", "position": 2, "name": {{ crumbCol.title | dump | replace('</', '<\\/') | safe }}, "item": {{ (store.url + '/collections/' + (crumbCol.handle or crumbCol.slug)) | dump | replace('</', '<\\/') | safe }} }{% endif %}
+    ,{ "@type": "ListItem", "position": {{ 3 if crumbCol else 2 }}, "name": {{ p.title | dump | replace('</', '<\\/') | safe }} }
+  ]
+}
+</script>
+
+<script type="application/json" id="lg-product-{{ p._id }}">{{ p | dump | replace('</', '<\\/') | safe }}</script>
+
+<section class="lg-section !pt-4" data-fly-scope x-data="lgProduct({ product: JSON.parse(document.getElementById('lg-product-{{ p._id }}').textContent) })">
+  <div class="lg-container">
+
+    {# Breadcrumb (COL-10) #}
+    <nav aria-label="{{t('common.breadcrumb')}}" class="lg-breadcrumb mb-4 text-sm text-muted">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:text-primary">{{t('common.home')}}</a></li>
+        {% if crumbCol %}
+          <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+          <li><a href="/collections/{{ crumbCol.handle or crumbCol.slug }}" class="hover:text-primary">{{ crumbCol.title }}</a></li>
+        {% endif %}
+        <li aria-hidden="true">{% ui "icon.njk", name="chevron", cls="w-3.5 h-3.5 lg-flip-rtl" %}</li>
+        <li aria-current="page" class="text-[color:var(--color-text)] truncate max-w-[60vw]">{{ p.title }}</li>
+      </ol>
+    </nav>
+
+    <div class="grid gap-6 lg:gap-10 md:grid-cols-2 items-start">
+
+      {# ===== Gallery ===== #}
+      <div class="lg-gallery-sticky{% if images | length > 1 %} has-thumbs{% endif %} md:sticky md:top-[calc(var(--header-h)+24px)] space-y-3 min-w-0">
+        <div class="glass lg-gallery-main relative">
+          <div class="absolute top-3 start-3 z-10 flex flex-col gap-1.5">
+            <span x-show="stock === 'out'" x-cloak class="lg-badge lg-badge--out">{{t('product.out_of_stock')}}</span>
+            <span x-show="stock !== 'out' && discount > 0" x-cloak class="lg-badge lg-badge--sale" dir="ltr" x-text="'-' + discount + '%'"></span>
+          </div>
+          {% if images | length %}
+            <div class="swiper lg-gallery-swiper h-full">
+              <div class="swiper-wrapper">
+                {% for img in images %}
+                  <div class="swiper-slide">
+                    <a href="{{ img.fileUrl }}" class="glightbox block w-full h-full" data-gallery="product-{{ p._id }}" aria-label="{{ p.title }} — {{ loop.index }}">
+                      <img src="{{ img.fileUrl }}" alt="{{ p.title }}{% if images | length > 1 %} — {{ loop.index }}{% endif %}" width="700" height="700" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>
+                    </a>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if images | length > 1 %}<div class="swiper-pagination md:!hidden"></div>{% endif %}
+            </div>
+          {% else %}
+            <div class="w-full h-full grid place-items-center text-muted" role="img" aria-label="{{ p.title }}">
+              {% ui "icon.njk", name="device", cls="w-24 h-24 opacity-30" %}
+            </div>
+          {% endif %}
+        </div>
+        {% if images | length > 1 %}
+          <div class="swiper lg-gallery-thumbs hidden md:block">
+            <div class="swiper-wrapper">
+              {% for img in images %}
+                <div class="swiper-slide lg-thumb"><img src="{{ img.fileUrl }}" alt="" loading="lazy" width="96" height="96"></div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {# ===== Info ===== #}
+      <div class="space-y-5 min-w-0">
+        <div class="space-y-2">
+          <h1 class="text-2xl md:text-3xl font-bold leading-snug break-words">{{ p.title }}</h1>
+          {% if p.reviewsCount and p.reviewsCount > 0 %}
+            {% set rating = p.averageRating | default(0) | round %}
+            <a href="#lg-tabs" @click="tab = 'reviews'" class="lg-tap inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
+              <span class="lg-stars">{% for i in range(1, 6) %}{% ui "icon.njk", name="star", cls="w-4 h-4 fill-current" + ('' if i <= rating else ' is-empty') %}{% endfor %}</span>
+              <span>{{ p.averageRating | round(1) }} ({% ui "count.njk", n=p.reviewsCount, kind="reviews" %})</span>
+            </a>
+          {% endif %}
+        </div>
+
+        {# السعر — يتحدث مع المتغير #}
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span class="text-3xl font-bold" x-text="price === 0 ? {{ t('product.free') | dump | escape }} : formatMoney(price)">{% if price == 0 %}{{t('product.free')}}{% else %}{{ price | money }}{% endif %}</span>
+          <span class="lg-price--old !text-base" x-show="compareAt > price" {% if not compare > price %}x-cloak{% endif %} x-text="formatMoney(compareAt)">{{ compare | money if compare > price }}</span>
+          <span class="text-sm font-semibold lg-save" x-show="discount > 0" x-cloak>
+            {{t('product.you_save')}} <span x-text="formatMoney(compareAt - price)"></span>
+          </span>
+        </div>
+
+        {# حالة المخزون (PRD-22..28) — من المتغير المختار #}
+        <p class="lg-stock lg-stock--warn" :class="'lg-stock--' + stock" role="status" aria-live="polite">
+          <span x-show="stock === 'in'">{{t('product.in_stock')}}</span>
+          <span x-show="stock === 'low'" x-cloak>{{t('product.low_stock')}} — <span x-text="lowLeft(currentQty)"></span></span>
+          <span x-show="stock === 'out'" x-cloak>{{t('product.out_of_stock')}}</span>
+        </p>
+
+        {# الخيارات #}
+        <template x-for="(opt, i) in options" :key="optKey(opt, i)">
+          <fieldset class="space-y-2" :data-option-index="i">
+            <legend class="text-sm font-semibold mb-2">
+              <span x-text="opt.name || opt.title"></span>
+              <span class="text-muted font-normal" x-show="selected[optKey(opt, i)]"
+                    x-text="': ' + ((opt.values.find(v => valueId(v) === selected[optKey(opt, i)]) || {}).label || '')"></span>
+            </legend>
+            <div class="flex flex-wrap gap-2">
+              <template x-for="v in opt.values" :key="valueId(v)">
+                <button type="button" class="lg-chip"
+                        :class="{ 'is-active': isChosen(opt, i, v), 'is-disabled': !isValueAvailable(opt, i, v) }"
+                        :aria-pressed="isChosen(opt, i, v)"
+                        :disabled="!isValueAvailable(opt, i, v)"
+                        :title="!isValueAvailable(opt, i, v) ? {{ t('product.unavailable_variant') | dump | escape }} : ''"
+                        @click="choose(opt, i, v)">
+                  <span x-show="swatch(opt, v)" class="lg-swatch w-4 h-4 rounded-full" :style="'background:' + swatch(opt, v)"></span>
+                  <span x-text="v.label || v.value || v.name"></span>
+                </button>
+              </template>
+            </div>
+          </fieldset>
+        </template>
+
+        {# رسالة الخيار الناقص (REG-10..12) #}
+        <p class="lg-alert" role="alert" x-show="missing" x-cloak>
+          {% ui "icon.njk", name="alert", cls="w-4 h-4 shrink-0 mt-0.5" %}<span x-text="missing"></span>
+        </p>
+
+        {# الكمية + الأزرار #}
+        <div class="space-y-3" id="lg-buy-box">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="lg-qty" :class="!canBuy && 'opacity-50'">
+              <button type="button" @click="dec()" :disabled="!canBuy || quantity <= 1" aria-label="{{t('common.decrease_quantity')}}">{% ui "icon.njk", name="minus", cls="w-4 h-4" %}</button>
+              <label for="lg-qty-{{ p._id }}" class="sr-only">{{t('product.quantity')}}</label>
+              <input id="lg-qty-{{ p._id }}" type="text" inputmode="numeric" pattern="[0-9]*" x-model="quantity" @change="clampQty()" @blur="clampQty()" :disabled="!canBuy">
+              <button type="button" @click="inc()" :disabled="!canBuy || quantity >= maxQty" aria-label="{{t('common.increase_quantity')}}">{% ui "icon.njk", name="plus", cls="w-4 h-4" %}</button>
+            </div>
+            {% if showShare %}
+              <button type="button" class="btn btn-glass btn-icon" @click="share()" aria-label="{{t('product.share')}}">
+                {% ui "icon.njk", name="arrow-up", cls="w-5 h-5" %}
+              </button>
+            {% endif %}
+          </div>
+          <p class="text-xs text-[color:var(--color-warning)] font-medium" x-show="qtyNotice" x-cloak x-text="qtyNotice"></p>
+
+          <div class="grid gap-2 {% if showBuyNow %}sm:grid-cols-2{% endif %}">
+            <button type="button" class="btn btn-primary !min-h-[52px]" @click="add()" :disabled="!canBuy || isBusy('add:{{ p._id }}')">
+              <template x-if="canBuy">
+                <span class="inline-flex items-center gap-2">
+                  <span x-show="!isBusy('add:{{ p._id }}')" class="inline-flex items-center gap-2">{% ui "icon.njk", name="cart", cls="w-5 h-5" %}{{t('product.add_to_cart')}}</span>
+                  <span x-show="isBusy('add:{{ p._id }}')" class="lg-spinner"></span>
+                </span>
+              </template>
+              <template x-if="!canBuy"><span>{{t('product.out_of_stock')}}</span></template>
+            </button>
+            {% if showBuyNow %}
+              {# نفاد المخزون: الزر يبقى ظاهراً ومعطّلاً مثل "أضف للسلة" (PRD-26) #}
+              <button type="button" class="btn btn-glass !min-h-[52px]" @click="buy()" :disabled="!canBuy || isBusy('add:{{ p._id }}')" :aria-disabled="(!canBuy).toString()">{{t('product.buy_now')}}</button>
+            {% endif %}
+          </div>
+        </div>
+
+        {# ملاحظة التوصيل (إعدادات الثيم ← المنتجات والسلة) #}
+        {% set deliveryNote = settings['deliveryNote' + L] or settings.deliveryNote %}
+        {% if deliveryNote %}
+          <p class="lg-delivery-note">{% ui "icon.njk", name="truck", cls="w-4 h-4 shrink-0" %}<span>{{ deliveryNote }}</span></p>
+        {% endif %}
+
+        {% if blocks | length %}
+          <ul class="grid grid-cols-2 gap-2">
+            {% for b in blocks %}
+              <li class="glass !rounded-2xl flex items-center gap-2 px-3 py-2.5 text-sm">
+                <span class="text-primary">{% ui "icon.njk", name=b.settings.icon | default('shield'), cls="w-5 h-5" %}</span>{{ (b.settings['text' + L] or b.settings.text) }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <dl class="text-sm space-y-1 text-muted">
+          {% if showSku %}
+            <div class="flex gap-2" x-show="sku" {% if not p.sku %}x-cloak{% endif %}><dt>{{t('product.sku')}}:</dt><dd class="text-[color:var(--color-text)]" x-text="sku">{{ p.sku }}</dd></div>
+          {% endif %}
+          {% if crumbCol %}
+            <div class="flex gap-2"><dt>{{t('product.category')}}:</dt><dd><a href="/collections/{{ crumbCol.handle or crumbCol.slug }}" class="lg-tap text-primary hover:underline">{{ crumbCol.title }}</a></dd></div>
+          {% endif %}
+        </dl>
+
+        {# ===== الوصف / الشحن / التقييمات: في عمود التفاصيل تحت كل الأزرار، والصورة ثابتة بجانبه (md:sticky) أثناء تمرير الوصف الطويل.
+             تبويبات على الديسكتوب وأكورديون على الموبايل — PRD-12 ===== #}
+        <div id="lg-tabs" class="glass p-4 md:p-6 scroll-mt-[calc(var(--header-h)+24px)]">
+          <div class="hidden md:flex flex-wrap gap-2 mb-5 border-b border-[color:var(--color-hairline)] pb-3" role="tablist">
+            <button type="button" role="tab" class="lg-chip" :class="tab === 'desc' && 'is-active'" :aria-selected="tab === 'desc'" @click="tab = 'desc'">{{t('product.description')}}</button>
+            {% if (wd['shipping_text' + L] or wd.shipping_text) %}
+              <button type="button" role="tab" class="lg-chip" :class="tab === 'ship' && 'is-active'" :aria-selected="tab === 'ship'" @click="tab = 'ship'">{{ (wd['shipping_title' + L] or wd.shipping_title) | default(t('product.shipping_returns')) }}</button>
+            {% endif %}
+            <button type="button" role="tab" class="lg-chip" :class="tab === 'reviews' && 'is-active'" :aria-selected="tab === 'reviews'" @click="tab = 'reviews'">{{t('product.reviews')}} ({{ p.reviewsCount | default(0) }})</button>
+          </div>
+
+          {% macro acc(key, label) %}
+            <button type="button" class="md:hidden w-full flex items-center justify-between min-h-[48px] font-semibold border-b border-[color:var(--color-hairline)]"
+                    @click="tab = (tab === '{{ key }}' ? '' : '{{ key }}')" :aria-expanded="tab === '{{ key }}'">
+              <span>{{ label }}</span>
+              <span class="transition-transform" :class="tab === '{{ key }}' && 'rotate-45'">{% ui "icon.njk", name="plus", cls="w-4 h-4" %}</span>
+            </button>
+          {% endmacro %}
+
+          {{ acc('desc', t('product.description')) }}
+          <div x-show="tab === 'desc'" class="lg-prose py-4 md:py-0" role="tabpanel">
+            {% if hasDescription %}{{ p.description | safe }}{% else %}<p>{{t('product.no_description')}}</p>{% endif %}
+          </div>
+
+          {% if (wd['shipping_text' + L] or wd.shipping_text) %}
+            {{ acc('ship', (wd['shipping_title' + L] or wd.shipping_title) | default(t('product.shipping_returns'))) }}
+            <div x-show="tab === 'ship'" x-cloak class="lg-prose py-4 md:py-0" role="tabpanel">{{ (wd['shipping_text' + L] or wd.shipping_text) | safe }}</div>
+          {% endif %}
+
+          {{ acc('reviews', t('product.reviews')) }}
+          <div x-show="tab === 'reviews'" x-cloak class="py-4 md:py-0" role="tabpanel">
+            {% set reviews = p.reviews | default([]) %}
+            {% if p.reviewsCount and p.reviewsCount > 0 %}
+              <div class="flex items-center gap-3 mb-4">
+                <span class="text-3xl font-bold">{{ p.averageRating | round(1) }}</span>
+                <span class="lg-stars">{% for i in range(1, 6) %}{% ui "icon.njk", name="star", cls="w-5 h-5 fill-current" + ('' if i <= (p.averageRating | round) else ' is-empty') %}{% endfor %}</span>
+                <span class="text-sm text-muted">({% ui "count.njk", n=p.reviewsCount, kind="reviews" %})</span>
+              </div>
+              {% for r in reviews %}
+                <article class="py-3 border-t border-[color:var(--color-hairline)]">
+                  <p class="text-sm font-semibold">{{ r.customerName or r.name }}</p>
+                  <span class="lg-stars">{% for i in range(1, 6) %}{% ui "icon.njk", name="star", cls="w-3.5 h-3.5 fill-current" + ('' if i <= (r.rating | default(0)) else ' is-empty') %}{% endfor %}</span>
+                  <p class="text-sm text-muted mt-1">{{ r.comment or r.content or r.text }}</p>
+                </article>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted">{{t('product.no_reviews')}}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ===== شريط شراء ثابت على الموبايل (RSP-02 / REG-12): "أضف إلى السلة" ومعه "اشترِ الآن" (إن كان مفعّلاً)، والسعر قبل الخصم ===== #}
+  {% if stickyMobile %}
+    <div class="lg-sticky-buy md:hidden fixed inset-x-0 bottom-0 z-30 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
+      <div class="glass glass-strong lg-float-bar !rounded-2xl p-2.5 space-y-2">
+        <p class="lg-alert !py-2 !text-xs" role="alert" x-show="missing" x-cloak><span x-text="missing"></span></p>
+        <div class="flex items-center gap-2">
+          <div class="min-w-0 flex-1 ps-1">
+            <p class="text-xs text-muted truncate">{{ p.title }}</p>
+            <p class="flex flex-wrap items-baseline gap-x-2">
+              <span class="font-bold" x-text="price === 0 ? {{ t('product.free') | dump | escape }} : formatMoney(price)"></span>
+              <span class="lg-price--old" x-show="compareAt > price" x-cloak x-text="formatMoney(compareAt)"></span>
+            </p>
+          </div>
+          {% if not showBuyNow %}
+            <button type="button" class="btn btn-primary" @click="add()" :disabled="!canBuy || isBusy('add:{{ p._id }}')">
+              <span x-show="canBuy">{{t('product.add_to_cart')}}</span>
+              <span x-show="!canBuy" x-cloak>{{t('product.out_of_stock')}}</span>
+            </button>
+          {% endif %}
+        </div>
+        {% if showBuyNow %}
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" class="btn btn-primary !px-3" @click="add()" :disabled="!canBuy || isBusy('add:{{ p._id }}') || isBusy('buy:{{ p._id }}')">
+              <span x-show="canBuy" class="lg-btn-label">{{t('product.add_to_cart')}}</span>
+              <span x-show="!canBuy" x-cloak class="lg-btn-label">{{t('product.out_of_stock')}}</span>
+            </button>
+            {# نفاد المخزون: يبقى ظاهراً ومعطّلاً مثل "أضف إلى السلة" (PRD-26) #}
+            <button type="button" class="btn btn-glass !px-3" @click="buy()" :disabled="!canBuy || isBusy('add:{{ p._id }}') || isBusy('buy:{{ p._id }}')" :aria-disabled="(!canBuy).toString()">
+              <span x-show="!isBusy('buy:{{ p._id }}')" class="lg-btn-label">{{t('product.buy_now')}}</span>
+              <span x-show="isBusy('buy:{{ p._id }}')" x-cloak class="lg-spinner" role="status"></span>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="md:hidden {{ 'h-36' if showBuyNow else 'h-24' }}" aria-hidden="true"></div>
+  {% endif %}
+</section>
+{% else %}
+  {# بدون منتج في المعاينة (المحرر): ui/demo-product.njk يعرض منتجاً توضيحياً بدل هذه الرسالة #}
+  <section class="lg-section" id="lg-demo-fallback">
+    <div class="lg-container">
+      {% ui "empty.njk", icon="device", title=t('product.not_found'), text=t('not_found.text'), url="/", button=t('not_found.back_home') %}
+    </div>
+  </section>
+{% endif %}

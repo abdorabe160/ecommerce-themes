@@ -1,0 +1,71 @@
+{# ============================================================================
+   HADIYA · هدايا حسب الميزانية  (gift-budgets) — engine E4
+   ----------------------------------------------------------------------------
+   ┌──────────┐┌──────────┐┌──────────┐┌──────────┐
+   │ أقل من   ││ من 300   ││ من 700   ││ أكثر من  │
+   │ 300 ج.م →││ لـ 700  →││ لـ 1500 →││ 1500 ج.م→│
+   └──────────┘└──────────┘└──────────┘└──────────┘
+
+   The same steps string as the gift-hero finder ("300، 700، 1500") becomes one
+   card per range, each a plain link to `base_url?filters[price][min|max]=…` —
+   the shop page's own price filter, measured working on the store
+   (2026-10-04). No JS: the URL is built here.
+
+   Units: the shopper's displayed unit, printed with the currency SYMBOL and
+   never `| money` — see the note in gift-hero.
+
+   Styling: assets/theme.css → "gift-budgets".
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set cur = localization.currency.currencySymbol | default('', true) %}
+{% set base = d.base_url | default('/shop', true) %}
+{% set sep = '&' if '?' in base else '?' %}
+{% set bg = 'var(--hy-sec-bg, var(--color-bg-tertiary))' if d.background == 'well' else 'var(--hy-sec-bg, transparent)' %}
+
+{% set rawSteps = ((d.steps | default('', true)) | replace('،', ',')).split(',') %}
+{% set steps = [] %}
+{% for s in rawSteps %}{% if (s | trim | int) > 0 %}{% set _ = steps.push(s | trim | int) %}{% endif %}{% endfor %}
+
+{% set cards = [] %}
+{% if steps | length %}
+  {% set _ = cards.push({ 'top': t('gifts.under'), 'num': steps[0], 'q': 'filters[price][max]=' ~ steps[0] }) %}
+  {% for s in steps %}{% if not loop.last %}
+    {% set _ = cards.push({ 'top': t('gifts.from'), 'num': s ~ ' – ' ~ steps[loop.index], 'q': 'filters[price][min]=' ~ s ~ '&filters[price][max]=' ~ steps[loop.index] }) %}
+  {% endif %}{% endfor %}
+  {% set _ = cards.push({ 'top': t('gifts.over'), 'num': steps[steps | length - 1], 'q': 'filters[price][min]=' ~ steps[steps | length - 1] }) %}
+{% endif %}
+
+<section id="hd-bud-{{ id }}"{% if (cards | length) == 0 %} data-hy-empty{% endif %} class="hd-bud" style="background: {{ bg }};"
+         {% if d.title %}aria-labelledby="hd-bud-t-{{ id }}"{% endif %}>
+  <div class="hd-tiles-in">
+    {% if d.title %}
+      <div class="hd-head">
+        <div>
+          <h2 id="hd-bud-t-{{ id }}" class="hd-title">{{ d.title }}</h2>
+          {% if d.subtitle %}<p class="hd-sub">{{ d.subtitle }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if cards | length %}
+      <div class="hd-bud-grid">
+        {% for c in cards %}
+          <a class="hd-bud-card" href="{{ base }}{{ sep }}{{ c.q }}">
+            <span class="hd-bud-top">{{ c.top }}</span>
+            {# dir="ltr", not a bare <bdi>: a range is digits and a dash only — no
+               strong character — so an isolate inherits RTL and printed
+               "700 – 300". Measured on the live page. #}
+            <span class="hd-bud-num"><bdi dir="ltr">{{ c.num }}</bdi> <small>{{ cur }}</small></span>
+            <svg class="hd-bud-go rtl-flip" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="hy-ph-hint">{{ t('common.placeholder_add') }}</p>
+    {% endif %}
+  </div>
+</section>
+
+{% ui "section-colors.njk", scope='#hd-bud-' ~ id, c=d %}

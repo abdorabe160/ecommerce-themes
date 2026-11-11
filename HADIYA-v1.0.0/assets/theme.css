@@ -1,0 +1,1849 @@
+/* ============================================================================
+   HADIYA · هدية — theme layer over the Qumra Core
+   ----------------------------------------------------------------------------
+   Look  : "زمرّد وورق هدايا" — emerald ink, gift-paper blush, gold for
+           occasions. Soft gift-box corners, pill controls, no shadows.
+   Rule  : assets/style.css is the Core and is NOT edited in this theme. All
+           of HADIYA's shape lives here, built on the Core tokens that
+           layouts/layout.njk prints (--radius-card 18px · --radius-media 18px ·
+           --radius-input 12px · --radius-btn 999px), so a radius change is one
+           line in the layout, not a hunt through this file.
+   Engine: E4 · القصة والمناسبة. The E4 widgets (gift-hero, gift-tiles,
+           season-band, products-bundle) keep their own CSS in section 2.
+   ============================================================================ */
+
+/* ── 1. Core components, reshaped ─────────────────────────────────────────── */
+
+/* Product card — the picture is a soft box sitting on the paper. The frame is
+   the overflow boundary so the hover zoom and the ATC tray clip to the curve. */
+.hy-pcard-frame,
+.hy-pcard-media {
+  border-radius: var(--radius-media);
+  overflow: hidden;
+}
+.hy-pcard-noimg { border-radius: var(--radius-media); }
+
+/* Collection tiles, article cards, PDP gallery and thumbs */
+.hy-coll-tile,
+.hy-post-media,
+.hy-pdp-stage {
+  border-radius: var(--radius-media);
+  overflow: hidden;
+}
+.hy-pdp-thumb {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Cart lines and summary */
+.hy-citem-media { border-radius: 14px; }
+.hy-cart-box { border-radius: var(--radius-card); }
+
+/* The footer subscribe field: the Core draws it square at one breakpoint and
+   round at another — a gift shop is round at both. */
+.hy-footer-field { border-radius: 999px; }
+
+/* Multi-column icons — the Core default is 10px; match the card radius. */
+.hy-col-figure { --cols-radius: var(--radius-card); }
+
+/* Display type: El Messiri is drawn tall — give headings a touch more air so
+   two-line titles don't touch. Arabic only; Latin keeps the Core leading. */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2 { line-height: 1.35; }
+
+/* ── 2. E4 widgets ─────────────────────────────────────────────────────────
+   gift-hero · gift-tiles · season-band. Each widget's inline <style> only
+   writes custom properties on its own #id; the rules live here. */
+
+/* gift-hero ---------------------------------------------------------------- */
+.hd-hero {
+  background: var(--hy-sec-bg, var(--color-bg-tertiary));
+  padding-block: clamp(40px, 6vw, 72px);
+}
+.hd-hero-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+}
+.hd-hero-copy {
+  flex: 1 1 440px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.hd-eyebrow {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+.hd-hero-title {
+  margin: 0;
+  font-family: var(--font-display-ar);
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+html[dir="ltr"] .hd-hero-title { font-family: var(--font-display-en); }
+/* balance: the two-line title used to leave «حيرة» alone on the second line */
+.hd-hero-title, .hd-title { text-wrap: balance; }
+.hd-hero-text {
+  margin: 0;
+  max-width: 480px;
+  font-size: 1.0625rem;
+  line-height: 1.9;
+  color: var(--hy-sec-text, var(--color-text-secondary));
+}
+.hd-finder {
+  background: var(--color-bg-primary);
+  border-radius: 22px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+.hd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.hd-field select {
+  height: 48px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--color-border);
+  padding-inline: 12px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+.hd-field select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.hd-finder .hy-btn { height: 48px; justify-content: center; }
+.hd-hero-media {
+  flex: 1 1 400px;
+  min-width: 0;
+  height: var(--hd-hero-h, 520px);
+  border-radius: 999px 999px var(--radius-media) var(--radius-media);
+  overflow: hidden;
+  background: var(--hd-hero-tint, #E4D3CA);
+}
+.hd-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 767px) {
+  .hd-hero-media { height: var(--hd-hero-h-m, 320px); }
+  .hd-finder { padding: 16px; }
+}
+
+/* gift-tiles --------------------------------------------------------------- */
+.hd-tiles {
+  background: var(--hy-sec-bg, transparent);
+  padding-block: var(--section-py);
+}
+.hd-tiles-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.hd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hd-title {
+  margin: 0;
+  font-family: var(--font-display-ar);
+  font-size: clamp(1.75rem, 3vw, 2.375rem);
+  font-weight: 700;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+html[dir="ltr"] .hd-title { font-family: var(--font-display-en); }
+.hd-more {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  border-bottom: 1.5px solid currentColor;
+  text-decoration: none;
+}
+.hd-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--hd-cols-set, 6), minmax(0, 1fr));
+  gap: 20px;
+}
+.hd-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+.hd-tile-media {
+  position: relative;
+  overflow: hidden;
+  background: var(--hd-tile-bg, var(--color-bg-tertiary));
+}
+.hd-tile-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-image) var(--ease-out);
+}
+.hd-tile:hover .hd-tile-media img { transform: scale(1.04); }
+.hd-tile-label { font-size: 1.0625rem; font-weight: 600; }
+.hd-tile-hint { font-size: 0.875rem; color: var(--hy-sec-text, var(--color-text-secondary)); }
+
+/* arch: the occasion look — an arch over a soft box, label below */
+.hd-tiles--arch .hd-tile { align-items: center; text-align: center; }
+.hd-tiles--arch .hd-tile-media {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 999px 999px 20px 20px;
+}
+/* card: the recipient look — a tall card, copy sitting at its foot */
+.hd-tiles--card .hd-tile-media {
+  height: 300px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px;
+}
+.hd-tiles--card .hd-tile-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hd-tiles--card .hd-tile-label {
+  font-family: var(--font-display-ar);
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+/* copy over a photograph needs a ground */
+.hd-tiles--card .hd-tile-media.has-img .hd-tile-copy {
+  background: color-mix(in srgb, var(--color-bg-primary) 88%, transparent);
+  border-radius: 14px;
+  padding: 10px 14px;
+  align-self: flex-start;
+}
+@media (max-width: 1023px) {
+  .hd-grid { grid-template-columns: repeat(var(--hd-cols-t, 3), minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .hd-grid { grid-template-columns: repeat(var(--hd-cols-m, 2), minmax(0, 1fr)); gap: 12px; }
+  .hd-tiles--card .hd-tile-media { height: 160px; padding: 14px; }
+  .hd-tiles--card .hd-tile-label { font-size: 1.375rem; }
+  /* arch tiles become a swipe strip on a phone */
+  .hd-tiles--arch .hd-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--container-px-sm) * -1);
+    padding-inline: var(--container-px-sm);
+  }
+  .hd-tiles--arch .hd-grid::-webkit-scrollbar { display: none; }
+  .hd-tiles--arch .hd-tile { flex: 0 0 38%; scroll-snap-align: start; }
+}
+
+/* season-band -------------------------------------------------------------- */
+.hd-season {
+  background: var(--hy-sec-bg, var(--color-accent));
+  color: var(--hy-sec-text, #EFE6DF);
+  padding-block: clamp(48px, 6vw, 80px);
+}
+.hd-season-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.hd-season .hd-eyebrow { color: var(--hd-gold, #E3C27A); }
+.hd-season .hd-title { color: var(--hy-sec-title, #FFFFFF); font-size: clamp(2rem, 3.6vw, 2.875rem); }
+.hd-season-text { margin: 0; max-width: 540px; line-height: 1.8; }
+.hd-count {
+  display: flex;
+  gap: 10px;
+  /* follows the page: in Arabic the days sit on the right and read first.
+     Each cell holds digits only, so no isolate is needed. */
+}
+.hd-count-cell {
+  width: 74px;
+  padding: 12px 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+.hd-count-cell b {
+  display: block;
+  font-family: var(--font-num);
+  font-size: 1.75rem;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+.hd-count-cell span { font-size: 0.75rem; font-family: var(--font-body-ar); }
+.hd-season-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+/* product cards on the dark band: invert the copy, keep the picture */
+.hd-season .hy-pcard { color: #FFFFFF; }
+.hd-season .hy-pcard .hy-price,
+.hd-season .hy-pcard-name,
+.hd-season .hy-pcard-name a { color: #FFFFFF; }
+.hd-season .hy-pcard .hy-price-was { color: rgba(255, 255, 255, 0.6); }
+@media (max-width: 767px) {
+  .hd-count-cell { width: 64px; }
+  .hd-count-cell b { font-size: 1.375rem; }
+}
+
+/* products-bundle ----------------------------------------------------------
+   Ported verbatim with the widget from baby-supplies assets/style.css 15.15
+   (the Core does not ship it). HADIYA shape follows the rules after it. */
+/* --------------------------------------------------------------------------
+     15.15  PRODUCTS BUNDLE  ·  .hy-bnd-*
+     --------------------------------------------------------------------------
+       ┌──────────────────────┬────────────────────────────────┐
+       │                      │        BUNDLE & SAVE           │
+       │   photograph with    │      Buy 2 Get 10% Off         │
+       │   numbered pins ①②   │        ①          ②            │
+       │   sitting on the     │     ┌─────┐    ┌─────┐         │
+       │   garments           │     │card │    │card │         │
+       │                      │     └─────┘    └─────┘         │
+       │                      │      ( Add All To Cart › )     │
+       └──────────────────────┴────────────────────────────────┘
+
+     ⚠️  SIZES HERE ARE PROVISIONAL. They follow the two-column proportions
+     MEASURED off the highlight section (15.13) of the same reference — media
+     52%, gap 6% — because no recording of this section has been measured yet.
+     The structure, the pin mechanism and the card are not provisional; only
+     the spacing numbers are. Re-measure when the recording lands.
+
+     ── The pins are PHYSICAL, on purpose ──
+     A merchant places a pin by looking at the photograph: "the vest is at 46%
+     across, 28% down". The photograph does not mirror in Arabic, so the pin
+     must not either — `left`/`top`, never `inset-inline-start`. Pairing a
+     logical inset with a coordinate read off an unmirrored image sends every
+     pin to the wrong garment in RTL, which is the same trap `translate` sets
+     elsewhere in this theme.
+     -------------------------------------------------------------------------- */
+
+.hy-bnd {
+  --hy-bnd-media: var(--hy-bnd-media-set, 52%);
+  --hy-bnd-gap: var(--hy-bnd-gap-set, 6%);
+  --hy-bnd-h: var(--hy-bnd-h-set, 105);
+  --hy-bnd-radius: 16px;
+  --hy-bnd-pin: 34px;
+  --hy-bnd-per: var(--hy-bnd-per-set, 2);
+  padding-block: var(--section-py);
+  background: var(--hy-sec-bg, var(--color-bg-primary));
+}
+
+.hy-bnd-inner {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px, 32px);
+  display: grid;
+  grid-template-columns: var(--hy-bnd-media) minmax(0, 1fr);
+  column-gap: var(--hy-bnd-gap);
+  align-items: center;
+}
+
+/* Media at the END edge. Named columns and pinned rows — `order` would move
+   each item to the OTHER TRACK, and a named column with an auto row starts a
+   new one. Both are written up in 15.13. */
+.hy-bnd--end .hy-bnd-media { grid-column: 2; grid-row: 1; }
+.hy-bnd--end .hy-bnd-copy  { grid-column: 1; grid-row: 1; }
+.hy-bnd--end .hy-bnd-inner { grid-template-columns: minmax(0, 1fr) var(--hy-bnd-media); }
+
+/* ---- the photograph ---- */
+
+.hy-bnd-media {
+  position: relative;
+  aspect-ratio: 100 / var(--hy-bnd-h);
+  border-radius: var(--hy-bnd-radius);
+  overflow: hidden;
+  /* a ground while the photograph loads — 15.0.1's standing rule */
+  background: var(--color-bg-tertiary);
+}
+/* `cover`, against the standing `contain` rule in 15.0.1 — registered as an
+   exception there, with the reason. */
+.hy-bnd-media > img { width: 100%; height: 100%; object-fit: cover; }
+
+/* The pin. `left`/`top` and NOT logical insets — see the note at the top.
+   `translate: -50% -50%` centres it ON the coordinate rather than hanging it
+   below and to the side; translate is physical too, which is correct here
+   precisely because the coordinate is. */
+.hy-bnd-pin {
+  position: absolute;
+  left: var(--pin-x, 50%);
+  top: var(--pin-y, 50%);
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: var(--hy-bnd-pin);
+  height: var(--hy-bnd-pin);
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-num);
+  font-size: 14px;
+  font-weight: 700;
+  /* a figure reads left-to-right in Arabic too */
+  direction: ltr;
+  box-shadow: 0 4px 14px -4px rgb(20 17 15 / 0.35);
+  cursor: pointer;
+  transition: scale var(--t-fast) var(--ease-out);
+}
+.hy-bnd-pin:hover,
+.hy-bnd-pin.is-active { scale: 1.12; }
+
+/* ---- the copy column ---- */
+
+.hy-bnd-copy { min-width: 0; text-align: center; }
+
+.hy-bnd-eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--font-body-ar);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+/* tracking is LTR-only — it breaks Arabic joins (qa-check: arabic-letter-spacing) */
+html[dir="ltr"] .hy-bnd-eyebrow { font-family: var(--font-body-en); letter-spacing: 0.09em; }
+
+.hy-bnd-title {
+  margin: 0 0 34px;
+  font-family: var(--font-display-ar);
+  font-size: clamp(26px, 3vw, 42px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+html[dir="ltr"] .hy-bnd-title {
+  font-family: var(--font-display-en);
+  letter-spacing: -0.02em;
+}
+
+/* ---- the bundled items ---- */
+
+.hy-bnd-items {
+  display: grid;
+  grid-template-columns: repeat(var(--hy-bnd-per), minmax(0, 1fr));
+  gap: 18px;
+  text-align: start;
+}
+
+.hy-bnd-item { min-width: 0; }
+
+/* The number above the card, the twin of the pin on the photograph. Centred
+   over the card because that is what ties the two together at a glance. */
+.hy-bnd-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-family: var(--font-num);
+  font-size: 13px;
+  font-weight: 700;
+  direction: ltr;
+}
+/* Holds the slot without drawing anything — see the note in the widget. */
+.hy-bnd-n--blank { background: none; }
+
+.hy-bnd-shot {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-bg-tertiary);
+}
+.hy-bnd-shot img { width: 100%; height: 100%; object-fit: contain; }
+
+.hy-bnd-name {
+  display: block;
+  margin-block-start: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.hy-bnd-money {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-block-start: 6px;
+}
+
+/* ---- the variant picker ----
+   A summary button that opens the option rows, not a native <select> per
+   option: the reference shows ONE control reading "Green / 3Y", and two bare
+   selects side by side in a 200px column wrap into a mess. */
+.hy-bnd-pick { position: relative; margin-block-start: 10px; }
+
+.hy-bnd-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.hy-bnd-pick-btn:hover { color: var(--color-text-primary); }
+.hy-bnd-pick-btn svg { flex: none; transition: rotate var(--t-fast) var(--ease-out); }
+.hy-bnd-pick.is-open .hy-bnd-pick-btn svg { rotate: 180deg; }
+
+.hy-bnd-pick-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-start: 0;
+  z-index: 3;
+  min-width: 180px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--hy-drop-shadow, 0 18px 40px -18px rgb(20 17 15 / 0.3));
+}
+
+.hy-bnd-opt + .hy-bnd-opt { margin-block-start: 10px; }
+.hy-bnd-opt-name {
+  display: block;
+  margin-block-end: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+}
+.hy-bnd-opt-vals { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.hy-bnd-val {
+  padding: 5px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.hy-bnd-val.is-on {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+}
+.hy-bnd-val:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+
+.hy-bnd-cta { margin-block-start: 34px; }
+
+/* --------------------------------------------------------------------------
+     RESPONSIVE
+     -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hy-bnd-pin,
+  .hy-bnd-pick-btn svg { transition: none; }
+}
+
+@media (max-width: 1023px) {
+  .hy-bnd { --hy-bnd-gap: 4%; --hy-bnd-pin: 30px; }
+  .hy-bnd-title { margin-block-end: 24px; }
+}
+
+@media (max-width: 767px) {
+  .hy-bnd-inner {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+  }
+  /* one track, so `order` is safe here and only here — and the column/row
+     assignments have to be released or they conjure a second column */
+  .hy-bnd-media,
+  .hy-bnd--end .hy-bnd-media { grid-column: auto; grid-row: auto; order: 1; }
+  .hy-bnd-copy,
+  .hy-bnd--end .hy-bnd-copy  { grid-column: auto; grid-row: auto; order: 2; }
+  .hy-bnd--end .hy-bnd-inner { grid-template-columns: minmax(0, 1fr); }
+  .hy-bnd { --hy-bnd-h: 100; }
+  .hy-bnd-cta { margin-block-start: 26px; }
+}
+
+@media (max-width: 599px) {
+  /* the widget prints the product count; a four-item bundle cannot keep four
+     tracks on a phone */
+  .hy-bnd { --hy-bnd-per: 2; }
+}
+
+@media (max-width: 479px) {
+  .hy-bnd { --hy-bnd-pin: 26px; }
+  .hy-bnd-items { gap: 12px; }
+}
+
+/* HADIYA shape for the bundle: soft frame, gift-paper ground without a photo */
+.hy-bnd-media {
+  border-radius: var(--radius-media);
+  overflow: hidden;
+  background: var(--color-bg-tertiary);
+}
+
+/* ── 3. HADIYA identity ──────────────────────────────────────────────────────
+   Three marks carry the brand when the merchant has no photography yet:
+   the bow (assets/hd-bow.svg, used as a MASK so it takes any colour), the
+   gift illustration (assets/hd-gift.svg) and a faint confetti pattern
+   (assets/hd-pattern.svg). URLs are relative to this file — both live in
+   assets/, so they resolve on the CDN exactly as they do locally. */
+
+/* the bow ornament over every HADIYA section title */
+.hd-title::before {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 17px;
+  margin-bottom: 10px;
+  background: var(--hd-gold, #B8892F);
+  -webkit-mask: url("hd-bow.svg") no-repeat center / contain;
+          mask: url("hd-bow.svg") no-repeat center / contain;
+}
+.hd-faq-head .hd-title::before,
+.hd-tiles--arch .hd-head .hd-title::before { margin-inline: 0; }
+.hd-season .hd-title::before { background: var(--hd-gold, #E3C27A); }
+.hd-sub { margin: 6px 0 0; color: var(--hy-sec-text, var(--color-text-secondary)); font-size: 1rem; }
+
+/* hero: confetti paper behind, illustration in the arch */
+.hd-hero {
+  background-image: url("hd-pattern.svg");
+  background-size: 64px 64px;
+}
+.hd-hero-media { position: relative; }
+.hd-hero-media .hd-hero-art {
+  position: absolute;
+  inset: 12% 10% 6%;
+  width: 80%;
+  height: 82%;
+  object-fit: contain;
+}
+
+/* tile icons — big and centred with no picture, a small seal over one */
+.hd-tile-media { color: var(--color-accent); }
+.hd-tile-ico {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 34%;
+  height: 34%;
+  max-width: 72px;
+  max-height: 72px;
+  stroke-width: 1.3;
+}
+.hd-tiles--card .hd-tile-ico {
+  /* on the same side the name starts from — the eye reads icon → name */
+  inset: 22px auto auto auto;
+  inset-inline-start: 22px;
+  margin: 0;
+  width: 48px;
+  height: 48px;
+}
+.hd-tile-ico--sm {
+  inset: auto;
+  top: 12px;
+  inset-inline-end: 12px;
+  width: 38px;
+  height: 38px;
+  padding: 8px;
+  border-radius: 999px;
+  background: var(--color-bg-primary);
+  box-sizing: border-box;
+}
+.hd-tiles--arch .hd-tile-ico--sm { top: auto; bottom: 12px; inset-inline-end: auto; inset-inline-start: 50%; transform: translateX(-50%); }
+html[dir="rtl"] .hd-tiles--arch .hd-tile-ico--sm { transform: translateX(50%); }
+
+/* the sale badge as a gift tag: a pointed end and a punched hole.
+   Physical sides, keyed to the PAGE direction: the badge itself is pinned
+   `direction: ltr` by the Core (so "−28%" never reads "28%−"), which would
+   flip any inline-start/end used here. The point faces the card's edge. */
+.hy-pcard-badge--sale { position: relative; border-radius: 6px; }
+.hy-pcard-badge--sale::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--color-bg-primary);
+}
+html[dir="rtl"] .hy-pcard-badge--sale {
+  padding-right: 18px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+}
+html[dir="rtl"] .hy-pcard-badge--sale::before { right: 8px; }
+html[dir="ltr"] .hy-pcard-badge--sale {
+  padding-left: 18px;
+  clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
+}
+html[dir="ltr"] .hy-pcard-badge--sale::before { left: 8px; }
+
+/* product cards sit on gift paper, name a touch heavier */
+.hy-pcard-name { font-weight: 600; }
+
+/* gift-budgets ------------------------------------------------------------- */
+.hd-bud { padding-block: var(--section-py); }
+.hd-bud-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.hd-bud-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 150px;
+  padding: 22px 22px 56px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--hy-sec-title, var(--color-text-primary));
+  text-decoration: none;
+  transition: border-color var(--t-fast) var(--ease-soft), background-color var(--t-fast) var(--ease-soft);
+}
+.hd-bud-card:nth-child(4n+1) { background: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface)); }
+.hd-bud-card:hover { border-color: var(--color-accent); }
+.hd-bud-top { font-size: 0.9375rem; color: var(--hy-sec-text, var(--color-text-secondary)); }
+.hd-bud-num {
+  font-family: var(--font-num);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.hd-bud-num small { font-family: var(--font-body-ar); font-size: 0.9375rem; font-weight: 500; }
+.hd-bud-go {
+  position: absolute;
+  bottom: 18px;
+  inset-inline-end: 18px;
+  color: var(--color-accent);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.hd-bud-card:hover .hd-bud-go { transform: translateX(4px); }
+html[dir="rtl"] .hd-bud-card:hover .hd-bud-go { transform: translateX(-4px) scaleX(-1); }
+@media (max-width: 767px) {
+  .hd-bud-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .hd-bud-card { min-height: 120px; padding: 16px 16px 48px; }
+}
+
+/* gift-cta ----------------------------------------------------------------- */
+.hd-cta { padding-block: var(--section-py); }
+.hd-cta-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
+}
+.hd-cta--end .hd-cta-media { order: 2; }
+.hd-cta-media {
+  position: relative;
+  flex: 1 1 380px;
+  min-width: 0;
+  aspect-ratio: 5 / 4;
+  border-radius: var(--radius-media);
+  overflow: hidden;
+  background: var(--color-bg-tertiary) url("hd-pattern.svg") 0 0 / 64px 64px;
+}
+.hd-cta-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hd-cta-media .hd-cta-art { inset: 10%; width: 80%; height: 80%; object-fit: contain; }
+.hd-cta-copy {
+  flex: 1 1 400px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hd-cta-text { color: var(--hy-sec-text, var(--color-text-secondary)); line-height: 1.9; font-size: 1.0625rem; }
+.hd-cta-text p { margin: 0; }
+.hd-cta-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+.hd-cta-points li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+.hd-cta-points svg { color: var(--color-accent); flex: none; }
+.hd-cta-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+
+/* gift-faq ----------------------------------------------------------------- */
+.hd-faq { padding-block: var(--section-py); }
+.hd-faq-in {
+  max-width: 860px;
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.hd-faq-head { text-align: center; }
+.hd-faq-head .hd-title::before { margin-inline: auto; }
+.hd-faq-list { display: flex; flex-direction: column; gap: 12px; }
+.hd-faq-item {
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.hd-faq-q {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--hy-sec-title, var(--color-text-primary));
+}
+.hd-faq-q::-webkit-details-marker { display: none; }
+.hd-faq-q:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.hd-faq-ico { flex: none; color: var(--color-accent); transition: transform var(--t-base) var(--ease-out); }
+.hd-faq-item[open] .hd-faq-ico { transform: rotate(45deg); }
+.hd-faq-a {
+  padding: 0 20px 18px;
+  line-height: 1.9;
+  color: var(--hy-sec-text, var(--color-text-secondary));
+}
+.hd-faq-a p { margin: 0 0 8px; }
+
+/* products-bundle without a photograph: the gift illustration, not a blank frame */
+.hy-bnd-media { position: relative; }
+.hy-bnd-media .hd-bnd-art {
+  position: absolute;
+  inset: 14%;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+/* ── 4. Skeletons ─────────────────────────────────────────────────────────────
+   The Core's placeholders were drawn for baby-supplies: grey line-art of a
+   romper and a bear in every empty product card, dimmed "اسم المنتج" text, and
+   dashed boxes. On a gift shop that read as someone else's theme. HADIYA
+   keeps the Core's markup (ui/placeholder.njk is untouched) and restyles it:
+
+     · the artwork is hidden; the bow mark sits in its place, in gold, faint
+     · placeholder text becomes soft bars — the shape of a name and a price,
+       never words a merchant might mistake for content
+     · one slow sheen moves across the whole skeleton, so it reads as
+       "loading", not "broken"; it stops for prefers-reduced-motion
+   Everything here keys off `.hy-ph-*` and `.hy-pcard--ph`, which only ever
+   exist on placeholder markup. */
+
+.hy-ph-media,
+.hy-ph-box,
+.hd-tile[data-hy-placeholder] .hd-tile-media {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-media);
+  background: color-mix(in srgb, var(--color-bg-tertiary) 70%, var(--color-bg-primary));
+}
+.hy-ph-art { display: none; }
+
+/* the bow, centred */
+.hy-ph-media::before,
+.hy-ph-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 30%;
+  max-width: 76px;
+  aspect-ratio: 2 / 1;
+  background: var(--hd-gold, #B8892F);
+  opacity: 0.22;
+  -webkit-mask: url("hd-bow.svg") no-repeat center / contain;
+          mask: url("hd-bow.svg") no-repeat center / contain;
+}
+
+/* placeholder text → bars */
+.hy-pcard--ph .hy-pcard-eyebrow,
+.hy-pcard--ph .hy-pcard-name,
+.hy-pcard--ph .hy-price {
+  display: block;
+  width: fit-content;
+  min-width: 40%;
+  color: transparent !important;
+  background: color-mix(in srgb, var(--color-border) 80%, var(--color-bg-tertiary));
+  border-radius: 999px;
+  line-height: 1.1;
+  user-select: none;
+}
+.hy-pcard--ph .hy-pcard-name { min-width: 70%; margin-top: 8px; }
+/* the prices row shrink-wraps in the Core's flex info column — give it the
+   card's width or the 32% bar resolves against 12px (measured: a 4px dot) */
+.hy-pcard--ph .hy-pcard-prices { display: block; width: 100%; align-self: stretch; }
+.hy-pcard--ph .hy-price { width: 32%; min-width: 0; margin-top: 8px; }
+.hy-pcard--ph .hy-pcard-eyebrow { min-width: 28%; }
+.hy-ph-line { background: color-mix(in srgb, var(--color-border) 80%, var(--color-bg-tertiary)); }
+
+/* on the dark season band the bars and wells go translucent white */
+.hd-season .hy-pcard--ph .hy-pcard-frame,
+.hd-season .hy-pcard--ph .hy-ph-media { background: rgba(255, 255, 255, 0.07); }
+.hd-season .hy-ph-media::before { background: #E3C27A; opacity: 0.35; }
+.hd-season .hy-pcard--ph .hy-pcard-eyebrow,
+.hd-season .hy-pcard--ph .hy-pcard-name,
+.hd-season .hy-pcard--ph .hy-price { background: rgba(255, 255, 255, 0.14); }
+
+/* the sheen — one band, slow, across the card */
+.hy-ph-media::after,
+.hy-ph-box::after,
+.hd-tile[data-hy-placeholder] .hd-tile-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: hdSheen 1.8s var(--ease-soft) infinite;
+}
+.hd-season .hy-ph-media::after { background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.10) 50%, transparent 70%); }
+html[dir="rtl"] .hy-ph-media::after,
+html[dir="rtl"] .hy-ph-box::after,
+html[dir="rtl"] .hd-tile[data-hy-placeholder] .hd-tile-media::after { animation-name: hdSheenRtl; }
+@keyframes hdSheen    { to { transform: translateX(100%); } }
+@keyframes hdSheenRtl { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .hy-ph-media::after,
+  .hy-ph-box::after,
+  .hd-tile[data-hy-placeholder] .hd-tile-media::after { animation: none; display: none; }
+}
+
+/* the one real line in an empty section — quiet, centred, with the bow */
+.hy-ph-hint {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   5. LUXE · فخامة ليلية  — HADIYA v2 (2026-10-04)
+   ----------------------------------------------------------------------------
+   The theme's look from here on. Night ground (#0B0F0D), ivory type, one
+   restrained gold, a classic serif for display (Amiri / Cormorant Garamond),
+   near-square corners and real photography. Everything above this section is
+   kept for the widgets that still use it; where it disagrees, this wins
+   (same specificity, later in the file).
+   ════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --lx-gold: var(--color-accent);
+  --lx-ink: var(--color-text-primary);
+  --lx-mute: var(--color-text-secondary);
+  --lx-line: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  --lx-hair: var(--color-border);
+  --lx-serif-ar: var(--font-display-ar);
+  --lx-serif-en: var(--font-display-en);
+}
+body { background: var(--color-bg-primary); color: var(--lx-ink); }
+::selection { background: var(--lx-gold); color: var(--color-text-on-accent); }
+
+/* ── shared Luxe primitives ── */
+.lx-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-px);
+}
+.lx-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(28px, 4vw, 48px);
+}
+.lx-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lx-gold);
+}
+.lx-eyebrow::before { content: ""; width: 36px; height: 1px; background: currentColor; }
+.lx-eyebrow--center::after { content: ""; width: 36px; height: 1px; background: currentColor; }
+html[dir="ltr"] .lx-eyebrow { letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.75rem; }
+.lx-title,
+.hd-title {
+  margin: 0;
+  font-family: var(--lx-serif-ar);
+  font-weight: 700;
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  line-height: 1.3;
+  color: var(--hy-sec-title, var(--lx-ink));
+}
+html[dir="ltr"] .lx-title, html[dir="ltr"] .hd-title { font-family: var(--lx-serif-en); font-weight: 500; }
+.lx-gold { display: block; color: var(--lx-gold); }
+
+.lx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 34px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--lx-gold);
+  background: var(--lx-gold);
+  color: var(--color-text-on-accent);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--t-base) var(--ease-soft), color var(--t-base) var(--ease-soft);
+}
+.lx-btn:hover { background: transparent; color: var(--lx-gold); }
+html[dir="ltr"] .lx-btn { letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.8125rem; }
+.lx-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 4px;
+  color: var(--lx-ink);
+  font-size: 0.9375rem;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 100% 100% / 100% 1px;
+  transition: color var(--t-base) var(--ease-soft), background-size var(--t-base) var(--ease-out);
+}
+.lx-link:hover { color: var(--lx-gold); background-size: 40% 1px; }
+.lx-actions { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin-top: 8px; }
+
+/* every HADIYA section gets the Luxe rhythm and ground */
+.hd-tiles, .hd-bud, .hd-cta, .hd-faq { background: var(--hy-sec-bg, transparent) !important; }
+
+/* the v1 bow ornament becomes a gold hairline */
+.hd-title::before {
+  width: 40px;
+  height: 1px;
+  aspect-ratio: auto;
+  -webkit-mask: none;
+          mask: none;
+  background: var(--lx-gold);
+  margin-bottom: 18px;
+}
+
+/* ── LUXE · lx-hero ── */
+.lx-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: var(--lx-hero-h, 88vh);
+  background: var(--hy-sec-bg, var(--color-bg-primary));
+}
+.lx-hero--end .lx-hero-media { order: 2; }
+.lx-hero-media { position: relative; overflow: hidden; min-height: 420px; }
+.lx-hero-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  animation: lxSettle 2.4s var(--ease-out) forwards;
+}
+.lx-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent 55%, color-mix(in srgb, var(--color-bg-primary) 70%, transparent));
+}
+html[dir="rtl"] .lx-hero-media::after { background: linear-gradient(to left, transparent 55%, color-mix(in srgb, var(--color-bg-primary) 70%, transparent)); }
+.lx-hero--end .lx-hero-media::after { transform: scaleX(-1); }
+@keyframes lxSettle { to { transform: scale(1); } }
+.lx-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(48px, 7vw, 120px) clamp(24px, 6vw, 110px);
+}
+.lx-hero-title {
+  margin: 0;
+  font-family: var(--lx-serif-ar);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+  line-height: 1.2;
+  color: var(--hy-sec-title, var(--lx-ink));
+  text-wrap: balance;
+}
+html[dir="ltr"] .lx-hero-title { font-family: var(--lx-serif-en); font-weight: 500; line-height: 1.05; }
+.lx-hero-text {
+  max-width: 440px;
+  margin: 24px 0 28px;
+  color: var(--hy-sec-text, var(--lx-mute));
+  font-size: 1.0625rem;
+  line-height: 1.9;
+}
+.lx-hero-text p { margin: 0; }
+@media (max-width: 899px) {
+  .lx-hero { grid-template-columns: 1fr; min-height: 0; }
+  .lx-hero-media { min-height: 0; aspect-ratio: 4 / 5; }
+  .lx-hero--end .lx-hero-media { order: 0; }
+  .lx-hero-media::after,
+  html[dir="rtl"] .lx-hero-media::after { background: linear-gradient(to bottom, transparent 60%, var(--color-bg-primary)); transform: none; }
+  .lx-hero-copy { padding: 8px var(--container-px-sm) 48px; margin-top: -40px; position: relative; }
+}
+@media (prefers-reduced-motion: reduce) { .lx-hero-media img { animation: none; transform: none; } }
+
+/* ── LUXE · lx-finder ── */
+.lx-finder {
+  border-block: 1px solid var(--lx-hair);
+  background: var(--hy-sec-bg, var(--color-bg-tertiary));
+}
+.lx-finder-in {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding: 26px var(--container-px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  flex-wrap: wrap;
+}
+.lx-finder-sentence {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  font-family: var(--lx-serif-ar);
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  color: var(--hy-sec-title, var(--lx-ink));
+}
+html[dir="ltr"] .lx-finder-sentence { font-family: var(--lx-serif-en); }
+.lx-pick { position: relative; display: inline-block; }
+.lx-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 2px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--lx-gold);
+  background: none;
+  color: var(--lx-gold);
+  font: inherit;
+  cursor: pointer;
+}
+.lx-pick-btn:focus-visible { outline: 1px solid var(--lx-gold); outline-offset: 4px; }
+.lx-pick-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-start: 0;
+  z-index: 30;
+  min-width: 240px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--lx-line);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+  font-family: var(--font-body-ar);
+  font-size: 0.9375rem;
+}
+html[dir="ltr"] .lx-pick-list { font-family: var(--font-body-en); }
+.lx-pick-list [role="option"] {
+  padding: 11px 14px;
+  color: var(--lx-ink);
+  cursor: pointer;
+  outline: none;
+}
+.lx-pick-list [role="option"].is-active,
+.lx-pick-list [role="option"]:focus { background: color-mix(in srgb, var(--lx-gold) 14%, transparent); color: var(--lx-gold); }
+.lx-pick-list [role="option"][aria-selected="true"]::after { content: " ✓"; color: var(--lx-gold); }
+@media (max-width: 767px) {
+  .lx-finder-in { padding-inline: var(--container-px-sm); }
+  .lx-finder-in .lx-btn { width: 100%; }
+}
+
+/* ── LUXE · lx-mosaic ── */
+.lx-mosaic { padding-block: clamp(64px, 8vw, 120px); background: var(--hy-sec-bg, transparent); }
+.lx-mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: clamp(200px, 22vw, 320px);
+  gap: 14px;
+}
+.lx-tile {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  border-radius: var(--radius-media);
+  background: var(--color-bg-tertiary);
+  color: #fff;
+  text-decoration: none;
+}
+.lx-tile:first-child { grid-column: span 2; grid-row: span 2; }
+.lx-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s var(--ease-out), filter 1.2s var(--ease-out);
+  filter: brightness(0.86);
+}
+.lx-tile:hover img { transform: scale(1.06); filter: brightness(0.95); }
+.lx-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent 55%);
+}
+.lx-tile-copy {
+  position: absolute;
+  inset-inline: 22px;
+  bottom: 20px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lx-tile-label {
+  font-family: var(--lx-serif-ar);
+  font-size: clamp(1.25rem, 1.8vw, 1.625rem);
+  font-weight: 700;
+}
+.lx-tile:first-child .lx-tile-label { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+html[dir="ltr"] .lx-tile-label { font-family: var(--lx-serif-en); font-weight: 500; }
+.lx-tile-sub { font-size: 0.875rem; color: rgba(255, 255, 255, 0.78); }
+.lx-tile-label::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 1px;
+  margin-top: 10px;
+  background: var(--lx-gold);
+  transition: width var(--t-base) var(--ease-out);
+}
+.lx-tile:hover .lx-tile-label::after { width: 64px; }
+@media (max-width: 767px) {
+  .lx-mosaic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 200px; gap: 10px; }
+  .lx-tile:first-child { grid-column: span 2; grid-row: span 1; }
+}
+
+/* ── LUXE · lx-story ── */
+.lx-story {
+  position: relative;
+  min-height: var(--lx-story-h, 620px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  text-align: center;
+}
+.lx-story-bg {
+  position: absolute;
+  inset: -6% 0;
+  width: 100%;
+  height: 112%;
+  object-fit: cover;
+  filter: brightness(0.45);
+}
+.lx-story::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, 0.55));
+}
+.lx-story-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  padding: 64px var(--container-px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lx-story-quote {
+  margin: 0 0 30px;
+  font-family: var(--lx-serif-ar);
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  line-height: 1.55;
+  color: var(--hy-sec-title, #F7F1E8);
+  text-wrap: balance;
+}
+html[dir="ltr"] .lx-story-quote { font-family: var(--lx-serif-en); }
+.lx-story-text { color: var(--hy-sec-text, rgba(247, 241, 232, 0.8)); margin-bottom: 24px; }
+.lx-story .lx-link { color: #F7F1E8; }
+@supports (animation-timeline: view()) {
+  .lx-story-bg { animation: lxDrift linear both; animation-timeline: view(); }
+  @keyframes lxDrift { from { transform: translateY(-4%); } to { transform: translateY(4%); } }
+}
+@media (prefers-reduced-motion: reduce) { .lx-story-bg { animation: none !important; } }
+
+/* ── core components in the Luxe dress ── */
+
+/* header: the bar is the night ground with a hairline, nav in light weight */
+.hy-hbar, .hy-hrow { background: var(--color-bg-primary); }
+.hy-nav-link { font-weight: 400; }
+.hy-nav-link:hover { color: var(--lx-gold); }
+
+/* product cards: no frame, a dark well, serif-free name, gold price */
+.hy-pcard-frame,
+.hy-pcard-media { background: var(--color-bg-tertiary); border-radius: var(--radius-media); }
+.hy-pcard-name { font-weight: 400; color: var(--lx-ink); }
+.hy-pcard .hy-price { color: var(--lx-gold); font-weight: 500; }
+.hy-pcard .hy-price-was { color: var(--lx-mute); }
+.hy-pcard-img { transition: transform 1s var(--ease-out); }
+.hy-pcard:hover .hy-pcard-img { transform: scale(1.04); }
+
+/* the product rail section on Luxe ground */
+[id^="hy-pt-"] .hy-ct-title,
+.hy-ct-title { font-family: var(--lx-serif-ar); font-weight: 700; }
+
+/* Core solid buttons → gold */
+.hy-btn--solid { background: var(--lx-gold); border-color: var(--lx-gold); color: var(--color-text-on-accent); }
+.hy-btn--solid:hover:not(:disabled) { background: transparent; color: var(--lx-gold); }
+.hy-btn--outline { border-color: var(--lx-line); color: var(--lx-ink); }
+
+/* gift-budgets → a single ruled row of figures */
+.hd-bud-grid { gap: 0; border-block: 1px solid var(--lx-hair); }
+.hd-bud-card {
+  border: 0;
+  border-inline-end: 1px solid var(--lx-hair);
+  border-radius: 0;
+  background: transparent !important;
+  min-height: 170px;
+}
+.hd-bud-card:last-child { border-inline-end: 0; }
+.hd-bud-card:hover { background: color-mix(in srgb, var(--lx-gold) 6%, transparent) !important; }
+.hd-bud-num { font-family: var(--lx-serif-ar); font-weight: 700; color: var(--lx-ink); font-size: clamp(1.75rem, 3vw, 2.5rem); }
+.hd-bud-go { color: var(--lx-gold); }
+
+/* season-band → a gold-ruled frame on the night ground, not a coloured slab */
+.hd-season {
+  background: var(--hy-sec-bg, var(--color-bg-tertiary));
+  border-block: 1px solid var(--lx-line);
+}
+.hd-season .hd-title { color: var(--hy-sec-title, var(--lx-ink)); }
+.hd-count-cell { background: transparent; border: 1px solid var(--lx-line); border-radius: var(--radius-card); }
+.hd-count-cell b { font-family: var(--lx-serif-ar); color: var(--lx-gold); }
+/* The base rules above were drawn for a coloured slab (white copy, #E3C27A
+   eyebrow). On the well that is only right while the ground is dark — the
+   light presets (flowers, occasions) lost the text, the countdown labels and
+   the card names. Everything here follows the tokens instead. */
+.hd-season { color: var(--hy-sec-text, var(--lx-mute)); }
+.hd-season .hd-eyebrow,
+.hd-season .hd-title::before { color: var(--lx-gold); }
+.hd-season .hd-title::before { background: var(--lx-gold); }
+.hd-count-cell span { color: var(--lx-mute); }
+.hd-season .hy-pcard,
+.hd-season .hy-pcard-name,
+.hd-season .hy-pcard-name a { color: var(--lx-ink); }
+.hd-season .hy-pcard .hy-price { color: var(--lx-gold); }
+.hd-season .hy-pcard .hy-price-was { color: var(--lx-mute); }
+.hd-season .hy-pcard--ph .hy-pcard-frame,
+.hd-season .hy-pcard--ph .hy-ph-media { background: color-mix(in srgb, var(--lx-ink) 6%, transparent); }
+.hd-season .hy-pcard--ph .hy-pcard-eyebrow,
+.hd-season .hy-pcard--ph .hy-pcard-name,
+.hd-season .hy-pcard--ph .hy-price { background: color-mix(in srgb, var(--lx-ink) 12%, transparent); }
+.hd-season .hy-ph-media::before { background: var(--lx-gold); }
+
+/* corporate band and FAQ on the night ground */
+.hd-cta-media { background: var(--color-bg-tertiary); }
+.hd-cta-points li { font-weight: 400; color: var(--lx-ink); }
+.hd-cta-points svg { color: var(--lx-gold); }
+.hd-faq-item { background: transparent; border: 0; border-bottom: 1px solid var(--lx-hair); border-radius: 0; }
+.hd-faq-q { font-family: var(--lx-serif-ar); font-size: 1.25rem; font-weight: 700; padding-inline: 0; }
+.hd-faq-a { padding-inline: 0; }
+.hd-faq-ico { color: var(--lx-gold); }
+
+/* products-bundle → dark well, serif title */
+.hy-bnd-media { background: var(--color-bg-tertiary); }
+.hy-bnd-title, .hy-bnd h2 { font-family: var(--lx-serif-ar); }
+
+/* skeleton sheen, toned for a dark ground */
+.hy-ph-media::after,
+.hy-ph-box::after,
+.hd-tile[data-hy-placeholder] .hd-tile-media::after {
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%);
+}
+.hy-ph-media,
+.hy-ph-box { background: var(--color-bg-tertiary); }
+.hy-pcard--ph .hy-pcard-eyebrow,
+.hy-pcard--ph .hy-pcard-name,
+.hy-pcard--ph .hy-price { background: color-mix(in srgb, var(--lx-ink) 10%, transparent); }
+.hy-ph-media::before, .hy-ph-box::before { opacity: 0.35; }
+
+/* testimonials on the night ground: the Core's light eyebrow pill becomes a gold hairline */
+.hy-tp-eyebrow { background: transparent; border: 1px solid var(--lx-line); color: var(--lx-gold); }
+.hy-tp-face-shape { background: var(--color-bg-tertiary); color: var(--lx-gold); border: 1px solid var(--lx-line); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   6. LUXE · inner pages — shop, collections, product, blog, cart
+   Found by walking every page on the dark ground (2026-10-04). All CSS:
+   the Core markup is untouched.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Product card, `tray` look (shop grid, AJAX grids): the Core lays name and
+   price OVER the photo on a white wash (rgba(255,255,255,.82)) — on the night
+   ground that read as a white smear across every card. Luxe puts the info
+   under the photograph, like every other card in the theme. */
+.hy-pcard--tray .hy-pcard-info {
+  position: static;
+  inset: auto;
+  opacity: 1;
+  transform: none;
+  padding: 14px 0 0;
+  background: none !important;
+}
+.hy-pcard--tray .hy-pcard-name { color: var(--lx-ink); }
+
+/* Collections without a picture: the Core's two text gradients mixed with
+   the gold accent into an olive wash. A quiet well and the bow instead. */
+.hy-coll-tile:has(.hy-coll-noimg) { background: var(--color-bg-tertiary); }
+.hy-coll-tile:has(.hy-coll-noimg)::before,
+.hy-coll-tile:has(.hy-coll-noimg)::after { background: none; }
+.hy-coll-tile:has(.hy-coll-noimg)::after { background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 55%); }
+.hy-coll-noimg,
+.hy-post-noimg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-bg-tertiary);
+}
+.hy-coll-noimg > *,
+.hy-post-noimg > * { display: none; }
+.hy-coll-noimg::before,
+.hy-post-noimg::before {
+  content: "";
+  width: 64px;
+  height: 32px;
+  background: var(--lx-gold);
+  opacity: 0.4;
+  -webkit-mask: url("hd-bow.svg") no-repeat center / contain;
+          mask: url("hd-bow.svg") no-repeat center / contain;
+}
+.hy-post-media { position: relative; border-radius: var(--radius-media); overflow: hidden; }
+.hy-coll-tile .hy-coll-img { filter: brightness(0.88); transition: transform 1.2s var(--ease-out); }
+.hy-coll-tile:hover .hy-coll-img { transform: scale(1.05); }
+
+/* Product page */
+.hy-pdp-title {
+  font-family: var(--lx-serif-ar);
+  font-weight: 700;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 1.3;
+  color: var(--lx-ink);
+}
+html[dir="ltr"] .hy-pdp-title { font-family: var(--lx-serif-en); font-weight: 500; }
+.hy-pdp .hy-price:not(.hy-price-was) { color: var(--lx-gold); }
+.hy-pdp-stage, .hy-pdp-thumb { background: var(--color-bg-tertiary); }
+.hy-pdp-thumb[aria-current="true"], .hy-pdp-thumb.is-active { outline: 1px solid var(--lx-gold); outline-offset: 2px; }
+.hy-pdp-panel summary, .hy-pdp-panel-title, .hy-pdp-panel > button { font-family: var(--lx-serif-ar); font-size: 1.125rem; font-weight: 700; }
+.hy-pdp .hy-btn--outline { border-color: var(--lx-line); color: var(--lx-ink); }
+.hy-pdp .hy-btn--outline:hover { border-color: var(--lx-gold); color: var(--lx-gold); }
+.hy-qty { border-color: var(--lx-hair); }
+
+/* Shop / collection page */
+.hy-shop .hy-pcard-name, #products-grid-wrapper .hy-pcard-name { font-weight: 400; }
+.hy-chip { border-color: var(--lx-hair); color: var(--lx-ink); background: transparent; }
+.hy-chip:hover, .hy-chip.is-active, .hy-chip[aria-pressed="true"] { border-color: var(--lx-gold); color: var(--lx-gold); }
+
+/* Blog cards */
+.hy-post-title { font-family: var(--lx-serif-ar); font-weight: 700; }
+.hy-post:hover .hy-post-title { color: var(--lx-gold); }
+
+/* Cart page & drawer: summary boxes sit on the well, totals in gold */
+.hy-cart-box { background: var(--color-bg-tertiary); border-color: var(--lx-hair); }
+.hy-sum-total, .hy-sum .hy-sum-row--total { color: var(--lx-gold); }
+
+/* Collection tiles: the Core tints the top text band from --color-accent —
+   black in the Core palette, GOLD here, which laid an olive wash over every
+   photograph. Both bands are plain black on Luxe. */
+.hy-coll-tile::before { background: linear-gradient(rgba(0, 0, 0, 0.45) 0%, transparent 100%) !important; }
+.hy-coll-tile::after  { background: linear-gradient(to top, rgba(0, 0, 0, 0.62) 0%, transparent 100%) !important; }
+
+/* Shop grid: rows need air now that the info sits UNDER the photo. The grid is
+   `.hy-shop-grid` (measured row-gap: 2px — built for info-over-photo cards). */
+.hy-shop-grid { row-gap: 36px; column-gap: 16px; }
+@media (max-width: 767px) { .hy-shop-grid { row-gap: 28px; column-gap: 10px; } }
+
+/* Overlays (cart drawer, search, filters, quick view): the Core dims the
+   page with --color-ink at 34% — ink is GOLD on Luxe, so the dim came out
+   olive. A night veil with a soft blur instead. */
+.taqa-overlay {
+  background: rgba(3, 5, 4, 0.66);
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+}
+
+/* Cart drawer footer: sharp, gold primary; hairline secondary */
+.hy-cfoot-primary,
+.hy-cfoot-secondary { border-radius: var(--radius-btn); }
+.hy-cfoot-primary { background: var(--lx-gold); border-color: var(--lx-gold); color: var(--color-text-on-accent); }
+.hy-cfoot-primary:hover { background: transparent; color: var(--lx-gold); }
+.hy-cfoot-secondary { background: transparent; border-color: var(--lx-line); color: var(--lx-ink); }
+.hy-cfoot-secondary:hover { border-color: var(--lx-gold); color: var(--lx-gold); }
+
+/* Search panel: on the night ground the Core panel had the page's own colour
+   and no edge, so it melted into whatever was under it. Lift it one step and
+   give it a gold hairline and a deep shadow. */
+.hy-spanel {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--lx-line);
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.85);
+}
+.hy-spanel .hy-chip { border-color: var(--lx-hair); }
+.hy-sres-title, .hy-spanel-head { color: var(--lx-ink); }
+
+/* Variant swatches: gold for the picked value (the Core uses the ink, which is
+   ivory here and read as "hovered" rather than "chosen") */
+.hy-pdp-swatch { border-color: var(--lx-hair); color: var(--lx-ink); background: transparent; }
+.hy-pdp-swatch:hover:not(:disabled) { border-color: var(--lx-line); }
+.hy-pdp-swatch.is-active { border-color: var(--lx-gold); color: var(--lx-gold); box-shadow: inset 0 0 0 1px var(--lx-gold); }
+.hy-pdp-opt-value { color: var(--lx-gold); }
+
+/* Merchant rich text (collection descriptions, product descriptions, page and
+   article bodies) arrives from the editor with INLINE colours — measured: a
+   collection description carried `color: rgb(0, 0, 0)`, invisible on the night
+   ground. Inside these containers the theme's text colour wins. */
+.hy-shop-desc [style*="color"],
+.hy-pdp-panel-body [style*="color"],
+.taqa-prose [style*="color"],
+.hy-pg-body [style*="color"],
+.hy-article-body [style*="color"] { color: inherit !important; }
+.hy-shop-desc [style*="background"],
+.hy-pdp-panel-body [style*="background"],
+.taqa-prose [style*="background"] { background: transparent !important; }
+
+/* English storefront, Arabic merchant text: these elements carry MERCHANT
+   content (single-language), so they get no tracking in LTR either — the
+   uppercase + letter-spacing above pulled «تسوّق الهدايا» and «دار هدايا»
+   apart on the English preview. Uppercase alone is harmless to Arabic. */
+html[dir="ltr"] .lx-eyebrow,
+html[dir="ltr"] .lx-btn,
+html[dir="ltr"] .hy-bnd-eyebrow { letter-spacing: 0; }
+
+/* English storefront: Arabic merchant titles in the Latin display stack need
+   Arabic line-height, not the tight 1.05 set for Cormorant. */
+html[dir="ltr"] .lx-hero-title { line-height: 1.2; }
+
+/* Sold out: the Core veils the photo in a light wash (built for paper). On
+   the night ground it read as a grey slab — a dark veil and ivory type. */
+.hy-pcard-soldout { background: color-mix(in srgb, var(--color-bg-primary) 62%, transparent) !important; color: var(--lx-ink) !important; }
+.hy-pcard-soldout span {
+  border: 1px solid var(--lx-line);
+  padding: 6px 14px;
+  background: color-mix(in srgb, var(--color-bg-primary) 60%, transparent);
+  color: var(--lx-ink);
+}
+/* "New" in the house colour, not the Core's success green */
+.hy-pcard-badge--new { background: transparent !important; border: 1px solid var(--lx-gold); color: var(--lx-gold) !important; }
+/* "Selling fast" strip on the night ground */
+.hy-pcard-rush { background: color-mix(in srgb, var(--lx-gold) 18%, var(--color-bg-primary)); color: var(--lx-gold); }
+
+/* gift-budgets on phones — two figures to a row. A range like «700 – 1500»
+   used to break after the dash and the currency fell to a third line, so the
+   figure is kept whole and set a size smaller; the hairline grid closes on the
+   outer edge instead of drawing a stray rule past the second card. */
+@media (max-width: 767px) {
+  .hd-bud-num { font-size: 1.375rem; }
+  .hd-bud-num bdi { white-space: nowrap; }
+  .hd-bud-card { min-height: 128px; border-block-end: 1px solid var(--lx-hair); }
+  .hd-bud-card:nth-child(2n) { border-inline-end: 0; }
+  .hd-bud-card:nth-last-child(-n + 2):nth-child(odd),
+  .hd-bud-card:last-child { border-block-end: 0; }
+}
+
+/* ── Contrast on the night ground ──────────────────────────────────────────
+   The Core's success green (#3e6b4f) is drawn for paper: on HADIYA's night
+   ground «متوفر» read 3.1:1. Lifted to clear 4.5:1 on the ground and the well.
+   The season band's CTA used the Core's light pill — gold text on white,
+   2.35:1 — so it takes the theme's own solid gold button instead. */
+:root { --color-success: #6FAE84; }
+.hd-season .hy-btn--light {
+  --hy-btn-fg: var(--color-text-on-accent);
+  --hy-btn-bg: var(--color-accent);
+  background: var(--lx-gold);
+  border-color: var(--lx-gold);
+  color: var(--color-text-on-accent);
+}
+.hd-season .hy-btn--light:hover:not(:disabled) {
+  background: transparent;
+  border-color: var(--lx-gold);
+  color: var(--lx-gold);
+}
+
+/* ── No orphan cards ───────────────────────────────────────────────────────
+   season-band: `auto-fit` left the third of three products alone on its own
+   row at tablet widths. The column count is the product count (3 or 4) from
+   768px up; on phones the band becomes a swipe rail, so three tall cards no
+   longer stack into a screen-and-a-half of scrolling.
+   gift-budgets: four figures went 3 + 1 on tablets — two per row there. */
+@media (min-width: 768px) {
+  .hd-season-grid { grid-template-columns: repeat(var(--hd-n, 3), minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .hd-season-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 72%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .hd-season-grid::-webkit-scrollbar { display: none; }
+  .hd-season-grid > * { scroll-snap-align: start; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hd-bud-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hd-bud-card:nth-child(2n) { border-inline-end: 0; }
+  .hd-bud-card:nth-child(-n + 2) { border-block-end: 1px solid var(--lx-hair); }
+}
+@media (min-width: 1024px) {
+  .hd-bud-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+
+/* --------------------------------------------------------------------------
+   Grids that follow their count: no card alone on the last row
+   -------------------------------------------------------------------------- */
+.hy-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* «تواصل معنا» points at the footer's contact block; with no block it leads nowhere. */
+.hy-live:not(:has(#contact)) a[href="#contact"] { display: none; }
+
+/* Related products on the product page: columns are set per count in the widget. */
+.hy-rel-grid--1 { max-width: 320px; margin-inline: auto; }
+.hy-rel-grid--2 { max-width: 640px; margin-inline: auto; }
+@media (max-width: 767px) {
+  .hy-rel-grid--3 {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 62%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .hy-rel-grid--3::-webkit-scrollbar { display: none; }
+  .hy-rel-grid--3 > * { scroll-snap-align: start; }
+}
+
+/* Article cards: a last card alone in its row spans it, photo at its neighbours'
+   width with the text beside it. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hy-blog-grid > .hy-post:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    grid-template-columns: calc((100% - var(--space-5)) / 2) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+@media (min-width: 1024px) {
+  .hy-blog-grid--c2:not(.hy-blog-grid--lead) > .hy-post:last-child:nth-child(odd),
+  .hy-blog-grid--c2.hy-blog-grid--lead > .hy-post:last-child:nth-child(even),
+  .hy-blog-grid--c3:not(.hy-blog-grid--lead) > .hy-post:last-child:nth-child(3n + 1),
+  .hy-blog-grid--c3.hy-blog-grid--lead > .hy-post:last-child:nth-child(3n + 2),
+  .hy-blog-grid--c4:not(.hy-blog-grid--lead) > .hy-post:last-child:nth-child(4n + 1),
+  .hy-blog-grid--c4.hy-blog-grid--lead > .hy-post:last-child:nth-child(4n + 2) {
+    grid-column: 1 / -1;
+    grid-template-columns: calc((100% - (var(--blog-cols, 3) - 1) * var(--space-5)) / var(--blog-cols, 3)) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
+/* Collection tiles: a last tile alone in its row takes the whole row, as a banner. */
+@media (max-width: 767px) {
+  .hy-collp-grid--wide-m > .hy-coll-tile:last-child { grid-column: 1 / -1; --coll-ratio: 2 / 1 !important; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hy-collp-grid--wide-t > .hy-coll-tile:last-child { grid-column: 1 / -1; --coll-ratio: 3 / 1 !important; }
+}
+@media (min-width: 1024px) {
+  .hy-collp-grid--wide-d > .hy-coll-tile:last-child { grid-column: 1 / -1; --coll-ratio: 3 / 1 !important; }
+}
+
+/* Letter-spacing cuts Arabic joins, whichever rule set it. */
+:lang(ar) * { letter-spacing: normal !important; }
+
+/* Below 16px iOS zooms the page on focus. */
+@media (max-width: 767px) { .hd-field select { font-size: 16px; } }
+/* Cart stepper keeps its size; the tap area grows to 44px. */
+@media (max-width: 1023px) {
+  .hy-qty--sm button { position: relative; }
+  .hy-qty--sm button::after { content: ""; position: absolute; inset: -5px -6px; width: 44px; height: 44px; }
+}
+
+/* The Core's light button is accent text on white: gold reads 2.35:1. Same fix the
+   season band already had, for the card's add button and everywhere else. */
+.hy-btn--light {
+  --hy-btn-fg: var(--color-text-on-accent);
+  --hy-btn-bg: var(--color-accent);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+.hy-btn--light:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-text-on-accent);
+}
+
+/* Bundle item with no photo: the theme's bow, like an article with no cover. */
+.hy-bnd-shot:not(:has(img)) { position: relative; background: var(--color-bg-tertiary); }
+.hy-bnd-shot:not(:has(img))::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 44px;
+  height: 44px;
+  background: var(--color-accent);
+  opacity: 0.5;
+  -webkit-mask: url("hd-bow.svg") no-repeat center / contain;
+          mask: url("hd-bow.svg") no-repeat center / contain;
+}
+
+/* ── Lone last card ──
+   A last product card alone in its row spans it: photo at its neighbours' size,
+   name and price beside it. Columns come from data-cols-* on the section (the
+   column switcher keeps data-cols-d current), so server and AJAX cards behave
+   alike. `nth-of-type` counts only the <article> cards. */
+@media (max-width: 767px) {
+  [data-cols-m="2"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(2n + 1) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: calc((100% - (var(--shop-cols-sm, 2) - 1) * 10px) / var(--shop-cols-sm, 2)) minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    padding-block-end: 10px;
+    border-block-end: 1px solid var(--lx-hair);
+  }
+  [data-cols-m="2"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(2n + 1) > .hy-pcard-info {
+    padding-block: 0;
+    min-width: 0;
+  }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  [data-cols-t="2"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(2n + 1),
+  [data-cols-t="3"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(3n + 1) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: calc((100% - (var(--shop-cols-md, 3) - 1) * 16px) / var(--shop-cols-md, 3)) minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: center;
+    padding-block-end: 16px;
+    border-block-end: 1px solid var(--lx-hair);
+  }
+  [data-cols-t="2"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(2n + 1) > .hy-pcard-info,
+  [data-cols-t="3"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(3n + 1) > .hy-pcard-info {
+    padding-block: 0;
+    min-width: 0;
+  }
+}
+@media (min-width: 1280px) {
+  [data-cols-d="3"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(3n + 1),
+  [data-cols-d="4"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(4n + 1),
+  [data-cols-d="5"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(5n + 1) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: calc((100% - (var(--shop-cols, 4) - 1) * 16px) / var(--shop-cols, 4)) minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: center;
+    padding-block-end: 16px;
+    border-block-end: 1px solid var(--lx-hair);
+  }
+  [data-cols-d="3"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(3n + 1) > .hy-pcard-info,
+  [data-cols-d="4"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(4n + 1) > .hy-pcard-info,
+  [data-cols-d="5"] .hy-shop-grid > .hy-pcard:last-of-type:nth-of-type(5n + 1) > .hy-pcard-info {
+    padding-block: 0;
+    min-width: 0;
+  }
+}
+
+/* Animations off in the theme settings: nothing moves. */
+.hy-no-motion, .hy-no-motion *, .hy-no-motion *::before, .hy-no-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.hy-no-motion .reveal { opacity: 1 !important; transform: none !important; }
+
+/* Print: the night ground stays on screen; paper gets dark ink on white. */
+@media print {
+  html:root {
+    --color-bg-primary: #fff; --color-bg-secondary: #fff; --color-bg-tertiary: #fff;
+    --color-surface: #fff; --color-section-a: #fff; --color-section-b: #fff;
+    --color-text-primary: #111; --color-text-secondary: #333; --color-text-tertiary: #444;
+    --color-accent: #111; --color-ink: #111; --color-border: #bbb;
+    --lx-gold: #111; --lx-ink: #111; --lx-mute: #333; --lx-hair: #bbb;
+  }
+  html, body, #hy-main, section { background: #fff !important; color: #111 !important; }
+  .reveal, .reveal-init .reveal { opacity: 1 !important; transform: none !important; }
+  .hy-cols-switch, .hy-shop-rail, .hy-sort, .hy-pager, .hy-wa, .hy-totop { display: none !important; }
+}
+
+/* 44px tap area on phones and tablets; the negative margin keeps each row's height. */
+@media (max-width: 1023px) {
+  .hy-footer-links a, .hy-footer-legal a { min-width: 44px; }
+  .hy-crumbs a, a.hy-topbar-msg, .hy-ct-all, .hd-more {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    margin-block: -12px;
+  }
+  a.hy-topbar-msg { justify-content: center; }
+}

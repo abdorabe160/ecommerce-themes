@@ -1,0 +1,33 @@
+{#-
+  Preview-only demo catalogue (theme editor / localhost / ?theme=). Read by main.js (Demo) — never shown to
+  live customers: dcProducts() falls back to it only when the live store returns nothing AND isPreview().
+  Prices are in major units (converted with Money.fromMajor). Images are flat files in assets/: `image` 1100×880
+  for cards, `large` 1440×1800 for the demo product page. Photos: Unsplash (Unsplash License).
+-#}
+{%- set w = t('demo.weight_250') -%}
+{%- set demo = {
+  'products': [
+    { 'id': 'demo-colombia', 'title': t('demo.colombia'), 'meta': w, 'image': 'product-colombia-card.webp' | assets, 'large': 'product-colombia-lg.webp' | assets, 'price': 260, 'compare': 0, 'kind': ['best'], 'rating': 0, 'reviews': 0, 'tags': ['origin:' ~ t('demo.origin_colombia')] },
+    { 'id': 'demo-house-blend', 'title': t('demo.house_blend'), 'meta': w, 'image': 'product-house-blend-card.webp' | assets, 'large': 'product-house-blend-lg.webp' | assets, 'price': 230, 'compare': 0, 'kind': ['best'], 'rating': 0, 'reviews': 0, 'tags': [] },
+    { 'id': 'demo-ethiopia', 'title': t('demo.ethiopia'), 'meta': w, 'image': 'product-ethiopia-card.webp' | assets, 'large': 'product-ethiopia-lg.webp' | assets, 'price': 280, 'compare': 0, 'kind': ['best'], 'rating': 0, 'reviews': 0, 'tags': [] },
+    { 'id': 'demo-sumatra', 'title': t('demo.sumatra'), 'meta': w, 'image': 'product-sumatra-card.webp' | assets, 'large': 'product-sumatra-lg.webp' | assets, 'price': 250, 'compare': 0, 'kind': ['best'], 'rating': 0, 'reviews': 0, 'tags': [] },
+    { 'id': 'demo-yemen', 'title': t('demo.yemen'), 'meta': w, 'image': 'product-yemen-card.webp' | assets, 'large': 'product-yemen-lg.webp' | assets, 'price': 340, 'compare': 0, 'kind': ['new'], 'rating': 0, 'reviews': 0, 'tags': ['new'] },
+    { 'id': 'demo-kenya', 'title': t('demo.kenya'), 'meta': w, 'image': 'product-kenya-card.webp' | assets, 'large': 'product-kenya-lg.webp' | assets, 'price': 310, 'compare': 0, 'kind': ['new'], 'rating': 0, 'reviews': 0, 'tags': ['new'] },
+    { 'id': 'demo-brazil', 'title': t('demo.brazil'), 'meta': w, 'image': 'product-brazil-card.webp' | assets, 'large': 'product-brazil-lg.webp' | assets, 'price': 220, 'compare': 250, 'kind': ['new'], 'rating': 0, 'reviews': 0, 'tags': [] },
+    { 'id': 'demo-espresso-blend', 'title': t('demo.espresso_blend'), 'meta': w, 'image': 'product-espresso-blend-card.webp' | assets, 'large': 'product-espresso-blend-lg.webp' | assets, 'price': 240, 'compare': 0, 'kind': ['new'], 'rating': 0, 'reviews': 0, 'tags': ['new'] },
+    { 'id': 'demo-moka', 'title': t('demo.moka'), 'meta': t('demo.moka_meta'), 'image': 'equip-moka-card.webp' | assets, 'large': 'equip-moka-lg.webp' | assets, 'price': 950, 'compare': 0, 'kind': ['equipment'], 'rating': 0, 'reviews': 0, 'tags': [] },
+    { 'id': 'demo-chemex', 'title': t('demo.chemex'), 'meta': t('demo.chemex_meta'), 'image': 'equip-chemex-card.webp' | assets, 'large': 'equip-chemex-lg.webp' | assets, 'price': 1850, 'compare': 0, 'kind': ['equipment'], 'rating': 0, 'reviews': 0, 'tags': [] }
+  ],
+  'collections': [
+    { '_id': 'demo-c-beans', 'title': t('demo.cat_beans'), 'description': t('demo.cat_beans_text'), 'image': 'cat-beans-800.webp' | assets, '__demo': true },
+    { '_id': 'demo-c-specialty', 'title': t('demo.cat_specialty'), 'description': t('demo.cat_specialty_text'), 'image': 'cat-specialty-800.webp' | assets, '__demo': true },
+    { '_id': 'demo-c-blends', 'title': t('demo.cat_blends'), 'description': t('demo.cat_blends_text'), 'image': 'cat-specialty-800.webp' | assets, '__demo': true },
+    { '_id': 'demo-c-cold', 'title': t('demo.cat_cold'), 'description': t('demo.cat_cold_text'), 'image': 'cat-cold-800.webp' | assets, '__demo': true }
+  ]
+} -%}
+<script type="application/json" id="dc-demo-data">{{ demo | dump | replace('</', '<\\/') | safe }}</script>
+{#- demo product page (preview only): inert <template> rendered once with placeholder tokens; main.js swaps in
+    the clicked demo product (#product=demo-…) because /products/demo-… has no real page on the store -#}
+{%- set demoView = { '_id': '__DC_ID__', 'title': '__DC_TITLE__', 'slug': '__DC_ID__', 'subtitle': '__DC_META__',
+  'images': [{ 'fileUrl': '__DC_IMG__' }], 'tags': [], 'description': '<p>' ~ t('demo.product_description') ~ '</p>' } -%}
+<template id="dc-demo-product-tpl">{% ui "product-view.njk", product=demoView, mode="page", demoTpl="on" %}</template>

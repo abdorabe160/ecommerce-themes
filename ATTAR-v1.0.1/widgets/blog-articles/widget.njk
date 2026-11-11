@@ -1,0 +1,134 @@
+{# ===== ATTAR Blog Articles Widget ===== #}
+{% set articles = widget.data.articles %}
+{% set title = widget.data.title | default('') %}
+{% set subtitle = widget.data.subtitle | default('') %}
+{% set cols = widget.data.columns | default('3', true) %}
+{% set displayLayout = widget.data.display_layout | default('grid') %}
+{% set showDate = widget.data.show_date | default(true) %}
+{% set showExcerpt = widget.data.show_excerpt | default(true) %}
+{% set id = widget.id %}
+
+{# Column grid classes #}
+{% if cols == '2' %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 attar-fit-span attar-lone-lg2' %}
+{% elif cols == '4' %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 attar-fit-span attar-lone-lg3 attar-lone-xl4' %}
+{% else %}
+  {% set gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 attar-fit-3 attar-fit-span' %}
+{% endif %}
+
+<section id="{{ id }}" class="anaqa-ba-{{ id }}{{ ' attar-demo-only' if not (articles and (articles | length)) }} py-16 md:py-24" style="background: var(--color-bg-primary);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+    {# —— Section Header —— #}
+    {% if title or subtitle %}
+      <div class="text-center mb-12 md:mb-16 reveal">
+        {% if title %}
+          <h2 class="font-heading-ar" style="font-weight: 500; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.2; color: var(--color-text-primary);">{{ title }}</h2>
+        {% endif %}
+        <span class="editorial-rule block max-w-[64px] mx-auto mt-6"></span>
+        {% if subtitle %}
+          <p class="text-base max-w-lg mx-auto leading-relaxed mt-6 font-body-ar" style="color: var(--color-text-secondary);">{{ subtitle }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {# —— Articles —— #}
+    {% if articles and (articles | length) %}
+
+      {% if displayLayout == 'slider' %}
+        {# —— Slider Layout —— #}
+        <div class="reveal">
+          <div class="swiper" id="swiper-{{ id }}">
+            <div class="swiper-wrapper" style="padding-bottom: 4px;">
+              {% for article in articles %}
+                <div class="swiper-slide" style="height: auto;">
+                  {% include "ui/article-card.njk" %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          {# Navigation #}
+          <div class="flex items-center justify-center gap-6 mt-12">
+            <button id="prev-{{ id }}" aria-label="{{ t('common.back') }}" class="anaqa-ba-nav">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div id="dots-{{ id }}" class="flex items-center gap-2"></div>
+            <button id="next-{{ id }}" aria-label="{{ t('common.continue') }}" class="anaqa-ba-nav">
+              <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <style>
+          .anaqa-ba-{{ id }} .anaqa-ba-nav { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-border); background: transparent; color: var(--color-text-primary); cursor: pointer; transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+          .anaqa-ba-{{ id }} .anaqa-ba-nav:hover { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg-primary); }
+          #dots-{{ id }} .dot { width: 26px; height: 2px; background: var(--color-border); transition: all 400ms ease; cursor: pointer; }
+          #dots-{{ id }} .dot.active { width: 42px; background: var(--color-accent); }
+        </style>
+
+        <script>
+          (() => {
+            var cols = {{ cols | int }};
+            var swiper = new Swiper('#swiper-{{ id }}', {
+              slidesPerView: 1,
+              spaceBetween: 24,
+              grabCursor: true,
+              loop: {{ articles | length }} > cols,
+              navigation: { prevEl: '#prev-{{ id }}', nextEl: '#next-{{ id }}' },
+              breakpoints: {
+                640: { slidesPerView: 2, spaceBetween: 24 },
+                1024: { slidesPerView: Math.min(cols, 3), spaceBetween: 32 },
+                1280: { slidesPerView: cols, spaceBetween: 32 }
+              }
+            });
+
+            var dotsC = document.getElementById('dots-{{ id }}');
+            var total = {{ articles | length }};
+            var pv = window.innerWidth >= 1280 ? cols : window.innerWidth >= 1024 ? Math.min(cols, 3) : window.innerWidth >= 640 ? 2 : 1;
+            var dc = Math.max(total - pv + 1, 1);
+            for (var i = 0; i < dc; i++) {
+              var d = document.createElement('span');
+              d.className = 'dot' + (i === 0 ? ' active' : '');
+              d.dataset.index = i;
+              d.addEventListener('click', function () { swiper.slideTo(parseInt(this.dataset.index)); });
+              dotsC.appendChild(d);
+            }
+            swiper.on('slideChange', function () {
+              var dots = dotsC.querySelectorAll('.dot');
+              var idx = swiper.realIndex % dc;
+              dots.forEach(function (dd, j) { dd.classList.toggle('active', j === idx); });
+            });
+          })();
+        </script>
+
+      {% else %}
+        {# —— Grid Layout —— #}
+        <div class="grid {{ gridClass }} gap-x-6 gap-y-12">
+          {% for article in articles %}
+            <div class="reveal" style="transition-delay: {{ loop.index0 * 80 }}ms;">
+              {% include "ui/article-card.njk" %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    {% else %}
+      {# —— Empty State —— #}
+      <div class="text-center py-16 reveal">
+        <div class="w-16 h-16 mx-auto mb-5 flex items-center justify-center" style="background: var(--color-bg-secondary);">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1" style="color: var(--color-text-tertiary); opacity: 0.5;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+          </svg>
+        </div>
+        <p class="text-sm font-body-ar" style="color: var(--color-text-tertiary);">{{ t('pages.blog.no_articles') | default('لا توجد مقالات بعد') }}</p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>

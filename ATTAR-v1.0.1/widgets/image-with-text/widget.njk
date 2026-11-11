@@ -1,0 +1,139 @@
+{# ===== ATTAR IMAGE WITH TEXT — Split · House Story ===== #}
+{% set eyebrow = widget.data.eyebrow | default('') %}
+{% set title = widget.data.title | safe %}
+{% set text = widget.data.text | safe %}
+{% set image = widget.data.image %}
+{% set imageUrl = image.fileUrl if (image and image.fileUrl) else '' %}
+{# no photo yet → bundled demo photo (CC0, docs/demo-images.md) #}
+{% if not imageUrl %}{% set imageUrl = 'demo-story.jpg' | assets %}{% endif %}
+{% set btnText = widget.data.button_text %}
+{% set btnUrl = widget.data.button_url | default('#') %}
+{% set signature = widget.data.signature | default('') %}
+{% set imgPos = widget.data.image_position | default('left') %}
+{% set bg = widget.data.background | default('ivory') %}
+
+{% set showStats = widget.data.show_stats | default(false) %}
+{% set s1n = widget.data.stat_1_number | default('') %}{% set s1l = widget.data.stat_1_label | default('') %}
+{% set s2n = widget.data.stat_2_number | default('') %}{% set s2l = widget.data.stat_2_label | default('') %}
+{% set s3n = widget.data.stat_3_number | default('') %}{% set s3l = widget.data.stat_3_label | default('') %}
+
+{% set _ratio = widget.data.image_ratio | default('portrait') %}
+{% if _ratio == 'tall' %}{% set aspectClass = 'aspect-[4/5]' %}
+{% elif _ratio == 'square' %}{% set aspectClass = 'aspect-[1/1]' %}
+{% elif _ratio == 'landscape' %}{% set aspectClass = 'aspect-[4/3]' %}
+{% else %}{% set aspectClass = 'aspect-[3/4]' %}{% endif %}
+
+{# Dark-theme backgrounds — all light-on-dark, no inversion #}
+{% if bg == 'charcoal' %}
+  {% set sectionStyle = 'background: var(--color-footer); color: var(--color-text-primary);' %}
+{% elif bg == 'sand' %}
+  {% set sectionStyle = 'background: var(--color-bg-secondary); color: var(--color-text-primary);' %}
+{% else %}
+  {% set sectionStyle = 'background: var(--color-bg-primary); color: var(--color-text-primary);' %}
+{% endif %}
+{% set isDark = false %}
+
+{% set bodyColor = 'var(--color-text-secondary)' %}
+{% set hairline = 'var(--color-border)' %}
+
+<style>
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.12;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: currentColor;
+  }
+  html[dir="rtl"] .anaqa-iwt-{{ widget.id }} .anaqa-iwt-title { line-height: 1.28; font-weight: 600; }
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-body p { margin: 0 0 1em; }
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-body p:last-child { margin-bottom: 0; }
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-img img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: saturate(1.03) contrast(1.02);
+    transition: transform 1.2s ease;
+  }
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-img:hover img { transform: scale(1.03); }
+
+  /* Decorative offset gold frame behind the image */
+  .anaqa-iwt-{{ widget.id }} .attar-iwt-frame { position: relative; }
+  .anaqa-iwt-{{ widget.id }} .attar-iwt-frame::before {
+    content: ''; position: absolute; z-index: 0;
+    inset-block: 22px; inset-inline: 22px;
+    inset-inline-start: -18px; inset-block-start: -18px;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 38%, transparent);
+    pointer-events: none;
+  }
+  .anaqa-iwt-{{ widget.id }} .anaqa-iwt-img { position: relative; z-index: 1; }
+  @media (max-width: 639px) {
+    .anaqa-iwt-{{ widget.id }} .attar-iwt-frame::before { inset-inline-start: -10px; inset-block-start: -10px; }
+  }
+</style>
+
+<section id="{{ widget.id }}" class="anaqa-iwt-{{ widget.id }} py-28 max-sm:py-16" style="{{ sectionStyle }}">
+  <div class="container mx-auto px-6 max-sm:px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 max-lg:gap-10 items-center">
+
+      {# ——— Image ——— #}
+      <div class="attar-iwt-frame {% if imgPos == 'right' %}lg:order-2{% endif %}">
+        <div class="anaqa-iwt-img relative {{ aspectClass }} w-full overflow-hidden" style="background: var(--color-bg-secondary);">
+          {% if imageUrl %}
+            <img src="{{ imageUrl }}" alt="{{ title | default(store.name) }}" loading="lazy"/>
+          {% else %}
+            <div class="attar-mark" aria-hidden="true"></div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# ——— Text ——— #}
+      <div class="{% if imgPos == 'right' %}lg:order-1{% endif %} max-w-xl {% if imgPos == 'right' %}lg:ms-auto{% endif %}">
+        {% if eyebrow %}
+          <span class="editorial-label block mb-6">{{ eyebrow }}</span>
+        {% endif %}
+
+        {% if title %}
+          <h2 class="anaqa-iwt-title font-heading-ar mb-7 max-sm:mb-5">{{ title }}</h2>
+        {% endif %}
+
+        {% if text %}
+          <div class="anaqa-iwt-body font-body-ar text-[16px] max-sm:text-[15px] leading-[2] mb-9 max-sm:mb-7" style="color: {{ bodyColor }};">
+            {{ text }}
+          </div>
+        {% endif %}
+
+        {% if signature %}
+          <p class="font-heading-ar text-[20px] mb-9 max-sm:mb-7" style="color: var(--color-accent);">{{ signature }}</p>
+        {% endif %}
+
+        {% if btnText %}
+          <a href="{{ btnUrl }}" class="anaqa-btn{% if isDark %} anaqa-btn--light{% endif %} font-body-ar">
+            {{ btnText }}
+          </a>
+        {% endif %}
+
+        {% if showStats and (s1n or s2n or s3n) %}
+        <div class="flex flex-wrap gap-x-14 gap-y-6 mt-12 pt-9" style="border-top: 1px solid {{ hairline }};">
+          {% if s1n or s1l %}
+          <div>
+            {% if s1n %}<div class="font-heading-en text-[2rem] leading-none" style="color: currentColor;">{{ s1n }}</div>{% endif %}
+            {% if s1l %}<div class="editorial-label mt-2">{{ s1l }}</div>{% endif %}
+          </div>
+          {% endif %}
+          {% if s2n or s2l %}
+          <div>
+            {% if s2n %}<div class="font-heading-en text-[2rem] leading-none" style="color: currentColor;">{{ s2n }}</div>{% endif %}
+            {% if s2l %}<div class="editorial-label mt-2">{{ s2l }}</div>{% endif %}
+          </div>
+          {% endif %}
+          {% if s3n or s3l %}
+          <div>
+            {% if s3n %}<div class="font-heading-en text-[2rem] leading-none" style="color: currentColor;">{{ s3n }}</div>{% endif %}
+            {% if s3l %}<div class="editorial-label mt-2">{{ s3l }}</div>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>

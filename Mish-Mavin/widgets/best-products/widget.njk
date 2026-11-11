@@ -1,0 +1,33 @@
+{# منتجات مميزة (New Arrivals / Best Sellers) — مطابق لـ mavin-wear.com:
+   عنوان في المنتصف، شبكة 2×2 على الموبايل وسلايدر 4 منتجات على الديسكتوب، ورابط "عرض الكل" تحتها.
+   في المعاينة فقط (بدون منتجات حقيقية) يتم ملء الشبكة بمنتجات توضيحية من main.js. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{% set limit = wd.limit | default(10) %}
+{% set products = (wd.products or []).slice(0, limit) %}
+{% set layout = wd.layout | default('slider') %}
+{# ترقيم #1، #2 معناه ترتيب بالتقييم: من غير أي تقييم في القائمة الأرقام مالهاش معنى، فمش بتظهر (الإعداد زي ما هو) #}
+{% set rated = [] %}
+{% for pr in products %}{% if pr and (pr.averageRating > 0 or pr.reviewsCount > 0) %}{% set _ = rated.push(1) %}{% endif %}{% endfor %}
+<section class="mw-section mw-section--featured">
+  <div class="container">
+    {% if wd.title %}
+    <div class="mw-section__head mw-align-{{ wd.heading_align | default('center') }}">
+      <h2 class="mw-section__title">{{ wd.title }}</h2>
+    </div>
+    {% endif %}
+    <div class="mw-products{% if layout == 'slider' %} mw-products--slider{% endif %}"{% if not products | length %} data-mw-demo="{{ wd.demo_set | default('new') }}" data-mw-demo-limit="{{ limit }}"{% if wd.show_rank %} data-mw-demo-rank="1"{% endif %}{% endif %}>
+      {%- for product in products %}
+        {% if wd.show_rank and (rated | length) %}
+          {% ui "product-card.njk", product=product, rank=loop.index %}
+        {% else %}
+          {% ui "product-card.njk", product=product %}
+        {% endif %}
+      {% endfor -%}
+    </div>
+    {% if wd.show_view_all != false and wd.view_all_url %}
+      <div class="mw-section__foot">
+        <a href="{{ wd.view_all_url }}" class="mw-link">{{ wd.view_all_text | default(t('common.view_all')) | default('View all') }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>

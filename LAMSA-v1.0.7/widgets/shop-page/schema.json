@@ -1,0 +1,80 @@
+{
+  "name": "صفحة المتجر",
+  "settings": {
+    "title": {
+      "type": "string",
+      "label": { "ar": "العنوان (يُستبدل باسم القسم عند تصفّح قسم)", "en": "Title (replaced by the collection name when browsing one)" },
+      "default": "كل المنتجات"
+    },
+    "description": {
+      "type": "text",
+      "label": { "ar": "وصف قصير تحت العنوان", "en": "Short description under the title" },
+      "default": ""
+    },
+    "show_breadcrumb": {
+      "type": "boolean",
+      "label": { "ar": "إظهار مسار التصفّح", "en": "Show breadcrumb" },
+      "default": true
+    },
+    "show_search": {
+      "type": "boolean",
+      "label": { "ar": "إظهار حقل البحث", "en": "Show the search field" },
+      "default": true
+    },
+    "show_collection_rail": {
+      "type": "boolean",
+      "label": { "ar": "شريط الأقسام أعلى النتائج", "en": "Collection rail above the results" },
+      "default": true
+    },
+    "show_sidebar_collections": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الأقسام داخل لوحة الفلاتر أيضاً", "en": "Also list collections inside the filter panel" },
+      "default": false
+    },
+    "show_filters": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الفلاتر", "en": "Show filters" },
+      "default": true
+    },
+    "show_sort": {
+      "type": "boolean",
+      "label": { "ar": "إظهار الترتيب", "en": "Show sorting" },
+      "default": true
+    },
+    "columns_desktop": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (كمبيوتر)", "en": "Columns (Desktop)" },
+      "default": "3",
+      "options": [
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } },
+        { "value": "3", "label": { "ar": "٣ أعمدة", "en": "3" } },
+        { "value": "4", "label": { "ar": "٤ أعمدة", "en": "4" } }
+      ]
+    },
+    "columns_mobile": {
+      "type": "select",
+      "label": { "ar": "عدد الأعمدة (موبايل)", "en": "Columns (Mobile)" },
+      "default": "2",
+      "options": [
+        { "value": "1", "label": { "ar": "عمود واحد", "en": "1" } },
+        { "value": "2", "label": { "ar": "عمودان", "en": "2" } }
+      ]
+    },
+    "card_image_ratio": {
+      "type": "select",
+      "label": { "ar": "أبعاد صورة البطاقة", "en": "Card Image Ratio" },
+      "default": "1/1",
+      "options": [
+        { "value": "1/1", "label": { "ar": "مربّع", "en": "Square" } },
+        { "value": "4/5", "label": { "ar": "طولي خفيف", "en": "Portrait" } },
+        { "value": "3/4", "label": { "ar": "طولي", "en": "Tall" } }
+      ]
+    }
+  },
+  "presets": [
+    {
+      "category": "صفحة المتجر",
+      "name": "صفحة المتجر"
+    }
+  ]
+}

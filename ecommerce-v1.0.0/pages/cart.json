@@ -1,0 +1,71 @@
+{
+  "layout": "layout",
+  "allowAdd": true,
+  "allowRemove": true,
+  "allowReorder": true,
+  "widgets": [
+    {
+      "name": "صفحة السلة",
+      "widget": "cart-page",
+      "settings": {
+        "title": "",
+        "show_breadcrumb": true,
+        "show_savings": true,
+        "show_discount_row": true,
+        "free_shipping_threshold": 0,
+        "confirm_remove": true,
+        "checkout_url": "/checkout",
+        "continue_shopping_url": "/shop",
+        "show_trust_row": false,
+        "trust1_text": "",
+        "trust2_text": "",
+        "trust3_text": "",
+        "note_text": ""
+      }
+    },
+    {
+      "name": "قد يعجبك أيضًا",
+      "widget": "featured-collection",
+      "settings": {
+        "full_width": true,
+        "eyebrow": "",
+        "title": "قد يعجبك أيضًا",
+        "show_view_all": true,
+        "view_all_text": "",
+        "view_all_url": "",
+        "countdown_enabled": false,
+        "countdown_label": "",
+        "countdown_mode": "daily",
+        "countdown_end": "2026-12-31 23:59",
+        "timer_bg": "",
+        "timer_text": "",
+        "limit": 12,
+        "columns_desktop": 6,
+        "columns_mobile": "2.2",
+        "show_arrows": true,
+        "image_fit": "contain",
+        "image_bg": "",
+        "show_rating": true,
+        "show_thumbs": true,
+        "hover_images": true,
+        "show_stock": true,
+        "show_quick_view": true,
+        "show_atc": true,
+        "show_sale_badge": true,
+        "sale_badge": "",
+        "show_low_badge": true,
+        "low_badge": "",
+        "show_note": true,
+        "card_note": "",
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "colors_enabled": false,
+        "color_bg": "",
+        "color_title": "",
+        "color_text": "",
+        "color_accent": "",
+        "show_eyebrow": false
+      }
+    }
+  ]
+}

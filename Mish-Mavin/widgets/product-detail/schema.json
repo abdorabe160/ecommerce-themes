@@ -1,0 +1,132 @@
+{
+  "name": "product-detail",
+  "settings": {
+    "size_chart_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط جدول المقاسات (اختياري)",
+        "en": "Size chart URL (optional)"
+      },
+      "default": ""
+    },
+    "show_payments": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار شعارات وسائل الدفع (فعّلها فقط لو الوسائل دي مفعّلة في متجرك)",
+        "en": "Show payment logos (only if these methods are enabled in your store)"
+      },
+      "default": false
+    },
+    "show_delivery": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار صندوق موعد التوصيل",
+        "en": "Show delivery estimate"
+      },
+      "default": false
+    },
+    "delivery_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان صندوق التوصيل",
+        "en": "Delivery box title"
+      },
+      "default": ""
+    },
+    "dispatch_days": {
+      "type": "number",
+      "label": {
+        "ar": "أيام التجهيز",
+        "en": "Dispatch days"
+      },
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "step": 1
+    },
+    "delivery_min": {
+      "type": "number",
+      "label": {
+        "ar": "أقل مدة توصيل (أيام)",
+        "en": "Min delivery days"
+      },
+      "default": 2,
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    "delivery_max": {
+      "type": "number",
+      "label": {
+        "ar": "أقصى مدة توصيل (أيام)",
+        "en": "Max delivery days"
+      },
+      "default": 6,
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    "show_trust": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار مميزات المتجر",
+        "en": "Show trust badges"
+      },
+      "default": false
+    },
+    "show_share": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أزرار المشاركة",
+        "en": "Show share buttons"
+      },
+      "default": true
+    },
+    "size_fit_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص المقاس والقصّة",
+        "en": "Size & fit text"
+      },
+      "default": ""
+    },
+    "material_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص الخامة",
+        "en": "Material text"
+      },
+      "default": ""
+    },
+    "shipping_text": {
+      "type": "text",
+      "label": {
+        "ar": "نص الشحن والاستبدال (فارغ = النص الافتراضي من ملف اللغة)",
+        "en": "Shipping & returns text (empty = default locale text)"
+      },
+      "default": ""
+    },
+    "show_related": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار أكمل الإطلالة",
+        "en": "Show complete the look"
+      },
+      "default": true
+    },
+    "related_title": {
+      "type": "string",
+      "label": {
+        "ar": "عنوان المنتجات ذات الصلة (فارغ = «قد يعجبك أيضاً»)",
+        "en": "Related products title (empty = «You may also like»)"
+      },
+      "default": ""
+    }
+  },
+  "presets": [
+    {
+      "category": "product",
+      "name": "product-detail"
+    }
+  ]
+}

@@ -1,0 +1,331 @@
+{
+  "name": "الهيرو الرئيسي",
+  "settings": {
+    "color_1": {
+      "type": "color",
+      "label": {
+        "ar": "لون التدرج 1 (البداية)",
+        "en": "Gradient color 1"
+      },
+      "default": ""
+    },
+    "color_2": {
+      "type": "color",
+      "label": {
+        "ar": "لون التدرج 2",
+        "en": "Gradient color 2"
+      },
+      "default": ""
+    },
+    "color_3": {
+      "type": "color",
+      "label": {
+        "ar": "لون التدرج 3 (التوهج)",
+        "en": "Gradient color 3 (glow)"
+      },
+      "default": ""
+    },
+    "color_4": {
+      "type": "color",
+      "label": {
+        "ar": "لون التدرج 4 (النهاية)",
+        "en": "Gradient color 4"
+      },
+      "default": ""
+    },
+    "text_color": {
+      "type": "color",
+      "label": {
+        "ar": "لون النصوص (العنوان والوصف والأزرار ونقاط الثقة)",
+        "en": "Text color (title, subtitle, buttons, trust points)"
+      },
+      "default": ""
+    },
+    "autoplay": {
+      "type": "boolean",
+      "label": {
+        "ar": "تشغيل تلقائي",
+        "en": "Autoplay"
+      },
+      "default": true
+    },
+    "interval": {
+      "type": "number",
+      "label": {
+        "ar": "مدة الشريحة (ثانية)",
+        "en": "Slide duration (seconds)"
+      },
+      "default": 6,
+      "min": 3,
+      "max": 15,
+      "step": 1
+    },
+    "show_shapes": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار الأشكال الزجاجية السائلة",
+        "en": "Show liquid glass shapes"
+      },
+      "default": true
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "شريحة",
+      "settings": {
+        "image": {
+          "type": "media",
+          "label": {
+            "ar": "صورة المنتج (PNG مفرّغ)",
+            "en": "Product image (transparent PNG)"
+          }
+        },
+        "demo_image": {
+          "type": "select",
+          "label": {
+            "ar": "صورة تجريبية (تظهر عند عدم رفع صورة)",
+            "en": "Demo image (used when no image is uploaded)"
+          },
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "بدون / None"
+            },
+            {
+              "value": "cutout_phone",
+              "label": "صورة مفرّغة: موبايل / Cut-out: phone"
+            },
+            {
+              "value": "cutout_laptop",
+              "label": "صورة مفرّغة: لابتوب / Cut-out: laptop"
+            },
+            {
+              "value": "cutout_headphones",
+              "label": "صورة مفرّغة: سماعة رأس / Cut-out: headphones"
+            },
+            {
+              "value": "cutout_watch",
+              "label": "صورة مفرّغة: ساعة ذكية / Cut-out: watch"
+            },
+            {
+              "value": "cutout_watch2",
+              "label": "صورة مفرّغة: ساعة بيضاء / Cut-out: watch2"
+            },
+            {
+              "value": "cutout_earbuds",
+              "label": "صورة مفرّغة: سماعات لاسلكية / Cut-out: earbuds"
+            },
+            {
+              "value": "cutout_gamepad",
+              "label": "صورة مفرّغة: دراع ألعاب / Cut-out: gamepad"
+            },
+            {
+              "value": "cutout_keyboard",
+              "label": "صورة مفرّغة: كيبورد / Cut-out: keyboard"
+            },
+            {
+              "value": "cutout_mouse",
+              "label": "صورة مفرّغة: ماوس / Cut-out: mouse"
+            },
+            {
+              "value": "cutout_speaker",
+              "label": "صورة مفرّغة: سماعة ذكية / Cut-out: speaker"
+            }
+          ]
+        },
+        "image_mode": {
+          "type": "select",
+          "label": {
+            "ar": "طريقة عرض الصورة",
+            "en": "Image mode"
+          },
+          "default": "product",
+          "options": [
+            {
+              "value": "product",
+              "label": "منتج عائم / Floating product"
+            },
+            {
+              "value": "framed",
+              "label": "صورة داخل إطار زجاجي / Photo in glass frame"
+            },
+            {
+              "value": "cover",
+              "label": "خلفية كاملة / Full background"
+            }
+          ]
+        },
+        "badge": {
+          "type": "string",
+          "label": {
+            "ar": "الشارة",
+            "en": "Badge"
+          },
+          "default": "وصل حديثاً"
+        },
+        "badge_en": {
+          "type": "string",
+          "label": {
+            "ar": "الشارة (إنجليزي)",
+            "en": "Badge (English)"
+          },
+          "default": "New arrival"
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": "أحدث التقنيات"
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": "The latest tech"
+        },
+        "title_highlight": {
+          "type": "string",
+          "label": {
+            "ar": "الجزء المميّز من العنوان",
+            "en": "Highlighted title part"
+          },
+          "default": "لحياة أفضل"
+        },
+        "title_highlight_en": {
+          "type": "string",
+          "label": {
+            "ar": "الجزء المميّز من العنوان (إنجليزي)",
+            "en": "Highlighted title part (English)"
+          },
+          "default": "for a better life"
+        },
+        "subtitle": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف",
+            "en": "Subtitle"
+          },
+          "default": "اكتشف أحدث الأجهزة والإلكترونيات والإكسسوارات — كلها في مكان واحد."
+        },
+        "subtitle_en": {
+          "type": "text",
+          "label": {
+            "ar": "الوصف (إنجليزي)",
+            "en": "Subtitle (English)"
+          },
+          "default": "Discover the latest devices, electronics and accessories — all in one place."
+        },
+        "button_text": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر",
+            "en": "Button text"
+          },
+          "default": "تسوّق الآن"
+        },
+        "button_text_en": {
+          "type": "string",
+          "label": {
+            "ar": "نص الزر (إنجليزي)",
+            "en": "Button text (English)"
+          },
+          "default": "Shop now"
+        },
+        "button_url": {
+          "type": "string",
+          "label": {
+            "ar": "رابط الزر",
+            "en": "Button link"
+          },
+          "default": "/collections"
+        }
+      }
+    },
+    "trust": {
+      "name": "نقطة ثقة",
+      "settings": {
+        "icon": {
+          "type": "select",
+          "label": {
+            "ar": "الأيقونة",
+            "en": "Icon"
+          },
+          "default": "truck",
+          "options": [
+            {
+              "value": "truck",
+              "label": "شحن / Shipping"
+            },
+            {
+              "value": "shield",
+              "label": "حماية / Secure"
+            },
+            {
+              "value": "headset",
+              "label": "دعم / Support"
+            },
+            {
+              "value": "refresh",
+              "label": "استرجاع / Returns"
+            },
+            {
+              "value": "card",
+              "label": "دفع / Payment"
+            },
+            {
+              "value": "bolt",
+              "label": "سرعة / Fast"
+            },
+            {
+              "value": "gift",
+              "label": "هدية / Gift"
+            }
+          ]
+        },
+        "title": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان",
+            "en": "Title"
+          },
+          "default": ""
+        },
+        "title_en": {
+          "type": "string",
+          "label": {
+            "ar": "العنوان (إنجليزي)",
+            "en": "Title (English)"
+          },
+          "default": ""
+        },
+        "text": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف",
+            "en": "Text"
+          },
+          "default": ""
+        },
+        "text_en": {
+          "type": "string",
+          "label": {
+            "ar": "الوصف (إنجليزي)",
+            "en": "Text (English)"
+          },
+          "default": ""
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "الصفحة الرئيسية",
+      "name": "الهيرو الرئيسي"
+    }
+  ]
+}

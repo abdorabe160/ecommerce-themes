@@ -1,0 +1,243 @@
+{
+  "name": "بطاقات قابلة للتمرير",
+  "settings": {
+    "eyebrow": {
+      "type": "string",
+      "label": {
+        "ar": "السطر الصغير فوق العنوان",
+        "en": "The small line above the headline"
+      },
+      "default": "وصل حديثاً"
+    },
+    "body": {
+      "type": "text",
+      "label": {
+        "ar": "النص تحت العنوان",
+        "en": "The copy under the headline"
+      },
+      "default": "قطع خفيفة ومريحة، مصمّمة للّعب اليومي."
+    },
+    "cta_text": {
+      "type": "string",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button label"
+      },
+      "default": "تسوّقي الآن"
+    },
+    "cta_url": {
+      "type": "string",
+      "label": {
+        "ar": "رابط الزر — / · /shop · /collections",
+        "en": "Button link"
+      },
+      "default": "/shop"
+    },
+    "advance_on": {
+      "type": "select",
+      "label": {
+        "ar": "▸ ما الذي يحرّك البطاقات",
+        "en": "▸ What moves the cards"
+      },
+      "default": "scroll",
+      "options": [
+        {
+          "value": "scroll",
+          "label": {
+            "ar": "التمرير — القسم يثبت وتتغيّر البطاقات مع نزولك (مثل التصميم)",
+            "en": "Scroll — the section pins and the cards change as you move down"
+          }
+        },
+        {
+          "value": "time",
+          "label": {
+            "ar": "الوقت — تتبدّل وحدها كل بضع ثوانٍ",
+            "en": "Time — they change on their own"
+          }
+        }
+      ]
+    },
+    "scroll_per_beat": {
+      "type": "range",
+      "label": {
+        "ar": "مسافة التمرير لكل مقطع — تُضرب في عدد المقاطع، فالقسم يطول بسرعة · يُعرض حتى ٦ مقاطع",
+        "en": "Scroll distance per beat — multiplied by the beat count, so the section grows fast · up to 6 beats are shown"
+      },
+      "default": 70,
+      "min": 30,
+      "max": 140,
+      "step": 5,
+      "unit": "%"
+    },
+    "autoplay_speed": {
+      "type": "range",
+      "label": {
+        "ar": "مدة كل نبضة (في وضع الوقت)",
+        "en": "Seconds per beat (time mode)"
+      },
+      "default": 4,
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "unit": "s"
+    },
+    "card_ratio": {
+      "type": "select",
+      "label": {
+        "ar": "نسبة البطاقات",
+        "en": "Card ratio"
+      },
+      "default": "3x4",
+      "options": [
+        {
+          "value": "3x4",
+          "label": {
+            "ar": "٣:٤ — طولية (مثل التصميم)",
+            "en": "3:4 — portrait"
+          }
+        },
+        {
+          "value": "4x5",
+          "label": {
+            "ar": "٤:٥",
+            "en": "4:5"
+          }
+        },
+        {
+          "value": "1x1",
+          "label": {
+            "ar": "مربعة",
+            "en": "Square"
+          }
+        }
+      ]
+    },
+    "column_offset": {
+      "type": "range",
+      "label": {
+        "ar": "إزاحة العمود الثاني لأسفل — تكسر التناظر بين العمودين",
+        "en": "How far the second column sits lower — it breaks the symmetry"
+      },
+      "default": 125,
+      "min": 0,
+      "max": 220,
+      "step": 5,
+      "unit": "px"
+    },
+    "show_price": {
+      "type": "boolean",
+      "label": {
+        "ar": "إظهار السعر على البطاقة",
+        "en": "Show the price on the card"
+      },
+      "default": true
+    },
+    "colors_enabled": {
+      "type": "boolean",
+      "label": {
+        "ar": "ألوان مخصّصة لهذا القسم — أطفئه للرجوع لألوان الثيم",
+        "en": "Custom colours for this section — switch off to restore theme colours"
+      },
+      "default": false
+    },
+    "color_bg": {
+      "type": "color",
+      "label": {
+        "ar": "الخلفية",
+        "en": "Background"
+      },
+      "default": ""
+    },
+    "color_title": {
+      "type": "color",
+      "label": {
+        "ar": "لون العنوان",
+        "en": "Title colour"
+      },
+      "default": ""
+    },
+    "color_text": {
+      "type": "color",
+      "label": {
+        "ar": "لون النص",
+        "en": "Body colour"
+      },
+      "default": ""
+    },
+    "color_btn_bg": {
+      "type": "color",
+      "label": {
+        "ar": "خلفية الزر",
+        "en": "Button background"
+      },
+      "default": ""
+    },
+    "color_btn_text": {
+      "type": "color",
+      "label": {
+        "ar": "نص الزر",
+        "en": "Button text"
+      },
+      "default": ""
+    }
+  },
+  "blocks": {
+    "slide": {
+      "name": "نبضة",
+      "settings": {
+        "line_1": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الأول",
+            "en": "First line"
+          },
+          "default": "ناعمة ومرحة،"
+        },
+        "line_2": {
+          "type": "string",
+          "label": {
+            "ar": "السطر الثاني",
+            "en": "Second line"
+          },
+          "default": "بلون الليلك"
+        },
+        "highlight": {
+          "type": "string",
+          "label": {
+            "ar": "الكلمات المظلّلة من السطر الثاني — يجب أن تطابق نصّها تمامًا",
+            "en": "The words to highlight in the second line — must match its text exactly"
+          },
+          "default": ""
+        },
+        "highlight_color": {
+          "type": "color",
+          "label": {
+            "ar": "لون التظليل",
+            "en": "Highlight colour"
+          },
+          "default": ""
+        },
+        "product_start": {
+          "type": "products",
+          "label": {
+            "ar": "▸ منتج العمود الأول",
+            "en": "▸ First column product"
+          }
+        },
+        "product_end": {
+          "type": "products",
+          "label": {
+            "ar": "منتج العمود الثاني",
+            "en": "Second column product"
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "category": "المنتجات",
+      "name": "بطاقات قابلة للتمرير"
+    }
+  ]
+}

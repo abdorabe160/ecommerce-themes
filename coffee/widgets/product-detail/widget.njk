@@ -1,0 +1,57 @@
+{#- Live Qumra passes page data in `context` (context.product / context.related_products), not the documented
+    globals — read both, and never hand the `ui` tag an undefined value (Qalab rejects it with an error box). -#}
+{%- set ctx = context or {} -%}
+{%- set product = product or ctx.product -%}
+{%- set recs = recommendations or ctx.related_products or ctx.recommendations or [] -%}
+{#- live prices are major units; derive the unit from the store's own money format instead of assuming cents -#}
+{%- set moneyStr = (123456 | money) | string -%}
+{%- set priceDiv = 100 if ('1,234.56' in moneyStr or '1234.56' in moneyStr or '1.234,56' in moneyStr or '1234,56' in moneyStr) else 1 -%}
+{%- if product and product.title -%}
+{#- QLT-11: Product structured data (schema wants major units). -#}
+{%- set pimg = '' -%}
+{%- if product.images and product.images.length %}{%- set pimg = product.images[0].fileUrl or product.images[0].url or product.images[0] or '' -%}{%- endif -%}
+{%- set pprice = (product.pricing.price if (product.pricing and product.pricing.price) else product.price) | default(0, true) -%}
+{#- a parent quantity of 0 says nothing when variants carry the stock -#}
+{%- set ldInStock = [] -%}
+{%- for v in (product.variants or []) -%}{%- if v.isAvailable != false and (v.quantity | default(0, true)) > 0 and ldInStock.push(1) -%}{%- endif -%}{%- endfor -%}
+{%- set pcur = (localization.currency.currencyCode if (localization and localization.currency and localization.currency.currencyCode) else ((store.generalSettings.currency.currencyCode if (store and store.generalSettings and store.generalSettings.currency) else '') or '')) -%}
+<script type="application/ld+json">{{ {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  'name': product.title,
+  'image': pimg,
+  'description': (product.description or '') | replace('</p>', ' ') | replace('</h2>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | striptags | truncate(500),
+  'sku': product.sku | default('', true),
+  'brand': { '@type': 'Brand', 'name': store.name | default('', true) },
+  'offers': {
+    '@type': 'Offer',
+    'url': (store.url | default('', true)) ~ '/products/' ~ (product.handle or product.slug or ''),
+    'priceCurrency': pcur,
+    'price': pprice / priceDiv,
+    'availability': ('https://schema.org/InStock' if ((product.quantity | default(0, true)) > 0 or ldInStock.length or product.allowBackorder == true) else 'https://schema.org/OutOfStock')
+  }
+} | dump | replace('</', '<\\/') | safe }}</script>
+{%- set pcs = [] -%}
+{%- for c in (product.collections or []) -%}{%- if c and c.title and (not c.deleted) and not (c.salesChannels and c.salesChannels.onlineStore === false) and pcs.push(c) -%}{%- endif -%}{%- endfor -%}
+{%- set pc = pcs[0] if pcs.length else null -%}
+{%- set crumbs = [{ '@type': 'ListItem', 'position': 1, 'name': t('nav.home'), 'item': (store.url | default('')) ~ '/' }, { '@type': 'ListItem', 'position': 2, 'name': t('nav.shop'), 'item': (store.url | default('')) ~ '/shop' }] -%}
+{%- if pc %}{%- if crumbs.push({ '@type': 'ListItem', 'position': 3, 'name': pc.title, 'item': (store.url | default('')) ~ '/collections/' ~ (pc.handle or pc.slug or '') }) -%}{%- endif -%}{%- endif %}
+{%- if crumbs.push({ '@type': 'ListItem', 'position': crumbs.length + 1, 'name': product.title }) -%}{%- endif %}
+<script type="application/ld+json">{{ { '@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': crumbs } | dump | replace('</', '<\\/') | safe }}</script>
+{%- endif -%}
+{%- if product and product.title %}
+{% ui "product-view.njk", product=product, mode="page", recs=recs %}
+{%- else %}
+<section class="section surface-cream" aria-labelledby="dc-product-missing">
+  <div class="shell">
+    <div class="dc-empty-state">
+      <span>{% ui "icon.njk", name="bean", size=32 %}</span>
+      <h1 id="dc-product-missing" class="dc-empty-state__title">{{ t('product.not_found') }}</h1>
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-3">
+        <a href="/shop" class="btn btn-dark">{{ t('cart.continue_shopping') }}</a>
+        <a href="/search" class="btn btn-outline">{{ t('notfound.search') }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif %}

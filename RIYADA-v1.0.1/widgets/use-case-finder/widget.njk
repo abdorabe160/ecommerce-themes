@@ -1,0 +1,384 @@
+{# ============================================================================
+   RIYADA SHOP BY GOAL — "هتتمرّن ليه؟"
+   ----------------------------------------------------------------------------
+   Sports shoppers rarely arrive knowing a product; they arrive knowing an
+   intention — أبني عضل، أنزّل وزن، أجري نص ماراثون. This section is the entry
+   ramp from that intention into a filtered listing, and it is the browse axis
+   the header rail and the drawer both promise.
+
+   Three layouts:
+     goals  photo tile, scrim, shouted label, flame bar  (default — the brief)
+     tiles  icon chip + label + description in a box     (no photography needed)
+     rail   one scrollable strip, for a secondary placement
+
+   `goals` renders through the shared .riyada-goal primitive (style.css §07), so
+   its hover, scrim and bar behaviour match anywhere else goals appear.
+
+   A goal with no photo falls back to the icon on a flame wash rather than an
+   empty grey box — the merchant will populate photography later, and a section
+   that looks broken in the editor gets deleted before it ever gets photos.
+   ========================================================================= #}
+
+{% set id = widget.id %}
+{% set d = widget.data %}
+{% set items = widget.blocks | default([]) %}
+{% set count = items | length %}
+
+{% set eyebrow = d.eyebrow | default(t('defaults.start_here'), true) %}
+{% set title = d.title | default(t('defaults.why_training'), true) %}
+{% set desc = d.description | default('') %}
+
+{% set layout = d.layout | default('goals', true) %}
+{% set isTiles = layout == 'tiles' %}
+{% set isRail = layout == 'rail' %}
+{% set isGoals = not isTiles and not isRail %}
+
+{% set ratio = d.card_ratio | default('4x5', true) %}
+{% if ratio == '1x1' %}{% set ratioCls = 'riyada-ratio-1x1' %}
+{% elif ratio == '4x3' %}{% set ratioCls = 'riyada-ratio-4x3' %}
+{% elif ratio == '3x4' %}{% set ratioCls = 'riyada-ratio-3x4' %}
+{% else %}{% set ratioCls = 'riyada-ratio-4x5' %}{% endif %}
+
+{% set bg = d.background | default('canvas', true) %}
+{% set cols = d.columns | default('4', true) %}
+{% set colsInt = cols | int %}
+{% set colsMid = 3 if colsInt > 3 else colsInt %}
+
+{% set headerAlign = d.header_align | default('split', true) %}
+{% set isCenter = headerAlign == 'center' %}
+{% set showDesc = d.show_descriptions | default(true) %}
+
+{% set viewAllUrl = d.view_all_url | default('') %}
+{% set viewAllRaw = d.view_all_text | default(t('defaults.all_products'), true) %}
+{% if viewAllRaw %}{% set viewAllText = viewAllRaw %}{% else %}{% set viewAllText = t('common.view_all') %}{% endif %}
+
+{# ---- background ---- #}
+{% set isLight = bg == 'light' %}
+{% if bg == 'surface' %}{% set bgVal = 'var(--color-surface)' %}
+{% elif bg == 'well' %}{% set bgVal = 'var(--color-bg-tertiary)' %}
+{% elif bg == 'alt' %}{% set bgVal = 'var(--color-section-b)' %}
+{% elif bg == 'void' %}{% set bgVal = 'var(--color-media)' %}
+{% elif isLight %}{% set bgVal = 'var(--color-light)' %}
+{% else %}{% set bgVal = 'var(--color-bg-primary)' %}{% endif %}
+
+
+{# ============================ ICON LIBRARY ============================
+   Line icons on a 24×24 grid, 1.7 stroke — same rules as the features bar.
+   These are training intentions, not product categories.
+   ==================================================================== #}
+{% macro icon(name, size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true">
+  {% if name == 'muscle' %}
+    <path d="M6.5 8v8M4 9.5v5M17.5 8v8M20 9.5v5M6.5 12h11"/>
+  {% elif name == 'burn' %}
+    <path d="M12 2.8s5.2 4.1 5.2 9a5.2 5.2 0 0 1-10.4 0c0-2 1-3.6 1.9-4.6.3 1.2 1 2 1.9 2 1.4 0 1.9-1.4 1.9-3.2 0-1.4-.5-2.5-.5-3.2Z"/>
+  {% elif name == 'run' %}
+    <circle cx="15.4" cy="4.6" r="1.8"/>
+    <path d="M8.2 21.2 11 16l-2.6-2.4.9-4.4 3.5-1.4 2.6 2.6 3 .9"/>
+    <path d="m12.8 16 2.4 5.2M5.4 11.6l3.9-2"/>
+  {% elif name == 'crossfit' %}
+    <path d="M4.5 6.5v11M8 8.5v7M16 8.5v7M19.5 6.5v11M8 12h8"/>
+  {% elif name == 'yoga' %}
+    <circle cx="12" cy="4.6" r="1.9"/>
+    <path d="M12 8v5.4M12 13.4 7 17.6M12 13.4l5 4.2M4.5 10.6l7.5 2.8 7.5-2.8"/>
+  {% elif name == 'football' %}
+    <circle cx="12" cy="12" r="8.75"/>
+    <path d="m12 7.6 3.6 2.6-1.4 4.3H9.8l-1.4-4.3z"/>
+    <path d="M12 3.2v4.4M20.2 10.2l-4.6.2M18 19.2l-3.8-4.7M6 19.2l3.8-4.7M3.8 10.2l4.6.2"/>
+  {% elif name == 'swim' %}
+    <circle cx="17" cy="6.4" r="1.7"/>
+    <path d="m4 12.6 4.4-3.2 3.6 2.4 3-2.2"/>
+    <path d="M2.5 17.4c1.6 0 1.6 1.4 3.2 1.4s1.6-1.4 3.2-1.4 1.6 1.4 3.2 1.4 1.6-1.4 3.2-1.4 1.6 1.4 3.2 1.4 1.6-1.4 3.2-1.4"/>
+  {% elif name == 'cycle' %}
+    <circle cx="5.6" cy="16.4" r="3.6"/><circle cx="18.4" cy="16.4" r="3.6"/>
+    <path d="m5.6 16.4 4-8h4.2l2.8 8M9.6 8.4h4.8M15.4 5.6h2.4"/>
+  {% elif name == 'homegym' %}
+    <path d="M3.5 10.5 12 3.5l8.5 7"/>
+    <path d="M5.5 12v7.5a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V12"/>
+    <path d="M9 15.5v3M15 15.5v3M9 17h6"/>
+  {% elif name == 'recovery' %}
+    <path d="M12 20.3 4.3 12.9a4.6 4.6 0 0 1 0-6.6 4.85 4.85 0 0 1 6.8 0l.9.87.9-.87a4.85 4.85 0 0 1 6.8 0 4.6 4.6 0 0 1 0 6.6L12 20.3Z"/>
+  {% elif name == 'boxing' %}
+    <path d="M6.5 5.5h7.8a4.2 4.2 0 0 1 4.2 4.2v2.6a3 3 0 0 1-3 3H6.5z"/>
+    <path d="M6.5 15.3v2.4a1.8 1.8 0 0 0 1.8 1.8h5.6a1.8 1.8 0 0 0 1.8-1.8v-2.4"/>
+    <path d="M18.5 8.2h1.4a1.6 1.6 0 0 1 0 3.2h-1.4"/>
+  {% elif name == 'basketball' %}
+    <circle cx="12" cy="12" r="8.75"/>
+    <path d="M12 3.25v17.5M3.25 12h17.5"/>
+    <path d="M5.8 5.8a12 12 0 0 0 0 12.4M18.2 5.8a12 12 0 0 1 0 12.4"/>
+  {% elif name == 'strength' %}
+    <path d="M3 17.5 8.5 12l3.5 3.2 4-5.4 5 5.2"/><path d="M3 20.5h18"/>
+  {% elif name == 'budget' %}
+    <path d="M3.5 11.4V5.6a2 2 0 0 1 2-2h5.8a2 2 0 0 1 1.4.6l8 8a2 2 0 0 1 0 2.8l-5.8 5.8a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1-.6-1.4Z"/>
+    <circle cx="7.9" cy="7.9" r="1.3"/>
+  {% elif name == 'star' %}
+    <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+  {% else %}
+    <path d="m12 3.1 2.7 5.5 6 .9-4.3 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.3 9.5l6-.9z"/>
+  {% endif %}
+</svg>
+{% endmacro %}
+
+{# Tint → icon chip colours, for the `tiles` and `rail` layouts. #}
+{% macro tintStyle(tint) %}
+  {%- if tint == 'light' -%}
+    background: var(--color-surface-alt); color: var(--color-text-primary);
+  {%- elif tint == 'neutral' -%}
+    background: var(--color-bg-tertiary); color: var(--color-text-secondary);
+  {%- else -%}
+    background: var(--color-flame-wash); color: var(--color-flame);
+  {%- endif -%}
+{% endmacro %}
+
+
+{% if count > 0 %}
+
+<style>
+  #riyada-uc-{{ id }} { background: {{ bgVal }}; }
+
+  /* ================= grid ================= */
+  .riyada-uc-{{ id }}-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: {{ '10px' if isGoals else '12px' }};
+  }
+  @media (min-width: 768px) {
+    .riyada-uc-{{ id }}-grid { grid-template-columns: repeat({{ colsMid }}, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .riyada-uc-{{ id }}-grid { grid-template-columns: repeat({{ colsInt }}, minmax(0, 1fr)); }
+  }
+
+  /* ================= goal tile ================= */
+  /* The shared .riyada-goal primitive carries the scrim, the hover zoom and the
+     bar. Only the photo-less fallback is local to this widget. */
+  .riyada-uc-{{ id }}-noimg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-flame-wash);
+    color: var(--color-flame);
+  }
+
+  /* ================= icon tile ================= */
+  .riyada-uc-{{ id }}-tile {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    min-width: 0;
+    transition: border-color var(--t-fast) var(--ease-out),
+                background var(--t-fast) var(--ease-out);
+  }
+  .riyada-uc-{{ id }}-tile:hover { border-color: var(--color-flame); }
+
+  .riyada-uc-{{ id }}-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border-radius: var(--radius-sm);
+    transition: transform var(--t-base) var(--ease-out);
+  }
+  .riyada-uc-{{ id }}-tile:hover .riyada-uc-{{ id }}-chip { transform: scale(1.07); }
+
+  .riyada-uc-{{ id }}-label {
+    font-family: var(--font-display-ar);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+  }
+  html[dir="ltr"] .riyada-uc-{{ id }}-label { font-family: var(--font-display-en); font-weight: 400; letter-spacing: 0.03em; }
+  .riyada-uc-{{ id }}-desc {
+    margin-top: 3px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-text-tertiary);
+  }
+
+  .riyada-uc-{{ id }}-arrow {
+    flex: none;
+    color: var(--color-text-tertiary);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .riyada-uc-{{ id }}-tile:hover .riyada-uc-{{ id }}-arrow { color: var(--color-flame); }
+
+  /* ================= rail ================= */
+  .riyada-uc-{{ id }}-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 17px;
+    flex: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--color-text-primary);
+    text-transform: var(--display-case);
+    transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+  }
+  html[dir="ltr"] .riyada-uc-{{ id }}-pill { letter-spacing: 0.06em; }
+  .riyada-uc-{{ id }}-pill:hover { border-color: var(--color-flame); background: var(--color-flame-wash); }
+  .riyada-uc-{{ id }}-pill svg { color: var(--color-flame); flex: none; }
+</style>
+
+
+<section id="riyada-uc-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}">
+  <div class="riyada-container">
+
+    {# ═══════════════ header ═══════════════ #}
+    {% if eyebrow or title or desc %}
+      {% if isCenter %}
+        <div class="riyada-head riyada-head--center">
+          <div class="riyada-head-inner">
+            {% if eyebrow %}<span class="riyada-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="riyada-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="riyada-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="riyada-head riyada-head--split">
+          <div class="riyada-head-inner">
+            {% if eyebrow %}<span class="riyada-eyebrow">{{ eyebrow }}</span>{% endif %}
+            {% if title %}<div class="riyada-h2">{{ title | safe }}</div>{% endif %}
+            {% if desc %}<p class="riyada-lead">{{ desc | safe }}</p>{% endif %}
+          </div>
+          {% if viewAllUrl %}
+            <a href="{{ viewAllUrl }}" class="riyada-btn riyada-btn--outline riyada-btn--sm shrink-0 max-sm:hidden">
+              {{ viewAllText }}
+              <svg class="riyada-flip" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# ═══════════════ items ═══════════════ #}
+    {% if isRail %}
+
+      <div class="riyada-rail">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% if c.label %}
+            <a href="{{ c.url | default('/shop', true) }}" class="riyada-uc-{{ id }}-pill">
+              {{ icon(c.icon | default('star', true), 15) }}
+              {{ c.label }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% else %}
+
+      <div class="riyada-uc-{{ id }}-grid">
+        {% for block in items %}
+          {% set c = block.data %}
+          {% if c.label %}
+            {% set url = c.url | default('/shop', true) %}
+            {% set img = c.image.fileUrl if c.image and c.image.fileUrl else '' %}
+            {# Out of the box: the built-in icons have a bundled demo photo; custom icons keep the icon tile #}
+            {# run, yoga and crossfit fall back to equipment photos: the owner wants no images of women on stores #}
+            {% if not img and c.icon in ['muscle', 'burn', 'run', 'crossfit', 'yoga', 'homegym', 'recovery', 'football'] %}
+              {% if c.icon == 'run' %}{% set img = 'demo-story-2.jpg' | assets %}
+              {% elif c.icon == 'yoga' %}{% set img = 'demo-collection-3.jpg' | assets %}
+              {% elif c.icon == 'crossfit' %}{% set img = 'demo-story-1.jpg' | assets %}
+              {% else %}{% set img = ('demo-uc-' ~ c.icon ~ '.jpg') | assets %}{% endif %}
+            {% endif %}
+
+            {% if isGoals %}
+              {# ---------- goal tile — the shared primitive ---------- #}
+              <a href="{{ url }}" class="riyada-goal {{ ratioCls }}">
+                {% if img %}
+                  <img src="{{ img }}" alt="{{ c.label }}" loading="lazy" class="riyada-goal-img"/>
+                  <span class="riyada-goal-scrim"></span>
+                {% else %}
+                  {# no photo yet — the icon on a flame wash, never an empty box #}
+                  <span class="riyada-uc-{{ id }}-noimg">{{ icon(c.icon | default('star', true), 44) }}</span>
+                {% endif %}
+                <div class="riyada-goal-body">
+                  <span class="riyada-goal-label">{{ c.label }}</span>
+                  {% if showDesc and c.description %}
+                    <span class="riyada-goal-desc riyada-clamp-2">{{ c.description }}</span>
+                  {% endif %}
+                  <span class="riyada-goal-bar"></span>
+                </div>
+              </a>
+
+            {% else %}
+              {# ---------- icon tile ---------- #}
+              <a href="{{ url }}" class="riyada-uc-{{ id }}-tile">
+                <span class="riyada-uc-{{ id }}-chip" style="{{ tintStyle(c.tint | default('flame', true)) }}">
+                  {{ icon(c.icon | default('star', true), 22) }}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="riyada-uc-{{ id }}-label block riyada-clamp-1">{{ c.label }}</span>
+                  {% if showDesc and c.description %}
+                    <span class="riyada-uc-{{ id }}-desc block riyada-clamp-2">{{ c.description }}</span>
+                  {% endif %}
+                </span>
+                <svg class="riyada-uc-{{ id }}-arrow riyada-flip" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+                </svg>
+              </a>
+            {% endif %}
+
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    {% endif %}
+
+    {# ═══════════════ view all — centered header, or mobile ═══════════════ #}
+    {% if viewAllUrl %}
+      <div class="text-center mt-8 max-sm:mt-6 {{ '' if isCenter else 'sm:hidden' }}">
+        <a href="{{ viewAllUrl }}" class="riyada-btn riyada-btn--outline">
+          {{ viewAllText }}
+          <svg class="riyada-flip" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/>
+          </svg>
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% else %}
+  {# ---- editor empty state ---- #}
+  <section id="riyada-uc-{{ id }}" class="riyada-section {{ 'riyada-invert' if isLight }}" style="background: {{ bgVal }};" data-editor-only>
+    <div class="riyada-container">
+      <div class="riyada-empty">
+        <span class="riyada-empty-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 8v8M4 9.5v5M17.5 8v8M20 9.5v5M6.5 12h11"/>
+          </svg>
+        </span>
+        <span class="riyada-empty-title">{{ t('usecase.empty_title') }}</span>
+        <p class="riyada-text-sm m-0">{{ t('usecase.empty_desc') }}</p>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# Per-section palette. Emits nothing at all unless `colors_enabled` is on, so
+   the switch IS the revert. Must stay after the widget's own <style> — see the
+   partial's header for why. #}
+{% ui "section-colors.njk", scope='#riyada-uc-' ~ id, c=d %}

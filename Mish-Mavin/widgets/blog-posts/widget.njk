@@ -1,0 +1,47 @@
+{# قائمة المقالات (المدونة)
+   /blogs/<تصنيف>: المنصة بتبعت context.blog + context.articles.
+   /blogs: المنصة بتبعت التصنيفات بس (context.blogs): التصنيفات بتبقى فلتر فوق (يستخبى لو تصنيف واحد) والكروت مقالات، مش تصنيفات.
+   لو المقالات مش جوه التصنيف، main.js (mergeBlogPosts) بيجيب كروت كل تصنيف من صفحته. لينكات الفلتر شغالة من غير JS. #}
+{% set wd = widget.data if (widget.data and (widget.data | length)) else (widget.settings or {}) %}
+{# قمرة بتبعت بيانات الصفحة جوه context (context.product …) مش كمتغير مباشر زي التوثيق — بنقرا الاتنين #}
+{% set ctx = context or {} %}
+{% set b = blog or ctx.blog or {} %}
+{% set cats = [] %}
+{% for c in (blogs or ctx.blogs or []) %}{% if c and c.title and (c.handle or c.slug) %}{% set _ = cats.push(c) %}{% endif %}{% endfor %}
+{% set catPosts = [] %}
+{% set catHandles = [] %}
+{% for c in cats %}
+  {% set _ = catHandles.push(c.handle or c.slug) %}
+  {% for ca in c.articles or [] %}{% if ca and ca.title %}{% set _ = catPosts.push(ca) %}{% endif %}{% endfor %}
+{% endfor %}
+{% if wd.articles and (wd.articles | length) %}{% set posts = wd.articles %}
+{% elif b.articles and (b.articles | length) %}{% set posts = b.articles %}
+{% elif articles and (articles | length) %}{% set posts = articles %}
+{% elif ctx.articles and (ctx.articles | length) %}{% set posts = ctx.articles %}
+{% else %}{% set posts = catPosts %}{% endif %}
+{% set mergeCats = not (posts | length) and (cats | length) > 0 %}
+<section class="mw-page">
+  <div class="container">
+    <div class="mw-collection-hero">
+      <h1 class="mw-collection-hero__title">{{ b.title or wd.title or t('blog.title') }}</h1>
+      {% if b.description %}<div class="mw-collection-hero__desc">{{ b.description | replace('</p>', ' ') | replace('</li>', ' ') | replace('<br>', ' ') | replace('<br/>', ' ') | striptags | truncate(240) }}</div>{% endif %}
+    </div>
+    {% if (cats | length) > 1 %}
+    <nav class="mw-subcols" aria-label="{{ t('blog.title') }}">
+      <a class="mw-chip-s mw-chip-s--col" href="/blogs" aria-current="page">{{ t('common.view_all') }}</a>
+      {% for c in cats %}<a class="mw-chip-s" href="/blogs/{{ c.handle or c.slug }}">{{ c.title }}</a>{% endfor %}
+    </nav>
+    {% endif %}
+    {% if posts | length %}
+      <div class="mw-posts">
+        {% for a in posts %}{% if a and a.title %}{% ui "post-card.njk", article=a %}{% endif %}{% endfor %}
+      </div>
+      {% ui "pagination.njk" %}
+    {% elif mergeCats %}
+      <div class="mw-posts" data-mw-blog-merge="{{ catHandles | join('|') }}"></div>
+      <div class="mw-empty-state" data-mw-blog-empty hidden><p>{{ t('blog.empty') }}</p><a href="/shop" class="mw-btn mw-btn--filled">{{ t('collection.browse_all') }}</a></div>
+    {% else %}
+      <div class="mw-empty-state"><p>{{ t('blog.empty') }}</p><a href="/shop" class="mw-btn mw-btn--filled">{{ t('collection.browse_all') }}</a></div>
+    {% endif %}
+  </div>
+</section>
