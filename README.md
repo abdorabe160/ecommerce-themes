@@ -8,6 +8,19 @@ ATTAR · baby-supplies · Bulk · coffee (DECAFE) · ecommerce · electronics ·
 
 Each theme ships with 20–40 merchant-configurable widgets (sections).
 
+## Live stores & screenshots
+
+### Mish-Mavin — [mish-mavin.qumra.store](https://mish-mavin.qumra.store/)
+
+![Mish-Mavin hero](screenshots/mish-mavin-hero.webp)
+![Mish-Mavin categories](screenshots/mish-mavin-categories.webp)
+
+### Bulk — sportswear store (Arabic RTL, dark theme)
+
+![Bulk hero](screenshots/bulk-hero.webp)
+![Bulk collections](screenshots/bulk-collections.webp)
+![Bulk products](screenshots/bulk-products.webp)
+
 ## Theme structure
 
 Each theme follows the Qumra theme architecture:
